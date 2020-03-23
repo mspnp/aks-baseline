@@ -1,0 +1,190 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "0.0.0.1",
+    "parameters": {
+        "orgAppId": {
+            "type": "string",
+            "defaultValue": "BU0001A0008"
+        },
+        "networkSuffix": {
+            "type": "string",
+            "defaultValue": "-00"
+        },
+        "hubLaResourceId": {
+            "type": "string",
+            "defaultValue": "/subscriptions/e1de8202-8d83-43f3-9477-c8fa8fd2e8c8/resourcegroups/rg-enterprise-networking-hubs/providers/microsoft.operationalinsights/workspaces/la-networking-hub-q56icwyt5rq3y"
+        },
+        "hubVnetId": {
+            "type": "string",
+            "defaultValue": "/subscriptions/e1de8202-8d83-43f3-9477-c8fa8fd2e8c8/resourceGroups/rg-enterprise-networking-hubs/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub"
+        },
+        "firewallName": {
+            "type": "string",
+            "defaultValue": "fw-eastus2-hub"
+        }
+    },
+    "variables": {
+        "clusterRegion": "East US 2",
+        "clusterVNetName": "[concat('vnet-eastus2-hub-spoke-', parameters('orgAppId'), parameters('networkSuffix'))]",
+        "vnetAddressSpace": "172.16.0.0/18",
+        "vnetNodepoolSubnetName": "snet-clusternodes",
+        "vnetNodepoolSubnetAddressSpace": "172.16.0.0/20",
+        "vnetIngressSubnetName": "snet-clusteringressservices",
+        "vnetIngressSubnetAddressSpace": "172.16.16.0/20",
+        "vnetGatewaySubnetName": "snet-applicationgateways",
+        "vnetGatewaySubnetAddressSpace": "172.16.32.0/20",
+        "routeTableName": "[concat('route-', variables('clusterVNetName'), '-clusternodes-to-hub')]",
+        "hubRgName": "[split(parameters('hubVnetId'),'/')[4]]",
+        "hubNetworkName": "[split(parameters('hubVnetId'),'/')[8]]",
+        "appGatewayPipName": "[concat('pip-eastus2-', parameters('orgAppId'), parameters('networkSuffix'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2019-11-01",
+            "location": "[variables('clusterRegion')]",
+            "name": "[variables('routeTableName')]",
+            "properties": {
+                "routes": [
+                    {
+                        "name": "r-nexthop-to-fw",
+                        "properties": {
+                            "nextHopType": "VirtualAppliance",
+                            "addressPrefix": "0.0.0.0/0",
+                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', parameters('firewallName')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"                            
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2019-11-01",
+            "name": "[variables('clusterVNetName')]",
+            "location": "[variables('clusterRegion')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnetAddressSpace')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vnetNodepoolSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnetNodepoolSubnetAddressSpace')]",
+                            "serviceEndpoints": [
+                                {
+                                    "service": "Microsoft.ContainerRegistry"
+                                }
+                            ],
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('vnetIngressSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnetIngressSubnetAddressSpace')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnetGatewaySubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnetGatewaySubnetAddressSpace')]"
+                        }
+                    }
+                ],
+                "enableDdosProtection": false,
+                "enableVmProtection": false
+            },
+            "resources": [
+                {
+                    "type": "virtualNetworkPeerings",
+                    "apiVersion": "2019-11-01",
+                    "name": "[concat('spoke-to-', variables('hubNetworkName'))]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+                    ],
+                    "properties": {
+                        "remoteVirtualNetwork": {
+                            "id": "[parameters('hubVnetId')]"
+                        },
+                        "allowForwardedTraffic": true,
+                        "allowVirtualNetworkAccess": true,
+                        "allowGatewayTransit": false,
+                        "useRemoteGateways": false
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/providers/diagnosticSettings",
+            "apiVersion": "2017-05-01-preview",
+            "name": "[concat(variables('clusterVNetName'), '/Microsoft.Insights/toHub')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+            ],
+            "properties": {
+                "workspaceId": "[parameters('hubLaResourceId')]",
+                "metrics": [
+                    {
+                        "category": "AllMetrics",
+                        "enabled": true
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[concat('CreateHubToSpokePeer')]",
+            "apiVersion": "2017-05-10",
+            "resourceGroup": "[variables('hubRgName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                            "apiVersion": "2019-11-01",
+                            "name": "[concat(variables('hubNetworkName'), '/hub-to-', variables('clusterVNetName'))]",
+                            "location": "[variables('clusterRegion')]",
+                            "properties": {
+                                "remoteVirtualNetwork": {
+                                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+                                },
+                                "allowForwardedTraffic": false,
+                                "allowGatewayTransit": false,
+                                "allowVirtualNetworkAccess": true,
+                                "useRemoteGateways": false
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "apiVersion": "2019-11-01",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "name": "[variables('appGatewayPipName')]",
+            "location": "[variables('clusterRegion')]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "publicIPAddressVersion": "IPv4"
+            }
+        }
+    ]
+}
