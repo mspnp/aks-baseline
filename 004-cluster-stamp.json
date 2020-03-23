@@ -191,8 +191,8 @@
                     {
                         "name": "nodepool01",
                         "count": 1,
-                        "vmSize": "Standard_DS1_v2",
-                        "osDiskSizeGB": 0,
+                        "vmSize": "Standard_DS4_v2",
+                        "osDiskSizeGB": 512,
                         "osType": "Linux",
                         "maxCount": 2,
                         "vnetSubnetID": "[variables('vnetNodePoolSubnetResourceId')]",
