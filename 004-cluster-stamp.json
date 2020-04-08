@@ -66,7 +66,7 @@
         "clusterName": "[concat('aks-', variables('subRgUniqueString'))]",
         "nodePoolRgName": "[concat('rg-', variables('clusterName'), '-nodepools')]",
 
-        "kubernetesVersion": "1.17.0",
+        "kubernetesVersion": "1.17.3",
         "logAnalyticsWorkspaceName": "[concat('la-', variables('clusterName'))]",
         "containerInsightsSolutionName": "[concat('ContainerInsights(', variables('logAnalyticsWorkspaceName'),')')]",
         
