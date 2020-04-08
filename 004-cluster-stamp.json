@@ -269,6 +269,28 @@
             }
         },
         {
+            "type": "Microsoft.ContainerService/managedClusters/providers/diagnosticSettings",
+            "apiVersion": "2017-05-01-preview",
+            "name": "[concat(variables('clusterName'), '/Microsoft.Insights/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+            ],
+            "properties": {
+                "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+                "logs": [
+                    {
+                        "category": "cluster-autoscaler",
+                        "enabled": true
+                    },
+                    {
+                        "category": "kube-controller-manager",
+                        "enabled": true
+                    }
+                ]
+            }
+        },
+        {
             "type": "Microsoft.ContainerService/managedClusters/providers/roleAssignments",
             "apiVersion": "2018-09-01-preview",
             "name": "[variables('clusterMonitoringMetricsPublisherRoleAssignmentName')]",
