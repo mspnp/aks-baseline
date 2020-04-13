@@ -12,11 +12,11 @@
         },
         "hubLaResourceId": {
             "type": "string",
-            "defaultValue": "/subscriptions/e1de8202-8d83-43f3-9477-c8fa8fd2e8c8/resourcegroups/rg-enterprise-networking-hubs/providers/microsoft.operationalinsights/workspaces/la-networking-hub-q56icwyt5rq3y"
+            "defaultValue": "/subscriptions/a012a8b0-522a-4f59-81b6-aa0361eb9387/resourceGroups/far-rg-enterprise-networking-hubs/providers/Microsoft.OperationalInsights/workspaces/la-networking-hub-63eldsvto2mzm"
         },
         "hubVnetId": {
             "type": "string",
-            "defaultValue": "/subscriptions/e1de8202-8d83-43f3-9477-c8fa8fd2e8c8/resourceGroups/rg-enterprise-networking-hubs/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub"
+            "defaultValue": "/subscriptions/a012a8b0-522a-4f59-81b6-aa0361eb9387/resourceGroups/far-rg-enterprise-networking-hubs/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub"
         },
         "firewallName": {
             "type": "string",
@@ -24,7 +24,7 @@
         }
     },
     "variables": {
-        "clusterRegion": "East US 2",
+        "clusterRegion": "[resourceGroup().location]",
         "clusterVNetName": "[concat('vnet-eastus2-hub-spoke-', parameters('orgAppId'), parameters('networkSuffix'))]",
         "vnetAddressSpace": "172.16.0.0/18",
         "vnetNodepoolSubnetName": "snet-clusternodes",
@@ -51,7 +51,7 @@
                         "properties": {
                             "nextHopType": "VirtualAppliance",
                             "addressPrefix": "0.0.0.0/0",
-                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', parameters('firewallName')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"                            
+                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', parameters('firewallName')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
                         }
                     }
                 ]
@@ -186,5 +186,19 @@
                 "publicIPAddressVersion": "IPv4"
             }
         }
-    ]
+    ],
+    "outputs": {
+        "targetVnetResourceId": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
+            "type": "string"
+        },
+        "vnetNodepoolSubnetName": {
+            "value": "[variables('vnetNodepoolSubnetName')]",
+            "type": "string"
+        },
+        "vnetNodepoolSubnetNameResourceId": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), variables('vnetNodepoolSubnetName'))]",
+            "type": "string"
+        }
+    }
 }
