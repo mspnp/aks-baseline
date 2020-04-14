@@ -3,14 +3,12 @@
     "contentVersion": "0.0.0.3",
     "parameters": {
         "location": {
-            "defaultValue": "[resourceGroup().location]",
             "type": "string",
             "metadata": {
                 "description": "The location in which the resources should be deployed."
             }
         },
         "hubVnetName": {
-            "defaultValue": "vnet-eastus2-hub",
             "type": "string",
             "metadata": {
                 "description": "Virtual netwotk name."
@@ -25,11 +23,11 @@
             "type": "string"
         },
         "defaultFwPipName": {
-            "defaultValue": "pip-eastus2-fw-default",
+            "defaultValue": "pip-fw-default",
             "type": "string"
         },
         "eastUs2HubFwName": {
-            "defaultValue": "fw-eastus2-hub",
+            "defaultValue": "fw-hub",
             "type": "string"
         },
         "hubLaBaseName": {

@@ -3,14 +3,12 @@
     "contentVersion": "0.0.0.4",
     "parameters": {
         "location": {
-            "defaultValue": "[resourceGroup().location]",
             "type": "string",
             "metadata": {
                 "description": "The location in which the resources should be deployed."
             }
         },
         "hubVnetName": {
-            "defaultValue": "vnet-eastus2-hub",
             "type": "string",
             "metadata": {
                 "description": "Virtual netwotk name."
@@ -25,24 +23,23 @@
             "type": "string"
         },
         "defaultFwPipName": {
-            "defaultValue": "pip-eastus2-fw-default",
+            "defaultValue": "pip-fw-default",
             "type": "string"
         },
         "eastUs2HubFwName": {
-            "defaultValue": "fw-eastus2-hub",
+            "defaultValue": "fw-hub",
             "type": "string"
         },
         "hubLaBaseName": {
             "defaultValue": "la-networking-hub",
             "type": "string"
         },
-        "aksUsEast2IpGroupName": {
-            "defaultValue": "ipg-useast2-AksNodepools",
+        "aksIpGroupName": {
+            "defaultValue": "ipg-AksNodepools",
             "type": "string"
         },
         "vnetNodepoolSubnetNameResourceId": {
-            "type": "string",
-            "defaultValue": "/subscriptions/a012a8b0-522a-4f59-81b6-aa0361eb9387/resourceGroups/far-rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub-spoke-BU0001A0008-00/subnets/snet-clusternodes"
+            "type": "string"
         }
     },
     "variables": {
@@ -95,7 +92,7 @@
             "type": "Microsoft.Network/ipGroups",
             "apiVersion": "2019-11-01",
             "location": "[parameters('location')]",
-            "name": "[parameters('aksUsEast2IpGroupName')]",
+            "name": "[parameters('aksIpGroupName')]",
             "properties": {
                 "ipAddresses": [
                     "[reference(parameters('vnetNodepoolSubnetNameResourceId'), '2019-11-01').addressPrefix]"
@@ -110,7 +107,7 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIpAddresses', parameters('defaultFwPipName'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVnetName'))]",
-                "[resourceId('Microsoft.Network/ipGroups', parameters('aksUsEast2IpGroupName'))]"
+                "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
             ],
             "properties": {
                 "sku": {
@@ -204,7 +201,7 @@
                                     "name": "tunnel-front-pod-tcp",
                                     "description": "Tunnel front pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksUsEast2IpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         "TCP"
@@ -221,7 +218,7 @@
                                     "name": "tunnel-front-pod-udp",
                                     "description": "Tunnel front pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksUsEast2IpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         "UDP"
@@ -250,7 +247,7 @@
                                     "name": "nodes-to-api-server",
                                     "description": "This address is required for Node <-> API server communication.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksUsEast2IpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -267,7 +264,7 @@
                                     "name": "microsoft-container-registry",
                                     "description": "All URLs related to MCR needed by AKS",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksUsEast2IpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -285,7 +282,7 @@
                                     "name": "management-plane",
                                     "description": "This address is required for Kubernetes GET/PUT operations.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksUsEast2IpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -301,7 +298,7 @@
                                     "name": "aad-auth",
                                     "description": "This address is required for Azure Active Directory authentication.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksUsEast2IpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -317,7 +314,7 @@
                                     "name": "apt-get",
                                     "description": "This address is the Microsoft packages repository used for cached apt-get operations. Example packages include Moby, PowerShell, and Azure CLI.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksUsEast2IpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -333,7 +330,7 @@
                                     "name": "cluster-binaries",
                                     "description": "This address is for the repository required to install required binaries like kubenet and Azure CNI.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksUsEast2IpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -349,7 +346,7 @@
                                     "name": "ubuntu-security-patches",
                                     "description": "This address lets the Linux cluster nodes download the required security patches and updates.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksUsEast2IpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -367,7 +364,7 @@
                                     "name": "azure-monitor",
                                     "description": "All required for Azure Monitor for containers per https://docs.microsoft.com/en-us/azure/aks/limit-egress-traffic#required-addresses-and-ports-with-azure-monitor-for-containers-enabled",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksUsEast2IpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -387,7 +384,7 @@
                                     "name": "azure-policy",
                                     "description": "All required for Azure Policy per https://docs.microsoft.com/en-us/azure/aks/limit-egress-traffic#required-addresses-and-ports-for-aks-clusters-with-azure-policy-in-public-preview-enabled",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksUsEast2IpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {

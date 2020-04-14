@@ -4,14 +4,12 @@
     "parameters": {
         "location": {
             "type": "string",
-            "defaultValue": "[resourceGroup().location]",
             "metadata": {
                 "description": "AKS Service Region.  This is where our node pools will live as well."
             }
         },
         "targetVnetResourceId": {
-            "type": "string",
-            "defaultValue": "/subscriptions/e1de8202-8d83-43f3-9477-c8fa8fd2e8c8/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub-spoke-BU0001A0008-00"
+            "type": "string"
         },
         "servicePrincipalProfileClientId": {
             "type": "string",
@@ -69,7 +67,7 @@
         "kubernetesVersion": "1.17.3",
         "logAnalyticsWorkspaceName": "[concat('la-', variables('clusterName'))]",
         "containerInsightsSolutionName": "[concat('ContainerInsights(', variables('logAnalyticsWorkspaceName'),')')]",
-        
+
         "defaultAcrName": "[concat('acraks', variables('subRgUniqueString'))]",
 
         "vNetResourceGroup": "[split(parameters('targetVnetResourceId'),'/')[4]]",
@@ -155,9 +153,10 @@
                         {
                             "action": "Allow",
                             "id": "[variables('vnetNodePoolSubnetResourceId')]"
-                        }  
+                        }
                     ],
-                    "ipRules": []
+                    "ipRules": [
+                    ]
                 },
                 "policies": {
                     "quarantinePolicy": {
