@@ -6,11 +6,7 @@ Your azure user need to be able to assing permission on the subcription
 
 ## Steps
 
-- Set Tenant Guid in the script and execute
-
-`create-azure-ad-registrations.sh`
-
-- Take the previous script's output and set the parameters for the next one and execute
+- Please check the script variables at the beginning and then execute. The script is going to deploy all the template and Principal needed.
 
 `deploy.sh`
 
