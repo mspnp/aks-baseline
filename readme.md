@@ -6,7 +6,8 @@ Your azure user need to be able to assing permission on the subcription
 
 ## Steps
 
-- Please check the script variables at the beginning and then execute. The script is going to deploy all the template and Principal needed.
+- Please check the script variables at the beginning and then execute. The script is going to deploy all the template and Principal needed.  
+  This script might take about 20 minutes
 
 `deploy.sh`
 
