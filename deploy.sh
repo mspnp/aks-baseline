@@ -11,7 +11,8 @@ runDate=$(date +%S%N)
 spName=${aksName}-sp-${runDate}
 serverAppName=${aksName}-server-${runDate}
 clientAppName=${aksName}-kubectl-${runDate}
-tenant_guid=**Your Tennant for identities**
+tenant_guid=**Your tenant id for Identities**
+main_subscription=**Your Main subscription**
 
 # We are going to use a new tenant to provide identity
 az login  --allow-no-subscriptions -t $tenant_guid
@@ -57,7 +58,9 @@ echo "k8sRbacAadProfileServerAppSecret=${k8sRbacAadProfileServerAppSecret}"
 echo "k8sRbacAadProfileTennetId=${k8sRbacAadProfileTennetId}"
 
 #back to main subscription
-az login
+az login 
+az account set -s $main_subscription
+
 #Main Network.Build the hub. First arm template execution and catching outputs. This might take about 6 minutes
 az group create --name "${RGNAME}" --location "${RGLOCATION}"
 
@@ -90,15 +93,6 @@ HUB_LA_RESOURCE_ID=$(az deployment group show -g $RGNAME -n hub-0002 --query pro
 
 HUB_VNET_ID=$(az deployment group show -g $RGNAME -n hub-0002 --query properties.outputs.hubVnetId.value -o tsv)
 
-#AKS Service principal creation. This might take about 1 minutes
-aks_profile_clientid=$(az ad sp create-for-rbac  -n $AKSNAME --query appId -o tsv)
-aks_profile_secret=$(az ad sp credential reset --name $aks_profile_clientid  --credential-description "AKSPassword" --query password -o tsv)
-aks_profile_objectid=$( az ad sp show --id  $aks_profile_clientid --query objectId -o tsv)
-
-echo "aks_profile_clientid=${aks_profile_clientid}"
-echo "aks_profile_secret=${aks_profile_secret}"
-echo "aks_profile_objectid=${aks_profile_objectid}"
-
 #AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 8 minutes
 az group create --name "${RGNAMECLUSTER}" --location "${RGLOCATION}"
 
@@ -106,4 +100,4 @@ echo "TARGET_VNET_RESOURCE_ID=${TARGET_VNET_RESOURCE_ID}"
 echo "RGLOCATION=${RGLOCATION}"
 echo "RGNAMECLUSTER=${RGNAMECLUSTER}"
 
-az deployment group  create --resource-group "${RGNAMECLUSTER}" --template-file "004-cluster-stamp.json" --name "cluster-0001" --parameters location=$RGLOCATION targetVnetResourceId=$TARGET_VNET_RESOURCE_ID servicePrincipalProfileClientId=$aks_profile_clientid servicePrincipalProfileObjectId=$aks_profile_objectid servicePrincipalProfileSecret=$aks_profile_secret k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId k8sRbacAadProfileTennetId=$k8sRbacAadProfileTennetId
+az deployment group  create --resource-group "${RGNAMECLUSTER}" --template-file "004-cluster-stamp.json" --name "cluster-0001" --parameters location=$RGLOCATION targetVnetResourceId=$TARGET_VNET_RESOURCE_ID k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId k8sRbacAadProfileTennetId=$k8sRbacAadProfileTennetId
