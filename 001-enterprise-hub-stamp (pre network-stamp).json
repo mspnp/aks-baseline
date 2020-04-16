@@ -2,33 +2,59 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "0.0.0.3",
     "parameters": {
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "The location in which the resources should be deployed."
+            }
+        },
+        "hubVnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Virtual netwotk name."
+            }
+        },
+        "hubVnetAddressRange": {
+            "defaultValue": "192.168.0.0/20",
+            "type": "string"
+        },
+        "azureFirewallSubnetRange": {
+            "defaultValue": "192.168.1.0/26",
+            "type": "string"
+        },
+        "defaultFwPipName": {
+            "defaultValue": "pip-fw-default",
+            "type": "string"
+        },
+        "eastUs2HubFwName": {
+            "defaultValue": "fw-hub",
+            "type": "string"
+        },
+        "hubLaBaseName": {
+            "defaultValue": "la-networking-hub",
+            "type": "string"
+        }
     },
     "variables": {
-        "location": "East US 2",
-        "hubVnetName": "vnet-eastus2-hub",
-        "hubVnetAddressRange": "192.168.0.0/20",
-        "azureFirewallSubnetRange": "192.168.1.0/26",
-        "defaultFwPipName": "pip-eastus2-fw-default",
-        "eastUs2HubFwName": "fw-eastus2-hub",
-        "hubLaName": "[concat('la-networking-hub-', uniqueString(subscription().id, resourceGroup().id))]"
+        "hubLaName": "[concat(parameters('hubLaBaseName'),'-', uniqueString(subscription().id, resourceGroup().id))]"
     },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2019-11-01",
-            "name": "[variables('hubVnetName')]",
-            "location": "[variables('location')]",
+            "name": "[parameters('hubVnetName')]",
+            "location": "[parameters('location')]",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[variables('hubVnetAddressRange')]"
+                        "[parameters('hubVnetAddressRange')]"
                     ]
                 },
                 "subnets": [
                     {
                         "name": "AzureFirewallSubnet",
                         "properties": {
-                            "addressPrefix": "[variables('azureFirewallSubnetRange')]",
+                            "addressPrefix": "[parameters('azureFirewallSubnetRange')]",
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.ContainerRegistry"
@@ -44,8 +70,8 @@
         {
             "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/publicIpAddresses",
-            "name": "[variables('defaultFwPipName')]",
-            "location": "[variables('location')]",
+            "name": "[parameters('defaultFwPipName')]",
+            "location": "[parameters('location')]",
             "sku": {
                 "name": "Standard"
             },
@@ -58,11 +84,11 @@
         {
             "type": "Microsoft.Network/azureFirewalls",
             "apiVersion": "2019-11-01",
-            "name": "[variables('eastUs2HubFwName')]",
-            "location": "[variables('location')]",
+            "name": "[parameters('eastUs2HubFwName')]",
+            "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIpAddresses', variables('defaultFwPipName'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]"
+                "[resourceId('Microsoft.Network/publicIpAddresses', parameters('defaultFwPipName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVnetName'))]"
             ],
             "properties": {
                 "sku": {
@@ -72,18 +98,19 @@
                 "threatIntelMode": "Alert",
                 "ipConfigurations": [
                     {
-                        "name": "[variables('defaultFwPipName')]",
+                        "name": "[parameters('defaultFwPipName')]",
                         "properties": {
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hubVnetName'), 'AzureFirewallSubnet')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubVnetName'), 'AzureFirewallSubnet')]"
                             },
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('defaultFwPipName'))]"
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', parameters('defaultFwPipName'))]"
                             }
                         }
                     }
                 ],
-                "natRuleCollections": [],
+                "natRuleCollections": [
+                ],
                 "networkRuleCollections": [
                     {
                         "name": "org-wide-allowed",
@@ -145,7 +172,7 @@
                     }
                 ],
                 "applicationRuleCollections": [
-                    
+
                 ]
             }
         },
@@ -153,7 +180,7 @@
             "type": "Microsoft.OperationalInsights/workspaces",
             "apiVersion": "2015-11-01-preview",
             "name": "[variables('hubLaName')]",
-            "location": "East US 2",
+            "location": "[parameters('location')]",
             "properties": {
                 "sku": {
                     "name": "PerGB2018"
@@ -164,10 +191,11 @@
         {
             "type": "Microsoft.Network/azureFirewalls/providers/diagnosticSettings",
             "apiVersion": "2017-05-01-preview",
-            "name": "[concat(variables('eastUs2HubFwName'), '/Microsoft.Insights/default')]",
+            "name": "[concat(parameters('eastUs2HubFwName'), '/Microsoft.Insights/default')]",
+            "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
-                "[resourceId('Microsoft.Network/azureFirewalls', variables('eastUs2HubFwName'))]"
+                "[resourceId('Microsoft.Network/azureFirewalls', parameters('eastUs2HubFwName'))]"
             ],
             "properties": {
                 "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
@@ -192,10 +220,11 @@
         {
             "type": "Microsoft.Network/virtualNetworks/providers/diagnosticSettings",
             "apiVersion": "2017-05-01-preview",
-            "name": "[concat(variables('hubVnetName'), '/Microsoft.Insights/default')]",
+            "name": "[concat(parameters('hubVnetName'), '/Microsoft.Insights/default')]",
+            "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVnetName'))]"
             ],
             "properties": {
                 "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
@@ -207,5 +236,19 @@
                 ]
             }
         }
-    ]
+    ],
+    "outputs": {
+        "hubLaResourceId": {
+            "value": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
+            "type": "string"
+        },
+        "hubVnetId": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVnetName'))]",
+            "type": "string"
+        },
+        "firewallName": {
+            "value": "[parameters('eastUs2HubFwName')]",
+            "type": "string"
+        }
+    }
 }
