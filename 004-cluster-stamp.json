@@ -11,24 +11,6 @@
         "targetVnetResourceId": {
             "type": "string"
         },
-        "servicePrincipalProfileClientId": {
-            "type": "string",
-            "metadata": {
-                "description": "Azure RBAC service principal ClientID used by the cluster where Managed Identity is not yet supported"
-            }
-        },
-        "servicePrincipalProfileObjectId": {
-            "type": "string",
-            "metadata": {
-                "description": "Azure RBAC service principal ObjectID used by the cluster where Managed Identity is not yet supported"
-            }
-        },
-        "servicePrincipalProfileSecret": {
-            "type": "string",
-            "metadata": {
-                "description": "Secret for the Azure RBAC service principal"
-            }
-        },
         "k8sRbacAadProfileServerAppId": {
             "type": "string",
             "metadata": {
@@ -87,6 +69,9 @@
             "type": "Microsoft.Resources/deployments",
             "name": "EnsureClusterSpHasRbacToVNet",
             "apiVersion": "2017-05-10",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+            ],
             "resourceGroup": "[variables('vNetResourceGroup')]",
             "properties": {
                 "mode": "Incremental",
@@ -100,7 +85,7 @@
                             "name": "[variables('networkRoleAssignmentName')]",
                             "properties": {
                                 "roleDefinitionId": "[variables('networkContributorRole')]",
-                                "principalId": "[parameters('servicePrincipalProfileObjectId')]"
+                                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]"
                             }
                         }
                     ]
@@ -179,7 +164,6 @@
             "name": "[variables('clusterName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "EnsureClusterSpHasRbacToVNet",
                 "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
                 "[resourceId('Microsoft.OperationsManagement/solutions', variables('containerInsightsSolutionName'))]"
             ],
@@ -206,8 +190,8 @@
                     }
                 ],
                 "servicePrincipalProfile": {
-                    "clientId": "[parameters('servicePrincipalProfileClientId')]",
-                    "secret": "[parameters('servicePrincipalProfileSecret')]"
+                    "clientId": "msi",
+                    "secret": null
                 },
                 "addonProfiles": {
                     "httpApplicationRouting": {
@@ -298,7 +282,7 @@
             ],
             "properties": {
                 "roleDefinitionId": "[variables('monitoringMetricsPublisherRole')]",
-                "principalId": "[parameters('servicePrincipalProfileObjectId')]"
+                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]"
             }
         },
         {
@@ -335,18 +319,19 @@
             "apiVersion": "2018-09-01-preview",
             "name": "[variables('acrRoleAssignmentName')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]"
+                "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
                 "roleDefinitionId": "[variables('acrPullRole')]",
-                "principalId": "[reference(variables('clusterName'), '2020-02-01').identityProfile.kubeletidentity.objectId]"
+                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]"
             }
         }
     ],
     "outputs": {
         "controlPlaneFQDN": {
             "type": "string",
-            "value": "reference(variables('clusterName')).fqdn"
+            "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').fqdn]"
         }
     }
 }
