@@ -4,6 +4,18 @@
     "parameters": {
         "location": {
             "type": "string",
+            "allowedValues": [
+                "centralus",
+                "eastus",
+                "eastus2",
+                "westus2",
+                "francecentral",
+                "northeurope",
+                "uksouth",
+                "westeurope",
+                "japaneast",
+                "southeastasia"
+            ],
             "metadata": {
                 "description": "The location in which the resources should be deployed."
             }

@@ -4,6 +4,18 @@
     "parameters": {
         "location": {
             "type": "string",
+            "allowedValues": [
+                "centralus",
+                "eastus",
+                "eastus2",
+                "westus2",
+                "francecentral",
+                "northeurope",
+                "uksouth",
+                "westeurope",
+                "japaneast",
+                "southeastasia"
+            ],
             "metadata": {
                 "description": "AKS Service Region.  This is where our node pools will live as well."
             }

@@ -1,5 +1,5 @@
 # This script might take about 20 minutes
-# Please chek the variables
+# Please check the variables
 RGLOCATION=eastus
 VNET_NAME=vnet-hub
 RGNAME=rg-enterprise-networking-hubs
