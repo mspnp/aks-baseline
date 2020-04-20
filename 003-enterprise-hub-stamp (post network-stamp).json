@@ -38,7 +38,7 @@
             "defaultValue": "pip-fw-default",
             "type": "string"
         },
-        "eastUs2HubFwName": {
+        "hubFwName": {
             "defaultValue": "fw-hub",
             "type": "string"
         },
@@ -114,8 +114,13 @@
         {
             "type": "Microsoft.Network/azureFirewalls",
             "apiVersion": "2019-11-01",
-            "name": "[parameters('eastUs2HubFwName')]",
+            "name": "[parameters('hubFwName')]",
             "location": "[parameters('location')]",
+            "zones": [
+                "1",
+                "2",
+                "3"
+            ],
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIpAddresses', parameters('defaultFwPipName'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVnetName'))]",
@@ -433,10 +438,11 @@
         {
             "type": "Microsoft.Network/azureFirewalls/providers/diagnosticSettings",
             "apiVersion": "2017-05-01-preview",
-            "name": "[concat(parameters('eastUs2HubFwName'), '/Microsoft.Insights/default')]",
+            "name": "[concat(parameters('hubFwName'), '/Microsoft.Insights/default')]",
+            "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
-                "[resourceId('Microsoft.Network/azureFirewalls', parameters('eastUs2HubFwName'))]"
+                "[resourceId('Microsoft.Network/azureFirewalls', parameters('hubFwName'))]"
             ],
             "properties": {
                 "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
@@ -462,6 +468,7 @@
             "type": "Microsoft.Network/virtualNetworks/providers/diagnosticSettings",
             "apiVersion": "2017-05-01-preview",
             "name": "[concat(parameters('hubVnetName'), '/Microsoft.Insights/default')]",
+            "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVnetName'))]"
@@ -487,7 +494,7 @@
             "type": "string"
         },
         "firewallName": {
-            "value": "[parameters('eastUs2HubFwName')]",
+            "value": "[parameters('hubFwName')]",
             "type": "string"
         }
     }
