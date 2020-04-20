@@ -116,6 +116,11 @@
             "apiVersion": "2019-11-01",
             "name": "[parameters('eastUs2HubFwName')]",
             "location": "[parameters('location')]",
+            "zones": [
+                "1",
+                "2",
+                "3"
+            ],
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIpAddresses', parameters('defaultFwPipName'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVnetName'))]",
