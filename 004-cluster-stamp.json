@@ -4,6 +4,18 @@
     "parameters": {
         "location": {
             "type": "string",
+            "allowedValues": [
+                "centralus",
+                "eastus",
+                "eastus2",
+                "westus2",
+                "francecentral",
+                "northeurope",
+                "uksouth",
+                "westeurope",
+                "japaneast",
+                "southeastasia"
+            ],
             "metadata": {
                 "description": "AKS Service Region.  This is where our node pools will live as well."
             }
@@ -173,20 +185,25 @@
                 "agentPoolProfiles": [
                     {
                         "name": "nodepool01",
-                        "count": 1,
+                        "count": 3,
                         "vmSize": "Standard_DS4_v2",
                         "osDiskSizeGB": 512,
                         "osType": "Linux",
-                        "maxCount": 2,
+                        "minCount": 3,
+                        "maxCount": 5,
                         "vnetSubnetID": "[variables('vnetNodePoolSubnetResourceId')]",
-                        "minCount": 1,
                         "enableAutoScaling": true,
                         "type": "VirtualMachineScaleSets",
                         "scaleSetPriority": "Regular",
                         "scaleSetEvictionPolicy": "Delete",
                         "orchestratorVersion": "[variables('kubernetesVersion')]",
                         "enableNodePublicIP": false,
-                        "maxPods": 30
+                        "maxPods": 30,
+                        "availabilityZones": [
+                            "1",
+                            "2",
+                            "3"
+                        ]
                     }
                 ],
                 "servicePrincipalProfile": {

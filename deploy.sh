@@ -1,5 +1,5 @@
 # This script might take about 20 minutes
-# Please chek the variables
+# Please check the variables
 RGLOCATION=eastus
 VNET_NAME=vnet-hub
 RGNAME=rg-enterprise-networking-hubs
@@ -51,12 +51,6 @@ az ad app permission grant --id $k8sRbacAadProfileClientAppId --api $k8sRbacAadP
 
 k8sRbacAadProfileTennetId=$(az account show --query tenantId -o tsv)
 
-# Service Principal Outputs
-echo "k8sRbacAadProfileServerAppId=${k8sRbacAadProfileServerAppId}"
-echo "k8sRbacAadProfileClientAppId=${k8sRbacAadProfileClientAppId}"
-echo "k8sRbacAadProfileServerAppSecret=${k8sRbacAadProfileServerAppSecret}"
-echo "k8sRbacAadProfileTennetId=${k8sRbacAadProfileTennetId}"
-
 #back to main subscription
 az login 
 az account set -s $main_subscription
@@ -96,8 +90,13 @@ HUB_VNET_ID=$(az deployment group show -g $RGNAME -n hub-0002 --query properties
 #AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 8 minutes
 az group create --name "${RGNAMECLUSTER}" --location "${RGLOCATION}"
 
+# Cluster Parameters
 echo "TARGET_VNET_RESOURCE_ID=${TARGET_VNET_RESOURCE_ID}"
 echo "RGLOCATION=${RGLOCATION}"
 echo "RGNAMECLUSTER=${RGNAMECLUSTER}"
+echo "k8sRbacAadProfileServerAppId=${k8sRbacAadProfileServerAppId}"
+echo "k8sRbacAadProfileClientAppId=${k8sRbacAadProfileClientAppId}"
+echo "k8sRbacAadProfileServerAppSecret=${k8sRbacAadProfileServerAppSecret}"
+echo "k8sRbacAadProfileTennetId=${k8sRbacAadProfileTennetId}"
 
 az deployment group  create --resource-group "${RGNAMECLUSTER}" --template-file "004-cluster-stamp.json" --name "cluster-0001" --parameters location=$RGLOCATION targetVnetResourceId=$TARGET_VNET_RESOURCE_ID k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId k8sRbacAadProfileTennetId=$k8sRbacAadProfileTennetId
