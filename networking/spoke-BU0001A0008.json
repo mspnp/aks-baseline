@@ -1,8 +1,8 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "0.0.0.1",
+    "contentVersion": "1.0.0.0",
     "parameters": {
-        "location": {
+        "hubVnetLocation": {
             "type": "string",
             "allowedValues": [
                 "centralus",
@@ -17,30 +17,16 @@
                 "southeastasia"
             ],
             "metadata": {
-                "description": "The location in which the resources should be deployed."
+                "description": "This is the location of the provided hubVnetResourceId.  It must match."
             }
         },
-        "orgAppId": {
-            "type": "string",
-            "defaultValue": "BU0001A0008"
-        },
-        "networkSuffix": {
-            "type": "string",
-            "defaultValue": "-00"
-        },
-        "hubLaResourceId": {
-            "type": "string"
-        },
-        "hubVnetId": {
-            "type": "string"
-        },
-        "firewallName": {
+        "hubVnetResourceId": {
             "type": "string"
         }
     },
     "variables": {
-        "clusterRegion": "[parameters('location')]",
-        "clusterVNetName": "[concat('vnet-hub-spoke-', parameters('orgAppId'), parameters('networkSuffix'))]",
+        "orgAppId": "BU0001A0008",
+        "clusterVNetName": "[concat('vnet-hub-spoke-', variables('orgAppId'), '-00')]",
         "vnetAddressSpace": "10.240.0.0/19",
         "vnetNodepoolSubnetName": "snet-system-clusternodes",
         "vnetNodepoolSubnetAddressSpace": "10.240.16.0/24",
@@ -51,15 +37,15 @@
         "vnetGatewaySubnetName": "snet-applicationgateways",
         "vnetGatewaySubnetAddressSpace": "10.240.18.0/28",
         "routeTableName": "[concat('route-', variables('clusterVNetName'), '-clusternodes-to-hub')]",
-        "hubRgName": "[split(parameters('hubVnetId'),'/')[4]]",
-        "hubNetworkName": "[split(parameters('hubVnetId'),'/')[8]]",
-        "appGatewayPipName": "[concat('pip-', parameters('orgAppId'), parameters('networkSuffix'))]"
+        "hubRgName": "[split(parameters('hubVnetResourceId'),'/')[4]]",
+        "hubNetworkName": "[split(parameters('hubVnetResourceId'),'/')[8]]",
+        "appGatewayPipName": "[concat('pip-', variables('orgAppId'), '-00')]"
     },
     "resources": [
         {
             "type": "Microsoft.Network/routeTables",
             "apiVersion": "2019-11-01",
-            "location": "[variables('clusterRegion')]",
+            "location": "[parameters('hubVnetLocation')]",
             "name": "[variables('routeTableName')]",
             "properties": {
                 "routes": [
@@ -68,7 +54,7 @@
                         "properties": {
                             "nextHopType": "VirtualAppliance",
                             "addressPrefix": "0.0.0.0/0",
-                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', parameters('firewallName')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
+                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', concat('fw-', parameters('hubVnetLocation'), '-hub')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
                         }
                     }
                 ]
@@ -78,7 +64,7 @@
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2019-11-01",
             "name": "[variables('clusterVNetName')]",
-            "location": "[variables('clusterRegion')]",
+            "location": "[parameters('hubVnetLocation')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
             ],
@@ -143,7 +129,7 @@
                     ],
                     "properties": {
                         "remoteVirtualNetwork": {
-                            "id": "[parameters('hubVnetId')]"
+                            "id": "[parameters('hubVnetResourceId')]"
                         },
                         "allowForwardedTraffic": true,
                         "allowVirtualNetworkAccess": true,
@@ -161,7 +147,7 @@
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
             ],
             "properties": {
-                "workspaceId": "[parameters('hubLaResourceId')]",
+                "workspaceId": "[resourceId(variables('hubRgName'), 'Microsoft.OperationalInsights/workspaces', concat('la-networking-hub-', reference(parameters('hubVnetResourceId'), '2019-11-01', 'Full').location))]",
                 "metrics": [
                     {
                         "category": "AllMetrics",
@@ -188,7 +174,7 @@
                             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
                             "apiVersion": "2019-11-01",
                             "name": "[concat(variables('hubNetworkName'), '/hub-to-', variables('clusterVNetName'))]",
-                            "location": "[variables('clusterRegion')]",
+                            "location": "[reference(parameters('hubVnetResourceId'), '2019-11-01', 'Full').location]",
                             "properties": {
                                 "remoteVirtualNetwork": {
                                     "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
@@ -207,7 +193,7 @@
             "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/publicIpAddresses",
             "name": "[variables('appGatewayPipName')]",
-            "location": "[variables('clusterRegion')]",
+            "location": "[parameters('hubVnetLocation')]",
             "sku": {
                 "name": "Standard"
             },
@@ -219,17 +205,17 @@
         }
     ],
     "outputs": {
-        "targetVnetResourceId": {
+        "clusterVnetResourceId": {
             "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
             "type": "string"
         },
-        "vnetNodepoolSubnetName": {
-            "value": "[variables('vnetNodepoolSubnetName')]",
-            "type": "string"
+        "userNodepoolSubnetResourceIds": {
+            "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), variables('vnetUserNodepoolSubnetName')))]",
+            "type": "array"
         },
-        "vnetNodepoolSubnetNameResourceId": {
-            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), variables('vnetNodepoolSubnetName'))]",
-            "type": "string"
+        "systemNodepoolSubnetResourceIds": {
+            "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), variables('vnetNodepoolSubnetName')))]",
+            "type": "array"
         }
     }
 }

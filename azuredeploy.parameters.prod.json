@@ -1,0 +1,24 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "location": {
+        "value": "eastus2"
+      },
+      "targetVnetResourceId": {
+        "value": "/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00"
+      },
+      "k8sRbacAadProfileServerAppId": {
+        "value": "[guid]"
+      },
+      "k8sRbacAadProfileServerAppSecret": {
+        "value": "[secret]"
+      },
+      "k8sRbacAadProfileClientAppId": {
+        "value": "[guid]"
+      },
+      "k8sRbacAadProfileTennetId": {
+        "value": "[guid]"
+      }
+    }
+   }
