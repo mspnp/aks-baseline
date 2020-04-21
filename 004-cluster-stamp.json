@@ -67,7 +67,7 @@
         "vNetResourceGroup": "[split(parameters('targetVnetResourceId'),'/')[4]]",
         "vNetName": "[split(parameters('targetVnetResourceId'),'/')[8]]",
 
-        "vnetNodePoolSubnetName": "snet-clusternodes",
+        "vnetNodePoolSubnetName": "snet-system-clusternodes",
 
         "vnetNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/', variables('vnetNodePoolSubnetName'))]",
 
@@ -240,9 +240,9 @@
                     "outboundType": "userDefinedRouting",
                     "loadBalancerSku": "standard",
                     "loadBalancerProfile": "[json('null')]",
-                    "serviceCidr": "10.0.0.0/16",
-                    "dnsServiceIP": "10.0.0.10",
-                    "dockerBridgeCidr": "10.2.0.1/16"
+                    "serviceCidr": "172.16.0.0/16",
+                    "dnsServiceIP": "172.16.0.10",
+                    "dockerBridgeCidr": "172.18.0.1/16"
                 },
                 "aadProfile": {
                     "serverAppID": "[parameters('k8sRbacAadProfileServerAppId')]",

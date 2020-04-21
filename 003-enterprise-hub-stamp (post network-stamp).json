@@ -26,12 +26,20 @@
                 "description": "Virtual netwotk name."
             }
         },
-        "hubVnetAddressRange": {
-            "defaultValue": "192.168.0.0/20",
+        "hubVnetAddressSpace": {
+            "defaultValue": "10.200.0.0/24",
             "type": "string"
         },
-        "azureFirewallSubnetRange": {
-            "defaultValue": "192.168.1.0/26",
+        "azureFirewallSubnetAddressSpace": {
+            "defaultValue": "10.200.0.0/26",
+            "type": "string"
+        },
+        "azureGatewaySubnetAddressSpace": {
+            "defaultValue": "10.200.0.64/27",
+            "type": "string"
+        },
+        "azureBastionSubnetAddressSpace": {
+            "defaultValue": "10.200.0.96/27",
             "type": "string"
         },
         "defaultFwPipName": {
@@ -66,22 +74,35 @@
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[parameters('hubVnetAddressRange')]"
+                        "[parameters('hubVnetAddressSpace')]"
                     ]
                 },
                 "subnets": [
                     {
                         "name": "AzureFirewallSubnet",
                         "properties": {
-                            "addressPrefix": "[parameters('azureFirewallSubnetRange')]",
+                            "addressPrefix": "[parameters('azureFirewallSubnetAddressSpace')]",
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.ContainerRegistry"
                                 }
                             ]
                         }
-                    }
-                ],
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[parameters('azureGatewaySubnetAddressSpace')]",
+                            "serviceEndpoints": [ ]
+                        }
+                    },
+                    {
+                        "name": "AzureBastionSubnet",
+                        "properties": {
+                            "addressPrefix": "[parameters('azureBastionSubnetAddressSpace')]",
+                            "serviceEndpoints": [ ]
+                        }
+                    }       ],
                 "enableDdosProtection": false,
                 "enableVmProtection": false
             }

@@ -41,13 +41,15 @@
     "variables": {
         "clusterRegion": "[parameters('location')]",
         "clusterVNetName": "[concat('vnet-hub-spoke-', parameters('orgAppId'), parameters('networkSuffix'))]",
-        "vnetAddressSpace": "172.16.0.0/18",
-        "vnetNodepoolSubnetName": "snet-clusternodes",
-        "vnetNodepoolSubnetAddressSpace": "172.16.0.0/20",
+        "vnetAddressSpace": "10.240.0.0/19",
+        "vnetNodepoolSubnetName": "snet-system-clusternodes",
+        "vnetNodepoolSubnetAddressSpace": "10.240.16.0/24",
+        "vnetUserNodepoolSubnetName": "snet-user-clusternodes",
+        "vnetUserNodepoolSubnetAddressSpace": "10.240.0.0/20",
         "vnetIngressSubnetName": "snet-clusteringressservices",
-        "vnetIngressSubnetAddressSpace": "172.16.16.0/20",
+        "vnetIngressSubnetAddressSpace": "10.240.17.0/24",
         "vnetGatewaySubnetName": "snet-applicationgateways",
-        "vnetGatewaySubnetAddressSpace": "172.16.32.0/20",
+        "vnetGatewaySubnetAddressSpace": "10.240.18.0/28",
         "routeTableName": "[concat('route-', variables('clusterVNetName'), '-clusternodes-to-hub')]",
         "hubRgName": "[split(parameters('hubVnetId'),'/')[4]]",
         "hubNetworkName": "[split(parameters('hubVnetId'),'/')[8]]",
@@ -91,6 +93,20 @@
                         "name": "[variables('vnetNodepoolSubnetName')]",
                         "properties": {
                             "addressPrefix": "[variables('vnetNodepoolSubnetAddressSpace')]",
+                            "serviceEndpoints": [
+                                {
+                                    "service": "Microsoft.ContainerRegistry"
+                                }
+                            ],
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('vnetUserNodepoolSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnetUserNodepoolSubnetAddressSpace')]",
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.ContainerRegistry"
