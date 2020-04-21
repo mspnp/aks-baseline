@@ -23,36 +23,36 @@
         },
         "hubVnetAddressSpace": {
             "defaultValue": "10.200.0.0/24",
+            "type": "string",
             "maxLength": 18,
             "minLength": 10,
-            "type": "string",
             "metadata": {
                 "description": "A /24 to contain the firewall, management, and gateway subnet"
             }
         },
         "azureFirewallSubnetAddressSpace": {
             "defaultValue": "10.200.0.0/26",
+            "type": "string",
             "maxLength": 18,
             "minLength": 10,
-            "type": "string",
             "metadata": {
                 "description": "A /26 under the VNet Address Space for Azure Firewall"
             }
         },
         "azureGatewaySubnetAddressSpace": {
             "defaultValue": "10.200.0.64/27",
+            "type": "string",
             "maxLength": 18,
             "minLength": 10,
-            "type": "string",
             "metadata": {
                 "description": "A /27 under the VNet Address Space for our On-Prem Gateway"
             }
         },
         "azureBastionSubnetAddressSpace": {
             "defaultValue": "10.200.0.96/27",
+            "type": "string",
             "maxLength": 18,
             "minLength": 10,
-            "type": "string",
             "metadata": {
                 "description": "A /27 under the VNet Address Space for Azure Bastion"
             }
