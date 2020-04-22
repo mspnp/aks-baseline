@@ -14,6 +14,7 @@ clientAppName=${aksName}-kubectl-${runDate}
 tenant_guid=**Your tenant id for Identities**
 main_subscription=**Your Main subscription**
 
+
 # We are going to use a new tenant to provide identity
 az login  --allow-no-subscriptions -t $tenant_guid
 #--Until change the subscription It will take about 1 minutes creating service principals
@@ -99,4 +100,4 @@ echo "k8sRbacAadProfileClientAppId=${k8sRbacAadProfileClientAppId}"
 echo "k8sRbacAadProfileServerAppSecret=${k8sRbacAadProfileServerAppSecret}"
 echo "k8sRbacAadProfileTennetId=${k8sRbacAadProfileTennetId}"
 
-az deployment group  create --resource-group "${RGNAMECLUSTER}" --template-file "004-cluster-stamp.json" --name "cluster-0001" --parameters location=$RGLOCATION targetVnetResourceId=$TARGET_VNET_RESOURCE_ID k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId k8sRbacAadProfileTennetId=$k8sRbacAadProfileTennetId
+az deployment group  create --resource-group "${RGNAMECLUSTER}" --template-file "004-cluster-stamp.json" --name "cluster-0001" --parameters location=$RGLOCATION targetVnetResourceId=$TARGET_VNET_RESOURCE_ID k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId k8sRbacAadProfileTennetId=$k8sRbacAadProfileTennetId allowedSubnetNames="snet-system-clusternodes,snet-user-clusternodes,snet-clusteringressservices,snet-applicationgateways"
