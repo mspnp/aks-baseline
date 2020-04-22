@@ -3,6 +3,7 @@
     "contentVersion": "0.0.0.3",
     "parameters": {
         "location": {
+            "defaultValue": "eastus2",
             "type": "string",
             "allowedValues": [
                 "centralus",
@@ -17,7 +18,7 @@
                 "southeastasia"
             ],
             "metadata": {
-                "description": "AKS Service Region.  This is where our node pools will live as well."
+                "description": "AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region.  The network team maintains this approved regional list which is a subset of zones with Availability Zone support."
             }
         },
         "targetVnetResourceId": {
@@ -46,6 +47,10 @@
             "metadata": {
                 "description": "This is tennant where the ServerAppId, ServerAppSecret, ClientAppId all reside."
             }
+        },
+        "kubernetesVersion": {
+            "defaultValue": "1.17.3",
+            "type": "string"
         }
     },
     "variables": {
@@ -58,7 +63,6 @@
         "clusterName": "[concat('aks-', variables('subRgUniqueString'))]",
         "nodePoolRgName": "[concat('rg-', variables('clusterName'), '-nodepools')]",
 
-        "kubernetesVersion": "1.17.3",
         "logAnalyticsWorkspaceName": "[concat('la-', variables('clusterName'))]",
         "containerInsightsSolutionName": "[concat('ContainerInsights(', variables('logAnalyticsWorkspaceName'),')')]",
 
@@ -180,7 +184,7 @@
                 "[resourceId('Microsoft.OperationsManagement/solutions', variables('containerInsightsSolutionName'))]"
             ],
             "properties": {
-                "kubernetesVersion": "[variables('kubernetesVersion')]",
+                "kubernetesVersion": "[parameters('kubernetesVersion')]",
                 "dnsPrefix": "[variables('dnsPrefix')]",
                 "agentPoolProfiles": [
                     {
@@ -196,7 +200,7 @@
                         "type": "VirtualMachineScaleSets",
                         "scaleSetPriority": "Regular",
                         "scaleSetEvictionPolicy": "Delete",
-                        "orchestratorVersion": "[variables('kubernetesVersion')]",
+                        "orchestratorVersion": "[parameters('kubernetesVersion')]",
                         "enableNodePublicIP": false,
                         "maxPods": 30,
                         "availabilityZones": [

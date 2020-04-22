@@ -1,8 +1,9 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "0.0.0.4",
+    "contentVersion": "1.0.0.0",
     "parameters": {
         "location": {
+            "defaultValue": "eastus2",
             "type": "string",
             "allowedValues": [
                 "centralus",
@@ -17,59 +18,64 @@
                 "southeastasia"
             ],
             "metadata": {
-                "description": "The location in which the resources should be deployed."
-            }
-        },
-        "hubVnetName": {
-            "type": "string",
-            "metadata": {
-                "description": "Virtual netwotk name."
+                "description": "The hub's regional affinity. All resources tied to this hub will also be homed in this region.  The network team maintains this approved regional list which is a subset of zones with Availability Zone support."
             }
         },
         "hubVnetAddressSpace": {
             "defaultValue": "10.200.0.0/24",
-            "type": "string"
+            "type": "string",
+            "maxLength": 18,
+            "minLength": 10,
+            "metadata": {
+                "description": "A /24 to contain the firewall, management, and gateway subnet"
+            }
         },
         "azureFirewallSubnetAddressSpace": {
             "defaultValue": "10.200.0.0/26",
-            "type": "string"
+            "type": "string",
+            "maxLength": 18,
+            "minLength": 10,
+            "metadata": {
+                "description": "A /26 under the VNet Address Space for Azure Firewall"
+            }
         },
         "azureGatewaySubnetAddressSpace": {
             "defaultValue": "10.200.0.64/27",
-            "type": "string"
+            "type": "string",
+            "maxLength": 18,
+            "minLength": 10,
+            "metadata": {
+                "description": "A /27 under the VNet Address Space for our On-Prem Gateway"
+            }
         },
         "azureBastionSubnetAddressSpace": {
             "defaultValue": "10.200.0.96/27",
-            "type": "string"
+            "type": "string",
+            "maxLength": 18,
+            "minLength": 10,
+            "metadata": {
+                "description": "A /27 under the VNet Address Space for Azure Bastion"
+            }
         },
-        "defaultFwPipName": {
-            "defaultValue": "pip-fw-default",
-            "type": "string"
-        },
-        "hubFwName": {
-            "defaultValue": "fw-hub",
-            "type": "string"
-        },
-        "hubLaBaseName": {
-            "defaultValue": "la-networking-hub",
-            "type": "string"
-        },
-        "aksIpGroupName": {
-            "defaultValue": "ipg-AksNodepools",
-            "type": "string"
-        },
-        "vnetNodepoolSubnetNameResourceId": {
-            "type": "string"
+        "nodepoolSubnetResourceIds": {
+            "type": "array",
+            "metadata": {
+                "description": "Subnet resource Ids for all AKS clusters nodepools in all attached spokes to allow necessary outbound traffic through the firewall"
+            }
         }
     },
     "variables": {
-        "hubLaName": "[concat(parameters('hubLaBaseName'),'-', uniqueString(subscription().id, resourceGroup().id))]"
+        "aksIpGroupName": "[concat('ipg-', parameters('location'), '-AksNodepools')]",
+        "defaultFwPipName": "[concat('pip-fw-', parameters('location'), '-default')]",
+        "hubFwName": "[concat('fw-', parameters('location'), '-hub')]",
+        "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
+        "hubLaName": "[concat('la-networking-hub-', parameters('location'))]"
     },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2019-11-01",
-            "name": "[parameters('hubVnetName')]",
+            "name": "[variables('hubVnetName')]",
             "location": "[parameters('location')]",
             "properties": {
                 "addressSpace": {
@@ -102,7 +108,8 @@
                             "addressPrefix": "[parameters('azureBastionSubnetAddressSpace')]",
                             "serviceEndpoints": [ ]
                         }
-                    }       ],
+                    }
+                ],
                 "enableDdosProtection": false,
                 "enableVmProtection": false
             }
@@ -110,7 +117,7 @@
         {
             "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/publicIpAddresses",
-            "name": "[parameters('defaultFwPipName')]",
+            "name": "[variables('defaultFwPipName')]",
             "location": "[parameters('location')]",
             "sku": {
                 "name": "Standard"
@@ -125,17 +132,21 @@
             "type": "Microsoft.Network/ipGroups",
             "apiVersion": "2019-11-01",
             "location": "[parameters('location')]",
-            "name": "[parameters('aksIpGroupName')]",
+            "name": "[variables('aksIpGroupName')]",
             "properties": {
-                "ipAddresses": [
-                    "[reference(parameters('vnetNodepoolSubnetNameResourceId'), '2019-11-01').addressPrefix]"
+                "copy": [
+                    {
+                        "name": "ipAddresses",
+                        "count": "[length(parameters('nodepoolSubnetResourceIds'))]",
+                        "input": "[reference(parameters('nodepoolSubnetResourceIds')[copyIndex('ipAddresses')], '2019-11-01').addressPrefix]"
+                    }
                 ]
             }
         },
         {
             "type": "Microsoft.Network/azureFirewalls",
             "apiVersion": "2019-11-01",
-            "name": "[parameters('hubFwName')]",
+            "name": "[variables('hubFwName')]",
             "location": "[parameters('location')]",
             "zones": [
                 "1",
@@ -143,9 +154,9 @@
                 "3"
             ],
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIpAddresses', parameters('defaultFwPipName'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVnetName'))]",
-                "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
+                "[resourceId('Microsoft.Network/publicIpAddresses', variables('defaultFwPipName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]",
+                "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
             ],
             "properties": {
                 "sku": {
@@ -155,13 +166,13 @@
                 "threatIntelMode": "Alert",
                 "ipConfigurations": [
                     {
-                        "name": "[parameters('defaultFwPipName')]",
+                        "name": "[variables('defaultFwPipName')]",
                         "properties": {
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubVnetName'), 'AzureFirewallSubnet')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hubVnetName'), 'AzureFirewallSubnet')]"
                             },
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', parameters('defaultFwPipName'))]"
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('defaultFwPipName'))]"
                             }
                         }
                     }
@@ -239,7 +250,7 @@
                                     "name": "tunnel-front-pod-tcp",
                                     "description": "Tunnel front pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         "TCP"
@@ -256,7 +267,7 @@
                                     "name": "tunnel-front-pod-udp",
                                     "description": "Tunnel front pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         "UDP"
@@ -285,7 +296,7 @@
                                     "name": "nodes-to-api-server",
                                     "description": "This address is required for Node <-> API server communication.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -302,7 +313,7 @@
                                     "name": "microsoft-container-registry",
                                     "description": "All URLs related to MCR needed by AKS",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -320,7 +331,7 @@
                                     "name": "management-plane",
                                     "description": "This address is required for Kubernetes GET/PUT operations.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -336,7 +347,7 @@
                                     "name": "aad-auth",
                                     "description": "This address is required for Azure Active Directory authentication.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -352,7 +363,7 @@
                                     "name": "apt-get",
                                     "description": "This address is the Microsoft packages repository used for cached apt-get operations. Example packages include Moby, PowerShell, and Azure CLI.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -368,7 +379,7 @@
                                     "name": "cluster-binaries",
                                     "description": "This address is for the repository required to install required binaries like kubenet and Azure CNI.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -384,7 +395,7 @@
                                     "name": "ubuntu-security-patches",
                                     "description": "This address lets the Linux cluster nodes download the required security patches and updates.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -402,7 +413,7 @@
                                     "name": "azure-monitor",
                                     "description": "All required for Azure Monitor for containers per https://docs.microsoft.com/en-us/azure/aks/limit-egress-traffic#required-addresses-and-ports-with-azure-monitor-for-containers-enabled",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -422,7 +433,7 @@
                                     "name": "azure-policy",
                                     "description": "All required for Azure Policy per https://docs.microsoft.com/en-us/azure/aks/limit-egress-traffic#required-addresses-and-ports-for-aks-clusters-with-azure-policy-in-public-preview-enabled",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', parameters('aksIpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         {
@@ -459,11 +470,11 @@
         {
             "type": "Microsoft.Network/azureFirewalls/providers/diagnosticSettings",
             "apiVersion": "2017-05-01-preview",
-            "name": "[concat(parameters('hubFwName'), '/Microsoft.Insights/default')]",
+            "name": "[concat(variables('hubFwName'), '/Microsoft.Insights/default')]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
-                "[resourceId('Microsoft.Network/azureFirewalls', parameters('hubFwName'))]"
+                "[resourceId('Microsoft.Network/azureFirewalls', variables('hubFwName'))]"
             ],
             "properties": {
                 "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
@@ -488,11 +499,11 @@
         {
             "type": "Microsoft.Network/virtualNetworks/providers/diagnosticSettings",
             "apiVersion": "2017-05-01-preview",
-            "name": "[concat(parameters('hubVnetName'), '/Microsoft.Insights/default')]",
+            "name": "[concat(variables('hubVnetName'), '/Microsoft.Insights/default')]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVnetName'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]"
             ],
             "properties": {
                 "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
@@ -506,16 +517,24 @@
         }
     ],
     "outputs": {
+        "firewallPipName": {
+            "value": "[variables('defaultFwPipName')]",
+            "type": "string"
+        },
         "hubLaResourceId": {
             "value": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
             "type": "string"
         },
+        "hubVnetName": {
+            "value": "[variables('hubVnetName')]",
+            "type": "string"
+        },
         "hubVnetId": {
-            "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVnetName'))]",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]",
             "type": "string"
         },
         "firewallName": {
-            "value": "[parameters('hubFwName')]",
+            "value": "[variables('hubFwName')]",
             "type": "string"
         }
     }

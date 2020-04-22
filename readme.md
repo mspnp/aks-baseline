@@ -2,7 +2,7 @@
 
 This is a WIP.
 
-Your azure user need to be able to assing permission on the subcription
+Your azure user need to be able to assign RBAC permissions at the subscription resource groups level
 
 ## Steps
 

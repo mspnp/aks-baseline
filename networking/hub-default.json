@@ -1,6 +1,6 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "0.0.0.3",
+    "contentVersion": "1.0.0.0",
     "parameters": {
         "location": {
             "type": "string",
@@ -17,52 +17,57 @@
                 "southeastasia"
             ],
             "metadata": {
-                "description": "The location in which the resources should be deployed."
-            }
-        },
-        "hubVnetName": {
-            "type": "string",
-            "metadata": {
-                "description": "Virtual netwotk name."
+                "description": "The hub's regional affinity. All resources tied to this hub will also be homed in this region.  The network team maintains this approved regional list which is a subset of zones with Availability Zone support."
             }
         },
         "hubVnetAddressSpace": {
             "defaultValue": "10.200.0.0/24",
-            "type": "string"
+            "type": "string",
+            "maxLength": 18,
+            "minLength": 10,
+            "metadata": {
+                "description": "A /24 to contain the firewall, management, and gateway subnet"
+            }
         },
         "azureFirewallSubnetAddressSpace": {
             "defaultValue": "10.200.0.0/26",
-            "type": "string"
+            "type": "string",
+            "maxLength": 18,
+            "minLength": 10,
+            "metadata": {
+                "description": "A /26 under the VNet Address Space for Azure Firewall"
+            }
         },
         "azureGatewaySubnetAddressSpace": {
             "defaultValue": "10.200.0.64/27",
-            "type": "string"
+            "type": "string",
+            "maxLength": 18,
+            "minLength": 10,
+            "metadata": {
+                "description": "A /27 under the VNet Address Space for our On-Prem Gateway"
+            }
         },
         "azureBastionSubnetAddressSpace": {
             "defaultValue": "10.200.0.96/27",
-            "type": "string"
-        },
-        "defaultFwPipName": {
-            "defaultValue": "pip-fw-default",
-            "type": "string"
-        },
-        "hubFwName": {
-            "defaultValue": "fw-hub",
-            "type": "string"
-        },
-        "hubLaBaseName": {
-            "defaultValue": "la-networking-hub",
-            "type": "string"
+            "type": "string",
+            "maxLength": 18,
+            "minLength": 10,
+            "metadata": {
+                "description": "A /27 under the VNet Address Space for Azure Bastion"
+            }
         }
     },
     "variables": {
-        "hubLaName": "[concat(parameters('hubLaBaseName'),'-', uniqueString(subscription().id, resourceGroup().id))]"
+        "defaultFwPipName": "[concat('pip-fw-', parameters('location'), '-default')]",
+        "hubFwName": "[concat('fw-', parameters('location'), '-hub')]",
+        "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
+        "hubLaName": "[concat('la-networking-hub-', parameters('location'))]"
     },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2019-11-01",
-            "name": "[parameters('hubVnetName')]",
+            "name": "[variables('hubVnetName')]",
             "location": "[parameters('location')]",
             "properties": {
                 "addressSpace": {
@@ -104,7 +109,7 @@
         {
             "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/publicIpAddresses",
-            "name": "[parameters('defaultFwPipName')]",
+            "name": "[variables('defaultFwPipName')]",
             "location": "[parameters('location')]",
             "sku": {
                 "name": "Standard"
@@ -118,7 +123,7 @@
         {
             "type": "Microsoft.Network/azureFirewalls",
             "apiVersion": "2019-11-01",
-            "name": "[parameters('hubFwName')]",
+            "name": "[variables('hubFwName')]",
             "location": "[parameters('location')]",
             "zones": [
                 "1",
@@ -126,8 +131,8 @@
                 "3"
             ],
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIpAddresses', parameters('defaultFwPipName'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVnetName'))]"
+                "[resourceId('Microsoft.Network/publicIpAddresses', variables('defaultFwPipName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]"
             ],
             "properties": {
                 "sku": {
@@ -137,13 +142,13 @@
                 "threatIntelMode": "Alert",
                 "ipConfigurations": [
                     {
-                        "name": "[parameters('defaultFwPipName')]",
+                        "name": "[variables('defaultFwPipName')]",
                         "properties": {
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubVnetName'), 'AzureFirewallSubnet')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hubVnetName'), 'AzureFirewallSubnet')]"
                             },
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', parameters('defaultFwPipName'))]"
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('defaultFwPipName'))]"
                             }
                         }
                     }
@@ -230,11 +235,11 @@
         {
             "type": "Microsoft.Network/azureFirewalls/providers/diagnosticSettings",
             "apiVersion": "2017-05-01-preview",
-            "name": "[concat(parameters('hubFwName'), '/Microsoft.Insights/default')]",
+            "name": "[concat(variables('hubFwName'), '/Microsoft.Insights/default')]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
-                "[resourceId('Microsoft.Network/azureFirewalls', parameters('hubFwName'))]"
+                "[resourceId('Microsoft.Network/azureFirewalls', variables('hubFwName'))]"
             ],
             "properties": {
                 "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
@@ -259,11 +264,11 @@
         {
             "type": "Microsoft.Network/virtualNetworks/providers/diagnosticSettings",
             "apiVersion": "2017-05-01-preview",
-            "name": "[concat(parameters('hubVnetName'), '/Microsoft.Insights/default')]",
+            "name": "[concat(variables('hubVnetName'), '/Microsoft.Insights/default')]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVnetName'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]"
             ],
             "properties": {
                 "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
@@ -277,16 +282,24 @@
         }
     ],
     "outputs": {
+        "firewallPipName": {
+            "value": "[variables('defaultFwPipName')]",
+            "type": "string"
+        },
         "hubLaResourceId": {
             "value": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
             "type": "string"
         },
+        "hubVnetName": {
+            "value": "[variables('hubVnetName')]",
+            "type": "string"
+        },
         "hubVnetId": {
-            "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVnetName'))]",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]",
             "type": "string"
         },
         "firewallName": {
-            "value": "[parameters('hubFwName')]",
+            "value": "[variables('hubFwName')]",
             "type": "string"
         }
     }
