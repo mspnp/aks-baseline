@@ -2,7 +2,7 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "hubVnetLocation": {
+        "location": {
             "type": "string",
             "allowedValues": [
                 "centralus",
@@ -17,7 +17,7 @@
                 "southeastasia"
             ],
             "metadata": {
-                "description": "This is the location of the provided hubVnetResourceId.  It must match."
+                "description": "The spokes's regional affinity. All resources tied to this spoke will also be homed in this region.  The network team maintains this approved regional list which is a subset of zones with Availability Zone support."
             }
         },
         "hubVnetResourceId": {
@@ -45,7 +45,7 @@
         {
             "type": "Microsoft.Network/routeTables",
             "apiVersion": "2019-11-01",
-            "location": "[parameters('hubVnetLocation')]",
+            "location": "[parameters('location')]",
             "name": "[variables('routeTableName')]",
             "properties": {
                 "routes": [
@@ -54,7 +54,7 @@
                         "properties": {
                             "nextHopType": "VirtualAppliance",
                             "addressPrefix": "0.0.0.0/0",
-                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', concat('fw-', parameters('hubVnetLocation'), '-hub')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
+                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', concat('fw-', parameters('location'), '-hub')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
                         }
                     }
                 ]
@@ -64,7 +64,7 @@
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2019-11-01",
             "name": "[variables('clusterVNetName')]",
-            "location": "[parameters('hubVnetLocation')]",
+            "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
             ],
@@ -193,7 +193,7 @@
             "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/publicIpAddresses",
             "name": "[variables('appGatewayPipName')]",
-            "location": "[parameters('hubVnetLocation')]",
+            "location": "[parameters('location')]",
             "sku": {
                 "name": "Standard"
             },

@@ -18,7 +18,7 @@
                 "southeastasia"
             ],
             "metadata": {
-                "description": "The hub's regional affinity. All resources tied to this hub will also be homed in this region.  We only allow regions with Availability Zones."
+                "description": "The hub's regional affinity. All resources tied to this hub will also be homed in this region.  The network team maintains this approved regional list which is a subset of zones with Availability Zone support."
             }
         },
         "hubVnetAddressSpace": {
@@ -60,7 +60,7 @@
         "nodepoolSubnetResourceIds": {
             "type": "array",
             "metadata": {
-                "description": "All of the subnet resource Ids for all AKS clusters in the spoke, both system and user nodepools"
+                "description": "Subnet resource Ids for all AKS clusters nodepools in all attached spokes to allow necessary outbound traffic through the firewall"
             }
         }
     },

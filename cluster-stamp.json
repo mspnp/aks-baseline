@@ -18,7 +18,7 @@
                 "southeastasia"
             ],
             "metadata": {
-                "description": "AKS Service Region.  This is where our node pools will live as well.  It should match the region of the provided targetVnetResourceId"
+                "description": "AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region.  The network team maintains this approved regional list which is a subset of zones with Availability Zone support."
             }
         },
         "targetVnetResourceId": {
