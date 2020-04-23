@@ -85,7 +85,7 @@
         "networkRoleAssignmentName": "[concat(variables('vNetName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('networkContributorRole')))]",
         "acrRoleAssignmentName": "[concat(variables('defaultAcrName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('acrPullRole')))]",
         "dnsPrefix": "[uniqueString(subscription().subscriptionId, resourceGroup().id, variables('clusterName'))]",
-        "keyVaultName": "[concat( 'keyvault-', uniqueString(resourceGroup().id),'1' ) ]",
+        "keyVaultName": "[concat( 'keyvault-', uniqueString(resourceGroup().id)) ]",
         "allowedSubnetNamesArray": "[split(parameters('allowedSubnetNames'), ',')]"
     },
     "resources": [

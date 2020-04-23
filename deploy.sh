@@ -1,11 +1,9 @@
 # This script might take about 20 minutes
 # Please check the variables
 RGLOCATION=eastus
-VNET_NAME=vnet-hub
 RGNAME=rg-enterprise-networking-hubs
 RGNAMESPOKES=rg-enterprise-networking-spokes
 RGNAMECLUSTER=rg-cluster01
-AKSNAME=akssp
 aksName=cluster01
 runDate=$(date +%S%N)
 spName=${aksName}-sp-${runDate}
@@ -52,6 +50,11 @@ az ad app permission grant --id $k8sRbacAadProfileClientAppId --api $k8sRbacAadP
 
 k8sRbacAadProfileTennetId=$(az account show --query tenantId -o tsv)
 
+echo "k8sRbacAadProfileServerAppId=${k8sRbacAadProfileServerAppId}"
+echo "k8sRbacAadProfileClientAppId=${k8sRbacAadProfileClientAppId}"
+echo "k8sRbacAadProfileServerAppSecret=${k8sRbacAadProfileServerAppSecret}"
+echo "k8sRbacAadProfileTennetId=${k8sRbacAadProfileTennetId}"
+
 #back to main subscription
 az login 
 az account set -s $main_subscription
@@ -59,45 +62,42 @@ az account set -s $main_subscription
 #Main Network.Build the hub. First arm template execution and catching outputs. This might take about 6 minutes
 az group create --name "${RGNAME}" --location "${RGLOCATION}"
 
-az deployment group create --resource-group "${RGNAME}" --template-file "001-enterprise-hub-stamp (pre network-stamp).json"  --name "hub-0001" --parameters location=$RGLOCATION hubVnetName=$VNET_NAME
-
-FIREWALL_NAME=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.firewallName.value -o tsv)
-
-HUB_LA_RESOURCE_ID=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.hubLaResourceId.value -o tsv)
+az deployment group create --resource-group "${RGNAME}" --template-file "./networking/hub-default.json"  --name "hub-0001" --parameters location=$RGLOCATION
 
 HUB_VNET_ID=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.hubVnetId.value -o tsv)
 
+HUB_FW_NAME=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.hubFwName.value -o tsv)
+
+HUB_LA_NAME=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.hubLaName.value -o tsv)
+ 
 #Cluster Subnet.Build the spoke. Second arm template execution and catching outputs. This might take about 2 minutes
 az group create --name "${RGNAMESPOKES}" --location "${RGLOCATION}"
 
-az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "002-cluster-network-stamp.json" --name "spoke-0001" --parameters location=$RGLOCATION hubLaResourceId=$HUB_LA_RESOURCE_ID hubVnetId=$HUB_VNET_ID firewallName=$FIREWALL_NAME
+az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "./networking/spoke-BU0001A0008.json" --name "spoke-0001" --parameters location=$RGLOCATION hubVnetResourceId=$HUB_VNET_ID hubFwName=$HUB_FW_NAME hubLaName=$HUB_LA_NAME
 
-TARGET_VNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.targetVnetResourceId.value -o tsv)
+CLUSTER_VNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.clusterVnetResourceId.value -o tsv)
 
-VNET_NODEPOOL_SUBNET_NAME=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.vnetNodepoolSubnetName.value -o tsv)
+USER_NODEPOOL_SUBNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.userNodepoolSubnetResourceIds.value -o tsv)
 
-VNET_NODEPOOL_SUBNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.vnetNodepoolSubnetNameResourceId.value -o tsv)
+SYSTEM_NODEPOOL_SUBNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.systemNodepoolSubnetResourceIds.value -o tsv)
+
+GATEWAY_SUBNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.vnetGatewaySubnetResourceIds.value -o tsv)
+
+GATEWAY_PUbLIC_IP_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.appGatewayPipResourceIds.value -o tsv)
 
 #Main Network Update. Third arm template execution and catching outputs. This might take about 3 minutes
 
-az deployment group create --resource-group "${RGNAME}" --template-file "003-enterprise-hub-stamp (post network-stamp).json" --name "hub-0002" --parameters location=$RGLOCATION hubVnetName=$VNET_NAME vnetNodepoolSubnetNameResourceId=$VNET_NODEPOOL_SUBNET_RESOURCE_ID
-
-FIREWALL_NAME=$(az deployment group show -g $RGNAME -n hub-0002 --query properties.outputs.firewallName.value -o tsv)
-
-HUB_LA_RESOURCE_ID=$(az deployment group show -g $RGNAME -n hub-0002 --query properties.outputs.hubLaResourceId.value -o tsv)
-
-HUB_VNET_ID=$(az deployment group show -g $RGNAME -n hub-0002 --query properties.outputs.hubVnetId.value -o tsv)
+az deployment group create --resource-group "${RGNAME}" --template-file  "./networking/hub-regionA.json" --name "hub-0002" --parameters location=$RGLOCATION nodepoolSubnetResourceIds="['$USER_NODEPOOL_SUBNET_RESOURCE_ID','$SYSTEM_NODEPOOL_SUBNET_RESOURCE_ID']"
 
 #AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 8 minutes
 az group create --name "${RGNAMECLUSTER}" --location "${RGLOCATION}"
 
 # Cluster Parameters
-echo "TARGET_VNET_RESOURCE_ID=${TARGET_VNET_RESOURCE_ID}"
+echo "CLUSTER_VNET_RESOURCE_ID=${CLUSTER_VNET_RESOURCE_ID}"
 echo "RGLOCATION=${RGLOCATION}"
-echo "RGNAMECLUSTER=${RGNAMECLUSTER}"
 echo "k8sRbacAadProfileServerAppId=${k8sRbacAadProfileServerAppId}"
 echo "k8sRbacAadProfileClientAppId=${k8sRbacAadProfileClientAppId}"
 echo "k8sRbacAadProfileServerAppSecret=${k8sRbacAadProfileServerAppSecret}"
 echo "k8sRbacAadProfileTennetId=${k8sRbacAadProfileTennetId}"
 
-az deployment group  create --resource-group "${RGNAMECLUSTER}" --template-file "004-cluster-stamp.json" --name "cluster-0001" --parameters location=$RGLOCATION targetVnetResourceId=$TARGET_VNET_RESOURCE_ID k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId k8sRbacAadProfileTennetId=$k8sRbacAadProfileTennetId allowedSubnetNames="snet-system-clusternodes,snet-user-clusternodes,snet-clusteringressservices,snet-applicationgateways"
+az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "cluster-stamp.json" --name "cluster-0001" --parameters location=$RGLOCATION targetVnetResourceId=$CLUSTER_VNET_RESOURCE_ID k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId k8sRbacAadProfileTennetId=$k8sRbacAadProfileTennetId allowedSubnetNames="snet-system-clusternodes,snet-user-clusternodes,snet-clusteringressservices,snet-applicationgateways"

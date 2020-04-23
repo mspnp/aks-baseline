@@ -65,11 +65,11 @@
         }
     },
     "variables": {
-        "aksIpGroupName": "[concat('ipg-', parameters('location'), '-AksNodepools')]",
-        "defaultFwPipName": "[concat('pip-fw-', parameters('location'), '-default')]",
-        "hubFwName": "[concat('fw-', parameters('location'), '-hub')]",
-        "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
-        "hubLaName": "[concat('la-networking-hub-', parameters('location'))]"
+        "aksIpGroupName": "[concat('ipg-', parameters('location'), '-AksNodepools', uniqueString(resourceGroup().id))]",
+        "defaultFwPipName": "[concat('pip-fw-', parameters('location'), '-default-', uniqueString(resourceGroup().id))]",
+        "hubFwName": "[concat('fw-', parameters('location'), '-hub-', uniqueString(resourceGroup().id))]",
+        "hubVNetName": "[concat('vnet-', parameters('location'), '-hub-', uniqueString(resourceGroup().id))]",
+        "hubLaName": "[concat('la-networking-hub-', parameters('location'),'-', uniqueString(resourceGroup().id))]"
     },
     "resources": [
         {
@@ -99,14 +99,16 @@
                         "name": "GatewaySubnet",
                         "properties": {
                             "addressPrefix": "[parameters('azureGatewaySubnetAddressSpace')]",
-                            "serviceEndpoints": [ ]
+                            "serviceEndpoints": [
+                            ]
                         }
                     },
                     {
                         "name": "AzureBastionSubnet",
                         "properties": {
                             "addressPrefix": "[parameters('azureBastionSubnetAddressSpace')]",
-                            "serviceEndpoints": [ ]
+                            "serviceEndpoints": [
+                            ]
                         }
                     }
                 ],
@@ -517,24 +519,16 @@
         }
     ],
     "outputs": {
-        "firewallPipName": {
-            "value": "[variables('defaultFwPipName')]",
-            "type": "string"
-        },
-        "hubLaResourceId": {
-            "value": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
-            "type": "string"
-        },
-        "hubVnetName": {
-            "value": "[variables('hubVnetName')]",
-            "type": "string"
-        },
         "hubVnetId": {
             "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]",
             "type": "string"
         },
-        "firewallName": {
+        "hubFwName": {
             "value": "[variables('hubFwName')]",
+            "type": "string"
+        },
+        "hubLaName": {
+            "value": "[variables('hubLaName')]",
             "type": "string"
         }
     }

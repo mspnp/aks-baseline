@@ -22,6 +22,12 @@
         },
         "hubVnetResourceId": {
             "type": "string"
+        },
+        "hubFwName": {
+            "type": "string"
+        },
+        "hubLaName": {
+            "type": "string"
         }
     },
     "variables": {
@@ -54,7 +60,7 @@
                         "properties": {
                             "nextHopType": "VirtualAppliance",
                             "addressPrefix": "0.0.0.0/0",
-                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', concat('fw-', parameters('location'), '-hub')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
+                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', parameters('hubFwName')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
                         }
                     }
                 ]
@@ -163,7 +169,7 @@
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
             ],
             "properties": {
-                "workspaceId": "[resourceId(variables('hubRgName'), 'Microsoft.OperationalInsights/workspaces', concat('la-networking-hub-', reference(parameters('hubVnetResourceId'), '2019-11-01', 'Full').location))]",
+                "workspaceId": "[resourceId(variables('hubRgName'), 'Microsoft.OperationalInsights/workspaces', parameters('hubLaName'))]",
                 "metrics": [
                     {
                         "category": "AllMetrics",
@@ -231,6 +237,14 @@
         },
         "systemNodepoolSubnetResourceIds": {
             "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), variables('vnetNodepoolSubnetName')))]",
+            "type": "array"
+        },
+        "vnetGatewaySubnetResourceIds": {
+            "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), variables('vnetGatewaySubnetName')))]",
+            "type": "array"
+        },
+        "appGatewayPipResourceIds": {
+            "value": "[createArray(resourceId('Microsoft.Network/publicIpAddresses', variables('appGatewayPipName')))]",
             "type": "array"
         }
     }

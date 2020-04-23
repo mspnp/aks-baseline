@@ -7,8 +7,8 @@ RGNAMECLUSTER=rg-cluster01
 echo deleting $RGNAMECLUSTER
 az group delete -n $RGNAMECLUSTER --yes
 
-echo deleting $RGNAMESPOKES
-az group delete -n $RGNAMESPOKES --yes
-
 echo deleting $RGNAME
 az group delete -n $RGNAME --yes
+
+echo deleting $RGNAMESPOKES
+az group delete -n $RGNAMESPOKES --yes
