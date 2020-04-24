@@ -83,6 +83,9 @@
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.ContainerRegistry"
+                                },
+                                {
+                                    "service": "Microsoft.KeyVault"
                                 }
                             ]
                         }
@@ -294,6 +297,10 @@
         },
         "hubLaName": {
             "value": "[variables('hubLaName')]",
+            "type": "string"
+        },
+        "hubfwSubnetResourceId": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hubVnetName'), 'AzureFirewallSubnet')]",
             "type": "string"
         }
     }

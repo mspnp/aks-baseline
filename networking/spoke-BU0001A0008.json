@@ -88,9 +88,6 @@
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.ContainerRegistry"
-                                },
-                                {
-                                    "service": "Microsoft.KeyVault"
                                 }
                             ],
                             "routeTable": {
@@ -105,9 +102,6 @@
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.ContainerRegistry"
-                                },
-                                {
-                                    "service": "Microsoft.KeyVault"
                                 }
                             ],
                             "routeTable": {
@@ -118,23 +112,13 @@
                     {
                         "name": "[variables('vnetIngressSubnetName')]",
                         "properties": {
-                            "addressPrefix": "[variables('vnetIngressSubnetAddressSpace')]",
-                            "serviceEndpoints": [
-                                {
-                                    "service": "Microsoft.KeyVault"
-                                }
-                            ]
+                            "addressPrefix": "[variables('vnetIngressSubnetAddressSpace')]"
                         }
                     },
                     {
                         "name": "[variables('vnetGatewaySubnetName')]",
                         "properties": {
-                            "addressPrefix": "[variables('vnetGatewaySubnetAddressSpace')]",
-                            "serviceEndpoints": [
-                                {
-                                    "service": "Microsoft.KeyVault"
-                                }
-                            ]
+                            "addressPrefix": "[variables('vnetGatewaySubnetAddressSpace')]"
                         }
                     }
                 ],

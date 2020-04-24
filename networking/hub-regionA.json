@@ -62,6 +62,16 @@
             "metadata": {
                 "description": "Subnet resource Ids for all AKS clusters nodepools in all attached spokes to allow necessary outbound traffic through the firewall"
             }
+        },
+        "keyVaultSubnetsResourceIds": {
+            "type": "array",
+            "metadata": {
+                "description": "Subnet resource Ids for all AKS clusters subnets to allow necessary outbound traffic through the firewall"
+            }
+        },
+        "serviceTagLocation": {
+            "type": "string",
+            "defaultValue": "EastUS2"
         }
     },
     "variables": {
@@ -69,7 +79,8 @@
         "defaultFwPipName": "[concat('pip-fw-', parameters('location'), '-default-', uniqueString(resourceGroup().id))]",
         "hubFwName": "[concat('fw-', parameters('location'), '-hub-', uniqueString(resourceGroup().id))]",
         "hubVNetName": "[concat('vnet-', parameters('location'), '-hub-', uniqueString(resourceGroup().id))]",
-        "hubLaName": "[concat('la-networking-hub-', parameters('location'),'-', uniqueString(resourceGroup().id))]"
+        "hubLaName": "[concat('la-networking-hub-', parameters('location'),'-', uniqueString(resourceGroup().id))]",
+        "keyVaultIpGroupName": "[concat('keyvault-ipg-', uniqueString(resourceGroup().id))]"
     },
     "resources": [
         {
@@ -91,6 +102,9 @@
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.ContainerRegistry"
+                                },
+                                {
+                                    "service": "Microsoft.KeyVault"
                                 }
                             ]
                         }
@@ -146,6 +160,21 @@
             }
         },
         {
+            "type": "Microsoft.Network/ipGroups",
+            "apiVersion": "2019-11-01",
+            "location": "[parameters('location')]",
+            "name": "[variables('keyVaultIpGroupName')]",
+            "properties": {
+                "copy": [
+                    {
+                        "name": "ipAddresses",
+                        "count": "[length(parameters('keyVaultSubnetsResourceIds'))]",
+                        "input": "[reference(parameters('keyVaultSubnetsResourceIds')[copyIndex('ipAddresses')], '2019-11-01').addressPrefix]"
+                    }
+                ]
+            }
+        },
+        {
             "type": "Microsoft.Network/azureFirewalls",
             "apiVersion": "2019-11-01",
             "name": "[variables('hubFwName')]",
@@ -158,7 +187,8 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIpAddresses', variables('defaultFwPipName'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]",
-                "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]",
+                "[resourceId('Microsoft.Network/ipGroups', variables('keyVaultIpGroupName'))]"
             ],
             "properties": {
                 "sku": {
@@ -279,6 +309,27 @@
                                     ],
                                     "destinationAddresses": [
                                         "*"
+                                    ]
+                                },
+                                {
+                                    "name": "aks-keyvault",
+                                    "protocols": [
+                                        "TCP"
+                                    ],
+                                    "sourceAddresses": [
+                                    ],
+                                    "destinationAddresses": [
+                                        "[concat('AzureKeyVault.',parameters('serviceTagLocation'))]"
+                                    ],
+                                    "sourceIpGroups": [
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('keyVaultIpGroupName'))]"
+                                    ],
+                                    "destinationIpGroups": [
+                                    ],
+                                    "destinationFqdns": [
+                                    ],
+                                    "destinationPorts": [
+                                        "443"
                                     ]
                                 }
                             ]
@@ -529,6 +580,10 @@
         },
         "hubLaName": {
             "value": "[variables('hubLaName')]",
+            "type": "string"
+        },
+        "hubfwSubnetResourceId": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hubVnetName'), 'AzureFirewallSubnet')]",
             "type": "string"
         }
     }
