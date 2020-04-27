@@ -39,7 +39,8 @@
         "routeTableName": "[concat('route-', variables('clusterVNetName'), '-clusternodes-to-hub')]",
         "hubRgName": "[split(parameters('hubVnetResourceId'),'/')[4]]",
         "hubNetworkName": "[split(parameters('hubVnetResourceId'),'/')[8]]",
-        "appGatewayPipName": "[concat('pip-', variables('orgAppId'), '-00')]"
+        "appGatewayPipName": "[concat('pip-', variables('orgAppId'), '-00')]",
+        "hubFwName": "[concat('fw-', parameters('location'), '-hub')]"
     },
     "resources": [
         {
@@ -54,7 +55,7 @@
                         "properties": {
                             "nextHopType": "VirtualAppliance",
                             "addressPrefix": "0.0.0.0/0",
-                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', concat('fw-', parameters('location'), '-hub')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
+                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', variables('hubFwName')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
                         }
                     }
                 ]
@@ -215,6 +216,14 @@
         },
         "systemNodepoolSubnetResourceIds": {
             "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), variables('vnetNodepoolSubnetName')))]",
+            "type": "array"
+        },
+        "vnetGatewaySubnetResourceIds": {
+            "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), variables('vnetGatewaySubnetName')))]",
+            "type": "array"
+        },
+        "appGatewayPipResourceIds": {
+            "value": "[createArray(resourceId('Microsoft.Network/publicIpAddresses', variables('appGatewayPipName')))]",
             "type": "array"
         }
     }

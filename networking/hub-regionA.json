@@ -62,6 +62,16 @@
             "metadata": {
                 "description": "Subnet resource Ids for all AKS clusters nodepools in all attached spokes to allow necessary outbound traffic through the firewall"
             }
+        },
+        "keyVaultSubnetsResourceIds": {
+            "type": "array",
+            "metadata": {
+                "description": "Subnet resource Ids for all AKS clusters subnets to allow necessary outbound traffic through the firewall"
+            }
+        },
+        "serviceTagLocation": {
+            "type": "string",
+            "defaultValue": "EastUS2"
         }
     },
     "variables": {
@@ -69,7 +79,8 @@
         "defaultFwPipName": "[concat('pip-fw-', parameters('location'), '-default')]",
         "hubFwName": "[concat('fw-', parameters('location'), '-hub')]",
         "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
-        "hubLaName": "[concat('la-networking-hub-', parameters('location'))]"
+        "hubLaName": "[concat('la-networking-hub-', parameters('location'))]",
+        "keyVaultIpGroupName": "[concat('keyvault-ipg')]"
     },
     "resources": [
         {
@@ -91,6 +102,9 @@
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.ContainerRegistry"
+                                },
+                                {
+                                    "service": "Microsoft.KeyVault"
                                 }
                             ]
                         }
@@ -99,14 +113,16 @@
                         "name": "GatewaySubnet",
                         "properties": {
                             "addressPrefix": "[parameters('azureGatewaySubnetAddressSpace')]",
-                            "serviceEndpoints": [ ]
+                            "serviceEndpoints": [
+                            ]
                         }
                     },
                     {
                         "name": "AzureBastionSubnet",
                         "properties": {
                             "addressPrefix": "[parameters('azureBastionSubnetAddressSpace')]",
-                            "serviceEndpoints": [ ]
+                            "serviceEndpoints": [
+                            ]
                         }
                     }
                 ],
@@ -144,6 +160,21 @@
             }
         },
         {
+            "type": "Microsoft.Network/ipGroups",
+            "apiVersion": "2019-11-01",
+            "location": "[parameters('location')]",
+            "name": "[variables('keyVaultIpGroupName')]",
+            "properties": {
+                "copy": [
+                    {
+                        "name": "ipAddresses",
+                        "count": "[length(parameters('keyVaultSubnetsResourceIds'))]",
+                        "input": "[reference(parameters('keyVaultSubnetsResourceIds')[copyIndex('ipAddresses')], '2019-11-01').addressPrefix]"
+                    }
+                ]
+            }
+        },
+        {
             "type": "Microsoft.Network/azureFirewalls",
             "apiVersion": "2019-11-01",
             "name": "[variables('hubFwName')]",
@@ -156,7 +187,8 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIpAddresses', variables('defaultFwPipName'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]",
-                "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]",
+                "[resourceId('Microsoft.Network/ipGroups', variables('keyVaultIpGroupName'))]"
             ],
             "properties": {
                 "sku": {
@@ -277,6 +309,27 @@
                                     ],
                                     "destinationAddresses": [
                                         "*"
+                                    ]
+                                },
+                                {
+                                    "name": "aks-keyvault",
+                                    "protocols": [
+                                        "TCP"
+                                    ],
+                                    "sourceAddresses": [
+                                    ],
+                                    "destinationAddresses": [
+                                        "[concat('AzureKeyVault.',parameters('serviceTagLocation'))]"
+                                    ],
+                                    "sourceIpGroups": [
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('keyVaultIpGroupName'))]"
+                                    ],
+                                    "destinationIpGroups": [
+                                    ],
+                                    "destinationFqdns": [
+                                    ],
+                                    "destinationPorts": [
+                                        "443"
                                     ]
                                 }
                             ]
@@ -517,24 +570,12 @@
         }
     ],
     "outputs": {
-        "firewallPipName": {
-            "value": "[variables('defaultFwPipName')]",
-            "type": "string"
-        },
-        "hubLaResourceId": {
-            "value": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
-            "type": "string"
-        },
-        "hubVnetName": {
-            "value": "[variables('hubVnetName')]",
-            "type": "string"
-        },
         "hubVnetId": {
             "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]",
             "type": "string"
         },
-        "firewallName": {
-            "value": "[variables('hubFwName')]",
+        "hubfwSubnetResourceId": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hubVnetName'), 'AzureFirewallSubnet')]",
             "type": "string"
         }
     }

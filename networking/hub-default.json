@@ -83,6 +83,9 @@
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.ContainerRegistry"
+                                },
+                                {
+                                    "service": "Microsoft.KeyVault"
                                 }
                             ]
                         }
@@ -91,14 +94,16 @@
                         "name": "GatewaySubnet",
                         "properties": {
                             "addressPrefix": "[parameters('azureGatewaySubnetAddressSpace')]",
-                            "serviceEndpoints": [ ]
+                            "serviceEndpoints": [
+                            ]
                         }
                     },
                     {
                         "name": "AzureBastionSubnet",
                         "properties": {
                             "addressPrefix": "[parameters('azureBastionSubnetAddressSpace')]",
-                            "serviceEndpoints": [ ]
+                            "serviceEndpoints": [
+                            ]
                         }
                     }
                 ],
@@ -282,24 +287,12 @@
         }
     ],
     "outputs": {
-        "firewallPipName": {
-            "value": "[variables('defaultFwPipName')]",
-            "type": "string"
-        },
-        "hubLaResourceId": {
-            "value": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
-            "type": "string"
-        },
-        "hubVnetName": {
-            "value": "[variables('hubVnetName')]",
-            "type": "string"
-        },
         "hubVnetId": {
             "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]",
             "type": "string"
         },
-        "firewallName": {
-            "value": "[variables('hubFwName')]",
+        "hubfwSubnetResourceId": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hubVnetName'), 'AzureFirewallSubnet')]",
             "type": "string"
         }
     }

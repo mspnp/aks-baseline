@@ -51,6 +51,12 @@
         "kubernetesVersion": {
             "defaultValue": "1.17.3",
             "type": "string"
+        },
+        "keyvaultAclAllowedSubnetResourceIds": {
+            "type": "array",
+            "metadata": {
+                "description": "the subnets to give access to the key vault."
+            }
         }
     },
     "variables": {
@@ -78,9 +84,38 @@
         "clusterMonitoringMetricsPublisherRoleAssignmentName": "[concat(variables('clusterName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('monitoringMetricsPublisherRole')))]",
         "networkRoleAssignmentName": "[concat(variables('vNetName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('networkContributorRole')))]",
         "acrRoleAssignmentName": "[concat(variables('defaultAcrName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('acrPullRole')))]",
-        "dnsPrefix": "[uniqueString(subscription().subscriptionId, resourceGroup().id, variables('clusterName'))]"
+        "dnsPrefix": "[uniqueString(subscription().subscriptionId, resourceGroup().id, variables('clusterName'))]",
+        "keyVaultName": "[concat( 'keyvault-', uniqueString(resourceGroup().id)) ]"
     },
     "resources": [
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "name": "[variables('keyVaultName')]",
+            "apiVersion": "2019-09-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "accessPolicies": [
+                ],
+                "sku": {
+                    "family": "A",
+                    "name": "standard"
+                },
+                "tenantId": "[subscription().tenantId]",
+                "networkAcls": {
+                    "bypass": "None",
+                    "defaultAction": "Deny",
+                    "copy": [
+                        {
+                            "name": "virtualNetworkRules",
+                            "count": "[length(parameters('keyvaultAclAllowedSubnetResourceIds'))]",
+                            "input": {
+                                "id": "[parameters('keyvaultAclAllowedSubnetResourceIds')[copyIndex('virtualNetworkRules')]]"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
         {
             "type": "Microsoft.Resources/deployments",
             "name": "EnsureClusterSpHasRbacToVNet",
