@@ -61,16 +61,12 @@ az deployment group create --resource-group "${RGNAME}" --template-file "./netwo
 
 HUB_VNET_ID=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.hubVnetId.value -o tsv)
 
-HUB_FW_NAME=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.hubFwName.value -o tsv)
-
-HUB_LA_NAME=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.hubLaName.value -o tsv)
-
 FIREWALL_SUBNET_RESOURCEID=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.hubfwSubnetResourceId.value -o tsv)
  
 #Cluster Subnet.Build the spoke. Second arm template execution and catching outputs. This might take about 2 minutes
 az group create --name "${RGNAMESPOKES}" --location "${RGLOCATION}"
 
-az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "./networking/spoke-BU0001A0008.json" --name "spoke-0001" --parameters location=$RGLOCATION hubVnetResourceId=$HUB_VNET_ID hubFwName=$HUB_FW_NAME hubLaName=$HUB_LA_NAME
+az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "./networking/spoke-BU0001A0008.json" --name "spoke-0001" --parameters location=$RGLOCATION hubVnetResourceId=$HUB_VNET_ID
 
 CLUSTER_VNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.clusterVnetResourceId.value -o tsv)
 
@@ -92,6 +88,7 @@ az group create --name "${RGNAMECLUSTER}" --location "${RGLOCATION}"
 
 # Cluster Parameters
 echo "CLUSTER_VNET_RESOURCE_ID=${CLUSTER_VNET_RESOURCE_ID}"
+echo "RGNAMECLUSTER=${RGNAMECLUSTER}"
 echo "RGLOCATION=${RGLOCATION}"
 echo "FIREWALL_SUBNET_RESOURCEID=${FIREWALL_SUBNET_RESOURCEID}"
 echo "k8sRbacAadProfileServerAppId=${k8sRbacAadProfileServerAppId}"
@@ -99,4 +96,4 @@ echo "k8sRbacAadProfileClientAppId=${k8sRbacAadProfileClientAppId}"
 echo "k8sRbacAadProfileServerAppSecret=${k8sRbacAadProfileServerAppSecret}"
 echo "k8sRbacAadProfileTennetId=${k8sRbacAadProfileTennetId}"
 
-az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "cluster-stamp.json" --name "cluster-0001" --parameters location=$RGLOCATION targetVnetResourceId=$CLUSTER_VNET_RESOURCE_ID k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId k8sRbacAadProfileTennetId=$k8sRbacAadProfileTennetId firewallSubnetResourceId=$FIREWALL_SUBNET_RESOURCEID
+az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "cluster-stamp.json" --name "cluster-0001" --parameters location=$RGLOCATION targetVnetResourceId=$CLUSTER_VNET_RESOURCE_ID k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId k8sRbacAadProfileTennetId=$k8sRbacAadProfileTennetId keyvaultAclAllowedSubnetResourceIds="['$FIREWALL_SUBNET_RESOURCEID']"

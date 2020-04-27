@@ -52,10 +52,10 @@
             "defaultValue": "1.17.3",
             "type": "string"
         },
-        "firewallSubnetResourceId": {
-            "type": "string",
+        "keyvaultAclAllowedSubnetResourceIds": {
+            "type": "array",
             "metadata": {
-                "description": "the firewall subnet to give access to the key vault."
+                "description": "the subnets to give access to the key vault."
             }
         }
     },
@@ -85,7 +85,7 @@
         "networkRoleAssignmentName": "[concat(variables('vNetName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('networkContributorRole')))]",
         "acrRoleAssignmentName": "[concat(variables('defaultAcrName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('acrPullRole')))]",
         "dnsPrefix": "[uniqueString(subscription().subscriptionId, resourceGroup().id, variables('clusterName'))]",
-        "keyVaultName": "[concat( 'keyvault-', uniqueString(resourceGroup().id),'-4') ]"
+        "keyVaultName": "[concat( 'keyvault-', uniqueString(resourceGroup().id)) ]"
     },
     "resources": [
         {
@@ -102,11 +102,15 @@
                 },
                 "tenantId": "[subscription().tenantId]",
                 "networkAcls": {
-                    "bypass": "AzureServices",
+                    "bypass": "None",
                     "defaultAction": "Deny",
-                    "virtualNetworkRules": [
+                    "copy": [
                         {
-                            "id": "[parameters('firewallSubnetResourceId')]"
+                            "name": "virtualNetworkRules",
+                            "count": "[length(parameters('keyvaultAclAllowedSubnetResourceIds'))]",
+                            "input": {
+                                "id": "[parameters('keyvaultAclAllowedSubnetResourceIds')[copyIndex('virtualNetworkRules')]]"
+                            }
                         }
                     ]
                 }

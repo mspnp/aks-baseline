@@ -75,12 +75,12 @@
         }
     },
     "variables": {
-        "aksIpGroupName": "[concat('ipg-', parameters('location'), '-AksNodepools', uniqueString(resourceGroup().id))]",
-        "defaultFwPipName": "[concat('pip-fw-', parameters('location'), '-default-', uniqueString(resourceGroup().id))]",
-        "hubFwName": "[concat('fw-', parameters('location'), '-hub-', uniqueString(resourceGroup().id))]",
-        "hubVNetName": "[concat('vnet-', parameters('location'), '-hub-', uniqueString(resourceGroup().id))]",
-        "hubLaName": "[concat('la-networking-hub-', parameters('location'),'-', uniqueString(resourceGroup().id))]",
-        "keyVaultIpGroupName": "[concat('keyvault-ipg-', uniqueString(resourceGroup().id))]"
+        "aksIpGroupName": "[concat('ipg-', parameters('location'), '-AksNodepools')]",
+        "defaultFwPipName": "[concat('pip-fw-', parameters('location'), '-default')]",
+        "hubFwName": "[concat('fw-', parameters('location'), '-hub')]",
+        "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
+        "hubLaName": "[concat('la-networking-hub-', parameters('location'))]",
+        "keyVaultIpGroupName": "[concat('keyvault-ipg')]"
     },
     "resources": [
         {
@@ -572,14 +572,6 @@
     "outputs": {
         "hubVnetId": {
             "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]",
-            "type": "string"
-        },
-        "hubFwName": {
-            "value": "[variables('hubFwName')]",
-            "type": "string"
-        },
-        "hubLaName": {
-            "value": "[variables('hubLaName')]",
             "type": "string"
         },
         "hubfwSubnetResourceId": {

@@ -22,12 +22,6 @@
         },
         "hubVnetResourceId": {
             "type": "string"
-        },
-        "hubFwName": {
-            "type": "string"
-        },
-        "hubLaName": {
-            "type": "string"
         }
     },
     "variables": {
@@ -45,7 +39,8 @@
         "routeTableName": "[concat('route-', variables('clusterVNetName'), '-clusternodes-to-hub')]",
         "hubRgName": "[split(parameters('hubVnetResourceId'),'/')[4]]",
         "hubNetworkName": "[split(parameters('hubVnetResourceId'),'/')[8]]",
-        "appGatewayPipName": "[concat('pip-', variables('orgAppId'), '-00')]"
+        "appGatewayPipName": "[concat('pip-', variables('orgAppId'), '-00')]",
+        "hubFwName": "[concat('fw-', parameters('location'), '-hub')]"
     },
     "resources": [
         {
@@ -60,7 +55,7 @@
                         "properties": {
                             "nextHopType": "VirtualAppliance",
                             "addressPrefix": "0.0.0.0/0",
-                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', parameters('hubFwName')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
+                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', variables('hubFwName')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
                         }
                     }
                 ]
@@ -153,7 +148,7 @@
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
             ],
             "properties": {
-                "workspaceId": "[resourceId(variables('hubRgName'), 'Microsoft.OperationalInsights/workspaces', parameters('hubLaName'))]",
+                "workspaceId": "[resourceId(variables('hubRgName'), 'Microsoft.OperationalInsights/workspaces', concat('la-networking-hub-', reference(parameters('hubVnetResourceId'), '2019-11-01', 'Full').location))]",
                 "metrics": [
                     {
                         "category": "AllMetrics",
