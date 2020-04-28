@@ -77,7 +77,7 @@
         "vNetResourceGroup": "[split(parameters('targetVnetResourceId'),'/')[4]]",
         "vNetName": "[split(parameters('targetVnetResourceId'),'/')[8]]",
 
-        "vnetNodePoolSubnetName": "snet-system-clusternodes",
+        "vnetNodePoolSubnetName": "snet-clusternodes",
 
         "vnetNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/', variables('vnetNodePoolSubnetName'))]",
 

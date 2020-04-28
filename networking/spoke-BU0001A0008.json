@@ -27,15 +27,13 @@
     "variables": {
         "orgAppId": "BU0001A0008",
         "clusterVNetName": "[concat('vnet-hub-spoke-', variables('orgAppId'), '-00')]",
-        "vnetAddressSpace": "10.240.0.0/19",
-        "vnetNodepoolSubnetName": "snet-system-clusternodes",
-        "vnetNodepoolSubnetAddressSpace": "10.240.16.0/24",
-        "vnetUserNodepoolSubnetName": "snet-user-clusternodes",
-        "vnetUserNodepoolSubnetAddressSpace": "10.240.0.0/20",
+        "vnetAddressSpace": "10.240.0.0/16",
+        "vnetNodepoolSubnetName": "snet-clusternodes",
+        "vnetNodepoolSubnetAddressSpace": "10.240.0.0/22",
         "vnetIngressSubnetName": "snet-clusteringressservices",
-        "vnetIngressSubnetAddressSpace": "10.240.17.0/24",
+        "vnetIngressSubnetAddressSpace": "10.240.4.0/28",
         "vnetGatewaySubnetName": "snet-applicationgateways",
-        "vnetGatewaySubnetAddressSpace": "10.240.18.0/28",
+        "vnetGatewaySubnetAddressSpace": "10.240.4.16/28",
         "routeTableName": "[concat('route-', variables('clusterVNetName'), '-clusternodes-to-hub')]",
         "hubRgName": "[split(parameters('hubVnetResourceId'),'/')[4]]",
         "hubNetworkName": "[split(parameters('hubVnetResourceId'),'/')[8]]",
@@ -80,20 +78,6 @@
                         "name": "[variables('vnetNodepoolSubnetName')]",
                         "properties": {
                             "addressPrefix": "[variables('vnetNodepoolSubnetAddressSpace')]",
-                            "serviceEndpoints": [
-                                {
-                                    "service": "Microsoft.ContainerRegistry"
-                                }
-                            ],
-                            "routeTable": {
-                                "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
-                            }
-                        }
-                    },
-                    {
-                        "name": "[variables('vnetUserNodepoolSubnetName')]",
-                        "properties": {
-                            "addressPrefix": "[variables('vnetUserNodepoolSubnetAddressSpace')]",
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.ContainerRegistry"
@@ -210,11 +194,7 @@
             "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
             "type": "string"
         },
-        "userNodepoolSubnetResourceIds": {
-            "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), variables('vnetUserNodepoolSubnetName')))]",
-            "type": "array"
-        },
-        "systemNodepoolSubnetResourceIds": {
+        "nodepoolSubnetResourceIds": {
             "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), variables('vnetNodepoolSubnetName')))]",
             "type": "array"
         },

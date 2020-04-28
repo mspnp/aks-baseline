@@ -51,7 +51,7 @@ az ad app permission grant --id $k8sRbacAadProfileClientAppId --api $k8sRbacAadP
 k8sRbacAadProfileTennetId=$(az account show --query tenantId -o tsv)
 
 #back to main subscription
-az login 
+az login
 az account set -s $main_subscription
 
 #Main Network.Build the hub. First arm template execution and catching outputs. This might take about 6 minutes
@@ -62,7 +62,7 @@ az deployment group create --resource-group "${RGNAME}" --template-file "./netwo
 HUB_VNET_ID=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.hubVnetId.value -o tsv)
 
 FIREWALL_SUBNET_RESOURCEID=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.hubfwSubnetResourceId.value -o tsv)
- 
+
 #Cluster Subnet.Build the spoke. Second arm template execution and catching outputs. This might take about 2 minutes
 az group create --name "${RGNAMESPOKES}" --location "${RGLOCATION}"
 
@@ -70,9 +70,7 @@ az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "
 
 CLUSTER_VNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.clusterVnetResourceId.value -o tsv)
 
-USER_NODEPOOL_SUBNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.userNodepoolSubnetResourceIds.value -o tsv)
-
-SYSTEM_NODEPOOL_SUBNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.systemNodepoolSubnetResourceIds.value -o tsv)
+NODEPOOL_SUBNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
 
 GATEWAY_SUBNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.vnetGatewaySubnetResourceIds.value -o tsv)
 
@@ -81,7 +79,9 @@ GATEWAY_PUBLIC_IP_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spo
 #Main Network Update. Third arm template execution and catching outputs. This might take about 3 minutes
 
 SERVICETAGS_LOCATION=$(az account list-locations --query "[?name=='${RGLOCATION}'].displayName" -o tsv | sed 's/[[:space:]]//g')
-az deployment group create --resource-group "${RGNAME}" --template-file  "./networking/hub-regionA.json" --name "hub-0002" --parameters location=$RGLOCATION nodepoolSubnetResourceIds="['$USER_NODEPOOL_SUBNET_RESOURCE_ID','$SYSTEM_NODEPOOL_SUBNET_RESOURCE_ID']" keyVaultSubnetsResourceIds="['$USER_NODEPOOL_SUBNET_RESOURCE_ID','$GATEWAY_SUBNET_RESOURCE_ID']" serviceTagLocation=$SERVICETAGS_LOCATION
+az deployment group create --resource-group "${RGNAME}" --template-file
+"./networking/hub-regionA.json" --name "hub-0002" --parameters
+location=$RGLOCATION nodepoolSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID']" keyVaultSubnetsResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID','$GATEWAY_SUBNET_RESOURCE_ID']" serviceTagLocation=$SERVICETAGS_LOCATION
 
 #AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 8 minutes
 az group create --name "${RGNAMECLUSTER}" --location "${RGLOCATION}"
