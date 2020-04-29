@@ -63,7 +63,7 @@
                 "description": "Subnet resource Ids for all AKS clusters nodepools in all attached spokes to allow necessary outbound traffic through the firewall"
             }
         },
-        "keyVaultSubnetsResourceIds": {
+        "keyVaultFirewallRuleSubnetResourceIds": {
             "type": "array",
             "metadata": {
                 "description": "Subnet resource Ids for all AKS clusters subnets to allow necessary outbound traffic through the firewall"
@@ -80,7 +80,7 @@
         "hubFwName": "[concat('fw-', parameters('location'), '-hub')]",
         "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
         "hubLaName": "[concat('la-networking-hub-', parameters('location'))]",
-        "keyVaultIpGroupName": "[concat('keyvault-ipg')]"
+        "keyVaultIpGroupName": "[concat('ipg-keyvault-', parameters('location'))]"
     },
     "resources": [
         {
@@ -168,8 +168,8 @@
                 "copy": [
                     {
                         "name": "ipAddresses",
-                        "count": "[length(parameters('keyVaultSubnetsResourceIds'))]",
-                        "input": "[reference(parameters('keyVaultSubnetsResourceIds')[copyIndex('ipAddresses')], '2019-11-01').addressPrefix]"
+                        "count": "[length(parameters('keyVaultFirewallRuleSubnetResourceIds'))]",
+                        "input": "[reference(parameters('keyVaultFirewallRuleSubnetResourceIds')[copyIndex('ipAddresses')], '2019-11-01').addressPrefix]"
                     }
                 ]
             }

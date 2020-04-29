@@ -60,6 +60,8 @@
         }
     },
     "variables": {
+        "orgAppId": "BU0001A0008",
+
         "networkContributorRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7')]",
         "monitoringMetricsPublisherRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
         "acrPullRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
@@ -85,7 +87,15 @@
         "networkRoleAssignmentName": "[concat(variables('vNetName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('networkContributorRole')))]",
         "acrRoleAssignmentName": "[concat(variables('defaultAcrName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('acrPullRole')))]",
         "dnsPrefix": "[uniqueString(subscription().subscriptionId, resourceGroup().id, variables('clusterName'))]",
-        "keyVaultName": "[concat( 'keyvault-', uniqueString(resourceGroup().id)) ]"
+
+        "keyVaultName": "[concat( 'kv-', variables('clusterName')) ]",
+
+        "agwName": "[concat( 'apw-', variables('clusterName')) ]",
+        "vnetGatewaySubnetName": "snet-applicationgateways",
+        "vnetAgwSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/', variables('vnetGatewaySubnetName'))]",
+        "appGatewayPipName": "[concat('pip-', variables('orgAppId'), '-00')]",
+        "apwPublicIPResourceId": "[resourceId(subscription().subscriptionId,variables('vNetResourceGroup'),'Microsoft.Network/publicIpAddresses',variables('appGatewayPipName'))]",
+        "apwResourceId": "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]"
     },
     "resources": [
         {
@@ -114,6 +124,120 @@
                         }
                     ]
                 }
+            }
+        },
+        {
+            "type": "Microsoft.Network/applicationGateways",
+            "apiVersion": "2019-11-01",
+            "name": "[variables('agwName')]",
+            "location": "[parameters('location')]",
+            "zones": [
+                "1",
+                "2",
+                "3"
+            ],
+            "tags": {
+            },
+            "properties": {
+                "sku": {
+                    "name": "WAF_v2",
+                    "tier": "WAF_v2"
+                },
+                "gatewayIPConfigurations": [
+                    {
+                        "name": "apw-ip-configuration",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('vnetAgwSubnetResourceId')]"
+                            }
+                        }
+                    }
+                ],
+                "frontendIPConfigurations": [
+                    {
+                        "name": "apw-frontend-ip-configuration",
+                        "properties": {
+                            "PublicIPAddress": {
+                                "id": "[variables('apwPublicIPResourceId')]"
+                            }
+                        }
+                    }
+                ],
+                "frontendPorts": [
+                    {
+                        "name": "apw-frontend-ports",
+                        "properties": {
+                            "Port": 80
+                        }
+                    }
+                ],
+                "autoscaleConfiguration": {
+                    "minCapacity": "0",
+                    "maxCapacity": "10"
+                },
+                "webApplicationFirewallConfiguration": {
+                    "enabled": true,
+                    "firewallMode": "Prevention",
+                    "ruleSetType": "OWASP",
+                    "ruleSetVersion": "3.0"
+                },
+                "enableHttp2": false,
+                "sslCertificates": [
+                ],
+                "probes": [
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "bepool-clusteringress",
+                        "properties": {
+                            "backendAddresses": [
+                            ]
+                        }
+                    }
+                ],
+                "backendHttpSettingsCollection": [
+                    {
+                        "name": "httpsettings-default",
+                        "properties": {
+                            "Port": 80,
+                            "Protocol": "Http",
+                            "cookieBasedAffinity": "Disabled",
+                            "requestTimeout": 20
+                        }
+                    }
+                ],
+                "httpListeners": [
+                    {
+                        "name": "listener-default",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(variables('apwResourceId'), '/frontendIPConfigurations/apw-frontend-ip-configuration')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(variables('apwResourceId'), '/frontendPorts/apw-frontend-ports')]"
+                            },
+                            "protocol": "Http",
+                            "sslCertificate": null
+                        }
+                    }
+                ],
+                "requestRoutingRules": [
+                    {
+                        "Name": "apw-routing-rules",
+                        "properties": {
+                            "RuleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(variables('apwResourceId'), '/httpListeners/listener-default')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(variables('apwResourceId'), '/backendAddressPools/bepool-clusteringress')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(variables('apwResourceId'), '/backendHttpSettingsCollection/httpsettings-default')]"
+                            }
+                        }
+                    }
+                ]
             }
         },
         {

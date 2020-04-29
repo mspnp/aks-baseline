@@ -57,7 +57,8 @@ az account set -s $main_subscription
 #Main Network.Build the hub. First arm template execution and catching outputs. This might take about 6 minutes
 az group create --name "${RGNAME}" --location "${RGLOCATION}"
 
-az deployment group create --resource-group "${RGNAME}" --template-file "./networking/hub-default.json"  --name "hub-0001" --parameters location=$RGLOCATION
+az deployment group create --resource-group "${RGNAME}" --template-file "./networking/hub-default.json"  --name "hub-0001" --parameters \
+         location=$RGLOCATION
 
 HUB_VNET_ID=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.hubVnetId.value -o tsv)
 
@@ -66,7 +67,9 @@ FIREWALL_SUBNET_RESOURCEID=$(az deployment group show -g $RGNAME -n hub-0001 --q
 #Cluster Subnet.Build the spoke. Second arm template execution and catching outputs. This might take about 2 minutes
 az group create --name "${RGNAMESPOKES}" --location "${RGLOCATION}"
 
-az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "./networking/spoke-BU0001A0008.json" --name "spoke-0001" --parameters location=$RGLOCATION hubVnetResourceId=$HUB_VNET_ID
+az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "./networking/spoke-BU0001A0008.json" --name "spoke-0001" --parameters \
+          location=$RGLOCATION \
+          hubVnetResourceId=$HUB_VNET_ID
 
 CLUSTER_VNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.clusterVnetResourceId.value -o tsv)
 
@@ -74,14 +77,14 @@ NODEPOOL_SUBNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke
 
 GATEWAY_SUBNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.vnetGatewaySubnetResourceIds.value -o tsv)
 
-GATEWAY_PUBLIC_IP_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.appGatewayPipResourceIds.value -o tsv)
-
 #Main Network Update. Third arm template execution and catching outputs. This might take about 3 minutes
 
 SERVICETAGS_LOCATION=$(az account list-locations --query "[?name=='${RGLOCATION}'].displayName" -o tsv | sed 's/[[:space:]]//g')
-az deployment group create --resource-group "${RGNAME}" --template-file
-"./networking/hub-regionA.json" --name "hub-0002" --parameters
-location=$RGLOCATION nodepoolSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID']" keyVaultSubnetsResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID','$GATEWAY_SUBNET_RESOURCE_ID']" serviceTagLocation=$SERVICETAGS_LOCATION
+az deployment group create --resource-group "${RGNAME}" --template-file "./networking/hub-regionA.json" --name "hub-0002" --parameters \
+            location=$RGLOCATION \
+            nodepoolSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID']" \
+            keyVaultFirewallRuleSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID','$GATEWAY_SUBNET_RESOURCE_ID']" \
+            serviceTagLocation=$SERVICETAGS_LOCATION
 
 #AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 8 minutes
 az group create --name "${RGNAMECLUSTER}" --location "${RGLOCATION}"
@@ -96,4 +99,11 @@ echo "k8sRbacAadProfileClientAppId=${k8sRbacAadProfileClientAppId}"
 echo "k8sRbacAadProfileServerAppSecret=${k8sRbacAadProfileServerAppSecret}"
 echo "k8sRbacAadProfileTennetId=${k8sRbacAadProfileTennetId}"
 
-az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "cluster-stamp.json" --name "cluster-0001" --parameters location=$RGLOCATION targetVnetResourceId=$CLUSTER_VNET_RESOURCE_ID k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId k8sRbacAadProfileTennetId=$k8sRbacAadProfileTennetId keyvaultAclAllowedSubnetResourceIds="['$FIREWALL_SUBNET_RESOURCEID']"
+az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "cluster-stamp.json" --name "cluster-0001" --parameters \
+               location=$RGLOCATION \
+               targetVnetResourceId=$CLUSTER_VNET_RESOURCE_ID \
+               k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId \
+               k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret \
+               k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId \
+               k8sRbacAadProfileTennetId=$k8sRbacAadProfileTennetId \
+               keyvaultAclAllowedSubnetResourceIds="['$FIREWALL_SUBNET_RESOURCEID']"
