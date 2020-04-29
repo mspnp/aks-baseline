@@ -335,7 +335,7 @@
         },
         {
             "type": "Microsoft.ContainerService/managedClusters",
-            "apiVersion": "2020-02-01",
+            "apiVersion": "2020-03-01",
             "name": "[variables('clusterName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -347,16 +347,40 @@
                 "dnsPrefix": "[variables('dnsPrefix')]",
                 "agentPoolProfiles": [
                     {
-                        "name": "nodepool01",
+                        "name": "npsystem",
                         "count": 3,
                         "vmSize": "Standard_DS4_v2",
                         "osDiskSizeGB": 512,
                         "osType": "Linux",
                         "minCount": 3,
+                        "maxCount": 4,
+                        "vnetSubnetID": "[variables('vnetNodePoolSubnetResourceId')]",
+                        "enableAutoScaling": true,
+                        "type": "VirtualMachineScaleSets",
+                        "mode": "System",
+                        "scaleSetPriority": "Regular",
+                        "scaleSetEvictionPolicy": "Delete",
+                        "orchestratorVersion": "[parameters('kubernetesVersion')]",
+                        "enableNodePublicIP": false,
+                        "maxPods": 30,
+                        "availabilityZones": [
+                            "1",
+                            "2",
+                            "3"
+                        ]
+                    },
+                    {
+                        "name": "npuser01",
+                        "count": 2,
+                        "vmSize": "Standard_DS4_v2",
+                        "osDiskSizeGB": 512,
+                        "osType": "Linux",
+                        "minCount": 2,
                         "maxCount": 5,
                         "vnetSubnetID": "[variables('vnetNodePoolSubnetResourceId')]",
                         "enableAutoScaling": true,
                         "type": "VirtualMachineScaleSets",
+                        "mode": "User",
                         "scaleSetPriority": "Regular",
                         "scaleSetEvictionPolicy": "Delete",
                         "orchestratorVersion": "[parameters('kubernetesVersion')]",
