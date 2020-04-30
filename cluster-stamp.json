@@ -349,7 +349,7 @@
                     {
                         "name": "npsystem",
                         "count": 3,
-                        "vmSize": "Standard_DS4_v2",
+                        "vmSize": "Standard_DS2_v2",
                         "osDiskSizeGB": 512,
                         "osType": "Linux",
                         "minCount": 3,
@@ -372,7 +372,7 @@
                     {
                         "name": "npuser01",
                         "count": 2,
-                        "vmSize": "Standard_DS4_v2",
+                        "vmSize": "Standard_DS3_v2",
                         "osDiskSizeGB": 512,
                         "osType": "Linux",
                         "minCount": 2,
