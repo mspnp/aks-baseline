@@ -11,7 +11,13 @@ serverAppName=${aksName}-server-${runDate}
 clientAppName=${aksName}-kubectl-${runDate}
 tenant_guid=**Your tenant id for Identities**
 main_subscription=**Your Main subscription**
+#replace contosobicycle.com with your own domain
+AKS_ENDUSER_NAME=aksuser@contosobicycle.com
+AKS_ENDUSER_PASSWORD=**Your valid password**
 
+echo ""
+echo "# Creating users and group for AAD-AKS integration. It could be in a different tenant"
+echo ""
 
 # We are going to use a new tenant to provide identity
 az login  --allow-no-subscriptions -t $tenant_guid
@@ -48,7 +54,11 @@ oAuthPermissionId=$(az ad app show --id $k8sRbacAadProfileServerAppId --query "o
 az ad app permission add --id $k8sRbacAadProfileClientAppId --api $k8sRbacAadProfileServerAppId --api-permissions ${oAuthPermissionId}=Scope
 az ad app permission grant --id $k8sRbacAadProfileClientAppId --api $k8sRbacAadProfileServerAppId
 
-k8sRbacAadProfileTennetId=$(az account show --query tenantId -o tsv)
+k8sRbacAadProfileTenantId=$(az account show --query tenantId -o tsv)
+
+echo ""
+echo "# Deploying networking"
+echo ""
 
 #back to main subscription
 az login
@@ -86,10 +96,15 @@ az deployment group create --resource-group "${RGNAME}" --template-file "./netwo
             keyVaultFirewallRuleSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID','$GATEWAY_SUBNET_RESOURCE_ID']" \
             serviceTagLocation=$SERVICETAGS_LOCATION
 
+echo ""
+echo "# Deploying AKS Cluster"
+echo ""
+
 #AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 8 minutes
 az group create --name "${RGNAMECLUSTER}" --location "${RGLOCATION}"
 
 # Cluster Parameters
+echo "Cluster Parameters"
 echo "CLUSTER_VNET_RESOURCE_ID=${CLUSTER_VNET_RESOURCE_ID}"
 echo "RGNAMECLUSTER=${RGNAMECLUSTER}"
 echo "RGLOCATION=${RGLOCATION}"
@@ -97,7 +112,7 @@ echo "FIREWALL_SUBNET_RESOURCEID=${FIREWALL_SUBNET_RESOURCEID}"
 echo "k8sRbacAadProfileServerAppId=${k8sRbacAadProfileServerAppId}"
 echo "k8sRbacAadProfileClientAppId=${k8sRbacAadProfileClientAppId}"
 echo "k8sRbacAadProfileServerAppSecret=${k8sRbacAadProfileServerAppSecret}"
-echo "k8sRbacAadProfileTennetId=${k8sRbacAadProfileTennetId}"
+echo "k8sRbacAadProfileTenantId=${k8sRbacAadProfileTenantId}"
 
 az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "cluster-stamp.json" --name "cluster-0001" --parameters \
                location=$RGLOCATION \
@@ -105,5 +120,46 @@ az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "
                k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId \
                k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret \
                k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId \
-               k8sRbacAadProfileTennetId=$k8sRbacAadProfileTennetId \
+               k8sRbacAadProfileTenantId=$k8sRbacAadProfileTenantId \
                keyvaultAclAllowedSubnetResourceIds="['$FIREWALL_SUBNET_RESOURCEID']"
+
+AKS_CLUSTER_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.aksClusterName.value -o tsv)
+
+echo ""
+echo "# Creating AAD Groups and users for the created cluster"
+echo ""
+
+# We are going to use a new tenant which manage the cluster identity
+az login  --allow-no-subscriptions -t $tenant_guid
+
+#Creating AAD groups which will be associated to k8s out of the box cluster roles
+k8sClusterAdminAadGroupName="k8s-cluster-admin-clusterrole-${AKS_CLUSTER_NAME}"
+k8sClusterAdminAadGroup=$(az ad group create --display-name ${k8sClusterAdminAadGroupName} --mail-nickname ${k8sClusterAdminAadGroupName} --query objectId -o tsv)
+k8sAdminAadGroupName="k8s-admin-clusterrole-${AKS_CLUSTER_NAME}"
+k8sAdminAadGroup=$(az ad group create --display-name ${k8sAdminAadGroupName} --mail-nickname ${k8sAdminAadGroupName} --query objectId -o tsv)
+k8sEditAadGroupName="k8s-edit-clusterrole-${AKS_CLUSTER_NAME}"
+k8sEditAadGroup=$(az ad group create --display-name ${k8sEditAadGroupName} --mail-nickname ${k8sEditAadGroupName} --query objectId -o tsv)
+k8sViewAadGroupName="k8s-view-clusterrole-${AKS_CLUSTER_NAME}"
+k8sViewAadGroup=$(az ad group create --display-name ${k8sViewAadGroupName} --mail-nickname ${k8sViewAadGroupName} --query objectId -o tsv)
+
+#EXAMPLE of an User in View Group 
+AKS_ENDUSR_OBJECTID=$(az ad user create --display-name $AKS_ENDUSER_NAME --user-principal-name $AKS_ENDUSER_NAME --password $AKS_ENDUSER_PASSWORD --query objectId -o tsv)
+az ad group member add --group k8s-view-clusterrole --member-id $AKS_ENDUSR_OBJECTID
+
+echo ""
+echo "# Temporary section. It is going to be deleted in the future"
+echo ""
+echo "k8s-cluster-admin-clusterrole ${k8sClusterAdminAadGroup}"
+echo "k8s-admin-clusterrole ${k8sAdminAadGroup}"
+echo "k8s-edit-clusterrole ${k8sEditAadGroup}"
+echo "k8s-view-clusterrole ${k8sViewAadGroup}"
+echo "User Name:${AKS_ENDUSER_NAME} Pass:${AKS_ENDUSER_PASSWORD} objectId:${AKS_ENDUSR_OBJECTID}"
+echo ""
+echo "Testing role after update yaml file (cluster-settings/user-facing-cluster-role-aad-group.yaml). Execute:"
+echo ""
+echo "az aks get-credentials -n ${AKS_CLUSTER_NAME} -g ${RGNAMECLUSTER} --admin"
+echo "kubectl apply -f ./cluster-settings/user-facing-cluster-role-aad-group.yaml"
+echo "az aks get-credentials -n ${AKS_CLUSTER_NAME} -g ${RGNAMECLUSTER} --overwrite-existing"
+echo "kubectl get all"
+echo ""
+echo "->Kubernetes will ask you to login. You will need to use the ${AKS_ENDUSER_NAME} user"

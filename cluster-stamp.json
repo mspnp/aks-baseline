@@ -42,7 +42,7 @@
                 "description": "This is the App registration Client ID that represents clients like kubectl"
             }
         },
-        "k8sRbacAadProfileTennetId": {
+        "k8sRbacAadProfileTenantId": {
             "type": "string",
             "metadata": {
                 "description": "This is tennant where the ServerAppId, ServerAppSecret, ClientAppId all reside."
@@ -435,7 +435,7 @@
                     "serverAppID": "[parameters('k8sRbacAadProfileServerAppId')]",
                     "clientAppID": "[parameters('k8sRbacAadProfileClientAppId')]",
                     "serverAppSecret": "[parameters('k8sRbacAadProfileServerAppSecret')]",
-                    "tenantID": "[parameters('k8sRbacAadProfileTennetId')]"
+                    "tenantID": "[parameters('k8sRbacAadProfileTenantId')]"
                 },
                 "autoScalerProfile": {
                     "scan-interval": "10s",
@@ -536,6 +536,10 @@
         "controlPlaneFQDN": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').fqdn]"
+        },
+        "aksClusterName": {
+            "type": "string",
+            "value": "[variables('clusterName')]"
         }
     }
 }
