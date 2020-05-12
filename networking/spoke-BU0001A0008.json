@@ -2,6 +2,12 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "hubVnetResourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "The hub networking which it is going to be peering"
+            }
+        },
         "location": {
             "type": "string",
             "allowedValues": [
@@ -19,26 +25,15 @@
             "metadata": {
                 "description": "The spokes's regional affinity. All resources tied to this spoke will also be homed in this region.  The network team maintains this approved regional list which is a subset of zones with Availability Zone support."
             }
-        },
-        "hubVnetResourceId": {
-            "type": "string"
         }
     },
     "variables": {
         "orgAppId": "BU0001A0008",
         "clusterVNetName": "[concat('vnet-hub-spoke-', variables('orgAppId'), '-00')]",
-        "vnetAddressSpace": "10.240.0.0/16",
-        "vnetNodepoolSubnetName": "snet-clusternodes",
-        "vnetNodepoolSubnetAddressSpace": "10.240.0.0/22",
-        "vnetIngressSubnetName": "snet-clusteringressservices",
-        "vnetIngressSubnetAddressSpace": "10.240.4.0/28",
-        "vnetGatewaySubnetName": "snet-applicationgateways",
-        "vnetGatewaySubnetAddressSpace": "10.240.4.16/28",
+
         "routeTableName": "[concat('route-', variables('clusterVNetName'), '-clusternodes-to-hub')]",
         "hubRgName": "[split(parameters('hubVnetResourceId'),'/')[4]]",
-        "hubNetworkName": "[split(parameters('hubVnetResourceId'),'/')[8]]",
-        "appGatewayPipName": "[concat('pip-', variables('orgAppId'), '-00')]",
-        "hubFwName": "[concat('fw-', parameters('location'), '-hub')]"
+        "hubNetworkName": "[split(parameters('hubVnetResourceId'),'/')[8]]"
     },
     "resources": [
         {
@@ -53,7 +48,7 @@
                         "properties": {
                             "nextHopType": "VirtualAppliance",
                             "addressPrefix": "0.0.0.0/0",
-                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', variables('hubFwName')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
+                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', concat('fw-', parameters('location'), '-hub')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
                         }
                     }
                 ]
@@ -70,14 +65,14 @@
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[variables('vnetAddressSpace')]"
+                        "10.240.0.0/16"
                     ]
                 },
                 "subnets": [
                     {
-                        "name": "[variables('vnetNodepoolSubnetName')]",
+                        "name": "snet-clusternodes",
                         "properties": {
-                            "addressPrefix": "[variables('vnetNodepoolSubnetAddressSpace')]",
+                            "addressPrefix": "10.240.0.0/22",
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.ContainerRegistry"
@@ -89,15 +84,15 @@
                         }
                     },
                     {
-                        "name": "[variables('vnetIngressSubnetName')]",
+                        "name": "snet-clusteringressservices",
                         "properties": {
-                            "addressPrefix": "[variables('vnetIngressSubnetAddressSpace')]"
+                            "addressPrefix": "10.240.4.0/28"
                         }
                     },
                     {
-                        "name": "[variables('vnetGatewaySubnetName')]",
+                        "name": "snet-applicationgateways",
                         "properties": {
-                            "addressPrefix": "[variables('vnetGatewaySubnetAddressSpace')]"
+                            "addressPrefix": "10.240.4.16/28"
                         }
                     }
                 ],
@@ -177,7 +172,7 @@
         {
             "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/publicIpAddresses",
-            "name": "[variables('appGatewayPipName')]",
+            "name": "[concat('pip-', variables('orgAppId'), '-00')]",
             "location": "[parameters('location')]",
             "sku": {
                 "name": "Standard"
@@ -195,11 +190,11 @@
             "type": "string"
         },
         "nodepoolSubnetResourceIds": {
-            "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), variables('vnetNodepoolSubnetName')))]",
+            "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), 'snet-clusternodes'))]",
             "type": "array"
         },
         "vnetGatewaySubnetResourceIds": {
-            "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), variables('vnetGatewaySubnetName')))]",
+            "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), 'snet-applicationgateways'))]",
             "type": "array"
         }
     }

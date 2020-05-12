@@ -2,6 +2,18 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "nodepoolSubnetResourceIds": {
+            "type": "array",
+            "metadata": {
+                "description": "Subnet resource Ids for all AKS clusters nodepools in all attached spokes to allow necessary outbound traffic through the firewall"
+            }
+        },
+        "keyVaultFirewallRuleSubnetResourceIds": {
+            "type": "array",
+            "metadata": {
+                "description": "Subnet resource Ids for all AKS clusters subnets to allow necessary outbound traffic through the firewall"
+            }
+        },
         "location": {
             "defaultValue": "eastus2",
             "type": "string",
@@ -55,18 +67,6 @@
             "minLength": 10,
             "metadata": {
                 "description": "A /27 under the VNet Address Space for Azure Bastion"
-            }
-        },
-        "nodepoolSubnetResourceIds": {
-            "type": "array",
-            "metadata": {
-                "description": "Subnet resource Ids for all AKS clusters nodepools in all attached spokes to allow necessary outbound traffic through the firewall"
-            }
-        },
-        "keyVaultFirewallRuleSubnetResourceIds": {
-            "type": "array",
-            "metadata": {
-                "description": "Subnet resource Ids for all AKS clusters subnets to allow necessary outbound traffic through the firewall"
             }
         },
         "serviceTagLocation": {

@@ -146,6 +146,9 @@ k8sViewAadGroup=$(az ad group create --display-name ${k8sViewAadGroupName} --mai
 AKS_ENDUSR_OBJECTID=$(az ad user create --display-name $AKS_ENDUSER_NAME --user-principal-name $AKS_ENDUSER_NAME --password $AKS_ENDUSER_PASSWORD --query objectId -o tsv)
 az ad group member add --group k8s-view-clusterrole --member-id $AKS_ENDUSR_OBJECTID
 
+echo "# After cleaning up key vault in order to delete the soft delete"
+echo "az keyvault purge --name kv-${AKS_CLUSTER_NAME} --location ${RGLOCATION}"
+
 echo ""
 echo "# Temporary section. It is going to be deleted in the future"
 echo ""

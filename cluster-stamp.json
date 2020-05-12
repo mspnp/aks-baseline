@@ -2,27 +2,17 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "0.0.0.3",
     "parameters": {
-        "location": {
-            "defaultValue": "eastus2",
+        "targetVnetResourceId": {
             "type": "string",
-            "allowedValues": [
-                "centralus",
-                "eastus",
-                "eastus2",
-                "westus2",
-                "francecentral",
-                "northeurope",
-                "uksouth",
-                "westeurope",
-                "japaneast",
-                "southeastasia"
-            ],
             "metadata": {
-                "description": "AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region.  The network team maintains this approved regional list which is a subset of zones with Availability Zone support."
+                "description": "The regional network spoke VNet Resource ID that the cluster will be joined to"
             }
         },
-        "targetVnetResourceId": {
-            "type": "string"
+        "keyvaultAclAllowedSubnetResourceIds": {
+            "type": "array",
+            "metadata": {
+                "description": "the subnets to give access to the key vault"
+            }
         },
         "k8sRbacAadProfileServerAppId": {
             "type": "string",
@@ -45,23 +35,34 @@
         "k8sRbacAadProfileTenantId": {
             "type": "string",
             "metadata": {
-                "description": "This is tennant where the ServerAppId, ServerAppSecret, ClientAppId all reside."
+                "description": "This is tennant where the ServerAppId, ServerAppSecret, ClientAppId all reside"
+            }
+        },
+        "location": {
+            "defaultValue": "eastus2",
+            "type": "string",
+            "allowedValues": [
+                "centralus",
+                "eastus",
+                "eastus2",
+                "westus2",
+                "francecentral",
+                "northeurope",
+                "uksouth",
+                "westeurope",
+                "japaneast",
+                "southeastasia"
+            ],
+            "metadata": {
+                "description": "AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region.  The network team maintains this approved regional list which is a subset of zones with Availability Zone support."
             }
         },
         "kubernetesVersion": {
             "defaultValue": "1.17.3",
             "type": "string"
-        },
-        "keyvaultAclAllowedSubnetResourceIds": {
-            "type": "array",
-            "metadata": {
-                "description": "the subnets to give access to the key vault."
-            }
         }
     },
     "variables": {
-        "orgAppId": "BU0001A0008",
-
         "networkContributorRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7')]",
         "monitoringMetricsPublisherRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
         "acrPullRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
@@ -69,38 +70,20 @@
         "subRgUniqueString": "[uniqueString('aks', subscription().subscriptionId, resourceGroup().id)]",
 
         "clusterName": "[concat('aks-', variables('subRgUniqueString'))]",
-        "nodePoolRgName": "[concat('rg-', variables('clusterName'), '-nodepools')]",
-
         "logAnalyticsWorkspaceName": "[concat('la-', variables('clusterName'))]",
         "containerInsightsSolutionName": "[concat('ContainerInsights(', variables('logAnalyticsWorkspaceName'),')')]",
-
         "defaultAcrName": "[concat('acraks', variables('subRgUniqueString'))]",
 
         "vNetResourceGroup": "[split(parameters('targetVnetResourceId'),'/')[4]]",
-        "vNetName": "[split(parameters('targetVnetResourceId'),'/')[8]]",
-
-        "vnetNodePoolSubnetName": "snet-clusternodes",
-
-        "vnetNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/', variables('vnetNodePoolSubnetName'))]",
-
-        "clusterMonitoringMetricsPublisherRoleAssignmentName": "[concat(variables('clusterName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('monitoringMetricsPublisherRole')))]",
-        "networkRoleAssignmentName": "[concat(variables('vNetName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('networkContributorRole')))]",
-        "acrRoleAssignmentName": "[concat(variables('defaultAcrName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('acrPullRole')))]",
-        "dnsPrefix": "[uniqueString(subscription().subscriptionId, resourceGroup().id, variables('clusterName'))]",
-
-        "keyVaultName": "[concat( 'kv-', variables('clusterName')) ]",
+        "vnetNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-clusternodes')]",
 
         "agwName": "[concat( 'apw-', variables('clusterName')) ]",
-        "vnetGatewaySubnetName": "snet-applicationgateways",
-        "vnetAgwSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/', variables('vnetGatewaySubnetName'))]",
-        "appGatewayPipName": "[concat('pip-', variables('orgAppId'), '-00')]",
-        "apwPublicIPResourceId": "[resourceId(subscription().subscriptionId,variables('vNetResourceGroup'),'Microsoft.Network/publicIpAddresses',variables('appGatewayPipName'))]",
         "apwResourceId": "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]"
     },
     "resources": [
         {
             "type": "Microsoft.KeyVault/vaults",
-            "name": "[variables('keyVaultName')]",
+            "name": "[concat( 'kv-', variables('clusterName')) ]",
             "apiVersion": "2019-09-01",
             "location": "[parameters('location')]",
             "properties": {
@@ -148,7 +131,7 @@
                         "name": "apw-ip-configuration",
                         "properties": {
                             "subnet": {
-                                "id": "[variables('vnetAgwSubnetResourceId')]"
+                                "id": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-applicationgateways')]"
                             }
                         }
                     }
@@ -158,7 +141,7 @@
                         "name": "apw-frontend-ip-configuration",
                         "properties": {
                             "PublicIPAddress": {
-                                "id": "[variables('apwPublicIPResourceId')]"
+                                "id": "[resourceId(subscription().subscriptionId,variables('vNetResourceGroup'),'Microsoft.Network/publicIpAddresses','pip-BU0001A0008-00')]"
                             }
                         }
                     }
@@ -257,7 +240,7 @@
                         {
                             "type": "Microsoft.Network/virtualNetworks/providers/roleAssignments",
                             "apiVersion": "2018-09-01-preview",
-                            "name": "[variables('networkRoleAssignmentName')]",
+                            "name": "[concat(split(parameters('targetVnetResourceId'),'/')[8], '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('networkContributorRole')))]",
                             "properties": {
                                 "roleDefinitionId": "[variables('networkContributorRole')]",
                                 "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]"
@@ -344,7 +327,7 @@
             ],
             "properties": {
                 "kubernetesVersion": "[parameters('kubernetesVersion')]",
-                "dnsPrefix": "[variables('dnsPrefix')]",
+                "dnsPrefix": "[uniqueString(subscription().subscriptionId, resourceGroup().id, variables('clusterName'))]",
                 "agentPoolProfiles": [
                     {
                         "name": "npsystem",
@@ -417,7 +400,7 @@
                         "enabled": false
                     }
                 },
-                "nodeResourceGroup": "[variables('nodePoolRgName')]",
+                "nodeResourceGroup": "[concat('rg-', variables('clusterName'), '-nodepools')]",
                 "enableRBAC": true,
                 "enablePodSecurityPolicy": false,
                 "maxAgentPools": 2,
@@ -480,7 +463,7 @@
         {
             "type": "Microsoft.ContainerService/managedClusters/providers/roleAssignments",
             "apiVersion": "2018-09-01-preview",
-            "name": "[variables('clusterMonitoringMetricsPublisherRoleAssignmentName')]",
+            "name": "[concat(variables('clusterName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('monitoringMetricsPublisherRole')))]",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
@@ -521,7 +504,7 @@
         {
             "type": "Microsoft.ContainerRegistry/registries/providers/roleAssignments",
             "apiVersion": "2018-09-01-preview",
-            "name": "[variables('acrRoleAssignmentName')]",
+            "name": "[concat(variables('defaultAcrName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('acrPullRole')))]",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
                 "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
@@ -533,10 +516,6 @@
         }
     ],
     "outputs": {
-        "controlPlaneFQDN": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').fqdn]"
-        },
         "aksClusterName": {
             "type": "string",
             "value": "[variables('clusterName')]"
