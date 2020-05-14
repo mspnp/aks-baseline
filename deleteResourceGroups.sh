@@ -15,5 +15,5 @@ az group delete -n $RGNAME --yes
 echo deleting $RGNAMESPOKES
 az group delete -n $RGNAMESPOKES --yes
 
-echo deleting soft delete
+echo deleting key vault soft delete
 az keyvault purge --name kv-${AKS_CLUSTER_NAME} --location ${RGLOCATION}

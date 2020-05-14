@@ -6,10 +6,16 @@ Your azure user need to be able to assign RBAC permissions at the subscription r
 
 ## Steps
 
-- Please check the script variables at the beginning and then execute. The script is going to deploy all the template and Principal needed.  
-  This script might take about 20 minutes
+- Please check the script variables at the beginning and then execute.  
+  The script is going to deploy all the templates and Principals needed.  
+  This scripts might take about 30 minutes
 
-`deploy.sh`
+First execute:  
+`0-networking-stamp.sh`
+
+Then take parameters from the previous execution, write into this script and execute:
+`1-cluster-stamp.sh`
+It is going to deploy the AKS Cluster
 
 ### Clean up
 
