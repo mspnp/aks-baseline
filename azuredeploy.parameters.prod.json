@@ -5,6 +5,11 @@
       "location": {
         "value": "eastus2"
       },
+      "keyvaultAclAllowedSubnetResourceIds": {
+        "value": [
+          "/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-applicationgateways"
+        ]
+      },
       "targetVnetResourceId": {
         "value": "/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00"
       },
@@ -17,7 +22,7 @@
       "k8sRbacAadProfileClientAppId": {
         "value": "[guid]"
       },
-      "k8sRbacAadProfileTennetId": {
+      "k8sRbacAadProfileTenantId": {
         "value": "[guid]"
       }
     }
