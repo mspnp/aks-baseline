@@ -76,6 +76,9 @@
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.ContainerRegistry"
+                                },
+                                {
+                                    "service": "Microsoft.KeyVault"
                                 }
                             ],
                             "routeTable": {
@@ -92,7 +95,12 @@
                     {
                         "name": "snet-applicationgateways",
                         "properties": {
-                            "addressPrefix": "10.240.4.16/28"
+                            "addressPrefix": "10.240.4.16/28",
+                            "serviceEndpoints": [
+                                {
+                                    "service": "Microsoft.KeyVault"
+                                }
+                            ]
                         }
                     }
                 ],
