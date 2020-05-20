@@ -57,6 +57,25 @@
                 "description": "AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region.  The network team maintains this approved regional list which is a subset of zones with Availability Zone support."
             }
         },
+        "geoRedundancyLocation": {
+            "defaultValue": "centralus",
+            "type": "string",
+            "allowedValues": [
+                "centralus",
+                "eastus",
+                "eastus2",
+                "westus2",
+                "francecentral",
+                "northeurope",
+                "uksouth",
+                "westeurope",
+                "japaneast",
+                "southeastasia"
+            ],
+            "metadata": {
+                "description": "For Azure resources that support native geo-redunancy, provide the location the redundant service will have its secondary. Should be different than the location parameter and ideally should be a paired region - https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions"
+            }
+        },
         "kubernetesVersion": {
             "defaultValue": "1.17.3",
             "type": "string"
@@ -314,7 +333,19 @@
                         "status": "enabled"
                     }
                 }
-            }
+            },
+            "resources": [
+                {
+                    "type": "replications",
+                    "apiVersion": "2019-05-01",
+                    "name": "[parameters('geoRedundancyLocation')]",
+                    "location": "[parameters('geoRedundancyLocation')]",
+                    "dependsOn": [
+                        "[variables('defaultAcrName')]"
+                    ],
+                    "properties": {}
+                }
+            ]
         },
         {
             "type": "Microsoft.ContainerService/managedClusters",
