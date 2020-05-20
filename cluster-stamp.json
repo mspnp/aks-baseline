@@ -57,6 +57,31 @@
                 "description": "AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region.  The network team maintains this approved regional list which is a subset of zones with Availability Zone support."
             }
         },
+        "geoRedundancyLocation": {
+            "defaultValue": "centralus",
+            "type": "string",
+            "allowedValues": [
+                "eastus2",
+                "westus",
+                "centralus",
+                "westcentralus",
+                "francesouth",
+                "westeurope",
+                "ukwest",
+                "northeurope",
+                "japanwest",
+                "eastasia",
+                "eastus",
+                "westus2",
+                "francecentral",
+                "uksouth",
+                "japaneast",
+                "southeastasia"
+            ],
+            "metadata": {
+                "description": "For Azure resources that support native geo-redunancy, provide the location the redundant service will have its secondary. Should be different than the location parameter and ideally should be a paired region - https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions. This region does not need to support availability zones."
+            }
+        },
         "kubernetesVersion": {
             "defaultValue": "1.17.3",
             "type": "string"
@@ -314,7 +339,19 @@
                         "status": "enabled"
                     }
                 }
-            }
+            },
+            "resources": [
+                {
+                    "type": "replications",
+                    "apiVersion": "2019-05-01",
+                    "name": "[parameters('geoRedundancyLocation')]",
+                    "location": "[parameters('geoRedundancyLocation')]",
+                    "dependsOn": [
+                        "[variables('defaultAcrName')]"
+                    ],
+                    "properties": {}
+                }
+            ]
         },
         {
             "type": "Microsoft.ContainerService/managedClusters",

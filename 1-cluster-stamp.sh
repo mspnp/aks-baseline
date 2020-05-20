@@ -19,6 +19,10 @@ k8sRbacAadProfileClientAppId=
 k8sRbacAadProfileServerAppSecret=
 k8sRbacAadProfileTenantId=
 
+# Used for services that support native geo-redundancy (Azure Container Registry)
+# Ideally should be the paired region of $RGLOCATION
+GEOREDUNDANCY_LOCATION=centralus
+
 # User Parameters. 
 # Copy from pre-cluster-stump.sh output
 APP_ID=
@@ -36,6 +40,7 @@ echo ""
 #AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 8 minutes
 az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "cluster-stamp.json" --name "cluster-0001" --parameters \
                location=$RGLOCATION \
+               geoRedundancyLocation=$GEOREDUNDANCY_LOCATION \
                targetVnetResourceId=$CLUSTER_VNET_RESOURCE_ID \
                k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId \
                k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret \
