@@ -92,7 +92,7 @@ SERVICETAGS_LOCATION=$(az account list-locations --query "[?name=='${RGLOCATION}
 az deployment group create --resource-group "${RGNAME}" --template-file "./networking/hub-regionA.json" --name "hub-0002" --parameters \
             location=$RGLOCATION \
             nodepoolSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID']" \
-            keyVaultFirewallRuleSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID','$GATEWAY_SUBNET_RESOURCE_ID']" \
+            keyVaultFirewallRuleSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID']" \
             serviceTagLocation=$SERVICETAGS_LOCATION
 
 echo ""
@@ -112,6 +112,7 @@ CLUSTER_VNET_RESOURCE_ID=${CLUSTER_VNET_RESOURCE_ID}
 RGNAMECLUSTER=${RGNAMECLUSTER}
 RGLOCATION=${RGLOCATION}
 FIREWALL_SUBNET_RESOURCEID=${FIREWALL_SUBNET_RESOURCEID}
+GATEWAY_SUBNET_RESOURCE_ID=${GATEWAY_SUBNET_RESOURCE_ID}
 k8sRbacAadProfileServerAppId=${k8sRbacAadProfileServerAppId}
 k8sRbacAadProfileClientAppId=${k8sRbacAadProfileClientAppId}
 k8sRbacAadProfileServerAppSecret=${k8sRbacAadProfileServerAppSecret}

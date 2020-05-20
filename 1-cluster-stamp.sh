@@ -13,6 +13,7 @@ CLUSTER_VNET_RESOURCE_ID=
 RGNAMECLUSTER=
 RGLOCATION=
 FIREWALL_SUBNET_RESOURCEID=
+GATEWAY_SUBNET_RESOURCE_ID=
 k8sRbacAadProfileServerAppId=
 k8sRbacAadProfileClientAppId=
 k8sRbacAadProfileServerAppSecret=
@@ -40,7 +41,7 @@ az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "
                k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret \
                k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId \
                k8sRbacAadProfileTenantId=$k8sRbacAadProfileTenantId \
-               keyvaultAclAllowedSubnetResourceIds="['$FIREWALL_SUBNET_RESOURCEID']"
+               keyvaultAclAllowedSubnetResourceIds="['$FIREWALL_SUBNET_RESOURCEID', '$GATEWAY_SUBNET_RESOURCE_ID']"
 
 AKS_CLUSTER_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.aksClusterName.value -o tsv)
 
