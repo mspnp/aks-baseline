@@ -61,19 +61,25 @@
             "defaultValue": "centralus",
             "type": "string",
             "allowedValues": [
-                "centralus",
-                "eastus",
                 "eastus2",
+                "westus",
+                "centralus",
+                "westcentralus",
+                "francesouth",
+                "westeurope",
+                "ukwest",
+                "northeurope",
+                "japanwest",
+                "eastasia",
+                "eastus",
                 "westus2",
                 "francecentral",
-                "northeurope",
                 "uksouth",
-                "westeurope",
                 "japaneast",
                 "southeastasia"
             ],
             "metadata": {
-                "description": "For Azure resources that support native geo-redunancy, provide the location the redundant service will have its secondary. Should be different than the location parameter and ideally should be a paired region - https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions"
+                "description": "For Azure resources that support native geo-redunancy, provide the location the redundant service will have its secondary. Should be different than the location parameter and ideally should be a paired region - https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions. This region does not need to support availability zones."
             }
         },
         "kubernetesVersion": {
