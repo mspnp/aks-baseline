@@ -76,9 +76,6 @@
                             "serviceEndpoints": [
                                 {
                                     "service": "Microsoft.ContainerRegistry"
-                                },
-                                {
-                                    "service": "Microsoft.KeyVault"
                                 }
                             ],
                             "routeTable": {
