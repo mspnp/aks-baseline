@@ -101,9 +101,6 @@
                             "addressPrefix": "[parameters('azureFirewallSubnetAddressSpace')]",
                             "serviceEndpoints": [
                                 {
-                                    "service": "Microsoft.ContainerRegistry"
-                                },
-                                {
                                     "service": "Microsoft.KeyVault"
                                 }
                             ]
