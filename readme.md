@@ -4,6 +4,14 @@ This is a WIP.
 
 Your azure user need to be able to assign RBAC permissions at the subscription resource groups level
 
+NOTE:
+  Pay attention to https://docs.microsoft.com/en-us/azure/aks/managed-aad
+  We are using a preview which need to be enable
+
+   Caution
+After you register a feature on a subscription, you can't currently unregister that feature. When you enable some preview features, defaults might be used for all AKS clusters created afterward in the subscription. Don't enable preview features on production subscriptions. Instead, use a separate subscription to test preview features and gather feedback.
+
+
 ## Steps
 
 - Please check the script variables at the beginning and then execute.  

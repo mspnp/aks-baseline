@@ -14,22 +14,10 @@
                 "description": "the subnets to give access to the key vault"
             }
         },
-        "k8sRbacAadProfileServerAppId": {
+        "k8sRbacAadProfileAdminGroupObjectID": {
             "type": "string",
             "metadata": {
-                "description": "This is the Server App ID for k8s RBAC via AAD"
-            }
-        },
-        "k8sRbacAadProfileServerAppSecret": {
-            "type": "string",
-            "metadata": {
-                "description": "This is the Server App ID's secret for k8s RBAC via AAD"
-            }
-        },
-        "k8sRbacAadProfileClientAppId": {
-            "type": "string",
-            "metadata": {
-                "description": "This is the App registration Client ID that represents clients like kubectl"
+                "description": "Group that has admin access to this cluster"
             }
         },
         "k8sRbacAadProfileTenantId": {
@@ -83,7 +71,7 @@
             }
         },
         "kubernetesVersion": {
-            "defaultValue": "1.17.3",
+            "defaultValue": "1.17.5",
             "type": "string"
         }
     },
@@ -353,7 +341,8 @@
             "name": "nodepool-to-acr",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]"
+                "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
+                "[resourceId('Microsoft.ContainerRegistry/registries/replications', variables('defaultAcrName'), parameters('geoRedundancyLocation'))]"
             ],
             "properties": {
                 "subnet": {
@@ -490,9 +479,10 @@
                     "dockerBridgeCidr": "172.18.0.1/16"
                 },
                 "aadProfile": {
-                    "serverAppID": "[parameters('k8sRbacAadProfileServerAppId')]",
-                    "clientAppID": "[parameters('k8sRbacAadProfileClientAppId')]",
-                    "serverAppSecret": "[parameters('k8sRbacAadProfileServerAppSecret')]",
+                    "managed": true,
+                    "adminGroupObjectIDs": [
+                        "[parameters('k8sRbacAadProfileAdminGroupObjectID')]"
+                    ],
                     "tenantID": "[parameters('k8sRbacAadProfileTenantId')]"
                 },
                 "autoScalerProfile": {

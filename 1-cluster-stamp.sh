@@ -2,9 +2,8 @@
 
 # Please check the variables
 tenant_guid=**Your tenant id for Identities**
-
-#replace contosobicycle.com with your own domain
-AKS_ENDUSER_NAME=aksuser@contosobicycle.com
+main_subscription=**Your Main subscription**
+AKS_ENDUSER_NAME=aksuser1@contosobicycle.com
 AKS_ENDUSER_PASSWORD=**Your valid password**
 
 # Cluster Parameters. 
@@ -14,9 +13,7 @@ RGNAMECLUSTER=
 RGLOCATION=
 FIREWALL_SUBNET_RESOURCEID=
 GATEWAY_SUBNET_RESOURCE_ID=
-k8sRbacAadProfileServerAppId=
-k8sRbacAadProfileClientAppId=
-k8sRbacAadProfileServerAppSecret=
+k8sRbacAadProfileAdminGroupObjectID=
 k8sRbacAadProfileTenantId=
 
 # Used for services that support native geo-redundancy (Azure Container Registry)
@@ -42,9 +39,7 @@ az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "
                location=$RGLOCATION \
                geoRedundancyLocation=$GEOREDUNDANCY_LOCATION \
                targetVnetResourceId=$CLUSTER_VNET_RESOURCE_ID \
-               k8sRbacAadProfileServerAppId=$k8sRbacAadProfileServerAppId \
-               k8sRbacAadProfileServerAppSecret=$k8sRbacAadProfileServerAppSecret \
-               k8sRbacAadProfileClientAppId=$k8sRbacAadProfileClientAppId \
+               k8sRbacAadProfileAdminGroupObjectID=$k8sRbacAadProfileAdminGroupObjectID \
                k8sRbacAadProfileTenantId=$k8sRbacAadProfileTenantId \
                keyvaultAclAllowedSubnetResourceIds="['$FIREWALL_SUBNET_RESOURCEID', '$GATEWAY_SUBNET_RESOURCE_ID']"
 
@@ -86,6 +81,8 @@ User Name:${AKS_ENDUSER_NAME} Pass:${AKS_ENDUSER_PASSWORD} objectId:${AKS_ENDUSR
 
 Testing role after update yaml file (cluster-settings/user-facing-cluster-role-aad-group.yaml). Execute:
 
+az login
+az account set -s $main_subscription
 az aks get-credentials -n ${AKS_CLUSTER_NAME} -g ${RGNAMECLUSTER} --admin
 kubectl apply -f ./cluster-settings/user-facing-cluster-role-aad-group.yaml
 az aks get-credentials -n ${AKS_CLUSTER_NAME} -g ${RGNAMECLUSTER} --overwrite-existing
