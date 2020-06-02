@@ -206,7 +206,10 @@
             "properties": {
                 "publicIPAllocationMethod": "Static",
                 "idleTimeoutInMinutes": 4,
-                "publicIPAddressVersion": "IPv4"
+                "publicIPAddressVersion": "IPv4",
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower(concat(variables('orgAppId'), '00'))]"
+                }
             }
         }
     ],
@@ -222,6 +225,10 @@
         "vnetGatewaySubnetResourceIds": {
             "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), 'snet-applicationgateways'))]",
             "type": "array"
+        },
+        "appGatewayPublicIpFqdn": {
+            "value": "[reference(resourceId('Microsoft.Network/publicIpAddresses',concat('pip-', variables('orgAppId'), '-00'))).dnsSettings.fqdn]",
+            "type": "string"
         }
     }
 }
