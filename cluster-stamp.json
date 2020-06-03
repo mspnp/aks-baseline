@@ -258,6 +258,16 @@
                                 "roleDefinitionId": "[variables('networkContributorRole')]",
                                 "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]"
                             }
+                        },
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/providers/roleAssignments",
+                            "apiVersion": "2018-09-01-preview",
+                            "name": "[concat(split(parameters('targetVnetResourceId'),'/')[8], '/Microsoft.Authorization/', guid(resourceGroup().id, variables('networkContributorRole'),'-aks-system-assigned-managed-identity-ilb'))]",
+                            "properties": {
+                                "roleDefinitionId": "[variables('networkContributorRole')]",
+                                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01', 'Full').identity.principalId]",
+                                "scope": "[parameters('targetVnetResourceId')]"
+                            }
                         }
                     ]
                 }
@@ -584,6 +594,10 @@
         "aksClusterName": {
             "type": "string",
             "value": "[variables('clusterName')]"
+        },
+        "agwName": {
+            "type": "string",
+            "value": "[variables('agwName')]"
         }
     }
 }
