@@ -12,3 +12,10 @@ az group create --name rg-bu0001a0008 --location eastus2
 # And then deploy the cluster into it.
 # [This takes about 15 minutes.]
 az deployment group create --resource-group rg-bu0001a0008 --template-file cluster-stamp.json --parameters "@azuredeploy.parameters.prod.json"
+
+# Get AKS Kubeconfig Credntials
+az aks get-credentials -n $AKS_NAME -g rg-bu0001a0008
+
+# Deploy flux
+kubectl create namespace flux
+kubectl apply -f ./cluster-settings/flux.yaml --namespace flux
