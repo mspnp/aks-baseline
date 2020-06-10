@@ -1,0 +1,167 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: flux
+  name: flux
+  namespace: cluster-baseline-settings
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: flux
+  labels:
+    app.kubernetes.io/name: flux
+rules:
+  - apiGroups: ['*']
+    resources: ['*']
+    verbs: ['*']
+  - nonResourceURLs: ['*']
+    verbs: ['*']
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: flux
+  labels:
+    app.kubernetes.io/name: flux
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: flux
+subjects:
+  - kind: ServiceAccount
+    name: flux
+    namespace: cluster-baseline-settings
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flux
+  namespace: cluster-baseline-settings
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: flux
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/port: "3031"
+      labels:
+        app.kubernetes.io/name: flux
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+        agentpool: npuser01
+      serviceAccountName: flux
+      volumes:
+      - name: git-key
+        secret:
+          secretName: flux-git-deploy
+      containers:
+      - name: flux
+        image: docker.io/fluxcd/flux:1.19.0
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          capabilities:
+            drop:
+            - ALL
+          allowPrivilegeEscalation: false
+          # create folder in the root fs when cloning repos
+          readOnlyRootFilesystem: false
+          # access to root folder like /.kube/config
+          runAsNonRoot: false
+        volumeMounts:
+        - name: git-key
+          mountPath: /etc/fluxd/ssh
+          readOnly: false
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        ports:
+        - containerPort: 3030
+        livenessProbe:
+          httpGet:
+            port: 3030
+            path: /api/flux/v6/identity.pub
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            port: 3030
+            path: /api/flux/v6/identity.pub
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+        args:
+        - --git-url=https://github.com/mspnp/reference-architectures.git
+        - --git-branch=master
+        - --git-path=aks/secure-baseline/cluster-baseline-settings
+        # this configuration prevents flux from syncing changes from your cluster to the git repo. If two way sync is required, please take a look at  https://docs.fluxcd.io/en/1.19.0/tutorials/get-started/#giving-write-access
+        - --git-readonly
+        - --sync-state=secret
+        - --listen-metrics=:3031
+        - --git-timeout=5m
+---
+# This secret is ok to be initialized as empty as this will be used to store
+# sync annotations because sync state is secret implied by git-readonly
+apiVersion: v1
+kind: Secret
+metadata:
+  name: flux-git-deploy
+  namespace: cluster-baseline-settings
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: memcached
+  namespace: cluster-baseline-settings
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: memcached
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: memcached
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+        agentpool: npuser01
+      containers:
+      - name: memcached
+        image: memcached:1.5.20
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: 512Mi
+        args:
+        - -m 512
+        - -I 5m    # Maximum size for one item
+        - -p 11211 # Default port
+        # - -vv    # Uncomment to get logs of each request and response.
+        ports:
+        - name: clients
+          containerPort: 11211
+        securityContext:
+          runAsUser: 11211
+          runAsGroup: 11211
+          allowPrivilegeEscalation: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: memcached
+  namespace: cluster-baseline-settings
+spec:
+  ports:
+    - name: memcached
+      port: 11211
+  selector:
+    app.kubernetes.io/name: memcached
