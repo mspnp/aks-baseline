@@ -13,6 +13,7 @@ APP_NAME="AksDeployerPrincipal"
 #replace contosobicycle.com with your own domain
 AKS_ENDUSER_NAME=aksuser@contosobicycle.com
 AKS_ENDUSER_PASSWORD=**Your valid password**
+
 k8sRbacAadProfileAdminGroupName="${aksName}-add-admin"
 
 echo ""
@@ -51,7 +52,7 @@ az group create --name "${RGNAMESPOKES}" --location "${RGLOCATION}"
 
 az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "./networking/spoke-BU0001A0008.json" --name "spoke-0001" --parameters \
           location=$RGLOCATION \
-          hubVnetResourceId=$HUB_VNET_ID
+          hubVnetResourceId=$HUB_VNET_ID 
 
 CLUSTER_VNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.clusterVnetResourceId.value -o tsv)
 
@@ -74,53 +75,10 @@ echo ""
 
 az group create --name "${RGNAMECLUSTER}" --location "${RGLOCATION}"
 
-cat << EOF
-
-NEXT STEPS
----- -----
-
-1) Copy the following AKS CLuster parameters into the 1-cluster-stamp.sh
-
-CLUSTER_VNET_RESOURCE_ID=${CLUSTER_VNET_RESOURCE_ID}
-RGNAMECLUSTER=${RGNAMECLUSTER}
-RGLOCATION=${RGLOCATION}
-FIREWALL_SUBNET_RESOURCEID=${FIREWALL_SUBNET_RESOURCEID}
-GATEWAY_SUBNET_RESOURCE_ID=${GATEWAY_SUBNET_RESOURCE_ID}
-k8sRbacAadProfileAdminGroupObjectID=${k8sRbacAadProfileAdminGroupObjectID}
-k8sRbacAadProfileTenantId=${k8sRbacAadProfileTenantId}
-
-2) The user which will stamp the cluster will need the following minimum permissions
-
-2.1) On the Cluster Vnet (${CLUSTER_VNET_RESOURCE_ID})
-a. Network Contributor
-b. User Access Administrator
-
-2.2) Role on Cluster Vnet Resource Group (${RGNAMESPOKES}). It is needed 'Microsoft.Resources/deployments/write', 
-a. It is possible to create a custom role with that permission and assign to the user
-b. The minimum built-in Role with that permission is 'Managed Applications Reader'
-c. Network Contributor role has that permission, but also much more
-
-2.3) A new resource group was created for the AKS Cluster (${RGNAMECLUSTER}). The user needs against this resource group the following roles
-a. Contributor
-b. User Access Administrator
-
-3) Please login with the selected user
-
-4) Execute '1-cluster-stamp.sh'
-
-EOF
-
 #Creating service principal with minimum privilage to deploy the cluster
 APP_ID=$(az ad sp create-for-rbac -n $APP_NAME --skip-assignment --query appId -o tsv)
 APP_PASS=$(az ad sp credential reset --name $APP_NAME --credential-description "AKSClientSecret" --query password -o tsv)
 APP_TENANT_ID=$(az account show --query tenantId -o tsv)
-
-# User Parameters.
-echo "# User Parameters . Copy into the 1-cluster-stamp.sh"
-
-echo "APP_ID=${APP_ID}"
-echo "APP_PASS=$'${APP_PASS}'"
-echo "APP_TENANT_ID=${APP_TENANT_ID}"
 
 # Deploy RBAC for resources after AAD propagation
 until az ad sp show --id ${APP_ID} &> /dev/null ; do echo "Waiting for AAD propagation" && sleep 5; done
@@ -142,6 +100,47 @@ az role assignment create  --assignee $APP_ID --role 'User Access Administrator'
 RGNAMESPOKES_RESOURCE_ID=$(az group show -n ${RGNAMESPOKES} --query id -o tsv)
 
 az role assignment create  --assignee $APP_ID --role 'Network Contributor' --scope $RGNAMESPOKES_RESOURCE_ID
+
+cat << EOF
+
+NEXT STEPS
+---- -----
+
+1) Copy the following AKS CLuster parameters into the 1-cluster-stamp.sh
+
+CLUSTER_VNET_RESOURCE_ID=${CLUSTER_VNET_RESOURCE_ID}
+RGNAMECLUSTER=${RGNAMECLUSTER}
+RGLOCATION=${RGLOCATION}
+FIREWALL_SUBNET_RESOURCEID=${FIREWALL_SUBNET_RESOURCEID}
+GATEWAY_SUBNET_RESOURCE_ID=${GATEWAY_SUBNET_RESOURCE_ID}
+k8sRbacAadProfileAdminGroupObjectID=${k8sRbacAadProfileAdminGroupObjectID}
+k8sRbacAadProfileTenantId=${k8sRbacAadProfileTenantId}
+RGNAMESPOKES=${RGNAMESPOKES}
+tenant_guid=${tenant_guid}
+main_subscription=${main_subscription}
+# User Parameters. Perhaps, you will need to scape ' on the password. The hay to scape is \'  
+APP_ID=${APP_ID}
+APP_PASS=$'${APP_PASS}'
+APP_TENANT_ID=${APP_TENANT_ID}
+
+2) Execute '1-cluster-stamp.sh'
+
+Note: The user which will stamp the cluster will need the following minimum permissions
+
+* On the Cluster Vnet (${CLUSTER_VNET_RESOURCE_ID})
+a. Network Contributor
+b. User Access Administrator
+
+*) Role on Cluster Vnet Resource Group (${RGNAMESPOKES}). It is needed 'Microsoft.Resources/deployments/write', 
+a. It is possible to create a custom role with that permission and assign to the user
+b. The minimum built-in Role with that permission is 'Managed Applications Reader'
+c. Network Contributor role has that permission, but also much more
+
+*) A new resource group was created for the AKS Cluster (${RGNAMECLUSTER}). The user needs against this resource group the following roles
+a. Contributor
+b. User Access Administrator
+
+EOF
 
 
 

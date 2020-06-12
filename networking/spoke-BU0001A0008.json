@@ -73,7 +73,8 @@
                         "name": "snet-clusternodes",
                         "properties": {
                             "addressPrefix": "10.240.0.0/22",
-                            "serviceEndpoints": [],
+                            "serviceEndpoints": [
+                            ],
                             "routeTable": {
                                 "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
                             },
@@ -92,9 +93,6 @@
                         "properties": {
                             "addressPrefix": "10.240.4.16/28",
                             "serviceEndpoints": [
-                                {
-                                    "service": "Microsoft.KeyVault"
-                                }
                             ]
                         }
                     }
@@ -177,7 +175,8 @@
             "apiVersion": "2018-09-01",
             "name": "privatelink.azurecr.io",
             "location": "global",
-            "properties": {}
+            "properties": {
+            }
         },
         {
             "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
@@ -206,10 +205,7 @@
             "properties": {
                 "publicIPAllocationMethod": "Static",
                 "idleTimeoutInMinutes": 4,
-                "publicIPAddressVersion": "IPv4",
-                "dnsSettings": {
-                    "domainNameLabel": "[toLower(concat(variables('orgAppId'), '00'))]"
-                }
+                "publicIPAddressVersion": "IPv4"
             }
         }
     ],
@@ -226,8 +222,8 @@
             "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), 'snet-applicationgateways'))]",
             "type": "array"
         },
-        "appGatewayPublicIpFqdn": {
-            "value": "[reference(resourceId('Microsoft.Network/publicIpAddresses',concat('pip-', variables('orgAppId'), '-00'))).dnsSettings.fqdn]",
+        "appGwPublicIpAddress": {
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', concat('pip-', variables('orgAppId'), '-00'))).ipAddress]",
             "type": "string"
         }
     }

@@ -8,12 +8,6 @@
                 "description": "The regional network spoke VNet Resource ID that the cluster will be joined to"
             }
         },
-        "keyvaultAclAllowedSubnetResourceIds": {
-            "type": "array",
-            "metadata": {
-                "description": "the subnets to give access to the key vault"
-            }
-        },
         "k8sRbacAadProfileAdminGroupObjectID": {
             "type": "string",
             "metadata": {
@@ -24,6 +18,18 @@
             "type": "string",
             "metadata": {
                 "description": "This is tennant where the ServerAppId, ServerAppSecret, ClientAppId all reside"
+            }
+        },
+        "appGatewayListernerCertificate": {
+            "type": "string",
+            "metadata": {
+                "description": "The certificate data for app gateway TLS termination. It is base64"
+            }
+        },
+        "rootCertWilcardIngressController": {
+            "type": "string",
+            "metadata": {
+                "description": "Certificate public data as trusted root certificates application gateway backend pool. It is base64. In our case, the aks load balancer related to the ingress controller"
             }
         },
         "location": {
@@ -91,16 +97,36 @@
         "vnetNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-clusternodes')]",
 
         "agwName": "[concat( 'apw-', variables('clusterName')) ]",
-        "apwResourceId": "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]"
+        "apwResourceId": "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]",
+
+        "keyVaultName": "[concat( 'kv-', variables('clusterName'))]"
     },
     "resources": [
         {
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "name": "appw-to-keyvault",
+            "apiVersion": "2018-11-30",
+            "location": "[parameters('location')]"
+        },
+        {
             "type": "Microsoft.KeyVault/vaults",
-            "name": "[concat( 'kv-', variables('clusterName')) ]",
+            "name": "[variables('keyVaultName')]",
             "apiVersion": "2019-09-01",
             "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'appw-to-keyvault')]"
+            ],
             "properties": {
                 "accessPolicies": [
+                    {
+                        "tenantId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','appw-to-keyvault')).tenantId]",
+                        "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','appw-to-keyvault')).principalId]",
+                        "permissions": {
+                            "secrets": [
+                                "get"
+                            ]
+                        }
+                    }
                 ],
                 "sku": {
                     "family": "A",
@@ -108,18 +134,73 @@
                 },
                 "tenantId": "[subscription().tenantId]",
                 "networkAcls": {
-                    "bypass": "None",
-                    "defaultAction": "Deny",
-                    "copy": [
-                        {
-                            "name": "virtualNetworkRules",
-                            "count": "[length(parameters('keyvaultAclAllowedSubnetResourceIds'))]",
-                            "input": {
-                                "id": "[parameters('keyvaultAclAllowedSubnetResourceIds')[copyIndex('virtualNetworkRules')]]"
-                            }
-                        }
-                    ]
                 }
+            }
+        },
+        {
+
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "apiVersion": "2019-09-01",
+            "name": "[concat( variables('keyVaultName') , '/sslcert')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName') )]"
+            ],
+            "properties": {
+                "value": "[parameters('appGatewayListernerCertificate')]",
+                "recoveryLevel": "Purgeable"
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "apiVersion": "2019-09-01",
+            "name": "[concat( variables('keyVaultName') , '/backend-sslcert')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName') )]"
+            ],
+            "properties": {
+                "value": "[parameters('rootCertWilcardIngressController')]",
+                "recoveryLevel": "Purgeable"
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2018-09-01",
+            "name": "aks-ingress.contoso.com",
+            "location": "global",
+            "resources": [
+                {
+                    "type": "A",
+                    "apiVersion": "2018-09-01",
+                    "name": "bu0001a0008-00",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/privateDnsZones', 'aks-ingress.contoso.com')]"
+                    ],
+                    "properties": {
+                        "ttl": 3600,
+                        "aRecords": [
+                            {
+                                "ipv4Address": "10.240.4.4"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "properties": {
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2018-09-01",
+            "name": "[concat('aks-ingress.contoso.com/cluster-dns-link')]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones','aks-ingress.contoso.com')]"
+            ],
+            "properties": {
+                "virtualNetwork": {
+                    "id": "[parameters('targetVnetResourceId')]"
+                },
+                "registrationEnabled": false
             }
         },
         {
@@ -127,6 +208,16 @@
             "apiVersion": "2019-11-01",
             "name": "[variables('agwName')]",
             "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName') )]"
+            ],
+            "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',  'appw-to-keyvault')]": {
+                    }
+                }
+            },
             "zones": [
                 "1",
                 "2",
@@ -139,6 +230,14 @@
                     "name": "WAF_v2",
                     "tier": "WAF_v2"
                 },
+                "trustedRootCertificates": [
+                    {
+                        "name": "root-cert-wildcard-aks-ingress-contoso",
+                        "properties": {
+                            "keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/backend-sslcert')]"
+                        }
+                    }
+                ],
                 "gatewayIPConfigurations": [
                     {
                         "name": "apw-ip-configuration",
@@ -163,7 +262,7 @@
                     {
                         "name": "apw-frontend-ports",
                         "properties": {
-                            "Port": 80
+                            "port": 443
                         }
                     }
                 ],
@@ -179,32 +278,64 @@
                 },
                 "enableHttp2": false,
                 "sslCertificates": [
+                    {
+                        "name": "[concat(variables('agwName'), '-ssl-certificate')]",
+                        "properties": {
+                            "keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/sslcert')]"
+                        }
+                    }
                 ],
                 "probes": [
+                    {
+                        "name": "probe-bu0001a0008-00.aks-ingress.contoso.com",
+                        "properties": {
+                            "protocol": "Https",
+                            "path": "/favicon.ico",
+                            "interval": 30,
+                            "timeout": 30,
+                            "unhealthyThreshold": 3,
+                            "pickHostNameFromBackendHttpSettings": true,
+                            "minServers": 0,
+                            "match": {
+                            }
+                        }
+                    }
                 ],
                 "backendAddressPools": [
                     {
-                        "name": "bepool-clusteringress",
+                        "name": "bu0001a0008-00.aks-ingress.contoso.com",
                         "properties": {
                             "backendAddresses": [
+                                {
+                                    "fqdn": "bu0001a0008-00.aks-ingress.contoso.com"
+                                }
                             ]
                         }
                     }
                 ],
                 "backendHttpSettingsCollection": [
                     {
-                        "name": "httpsettings-default",
+                        "name": "aks-ingress-contoso-backendpool-httpsettings",
                         "properties": {
-                            "Port": 80,
-                            "Protocol": "Http",
+                            "port": 443,
+                            "protocol": "Https",
                             "cookieBasedAffinity": "Disabled",
-                            "requestTimeout": 20
+                            "pickHostNameFromBackendAddress": true,
+                            "requestTimeout": 20,
+                            "probe": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('agwName')),'/probes/probe-bu0001a0008-00.aks-ingress.contoso.com')]"
+                            },
+                            "trustedRootCertificates": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('agwName')), '/trustedRootCertificates/root-cert-wildcard-aks-ingress-contoso')]"
+                                }
+                            ]
                         }
                     }
                 ],
                 "httpListeners": [
                     {
-                        "name": "listener-default",
+                        "name": "listener-https",
                         "properties": {
                             "frontendIPConfiguration": {
                                 "id": "[concat(variables('apwResourceId'), '/frontendIPConfigurations/apw-frontend-ip-configuration')]"
@@ -212,8 +343,14 @@
                             "frontendPort": {
                                 "id": "[concat(variables('apwResourceId'), '/frontendPorts/apw-frontend-ports')]"
                             },
-                            "protocol": "Http",
-                            "sslCertificate": null
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(variables('apwResourceId'), '/sslCertificates/', variables('agwName'), '-ssl-certificate')]"
+                            },
+                            "hostName": "app.bicycle.contoso.com",
+                            "hostNames": [
+                            ],
+                            "requireServerNameIndication": true
                         }
                     }
                 ],
@@ -223,13 +360,13 @@
                         "properties": {
                             "RuleType": "Basic",
                             "httpListener": {
-                                "id": "[concat(variables('apwResourceId'), '/httpListeners/listener-default')]"
+                                "id": "[concat(variables('apwResourceId'), '/httpListeners/listener-https')]"
                             },
                             "backendAddressPool": {
-                                "id": "[concat(variables('apwResourceId'), '/backendAddressPools/bepool-clusteringress')]"
+                                "id": "[concat(variables('apwResourceId'), '/backendAddressPools/bu0001a0008-00.aks-ingress.contoso.com')]"
                             },
                             "backendHttpSettings": {
-                                "id": "[concat(variables('apwResourceId'), '/backendHttpSettingsCollection/httpsettings-default')]"
+                                "id": "[concat(variables('apwResourceId'), '/backendHttpSettingsCollection/aks-ingress-contoso-backendpool-httpsettings')]"
                             }
                         }
                     }
@@ -250,15 +387,6 @@
                     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
                     "resources": [
-                        {
-                            "type": "Microsoft.Network/virtualNetworks/providers/roleAssignments",
-                            "apiVersion": "2018-09-01-preview",
-                            "name": "[concat(split(parameters('targetVnetResourceId'),'/')[8], '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('networkContributorRole')))]",
-                            "properties": {
-                                "roleDefinitionId": "[variables('networkContributorRole')]",
-                                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]"
-                            }
-                        },
                         {
                             "type": "Microsoft.Network/virtualNetworks/providers/roleAssignments",
                             "apiVersion": "2018-09-01-preview",
@@ -315,8 +443,10 @@
                 "adminUserEnabled": false,
                 "networkRuleSet": {
                     "defaultAction": "Deny",
-                    "virtualNetworkRules": [],
-                    "ipRules": []
+                    "virtualNetworkRules": [
+                    ],
+                    "ipRules": [
+                    ]
                 },
                 "policies": {
                     "quarantinePolicy": {
@@ -341,7 +471,8 @@
                     "dependsOn": [
                         "[variables('defaultAcrName')]"
                     ],
-                    "properties": {}
+                    "properties": {
+                    }
                 }
             ]
         },
@@ -370,7 +501,7 @@
                     }
                 ]
             }
-        },  
+        },
         {
             "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
             "apiVersion": "2020-03-01",
