@@ -501,6 +501,33 @@
                                 }
                             ]
                         }
+                    },
+                    {
+                        "name": "Flux-Requirements",
+                        "properties": {
+                            "action": {
+                                "type": "Allow"
+                            },
+                            "priority": 300,
+                            "rules": [
+                                {
+                                    "name": "flux-to-github",
+                                    "description": "This address is required for Flux <-> Github repository with the desired cluster baseline configuration.",
+                                    "sourceIpGroups": [
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                    ],
+                                    "protocols": [
+                                        {
+                                            "protocolType": "Https",
+                                            "port": 443
+                                        }
+                                    ],
+                                    "targetFqdns": [
+                                        "github.com"
+                                    ]
+                                }
+                            ]
+                        }
                     }
                 ]
             }
