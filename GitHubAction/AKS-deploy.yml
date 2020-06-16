@@ -1,0 +1,43 @@
+# This action will deploy our cluster stamp.  It assumes the networking spoke is already in place
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# Environment Variables
+env:
+  RGNAMECLUSTER: "{YOUR-CLUSTER-RG-NAME_TO_BE_CREATED}"
+  RGLOCATION: "{REGION}"
+  REDUNDANCY_LOCATION: "{REDUDANCY_REGION}"
+  CLUSTER_VNET_RESOURCE_ID: "/subscriptions/[subscriptionId]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00"
+  k8sRbacAadProfileTenantId: "{GUID}"
+  k8sRbacAadProfileAdminGroupObjectID: "{GUID}"
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+# Login into your Azure Subscription using your Azure credentials - make sure the credentials has write permissions for the specific resource group/subscription. The credentials should be stored in GitHub Secrets - (Go to Settings Tab ->Secrets)
+# More details on how to create the SPN can be found here - https://github.com/Azure/login#configure-deployment-credentials
+    - name: Azure Login
+      uses: Azure/login@v1.1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+# Deploy the cluster into your environment, assuming all prerequesits are up and running. k8sRbacAadProfileTenantId and k8sRbacAadProfileAdminGroupObjectID are stored in the GitHub Secrets (Go to Settings->Secrets)
+    - name: Azure CLI Action
+      uses: Azure/cli@v1.0.0
+      with:
+        # Specify the script here
+        inlineScript: |
+          az group create --name ${{ env.RGNAMECLUSTER }} --location ${{ env.RGLOCATION }}
+         az deployment group $([[ ${{ github.event_name }} = pull_request ]] && echo what-if --no-pretty-print || echo create) --resource-group ${{ env.RGNAMECLUSTER }} --template-file "cluster-stamp.json" --name "cluster-0001" --parameters location=${{ env.RGLOCATION }} geoRedundancyLocation=${{ env.REDUNDANCY_LOCATION }} targetVnetResourceId=${{ env.CLUSTER_VNET_RESOURCE_ID }} k8sRbacAadProfileTenantId=${{ env.k8sRbacAadProfileTenantId }} k8sRbacAadProfileAdminGroupObjectID=${{ env.k8sRbacAadProfileAdminGroupObjectID }}
+        azcliversion: 2.6.0
