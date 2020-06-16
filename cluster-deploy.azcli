@@ -14,7 +14,8 @@ az group create --name rg-bu0001a0008 --location eastus2
 az deployment group create --resource-group rg-bu0001a0008 --template-file cluster-stamp.json --parameters "@azuredeploy.parameters.prod.json"
 
 # Get AKS Kubeconfig Credntials
-az aks get-credentials -n $AKS_NAME -g rg-bu0001a0008
+az aks get-credentials -n [cluster-name] -g rg-bu0001a0008 --admin
+
 
 # The Azure Active Directory Admin team wants to grant access to the new created
 # cluster. Initially for AAD Bicycle Contoso Tenant Administrators. Therefore a new
