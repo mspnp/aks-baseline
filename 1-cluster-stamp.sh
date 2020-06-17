@@ -6,7 +6,7 @@ AKS_ENDUSER_NAME=aksuser1@contosobicycle.com
 AKS_ENDUSER_PASSWORD=**Your valid password**
 
 
-# Cluster Parameters. 
+# Cluster Parameters.
 # Copy from pre-cluster-stump.sh output
 CLUSTER_VNET_RESOURCE_ID=
 RGNAMECLUSTER=
@@ -27,7 +27,7 @@ APP_TENANT_ID=
 # Ideally should be the paired region of $RGLOCATION
 GEOREDUNDANCY_LOCATION=centralus
 
-APPGW_APP_URL=app.bicycle.contoso.com
+APPGW_APP_URL=bicycle.contoso.com
 
 # Login with the service principal created with minimum privilege. It is a demo approach.
 # A real user with the correct privilege should login
@@ -48,7 +48,7 @@ ROOT_CERT_WILCARD_AKS_INGRESS_CONTROLLER=$(cat traefik-ingress-internal-aks-ingr
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -out appgw.crt \
         -keyout appgw.key \
-        -subj "/CN=app.bicycle.contoso.com/O=Contoso Bicycle"
+        -subj "/CN=bicycle.contoso.com/O=Contoso Bicycle"
 openssl pkcs12 -export -out appgw.pfx -in appgw.crt -inkey appgw.key -passout pass:
 APPGW_CERT_DATA=$(cat appgw.pfx | base64 -w 0)
 rm appgw.crt appgw.key appgw.pfx
@@ -61,7 +61,7 @@ az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "
                k8sRbacAadProfileAdminGroupObjectID=$k8sRbacAadProfileAdminGroupObjectID \
                k8sRbacAadProfileTenantId=$k8sRbacAadProfileTenantId \
                appGatewayListernerCertificate=$APPGW_CERT_DATA \
-               rootCertWilcardIngressController=$ROOT_CERT_WILCARD_AKS_INGRESS_CONTROLLER 
+               rootCertWilcardIngressController=$ROOT_CERT_WILCARD_AKS_INGRESS_CONTROLLER
 
 AKS_CLUSTER_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.aksClusterName.value -o tsv)
 
@@ -84,7 +84,7 @@ k8sEditAadGroup=$(az ad group create --display-name ${k8sEditAadGroupName} --mai
 k8sViewAadGroupName="k8s-view-clusterrole-${AKS_CLUSTER_NAME}"
 k8sViewAadGroup=$(az ad group create --display-name ${k8sViewAadGroupName} --mail-nickname ${k8sViewAadGroupName} --query objectId -o tsv)
 
-#EXAMPLE of an User in View Group 
+#EXAMPLE of an User in View Group
 AKS_ENDUSR_OBJECTID=$(az ad user create --display-name $AKS_ENDUSER_NAME --user-principal-name $AKS_ENDUSER_NAME --password $AKS_ENDUSER_PASSWORD --query objectId -o tsv)
 az ad group member add --group k8s-view-clusterrole --member-id $AKS_ENDUSR_OBJECTID
 
@@ -117,7 +117,7 @@ kubectl wait --namespace a0008 \
   --selector=app.kubernetes.io/name=aspnetapp \
   --timeout=90s
 echo 'you must see the EXTERNAL-IP 10.240.4.4, please wait till it is ready. It takes a some minutes, then cntr+c'
-kubectl get svc -n traefik --watch  -n a0008  
+kubectl get svc -n traefik --watch  -n a0008
 
 cat << EOF
 

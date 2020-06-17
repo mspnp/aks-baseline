@@ -347,7 +347,7 @@
                             "sslCertificate": {
                                 "id": "[concat(variables('apwResourceId'), '/sslCertificates/', variables('agwName'), '-ssl-certificate')]"
                             },
-                            "hostName": "app.bicycle.contoso.com",
+                            "hostName": "bicycle.contoso.com",
                             "hostNames": [
                             ],
                             "requireServerNameIndication": true
