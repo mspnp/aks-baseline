@@ -8,11 +8,6 @@
     "geoRedundancyLocation": {
       "value": "centralus"
     },
-    "keyvaultAclAllowedSubnetResourceIds": {
-      "value": [
-        "/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-applicationgateways"
-      ]
-    },
     "targetVnetResourceId": {
       "value": "/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00"
     },

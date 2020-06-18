@@ -46,7 +46,7 @@ az deployment group create --resource-group rg-enterprise-networking-spokes --te
 # hub needs in order to support its unique spokes' requirements. As new spokes are attached and new
 # requirements arise for the regional hub, they will be added to this master template file.
 # [This takes about three minutes to run.]
-az deployment group create --resource-group rg-enterprise-networking-hubs --template-file hub-regionA.json --parameters location=eastus2 nodepoolSubnetResourceIds="['/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-clusternodes']" keyVaultFirewallRuleSubnetResourceIds="['/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-applicationgateways']"
+az deployment group create --resource-group rg-enterprise-networking-hubs --template-file hub-regionA.json --parameters location=eastus2 nodepoolSubnetResourceIds="['/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-clusternodes']"
 
 # At this point the networking team has delivered a spoke in which BU 0001's app team can lay down
 # their AKS cluster (ID: A0008). The networking team provides the necessary information to the app team

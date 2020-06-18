@@ -33,7 +33,10 @@
 
         "routeTableName": "[concat('route-', variables('clusterVNetName'), '-clusternodes-to-hub')]",
         "hubRgName": "[split(parameters('hubVnetResourceId'),'/')[4]]",
-        "hubNetworkName": "[split(parameters('hubVnetResourceId'),'/')[8]]"
+        "hubNetworkName": "[split(parameters('hubVnetResourceId'),'/')[8]]",
+
+        "acrPrivateDnsZonesName": "privatelink.azurecr.io",
+        "akvPrivateDnsZonesName": "privatelink.vaultcore.azure.net"
     },
     "resources": [
         {
@@ -91,9 +94,7 @@
                     {
                         "name": "snet-applicationgateways",
                         "properties": {
-                            "addressPrefix": "10.240.4.16/28",
-                            "serviceEndpoints": [
-                            ]
+                            "addressPrefix": "10.240.4.16/28"
                         }
                     }
                 ],
@@ -173,7 +174,15 @@
         {
             "type": "Microsoft.Network/privateDnsZones",
             "apiVersion": "2018-09-01",
-            "name": "privatelink.azurecr.io",
+            "name": "[variables('acrPrivateDnsZonesName')]",
+            "location": "global",
+            "properties": {
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2018-09-01",
+            "name": "[variables('akvPrivateDnsZonesName')]",
             "location": "global",
             "properties": {
             }
@@ -181,11 +190,27 @@
         {
             "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
             "apiVersion": "2018-09-01",
-            "name": "[concat('privatelink.azurecr.io', '/', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))))]",
+            "name": "[concat(variables('acrPrivateDnsZonesName'), '/', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))))]",
             "location": "global",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
-                "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.azurecr.io')]"
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
+            ],
+            "properties": {
+                "virtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+                },
+                "registrationEnabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2018-09-01",
+            "name": "[concat(variables('akvPrivateDnsZonesName'), '/', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))))]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('akvPrivateDnsZonesName'))]"
             ],
             "properties": {
                 "virtualNetwork": {

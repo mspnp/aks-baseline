@@ -132,9 +132,51 @@
                     "family": "A",
                     "name": "standard"
                 },
-                "tenantId": "[subscription().tenantId]",
-                "networkAcls": {
-                }
+                "tenantId": "[subscription().tenantId]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2020-04-01",
+            "name": "nodepool-to-akv",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+            ],
+            "properties": {
+                "subnet": {
+                    "id": "[variables('vnetNodePoolSubnetResourceId')]"
+                },
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "nodepoolsubnet-to-akv",
+                        "properties": {
+                            "privateLinkServiceId": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+                            "groupIds": [
+                                "vault"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+            "apiVersion": "2020-04-01",
+            "name": "nodepool-to-akv/default",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', 'nodepool-to-akv')]"
+            ],
+            "properties": {
+                "privateDnsZoneConfigs": [
+                    {
+                        "name": "privatelink-akv-net",
+                        "properties": {
+                            "privateDnsZoneId": "[resourceId(variables('vNetResourceGroup'),'Microsoft.Network/privateDnsZones','privatelink.vaultcore.azure.net')]"
+                        }
+                    }
+                ]
             }
         },
         {
@@ -513,7 +555,7 @@
         },
         {
             "type": "Microsoft.Network/privateEndpoints",
-            "apiVersion": "2020-03-01",
+            "apiVersion": "2020-04-01",
             "name": "nodepool-to-acr",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -539,7 +581,7 @@
         },
         {
             "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-            "apiVersion": "2020-03-01",
+            "apiVersion": "2020-04-01",
             "name": "[concat('nodepool-to-acr', '/default')]",
             "location": "[parameters('location')]",
             "dependsOn": [
