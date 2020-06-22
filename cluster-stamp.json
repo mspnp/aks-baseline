@@ -272,6 +272,14 @@
                     "name": "WAF_v2",
                     "tier": "WAF_v2"
                 },
+                "sslPolicy": {
+                    "policyType": "Custom",
+                    "cipherSuites": [
+                        "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+                        "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+                    ],
+                    "minProtocolVersion": "TLSv1_2"
+                },
                 "trustedRootCertificates": [
                     {
                         "name": "root-cert-wildcard-aks-ingress-contoso",
