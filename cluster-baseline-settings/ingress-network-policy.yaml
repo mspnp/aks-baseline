@@ -1,7 +1,7 @@
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
-  name: default-deny-ingress
+  name: allow-only-ingress-to-workload
   namespace: a0008
 spec:
   podSelector:
@@ -13,3 +13,4 @@ spec:
       podSelector:
         matchLabels:
           app.kubernetes.io/name: traefik-ingress-ilb
+          app.kubernetes.io/instance: traefik-ingress-ilb
