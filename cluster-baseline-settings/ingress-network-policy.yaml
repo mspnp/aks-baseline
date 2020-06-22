@@ -1,0 +1,15 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: default-deny-ingress
+  namespace: a0008
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: aspnetapp
+  ingress:
+  - from:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: traefik-ingress-ilb
