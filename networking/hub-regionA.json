@@ -62,10 +62,6 @@
             "metadata": {
                 "description": "A /27 under the VNet Address Space for Azure Bastion"
             }
-        },
-        "serviceTagLocation": {
-            "type": "string",
-            "defaultValue": "EastUS2"
         }
     },
     "variables": {

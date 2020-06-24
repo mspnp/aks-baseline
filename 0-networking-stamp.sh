@@ -65,9 +65,7 @@ GATEWAY_SUBNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-
 SERVICETAGS_LOCATION=$(az account list-locations --query "[?name=='${RGLOCATION}'].displayName" -o tsv | sed 's/[[:space:]]//g')
 az deployment group create --resource-group "${RGNAME}" --template-file "./networking/hub-regionA.json" --name "hub-0002" --parameters \
             location=$RGLOCATION \
-            nodepoolSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID']" \
-            keyVaultFirewallRuleSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID']" \
-            serviceTagLocation=$SERVICETAGS_LOCATION
+            nodepoolSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID']"
 
 echo ""
 echo "# Preparing cluster parameters"
