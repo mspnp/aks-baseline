@@ -511,7 +511,39 @@
                     "name": "PerGB2018"
                 },
                 "retentionInDays": 30
-            }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2015-03-20",
+                    "name": "PrometheusQuery1",
+                    "type": "savedSearches",
+                    "dependsOn": [
+                        "[concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
+                    ],
+                    "properties": {
+                        "eTag": "*",
+                        "category": "Prometheus",
+                        "displayName": "All collected Prometheus information",
+                        "query": "InsightsMetrics | where Namespace == \"prometheus\"",
+                        "version": 1
+                    }
+                },
+                {
+                    "apiVersion": "2015-03-20",
+                    "name": "PrometheusQuery2",
+                    "type": "savedSearches",
+                    "dependsOn": [
+                        "[concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
+                    ],
+                    "properties": {
+                        "eTag": "*",
+                        "category": "Prometheus",
+                        "displayName": "Increase number of forbidden response on the Ingress Controller",
+                        "query": "let value = toscalar(InsightsMetrics | where Namespace == \"prometheus\" and Name == \"traefik_entrypoint_requests_total\" | where parse_json(Tags).code == 403 | summarize Value = avg(Val) by bin(TimeGenerated, 5m) | summarize min = min(Value)); InsightsMetrics | where Namespace == \"prometheus\" and Name == \"traefik_entrypoint_requests_total\" | where parse_json(Tags).code == 403 | summarize AggregatedValue = avg(Val)-value by bin(TimeGenerated, 5m) | order by TimeGenerated | render barchart",
+                        "version": 1
+                    }
+                }
+            ]
         },
         {
             "name": "PodFailedPhase",

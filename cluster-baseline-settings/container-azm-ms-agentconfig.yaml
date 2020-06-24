@@ -1,0 +1,36 @@
+kind: ConfigMap
+apiVersion: v1
+data:
+  #https://github.com/microsoft/OMS-docker/blob/ci_feature_prod/Kubernetes/container-azm-ms-agentconfig.yaml
+  schema-version: v1
+  config-version: ver1
+  log-data-collection-settings: |-
+    [log_collection_settings]
+       [log_collection_settings.stdout]
+          enabled = true
+          exclude_namespaces = ["kube-system"]
+       [log_collection_settings.stderr]
+          enabled = true
+          exclude_namespaces = ["kube-system"]
+       [log_collection_settings.env_var]
+          enabled = true
+       [log_collection_settings.enrich_container_logs]
+          enabled = false
+       [log_collection_settings.collect_all_kube_events]
+          enabled = false
+  prometheus-data-collection-settings: |-
+    [prometheus_data_collection_settings.cluster]
+        interval = "1m"
+        monitor_kubernetes_pods = true
+        monitor_kubernetes_pods_namespaces = ["a0008"]
+    [prometheus_data_collection_settings.node]
+        interval = "1m"
+        urls = ["http://$NODE_IP:9103/metrics"]
+  alertable-metrics-configuration-settings: |-
+    [alertable_metrics_configuration_settings.container_resource_utilization_thresholds]
+        container_cpu_threshold_percentage = 95.0
+        container_memory_rss_threshold_percentage = 95.0
+        container_memory_working_set_threshold_percentage = 95.0
+metadata:
+  name: container-azm-ms-agentconfig
+  namespace: kube-system

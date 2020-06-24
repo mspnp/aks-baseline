@@ -111,6 +111,9 @@ rm traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-inte
 kubectl apply -f ../workload/traefik.yaml
 kubectl apply -f ../workload/aspnetapp.yaml
 
+#Prometheus-Azure Monitor Integration
+kubectl apply -f ./cluster-baseline-settings/container-azm-ms-agentconfig.yaml
+
 echo 'the ASPNET Core webapp sample is all setup. Wait until is ready to process requests running'
 kubectl wait --namespace a0008 \
   --for=condition=ready pod \
