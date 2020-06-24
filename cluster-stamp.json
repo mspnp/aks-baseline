@@ -85,9 +85,13 @@
         "networkContributorRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7')]",
         "monitoringMetricsPublisherRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
         "acrPullRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
+        "managedIdentityOperatorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830')]",
+        "virtualMachineContributorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
+        "readerRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
 
         "subRgUniqueString": "[uniqueString('aks', subscription().subscriptionId, resourceGroup().id)]",
 
+        "nodeResourceGroupName": "[concat('rg-', variables('clusterName'), '-nodepools')]",
         "clusterName": "[concat('aks-', variables('subRgUniqueString'))]",
         "logAnalyticsWorkspaceName": "[concat('la-', variables('clusterName'))]",
         "containerInsightsSolutionName": "[concat('ContainerInsights(', variables('logAnalyticsWorkspaceName'),')')]",
@@ -109,12 +113,19 @@
             "location": "[parameters('location')]"
         },
         {
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "name": "aksic-to-keyvault",
+            "apiVersion": "2018-11-30",
+            "location": "[parameters('location')]"
+        },
+        {
             "type": "Microsoft.KeyVault/vaults",
             "name": "[variables('keyVaultName')]",
             "apiVersion": "2019-09-01",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'appw-to-keyvault')]"
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'appw-to-keyvault')]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'aksic-to-keyvault')]"
             ],
             "properties": {
                 "accessPolicies": [
@@ -123,6 +134,18 @@
                         "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','appw-to-keyvault')).principalId]",
                         "permissions": {
                             "secrets": [
+                                "get"
+                            ]
+                        }
+                    },
+                    {
+                        "tenantId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','aksic-to-keyvault')).tenantId]",
+                        "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','aksic-to-keyvault')).principalId]",
+                        "permissions": {
+                            "secrets": [
+                                "get"
+                            ],
+                            "certificates": [
                                 "get"
                             ]
                         }
@@ -452,6 +475,33 @@
             }
         },
         {
+            "type": "Microsoft.Resources/deployments",
+            "name": "EnsureClusterUserAssignedHasRbacToManageVMSS",
+            "apiVersion": "2017-05-10",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+            ],
+            "resourceGroup": "[variables('nodeResourceGroupName')]",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "name": "[guid(resourceGroup().id)]",
+                            "apiVersion": "2018-09-01-preview",
+                            "comments": "It is required to grant the AKS cluster with Virtual Machine Contributor role permissions over the cluster infrastructure resource group to work with Managed Identities and aad-pod-identity. Otherwise MIC component fails while attempting to update MSI on VMSS cluster nodes",
+                            "properties": {
+                                "roleDefinitionId": "[variables('virtualMachineContributorRole')]",
+                                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]"
+                            }
+                        }
+                    ]
+                }
+            }
+        },{
             "type": "Microsoft.OperationalInsights/workspaces",
             "apiVersion": "2015-11-01-preview",
             "name": "[variables('logAnalyticsWorkspaceName')]",
@@ -690,7 +740,7 @@
                         "enabled": false
                     }
                 },
-                "nodeResourceGroup": "[concat('rg-', variables('clusterName'), '-nodepools')]",
+                "nodeResourceGroup": "[variables('nodeResourceGroupName')]",
                 "enableRBAC": true,
                 "enablePodSecurityPolicy": false,
                 "maxAgentPools": 2,
@@ -764,6 +814,34 @@
             }
         },
         {
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities/providers/roleAssignments",
+            "name": "[concat('aksic-to-keyvault', '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('managedIdentityOperatorRole')))]",
+            "apiVersion": "2018-09-01-preview",
+            "comments": "Grant the AKS cluster with Manage Identity Operator role permissions over the cluster resource group",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+            ],
+            "properties": {
+                "roleDefinitionId": "[variables('managedIdentityOperatorRole')]",
+                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]"
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/providers/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
+            "name": "[concat(variables('keyVaultName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('readerRole')))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'aksic-to-keyvault')]"
+            ],
+            "comments": "Grant the AKS cluster ingress controller with reader role permissions over KeyVault",
+            "properties": {
+                "roleDefinitionId": "[variables('readerRole')]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','aksic-to-keyvault')).principalId]",
+                "scope": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+            }
+        },
+        {
             "type": "Microsoft.ContainerRegistry/registries/providers/diagnosticSettings",
             "apiVersion": "2017-05-01-preview",
             "name": "[concat(variables('defaultAcrName'), '/Microsoft.Insights/default')]",
@@ -814,6 +892,18 @@
         "agwName": {
             "type": "string",
             "value": "[variables('agwName')]"
+        },
+        "aksIngressControllerUserManageIdentityResourceId":{
+            "type":"string",
+            "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'aksic-to-keyvault')]"
+        },
+        "aksIngressControllerUserManageIdentityClientId":{
+            "type":"string",
+            "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','aksic-to-keyvault')).clientId]"
+        },
+        "keyVaultName":{
+            "type":"string",
+            "value": "[variables('keyVaultName')]"
         }
     }
 }

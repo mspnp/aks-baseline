@@ -1,0 +1,46 @@
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzurePodIdentityException
+metadata:
+  name: aad-pod-identity-mic-exception
+  namespace: cluster-baseline-settings
+spec:
+  podLabels:
+    app.kubernetes.io/name: aad-pod-identity
+    app.kubernetes.io/instance: aad-pod-identity
+    app.kubernetes.io/component: mic
+---
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzurePodIdentityException
+metadata:
+  name: aks-addon-exception
+  namespace: kube-system
+spec:
+  podLabels:
+    kubernetes.azure.com/managedby: aks
+---
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzurePodIdentityException
+metadata:
+  name: aks-azure-policy-exception
+  namespace: kube-system
+spec:
+  podLabels:
+    app: azure-policy
+---
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzurePodIdentityException
+metadata:
+  name: oms-agent-exception
+  namespace: kube-system
+spec:
+  podLabels:
+    component: oms-agent
+---
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzurePodIdentityException
+metadata:
+  name: oms-agent-rs-exception
+  namespace: kube-system
+spec:
+  podLabels:
+    rsName: omsagent-rs
