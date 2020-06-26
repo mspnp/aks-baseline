@@ -114,6 +114,9 @@ kubectl apply -f ../workload/aspnetapp.yaml
 #Prometheus-Azure Monitor Integration
 kubectl apply -f ./cluster-baseline-settings/container-azm-ms-agentconfig.yaml
 
+kubectl create namespace cluster-baseline-settings
+kubectl apply -f ./cluster-baseline-settings/kured-1.4.0-dockerhub.yaml
+
 echo 'the ASPNET Core webapp sample is all setup. Wait until is ready to process requests running'
 kubectl wait --namespace a0008 \
   --for=condition=ready pod \

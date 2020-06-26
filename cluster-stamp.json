@@ -501,7 +501,8 @@
                     ]
                 }
             }
-        },{
+        },
+        {
             "type": "Microsoft.OperationalInsights/workspaces",
             "apiVersion": "2015-11-01-preview",
             "name": "[variables('logAnalyticsWorkspaceName')]",
@@ -540,6 +541,21 @@
                         "category": "Prometheus",
                         "displayName": "Increase number of forbidden response on the Ingress Controller",
                         "query": "let value = toscalar(InsightsMetrics | where Namespace == \"prometheus\" and Name == \"traefik_entrypoint_requests_total\" | where parse_json(Tags).code == 403 | summarize Value = avg(Val) by bin(TimeGenerated, 5m) | summarize min = min(Value)); InsightsMetrics | where Namespace == \"prometheus\" and Name == \"traefik_entrypoint_requests_total\" | where parse_json(Tags).code == 403 | summarize AggregatedValue = avg(Val)-value by bin(TimeGenerated, 5m) | order by TimeGenerated | render barchart",
+                        "version": 1
+                    }
+                },
+                {
+                    "apiVersion": "2015-03-20",
+                    "name": "PrometheusQuery3",
+                    "type": "savedSearches",
+                    "dependsOn": [
+                        "[concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
+                    ],
+                    "properties": {
+                        "eTag": "*",
+                        "category": "Prometheus",
+                        "displayName": "Nodes reboot required by kured",
+                        "query": "InsightsMetrics | where Namespace == \"prometheus\" and Name == \"kured_reboot_required\" | where Val > 0",
                         "version": 1
                     }
                 }
@@ -925,16 +941,16 @@
             "type": "string",
             "value": "[variables('agwName')]"
         },
-        "aksIngressControllerUserManageIdentityResourceId":{
-            "type":"string",
+        "aksIngressControllerUserManageIdentityResourceId": {
+            "type": "string",
             "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'aksic-to-keyvault')]"
         },
-        "aksIngressControllerUserManageIdentityClientId":{
-            "type":"string",
+        "aksIngressControllerUserManageIdentityClientId": {
+            "type": "string",
             "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','aksic-to-keyvault')).clientId]"
         },
-        "keyVaultName":{
-            "type":"string",
+        "keyVaultName": {
+            "type": "string",
             "value": "[variables('keyVaultName')]"
         }
     }
