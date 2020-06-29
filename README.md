@@ -113,10 +113,10 @@ This implementation uses the [ASPNET Core Docker sample web app](https://github.
    export K8S_RBAC_AAD_PROFILE_TENANTID=$(az account show --query tenantId --output tsv)
    ```
 
-1. Create a [new AAD user and group](./deploy/azcli/aad/aad.azcli) for Kubernetes RBAC purposes
+1. Create a [new AAD user and group](./inner-loop-scripts/azcli/aad/aad.azcli) for Kubernetes RBAC purposes
    > :bulb: You can execute `.azcli` files from Visual Studio Code.
-1. Provision [a regional hub and spoke virtual network](./deploy/azcli/network-deploy.azcli)
-1. Create [the baseline AKS cluster](./deploy/azcli/cluster-deploy.azcli)
+1. Provision [a regional hub and spoke virtual network](./inner-loop-scripts/azcli/network-deploy.azcli)
+1. Create [the baseline AKS cluster](./inner-loop-scripts/azcli/cluster-deploy.azcli)
 
 ### Flux as the GitOps solution
 
@@ -293,9 +293,9 @@ For your reference, a [starter GitHub Actions workflow](./github-workflow/AKS-de
 
 ## Deployment Alternatives
 
-We have also provided some sample deployment scripts that you could adapt for your own purposes while doing a POC/spike on this.  Those scripts are found in the [deploy directory](./deploy). They include some additional considerations, and include some additional narrative as well. Consider checking them out.
+We have also provided some sample deployment scripts that you could adapt for your own purposes while doing a POC/spike on this. Those scripts are found in the [inner-loop-scripts directory](./inner-loop-scripts). They include some additional considerations, and include some additional narrative as well. Consider checking them out.
 
-## Next Steps
+## See also
 
 * [Azure Kubernetes Service Documentation](https://docs.microsoft.com/azure/aks/)
 * [Microsoft Azure Well-Architected Framework](https://docs.microsoft.com/azure/architecture/framework/)
