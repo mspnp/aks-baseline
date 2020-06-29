@@ -17,7 +17,7 @@ A Bash shell-based deployment was built for inner-loop work. This is found in th
 ```bash
 # [This takes thirty minutes to run.]
 ./shell/0-networking-stamp.sh
-./shell/1-cluster-stamp.sh`
+./shell/1-cluster-stamp.sh
 ```
 
 ### Clean up
@@ -33,7 +33,7 @@ An alternative method was capturing the steps in pure `az` cli commands, and put
 
 ### Deploy
 
-1. Open the `azcli` directory in Visual Studio Code.
+1. Open the [`azcli` directory](./azcli) in Visual Studio Code.
 1. Walk through the `az` commands found in `aad-deploy.azcli`.
 1. Walk through the `az` commands found in `network-deploy.azcli`, updating variables as needed.
 1. Walk through the `az` commands found in `cluster-deploy.azcli`.
