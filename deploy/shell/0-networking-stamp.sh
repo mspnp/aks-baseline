@@ -40,7 +40,7 @@ az account set -s $main_subscription
 #Main Network.Build the hub. First arm template execution and catching outputs. This might take about 6 minutes
 az group create --name "${RGNAME}" --location "${RGLOCATION}"
 
-az deployment group create --resource-group "${RGNAME}" --template-file "./networking/hub-default.json"  --name "hub-0001" --parameters \
+az deployment group create --resource-group "${RGNAME}" --template-file "../../networking/hub-default.json"  --name "hub-0001" --parameters \
          location=$RGLOCATION
 
 HUB_VNET_ID=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.hubVnetId.value -o tsv)
@@ -50,7 +50,7 @@ FIREWALL_SUBNET_RESOURCEID=$(az deployment group show -g $RGNAME -n hub-0001 --q
 #Cluster Subnet.Build the spoke. Second arm template execution and catching outputs. This might take about 2 minutes
 az group create --name "${RGNAMESPOKES}" --location "${RGLOCATION}"
 
-az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "./networking/spoke-BU0001A0008.json" --name "spoke-0001" --parameters \
+az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "../../networking/spoke-BU0001A0008.json" --name "spoke-0001" --parameters \
           location=$RGLOCATION \
           hubVnetResourceId=$HUB_VNET_ID 
 
@@ -63,7 +63,7 @@ GATEWAY_SUBNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-
 #Main Network Update. Third arm template execution and catching outputs. This might take about 3 minutes
 
 SERVICETAGS_LOCATION=$(az account list-locations --query "[?name=='${RGLOCATION}'].displayName" -o tsv | sed 's/[[:space:]]//g')
-az deployment group create --resource-group "${RGNAME}" --template-file "./networking/hub-regionA.json" --name "hub-0002" --parameters \
+az deployment group create --resource-group "${RGNAME}" --template-file "../../networking/hub-regionA.json" --name "hub-0002" --parameters \
             location=$RGLOCATION \
             nodepoolSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID']"
 

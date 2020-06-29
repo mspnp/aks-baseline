@@ -11,7 +11,7 @@ az group create --name rg-bu0001a0008 --location eastus2
 
 # And then deploy the cluster into it.
 # [This takes about 15 minutes.]
-az deployment group create --resource-group rg-bu0001a0008 --template-file cluster-stamp.json --parameters "@azuredeploy.parameters.prod.json"
+az deployment group create --resource-group rg-bu0001a0008 --template-file ../../cluster-stamp.json --parameters "@../../azuredeploy.parameters.prod.json"
 
 # Finally the app team wants to import a wildcard certificate *.aks-ingress.contoso.com to AzureKeyVault
 # A while later this certificate is going to be the one served by a Traefik Ingress Controller wich is
