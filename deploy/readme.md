@@ -8,7 +8,7 @@ In both the Shell and the azcli files, you'll also find some "narrative comments
 
 ## Shell
 
-A Bash shell-based deployment was built for inner-loop work. This is found in the `[shell](./shell)` directory.
+A Bash shell-based deployment was built for inner-loop work. This is found in the [`shell` directory](./shell).
 
 > Important: you must edit these script files to be suitable for your environment and situation.
 
@@ -29,7 +29,7 @@ A Bash shell-based deployment was built for inner-loop work. This is found in th
 
 ## .azcli files
 
-An alternative method was capturing the steps in pure `az` cli commands, and putting them in `.azcli` files. This is found in the `[azcli](./azcli)` directory. These files are not directly executable files (no expectation of `#!` or `+x`).  However, from Visual Studio Code, the [Azure CLI Tools extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azurecli) provides a "right-click run" functionality. The intent was to capture the steps in a completely OS/Shell agnostic approach.
+An alternative method was capturing the steps in pure `az` cli commands, and putting them in `.azcli` files. This is found in the [`azcli` directory](./azcli). These files are not directly executable files (no expectation of `#!` or `+x`).  However, from Visual Studio Code, the [Azure CLI Tools extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azurecli) provides a "right-click run" functionality. The intent was to capture the steps in a completely OS/Shell agnostic approach.
 
 ### Deploy
 
