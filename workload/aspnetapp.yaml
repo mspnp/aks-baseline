@@ -1,0 +1,122 @@
+#  ------------------------------------------------------------
+#   Copyright (c) Microsoft Corporation.  All rights reserved.
+#   Licensed under the MIT License (MIT). See License.txt in the repo root #  for license information.
+#  ------------------------------------------------------------
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aspnetapp-deployment
+  namespace: a0008
+  labels:
+    app.kubernetes.io/name: aspnetapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: aspnetapp
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: aspnetapp
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 3000
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - aspnetapp
+            topologyKey: "kubernetes.io/hostname"
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - traefik-ingress-ilb
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: aspnetcore-webapp-sample
+        image: mcr.microsoft.com/dotnet/core/samples:aspnetapp
+        imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - all
+        env:
+        - name: ASPNETCORE_URLS
+          value: "http://*:8080"
+        - name: COMPlus_EnableDiagnostics
+          # https://github.com/dotnet/dotnet-docker/issues/940
+          value: "0"
+      nodeSelector:
+       agentpool: npuser01
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: aspnetapp-pdb
+spec:
+  minAvailable: 75%
+  selector:
+    matchLabels:
+      app: aspnetapp
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: aspnetapp-service
+  namespace: a0008
+spec:
+  selector:
+    app.kubernetes.io/name: aspnetapp
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: aspnetapp-ingress
+  namespace: a0008
+  annotations:
+    # defines controller implementing this ingress resource: https://docs.microsoft.com/en-us/azure/dev-spaces/how-to/ingress-https-traefik
+    # ingress.class annotation is being deprecated in Kubernetes 1.18: https://kubernetes.io/docs/concepts/services-networking/ingress/#deprecated-annotation
+    # For backwards compatibility, when this annotation is set, precedence is given over the new field ingressClassName under spec.
+    kubernetes.io/ingress.class: traefik-internal
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.options: default
+    traefik.ingress.kubernetes.io/router.middlewares: app-gateway-snet@file, gzip-compress@file
+spec:
+  # ingressClassName: "traefik-internal"
+  tls:
+  - hosts:
+      - bu0001a0008-00.aks-ingress.contoso.com
+        # it is possible to opt for certificate management strategy with dedicated
+        # certificates for each TLS SNI route.
+        # In this Rereference Implementation for the sake of simplicity we use a
+        # wildcard default certificate added at Ingress Controller configuration level which is *.example.com
+        # secretName: <bu0001a0008-00-example-com-tls-secret>
+  rules:
+  - host: bu0001a0008-00.aks-ingress.contoso.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: aspnetapp-service
+          servicePort: http
+---

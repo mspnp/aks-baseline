@@ -13,24 +13,10 @@ az group create --name rg-bu0001a0008 --location eastus2
 # [This takes about 15 minutes.]
 az deployment group create --resource-group rg-bu0001a0008 --template-file cluster-stamp.json --parameters "@azuredeploy.parameters.prod.json"
 
-# Get AKS Kubeconfig Credntials
-az aks get-credentials -n [cluster-name] -g rg-bu0001a0008 --admin
-
-
-# The Azure Active Directory Admin team wants to grant access to the new created
-# cluster. Initially for AAD Bicycle Contoso Tenant Administrators. Therefore a new
-# group is created in the AAD that represents the Kubernetes Cluster Admin Role.
-# Later on the AAD Admin team will review the baseline settings of the cluster and
-# edit the `aks/security-baseline/cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml`
-# to replace the placeholder `replace-with-an-aad-group-object-id-for-k8s-admin-clusterrole`
-# with the object id for the recently added AAD group.
-
-# Deploy flux
-kubectl create namespace cluster-baseline-settings
-kubectl apply -f https://raw.githubusercontent.com/mspnp/reference-architectures/master/aks/secure-baseline/cluster-baseline-settings/flux.yaml
-kubectl wait --namespace cluster-baseline-settings \
-  --for=condition=ready pod \
-  --selector=app.kubernetes.io/name=flux \
-  --timeout=90s
-
-
+# Finally the app team wants to import a wildcard certificate *.aks-ingress.contoso.com to AzureKeyVault
+# A while later this certificate is going to be the one served by a Traefik Ingress Controller wich is
+# deployed downstream
+KEYVAULT_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv) && \
+az keyvault set-policy --certificate-permissions import -n $KEYVAULT_NAME --upn $(az account show --query user.name -o tsv) && \
+cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-internal-aks-ingress-contoso-com-tls.key > traefik-ingress-internal-aks-ingress-contoso-com-tls.pem && \
+az keyvault certificate import --vault-name $KEYVAULT_NAME -f traefik-ingress-internal-aks-ingress-contoso-com-tls.pem -n traefik-ingress-internal-aks-ingress-contoso-com-tls
