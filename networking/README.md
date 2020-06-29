@@ -14,7 +14,7 @@ Your organization will likely have its own standards for their hub-spoke impleme
 
 ## Topology Details
 
-See the [AKS baseline Network Topology](../networking-readme.md) for specifics on how this hub-spoke model has its subnets defined and IP space allocation concerns accounted for.
+See the [AKS baseline Network Topology](./topology.md) for specifics on how this hub-spoke model has its subnets defined and IP space allocation concerns accounted for.
 
 ## See also
 
