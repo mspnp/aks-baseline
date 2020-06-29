@@ -1,21 +1,43 @@
-You can choose to deploy the Secure AKS cluster baseline by executing the following script files.
+# Deploy Scripts
 
-> Tip: we recommend to deploy this Reference Implementation using the README.md
-> steps, but please feel free to use this deployment path if you find
-> this more convinient
+While this reference implementation was being developed we built out some inner-loop scripts to help do rapid testing. They are included in this directory _for your reference_. They are not used as part of the [main readme.md introduction/instruction](../README.md), but you can reference them for your own purposes.
+
+> NOTE: For a complete understanding, we recommend you follow the deployment steps for this Reference Implementation using the [main readme.md](../README.md) steps.
+
+In both the Shell and the azcli files, you'll also find some "narrative comments" in there that might help you understand some of the thought process that went into this reference implementation.  They are not required reading, but might shed light on some decisions made or reasoning behind a certain step.
+
+## Shell
+
+A Bash shell-based deployment was built for inner-loop work. This is found in the `[shell](./shell)` directory.
+
+> Important: you must edit these script files to be suitable for your environment and situation.
 
 ### Deploy
 
-> Important: edit these script files to complete the required values before procedding
-
 ```bash
 # [This takes thirty minutes to run.]
-./0-networking-stamp.sh && \
-./1-cluster-stamp.sh`
+./shell/0-networking-stamp.sh
+./shell/1-cluster-stamp.sh`
+```
 
 ### Clean up
 
 ```bash
 # [This takes twenty minutes to run.]
-./deleteResourceGroups.sh
+./shell/deleteResourceGroups.sh
 ```
+
+## .azcli files
+
+An alternative method was capturing the steps in pure `az` cli commands, and putting them in `.azcli` files. This is found in the `[azcli](./azcli)` directory. These files are not directly executable files (no expectation of `#!` or `+x`).  However, from Visual Studio Code, the [Azure CLI Tools extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azurecli) provides a "right-click run" functionality. The intent was to capture the steps in a completely OS/Shell agnostic approach.
+
+### Deploy
+
+1. Open the `azcli` directory in Visual Studio Code.
+1. Walk through the `az` commands found in `aad-deploy.azcli`.
+1. Walk through the `az` commands found in `network-deploy.azcli`, updating variables as needed.
+1. Walk through the `az` commands found in `cluster-deploy.azcli`.
+
+## Next Steps
+
+Ultimately, as with any solution, we encourage the usage of deployment pipelines in your DevOps tooling of choice. Building scripts like these are great for initial POC/spike work, some inner-loop development work, and can often even help inform the construction of your eventual automated deployment pipelines. We did include a starter GitHub Actions pipeline that covers the deployment of the cluster, which you can see in the [GitHubAction directory](../GitHubAction/AKS-deploy.yml).
