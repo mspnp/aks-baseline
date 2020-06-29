@@ -42,4 +42,4 @@ An alternative method was capturing the steps in pure `az` cli commands, and put
 
 ## Next Steps
 
-Ultimately, as with any solution, we encourage the usage of deployment pipelines in your DevOps tooling of choice. Building scripts like these are great for initial POC/spike work, some inner-loop development work, and can often even help inform the construction of your eventual automated deployment pipelines. We did include a starter GitHub Actions pipeline that covers the deployment of the cluster, which you can see in the [GitHubAction directory](../GitHubAction/AKS-deploy.yml).
+Ultimately, as with any solution, we encourage the usage of deployment pipelines in your DevOps tooling of choice. Building scripts like these are great for initial POC/spike work, some inner-loop development work, and can often even help inform the construction of your eventual automated deployment pipelines. We did include a starter GitHub Actions workflow that covers the deployment of the cluster, which you can see in the [github-workflow directory](../github-workflow/AKS-deploy.yml).
