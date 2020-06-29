@@ -18,7 +18,7 @@ k8sRbacAadProfileTenantId=
 RGNAMESPOKES=
 tenant_guid=
 main_subscription=
-# User Parameters. Perhaps, you will need to scape ' on the password. The hay to scape is \'
+# User Parameters. Perhaps, you will need to escape ' on the password. Escape like this: \'
 APP_ID=
 APP_PASS=
 APP_TENANT_ID=
@@ -54,7 +54,7 @@ APPGW_CERT_DATA=$(cat appgw.pfx | base64 -w 0)
 rm appgw.crt appgw.key appgw.pfx
 
 #AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 10 minutes
-az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "cluster-stamp.json" --name "cluster-0001" --parameters \
+az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "../../cluster-stamp.json" --name "cluster-0001" --parameters \
                location=$RGLOCATION \
                geoRedundancyLocation=$GEOREDUNDANCY_LOCATION \
                targetVnetResourceId=$CLUSTER_VNET_RESOURCE_ID \
@@ -108,14 +108,14 @@ type: kubernetes.io/tls
 EOF
 rm traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-internal-aks-ingress-contoso-com-tls.key
 
-kubectl apply -f ../workload/traefik.yaml
-kubectl apply -f ../workload/aspnetapp.yaml
+kubectl apply -f ../../workload/traefik.yaml
+kubectl apply -f ../../workload/aspnetapp.yaml
 
 #Prometheus-Azure Monitor Integration
-kubectl apply -f ./cluster-baseline-settings/container-azm-ms-agentconfig.yaml
+kubectl apply -f ../../cluster-baseline-settings/container-azm-ms-agentconfig.yaml
 
 kubectl create namespace cluster-baseline-settings
-kubectl apply -f ./cluster-baseline-settings/kured-1.4.0-dockerhub.yaml
+kubectl apply -f ../../cluster-baseline-settings/kured-1.4.0-dockerhub.yaml
 
 echo 'the ASPNET Core webapp sample is all setup. Wait until is ready to process requests running'
 kubectl wait --namespace a0008 \
@@ -147,7 +147,7 @@ User Name:${AKS_ENDUSER_NAME} Pass:${AKS_ENDUSER_PASSWORD} objectId:${AKS_ENDUSR
 
 Testing role after update yaml file (cluster-settings/user-facing-cluster-role-aad-group.yaml). Execute:
 
-kubectl apply -f ./cluster-settings/user-facing-cluster-role-aad-group.yaml
+kubectl apply -f ../../cluster-settings/user-facing-cluster-role-aad-group.yaml
 az aks get-credentials -n ${AKS_CLUSTER_NAME} -g ${RGNAMECLUSTER} --overwrite-existing
 kubectl get all
 
