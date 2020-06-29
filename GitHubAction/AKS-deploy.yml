@@ -1,4 +1,5 @@
-# This action will deploy our cluster stamp.  It assumes the networking spoke is already in place
+# This action will deploy our cluster stamp, without the workload.
+# It assumes the networking spoke is already in place.
 
 name: CI
 
@@ -32,7 +33,7 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-# Deploy the cluster into your environment, assuming all prerequesits are up and running. k8sRbacAadProfileTenantId and k8sRbacAadProfileAdminGroupObjectID are stored in the GitHub Secrets (Go to Settings->Secrets)
+# Deploy the cluster into your environment, assuming all prerequisites are up and running. k8sRbacAadProfileTenantId and k8sRbacAadProfileAdminGroupObjectID are stored in the GitHub Secrets (Go to Settings->Secrets)
     - name: Azure CLI Action
       uses: Azure/cli@v1.0.0
       with:
