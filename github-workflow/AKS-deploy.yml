@@ -1,4 +1,4 @@
-# This action will deploy our cluster stamp, without the workload.
+# This workflow will deploy our cluster stamp, without the workload.
 # It assumes the networking spoke is already in place.
 
 name: CI

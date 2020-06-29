@@ -289,7 +289,7 @@ az keyvault purge --name ${KEYVAULT_NAME} --location eastus2 --yes
 
 ## GitHub Actions
 
-For your reference, a [starter GitHub Actions pipeline](./GitHubAction/AKS-deploy.yml) has been built for your team to consider as part of your IaC solution.
+For your reference, a [starter GitHub Actions workflow](./github-workflow/AKS-deploy.yml) has been built for your team to consider as part of your Infrastructure as Code (IaC) solution.
 
 ## Deployment Alternatives
 
