@@ -2,9 +2,9 @@
 
 > Note: This is part of the Azure Kubernetes Service (AKS) Baseline Cluster reference implementation. For more information check out the [readme file in the root](../README.md).
 
-While this reference implementation was being developed we built out some inner-loop scripts to help do rapid testing. They are included in this directory _for your reference_. They are not used as part of the [main readme.md introduction/instruction](../README.md), but you can reference them for your own purposes.
+While this reference implementation was being developed we built out some inner-loop scripts to help do rapid testing. They are included in this directory _for your reference_. They are not used as part of the [main README.md introduction/instruction](../README.md), but you can reference them for your own purposes.
 
-> NOTE: For a complete understanding, we recommend you follow the deployment steps for this Reference Implementation using the [main readme.md](../README.md) steps.
+> NOTE: For a complete understanding, we recommend you follow the deployment steps for this Reference Implementation using the [main README.md](../README.md) steps.
 
 In both the Shell and the azcli files, you'll also find some "narrative comments" in there that might help you understand some of the thought process that went into this reference implementation.  They are not required reading, but might shed light on some decisions made or reasoning behind a certain step.
 
