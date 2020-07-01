@@ -243,10 +243,6 @@
             "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), 'snet-clusternodes'))]",
             "type": "array"
         },
-        "vnetGatewaySubnetResourceIds": {
-            "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), 'snet-applicationgateways'))]",
-            "type": "array"
-        },
         "appGwPublicIpAddress": {
             "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', concat('pip-', variables('orgAppId'), '-00'))).ipAddress]",
             "type": "string"

@@ -1,27 +1,17 @@
 # This script might take about 10 minutes
 
-# Please check the variables
-# Replace contosobicycle.com with your own domain
-AKS_ENDUSER_NAME=aksuser1@contosobicycle.com
-AKS_ENDUSER_PASSWORD=**Your valid password**
-
-
 # Cluster Parameters.
 # Copy from pre-cluster-stump.sh output
+AKS_ENDUSER_NAME=
+AKS_ENDUSER_PASSWORD=
 CLUSTER_VNET_RESOURCE_ID=
 RGNAMECLUSTER=
 RGLOCATION=
-FIREWALL_SUBNET_RESOURCEID=
-GATEWAY_SUBNET_RESOURCE_ID=
 k8sRbacAadProfileAdminGroupObjectID=
 k8sRbacAadProfileTenantId=
 RGNAMESPOKES=
 tenant_guid=
 main_subscription=
-# User Parameters. Perhaps, you will need to escape ' on the password. Escape like this: \'
-APP_ID=
-APP_PASS=
-APP_TENANT_ID=
 
 # Used for services that support native geo-redundancy (Azure Container Registry)
 # Ideally should be the paired region of $RGLOCATION
@@ -29,9 +19,8 @@ GEOREDUNDANCY_LOCATION=centralus
 
 APPGW_APP_URL=bicycle.contoso.com
 
-# Login with the service principal created with minimum privilege. It is a demo approach.
-# A real user with the correct privilege should login
-#az login --service-principal --username $APP_ID --password $APP_PASS --tenant $APP_TENANT_ID
+az login
+az account set -s $main_subscription
 
 echo ""
 echo "# Deploying AKS Cluster"
@@ -51,7 +40,6 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -subj "/CN=bicycle.contoso.com/O=Contoso Bicycle"
 openssl pkcs12 -export -out appgw.pfx -in appgw.crt -inkey appgw.key -passout pass:
 APPGW_CERT_DATA=$(cat appgw.pfx | base64 -w 0)
-rm appgw.crt appgw.key appgw.pfx
 
 #AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 10 minutes
 az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "../../cluster-stamp.json" --name "cluster-0001" --parameters \
@@ -64,8 +52,14 @@ az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "
                rootCertWilcardIngressController=$ROOT_CERT_WILCARD_AKS_INGRESS_CONTROLLER
 
 AKS_CLUSTER_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.aksClusterName.value -o tsv)
-
+TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
+TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
+KEYVAULT_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.keyVaultName.value -o tsv) 
 APPGW_PUBLIC_IP=$(az deployment group show -g $RGNAMESPOKES -n  spoke-0001 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
+
+az keyvault set-policy --certificate-permissions import -n $KEYVAULT_NAME --upn $(az account show --query user.name -o tsv)
+cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-internal-aks-ingress-contoso-com-tls.key > traefik-ingress-internal-aks-ingress-contoso-com-tls.pem
+az keyvault certificate import --vault-name $KEYVAULT_NAME -f traefik-ingress-internal-aks-ingress-contoso-com-tls.pem -n traefik-ingress-internal-aks-ingress-contoso-com-tls
 
 echo ""
 echo "# Creating AAD Groups and users for the created cluster"
@@ -92,30 +86,71 @@ az ad group member add --group k8s-view-clusterrole --member-id $AKS_ENDUSR_OBJE
 
 az login
 az account set -s  $main_subscription
+
 az aks get-credentials -n ${AKS_CLUSTER_NAME} -g ${RGNAMECLUSTER} --admin
-kubectl create ns a0008
+kubectl create namespace a0008
+kubectl create namespace cluster-baseline-settings
+
+kubectl apply -f ../../cluster-baseline-settings/flux.yaml
+kubectl wait --namespace cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s
+
+kubectl apply -f ../../cluster-baseline-settings/aad-pod-identity/aad-pod-identity.yaml
+kubectl apply -f ../../cluster-baseline-settings/aad-pod-identity/exceptions/aad-pod-identity-exceptions.yaml
+
 
 cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: Secret
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzureIdentity
 metadata:
-  name: bicycle-contoso-com-tls-secret
+  name: aksic-to-keyvault-identity
   namespace: a0008
-data:
-  tls.crt: $(cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt | base64 -w 0)
-  tls.key: $(cat traefik-ingress-internal-aks-ingress-contoso-com-tls.key | base64 -w 0)
-type: kubernetes.io/tls
+spec:
+  type: 0
+  resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
+  clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
+---
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzureIdentityBinding
+metadata:
+  name: aksic-to-keyvault-identity-binding
+  namespace: a0008
+spec:
+  azureIdentity: aksic-to-keyvault-identity
+  selector: traefik-ingress-controller
 EOF
-rm traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-internal-aks-ingress-contoso-com-tls.key
+
+kubectl apply -f ../../cluster-baseline-settings/akv-secrets-store-csi.yaml
+
+cat <<EOF | kubectl apply -f -
+apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+kind: SecretProviderClass
+metadata:
+  name: aks-ingress-contoso-com-tls-secret-csi-akv
+  namespace: a0008
+spec:
+  provider: azure
+  parameters:
+    usePodIdentity: "true"
+    keyvaultName: "${KEYVAULT_NAME}"
+    objects:  |
+      array:
+        - |
+          objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+          objectAlias: tls.crt
+          objectType: cert
+        - |
+          objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+          objectAlias: tls.key
+          objectType: secret
+    tenantId: "${tenant_guid}"
+EOF
+
+kubectl apply -f ../../cluster-baseline-settings/ingress-network-policy.yaml
+kubectl apply -f ../../cluster-baseline-settings/container-azm-ms-agentconfig.yaml
+kubectl apply -f ../../cluster-baseline-settings/kured-1.4.0-dockerhub.yaml
 
 kubectl apply -f ../../workload/traefik.yaml
 kubectl apply -f ../../workload/aspnetapp.yaml
-
-#Prometheus-Azure Monitor Integration
-kubectl apply -f ../../cluster-baseline-settings/container-azm-ms-agentconfig.yaml
-
-kubectl create namespace cluster-baseline-settings
-kubectl apply -f ../../cluster-baseline-settings/kured-1.4.0-dockerhub.yaml
 
 echo 'the ASPNET Core webapp sample is all setup. Wait until is ready to process requests running'
 kubectl wait --namespace a0008 \
@@ -124,6 +159,9 @@ kubectl wait --namespace a0008 \
   --timeout=90s
 echo 'you must see the EXTERNAL-IP 10.240.4.4, please wait till it is ready. It takes a some minutes, then cntr+c'
 kubectl get svc -n traefik --watch  -n a0008
+
+rm appgw.crt appgw.key appgw.pfx
+rm traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-internal-aks-ingress-contoso-com-tls.key traefik-ingress-internal-aks-ingress-contoso-com-tls.pem
 
 cat << EOF
 
