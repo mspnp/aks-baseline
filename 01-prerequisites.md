@@ -1,6 +1,6 @@
 # Prerequisites
 
-the minimun tooling and requirements are getting installed from this sections.
+the required tooling minimun requirements are getting installed from this sections.
 Follow the instructions to get your environment ready to proceed with the AKS cluster
 creation.
 
@@ -37,4 +37,4 @@ creation.
 
 1. [OpenSSL](https://github.com/openssl/openssl#download) to generate self-signed certs used in this implementation.
 ---
-Next Step: [Generate the CA certificates](./02-ca-certificates.md)
+Next Step: [Azure Active Directory Integration](./02-aad.md)

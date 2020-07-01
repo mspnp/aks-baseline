@@ -1,6 +1,6 @@
 # Traefik Ingress Controller with Azure KeyVault CSI integration
 
-Previously you have configured [all the Workload Prerequisites](./07-workload-prerequisites). Following this steps the AKS
+Previously you have configured [all the Workload Prerequisites](./06-workload-prerequisites). Following this steps the AKS
 cluter can expose its backend services outside the cluster.
 
 ---
@@ -95,4 +95,4 @@ cluter can expose its backend services outside the cluster.
    ```
 
 ---
-Next Step: [Workload](./09-workload.md)
+Next Step: [Workload](./08-workload.md)

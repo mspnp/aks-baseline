@@ -1,6 +1,6 @@
 # Workflow Prerequisites
 
-Previously you have configured a [GitOps solution](./06-gitops) for the AKS cluster.
+Previously you have configured a [GitOps solution](./05-gitops) for the AKS cluster.
 The following steps will cover the TLS certificate generation using Azure
 KeyVault.
 
@@ -137,4 +137,4 @@ KeyVault.
    az network application-gateway ssl-cert create -g rg-bu0001a0008 --gateway-name $APP_GATEWAY_NAME --name ssl-cert-bicycle-contoso --key-vault-secret-id $(az keyvault certificate show --vault-name $KEYVAULT_NAME -n azappgw-bicycle-contoso-com-tls --query id -o tsv)
    ```
 ---
-Next Step: [Secret Managment and Ingress Controller](./08-secret-managment-and-ingress-controller.md)
+Next Step: [Secret Managment and Ingress Controller](./07-secret-managment-and-ingress-controller.md)

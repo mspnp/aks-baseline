@@ -1,6 +1,6 @@
 # The ASP.NET Core Docker sample web app
 
-Previously you have deployed an [Ingress Controller and configured its secrets](./08-secret-managment-and-ingress-controller).
+Previously you have deployed an [Ingress Controller and configured its secrets](./07-secret-managment-and-ingress-controller).
 This section is about to deploy a workload for testing purposes.
 
 ---
@@ -49,4 +49,4 @@ This section is about to deploy a workload for testing purposes.
   ```
 
 ---
-Next Step: [Validation](./10-validation.md)
+Next Step: [Validation](./09-validation.md)

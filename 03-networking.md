@@ -1,6 +1,6 @@
 # Hub Spoke Network Topology
 
-Previously you have covered [the Azure AD integration](./03-aad) for this AKS baseline
+Previously you have covered [the Azure AD integration](./02-aad) for this AKS baseline
 reference implementation. The steps below go through the required  networking assets
 to land a new AKS cluster.
 
@@ -99,4 +99,4 @@ to land a new AKS cluster.
    > is not included in this reference implementation as this is focused on the AKS baseline and not the networking
    > team's CI/CD practices.
 ---
-Next Step: [AKS cluster](./05-aks-cluster.md)
+Next Step: [AKS cluster](./04-aks-cluster.md)

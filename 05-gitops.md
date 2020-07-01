@@ -1,6 +1,6 @@
 # Flux as the GitOps solution
 
-Previously you have created [the AKS cluster](./05-aks-cluster). This section is about the cluster
+Previously you have created [the AKS cluster](./04-aks-cluster). This section is about the cluster
 management configuration.
 
 ---
@@ -53,4 +53,4 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    ```
 
 ---
-Next Step: [Workflow Prerequisites](./07-workload-prerequisites.md)
+Next Step: [Workflow Prerequisites](./06-workload-prerequisites.md)

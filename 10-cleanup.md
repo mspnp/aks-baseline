@@ -1,6 +1,6 @@
 # Clean up
 
-Previously you have [validated an end-to-end case scenario](./10-validation). You can follow these steps to
+Previously you have [validated an end-to-end case scenario](./09-validation). You can follow these steps to
 delete all resources.
 
 ---

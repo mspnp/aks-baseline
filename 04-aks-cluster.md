@@ -1,6 +1,6 @@
 # Create the Secure AKS cluster
 
-Previously you have provisioned [the hub and spoke vnets](./04-networking). Now it is time to create
+Previously you have provisioned [the hub and spoke vnets](./03-networking). Now it is time to create
 the AKS cluster.
 
 ---
@@ -49,4 +49,4 @@ Next Step: [GitOps](./06-gitops.md)
    ```
 
 ---
-Next Step: [GitOps](./06-gitops.md)
+Next Step: [GitOps](./05-gitops.md)

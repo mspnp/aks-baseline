@@ -1,6 +1,6 @@
 # Azure Active Directory Integration
 
-Previously you have [acquired the Azure Application Gateway certificate](./02-ca-certificates),
+Previously you have setup all the [Prerequisites](./01-prerequisites),
 now execute the following steps to start integrating AKS-managed Azure AD.
 
 ---
@@ -55,4 +55,4 @@ now execute the following steps to start integrating AKS-managed Azure AD.
    az ad group member add --group add-to-bu0001a000800-cluster-admin --member-id $AKS_ADMIN_OBJECTID
    ```
 ---
-Next Step: [Hub Spoke Network Topology](./04-networking.md)
+Next Step: [Hub Spoke Network Topology](./03-networking.md)
