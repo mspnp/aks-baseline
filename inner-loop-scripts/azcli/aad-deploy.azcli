@@ -24,8 +24,9 @@ az ad group member add --group add-to-bu0001a000800-cluster-admin --member-id $A
 # and edit the file:
 #  - aks/security-baseline/cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml
 # to replace the placeholder:
-#   - <replace-with-an-aad-group-object-id-for-k8s-admin-clusterrole>
-# using the object id for the recently added Azure AD group.
+#  - <replace-with-an-aad-group-object-id-for-this-cluster-role-binding>
+# using other created Azure AD group object ids that map the CLuster Role Bindings.
+# from the manifest file
 
 # At this moment the Azure AD Admin team hands off this process to the networking team
 # so they could deliver the required networking assets to lay down a secure

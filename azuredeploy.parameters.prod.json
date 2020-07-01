@@ -16,12 +16,6 @@
     },
     "k8sRbacAadProfileTenantId": {
       "value": "[guid]"
-    },
-    "appGatewayListernerCertificate": {
-      "value": "[base64 cert data]"
-    },
-    "rootCertWilcardIngressController": {
-      "value": "[base64 cert data]"
     }
   }
 }
