@@ -1,10 +1,10 @@
 # Deploy the hub-spoke network
 
-The prerequisite for the [AKS secure baseline cluster](./) are now completed with [Azure AD work](./03-aad) performed in the prior steps. Now we will start with our first Azure resource deployment, the network primitives.
+The prerequisites for the [AKS secure baseline cluster](./) are now completed with [Azure AD group and user work](./03-aad.md) performed in the prior steps. Now we will start with our first Azure resource deployment, the network primitives.
 
 ## Steps
 
-1. Login into the Azure subscription that you'll be deploying into
+1. Login into the Azure subscription that you'll be deploying into.
 
    > :book: The networking team logins into the Azure subscription that will contain the regional hub. At Contoso Bicycle, all of their regional hubs are in the same, centrally-managed subscription.
 
@@ -12,7 +12,7 @@ The prerequisite for the [AKS secure baseline cluster](./) are now completed wit
    az login --tenant $TENANT_ID
    ```
 
-1. Create the networking hubs resource group
+1. Create the networking hubs resource group.
 
    > :book: The networking team has all their regional networking hubs in the following resource group. The group's default location does not matter, as it's not tied to the resource locations. (This resource group would have already existed.)
 
@@ -21,7 +21,7 @@ The prerequisite for the [AKS secure baseline cluster](./) are now completed wit
    az group create --name rg-enterprise-networking-hubs --location centralus
    ```
 
-1. Create the networking spokes resource group
+1. Create the networking spokes resource group.
 
    > :book: The networking team also keeps all of their spokes in a centrally-managed resource group. As with the hubs resource group, the location of this group does not matter and will not factor into where our network will live. (This resource group would have already existed.)
 
@@ -30,7 +30,7 @@ The prerequisite for the [AKS secure baseline cluster](./) are now completed wit
    az group create --name rg-enterprise-networking-spokes --location centralus
    ```
 
-1. Create the regional network hub
+1. Create the regional network hub.
 
    > :book: When the networking team created the regional hub for eastus2, it didn't have any spokes yet defined, yet the networking team always lays out a base hub following a standard pattern (defined in `hub-default.json`). A hub always contains an Azure Firewall (with some org-wide policies), Azure Bastion, a gateway subnet for VPN connectivity, and Azure Monitor for network observability. They follow Microsoft's recommended sizing for the subnets.
    >
@@ -49,7 +49,7 @@ The prerequisite for the [AKS secure baseline cluster](./) are now completed wit
 
       * `hubVnetId` - which you'll will need to know for future spokes that get created. E.g. `/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-hubs/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub`
 
-1. Create the spoke that will be home to the AKS cluster and its adjacent resources
+1. Create the spoke that will be home to the AKS cluster and its adjacent resources.
 
    > :book:  The networking team receives a request from an app team in business unit (BU) 0001 for a network spoke to house their new AKS-based application (Internally know as Application ID: A0008). The network team talks with the app team to understand their requirements and aligns those needs with Microsoft's best practices for a secure AKS cluster deployment. They capture those specific requirements and deploy the spoke, aligning to those specs, and connecting it to the matching regional hub.
 
@@ -64,7 +64,7 @@ The prerequisite for the [AKS secure baseline cluster](./) are now completed wit
      * `nodepoolSubnetResourceIds` - An array containing the subnet resource IDs of the AKS node pools in the spoke. E.g. `["/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-clusternodes"]`
      * `clusterVnetResourceId` - The resource ID of the VNet that the cluster will land in. E.g. `/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00`
 
-1. Update the shared, regional hub deployment to account for the requirements of the spoke
+1. Update the shared, regional hub deployment to account for the requirements of the spoke.
 
    > :book: Now that their hub has its first spoke, the hub can no longer run off of the generic hub template. The networking team creates a named hub template (e.g. `hub-eastus2.json`) to forever represent this specific hub and the features this specific hub needs in order to support its spokes' requirements. As new spokes are attached and new requirements arise for the regional hub, they will be added to this master template file.
 
@@ -80,4 +80,4 @@ The prerequisite for the [AKS secure baseline cluster](./) are now completed wit
 
 ### Next step
 
--> [Deploy the AKS cluster](./05-aks-cluster.md)
+:arrow_forward: [Deploy the AKS cluster](./05-aks-cluster.md)

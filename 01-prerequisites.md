@@ -1,6 +1,6 @@
 # Prerequisites
 
-This is the starting point for the instructions on deploying the [AKS Secure Baseline reference implementation](./). There are some required access and tooling you'll need in order to accomplish this. Follow the instructions below so that you can get your environment ready to proceed with the AKS cluster creation.
+This is the starting point for the instructions on deploying the [AKS Secure Baseline reference implementation](./). There is required access and tooling you'll need in order to accomplish this. Follow the instructions below and on the subsequent pages so that you can get your environment ready to proceed with the AKS cluster creation.
 
 ## Steps
 
@@ -18,7 +18,7 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 
    [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 1. While the feature is still in preview, [register the AAD-V2 feature for AKS-managed Azure AD](https://docs.microsoft.com/azure/aks/managed-aad#before-you-begin) in your subscription.
-1. Clone/download this repo locally, or  even better fork this repository
+1. Clone/download this repo locally, or even better fork this repository.
 
    > :twisted_rightwards_arrows: If you have forked this reference implementation repo, you'll be able to customize some of the files and commands for a more personalized experience; also ensure references to repos mentioned are updated to use your own (e.g. the following `GITHUB_REPO`).
 
@@ -28,10 +28,10 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
    cd reference-architectures/aks/secure-baseline
    ```
 
-   > :bulb: The deployment steps shown here use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://docs.microsoft.com/windows/wsl/about#what-is-wsl-2) to run Bash.
+   > :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://docs.microsoft.com/windows/wsl/about#what-is-wsl-2) to run Bash.
 
-1. [OpenSSL](https://github.com/openssl/openssl#download) to generate self-signed certs used in this implementation.
+1. Ensure [OpenSSL is installed](https://github.com/openssl/openssl#download) in order to generate self-signed certs used in this implementation.
 
 ### Next step
 
--> [Generate your client-facing TLS certificate](./02-ca-certificates.md)
+:arrow_forward: [Generate your client-facing TLS certificate](./02-ca-certificates.md)

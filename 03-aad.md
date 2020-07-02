@@ -1,10 +1,10 @@
 # Azure Active Directory Integration
 
-In the prior step, you [generated the user-facing TLS certificate](./02-ca-certificates), now we'll prepare for integrating AKS-managed Azure AD. This is the last of the prerequisites.
+In the prior step, you [generated the user-facing TLS certificate](./02-ca-certificates), now we'll prepare for leveraging Azure AD for Kubernetes role-based access control (RBAC). This is the last of the prerequisites.
 
 ## Steps
 
-> :book: The Contoso Bicycle Azure AD team requires all admin access to AKS clusters be security-group based. This applies to the new Secure AKS cluster that is being built for Application ID a0008 under the BU001 business unit. Kubernetes role-based access control (RBAC) will be AAD-backed and access granted based on a user's identity or directory group membership. AKS-managed Azure AD is the solution.
+> :book: The Contoso Bicycle Azure AD team requires all admin access to AKS clusters be security-group based. This applies to the new Secure AKS cluster that is being built for Application ID a0008 under the BU001 business unit. Kubernetes RBAC will be AAD-backed and access granted based on a user's identity or directory group membership.
 
 1. Query and save your Azure subscription tenant id
 
@@ -41,12 +41,13 @@ In the prior step, you [generated the user-facing TLS certificate](./02-ca-certi
    > * the new app team's user admin credentials
    > * and the Azure AD group object ID
    >
-   > The object ID will be used later while creating the cluster as the final step for this integration. This way, once the cluster gets deployed the new group will get the proper Cluster Role bindings in Kubernetes.
 
    ```bash
    az ad group member add --group add-to-bu0001a000800-cluster-admin --member-id $AKS_ADMIN_OBJECTID
    ```
 
+   This object ID will be used later while creating the cluster. This way, once the cluster gets deployed the new group will get the proper Cluster Role bindings in Kubernetes.
+
 ### Next step
 
--> [Deploy the hub-spoke network topology](./04-networking.md)
+:arrow_forward: [Deploy the hub-spoke network topology](./04-networking.md)
