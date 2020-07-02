@@ -1,6 +1,6 @@
 # Create the Secure AKS cluster
 
-Previously you have provisioned [the hub and spoke vnets](./03-networking). Now it is time to create
+Previously you have provisioned [the hub and spoke vnets](./04-networking). Now it is time to create
 the AKS cluster.
 
 ---
@@ -43,10 +43,8 @@ Next Step: [GitOps](./06-gitops.md)
 
    ```bash
    # [This takes about 15 minutes.]
-
-   # before executing this command please edit the
-   az deployment group create --resource-group rg-bu0001a0008 --template-file ./cluster-stamp.json --parameters targetVnetResourceId=$TARGET_VNET_RESOURCE_ID k8sRbacAadProfileAdminGroupObjectID=$K8S_RBAC_AAD_ADMIN_GROUP_OBJECTID k8sRbacAadProfileTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID appGatewayListernerCertificate=$APP_GATEWAY_LISTERNER_CERTIFICATE
+   az deployment group create --resource-group rg-bu0001a0008 --template-file cluster-stamp.json --parameters targetVnetResourceId=$TARGET_VNET_RESOURCE_ID k8sRbacAadProfileAdminGroupObjectID=$K8S_RBAC_AAD_ADMIN_GROUP_OBJECTID k8sRbacAadProfileTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID appGatewayListernerCertificate=$APP_GATEWAY_LISTERNER_CERTIFICATE
    ```
 
 ---
-Next Step: [GitOps](./05-gitops.md)
+Next Step: [GitOps](./06-gitops.md)

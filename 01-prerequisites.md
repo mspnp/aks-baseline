@@ -37,4 +37,4 @@ creation.
 
 1. [OpenSSL](https://github.com/openssl/openssl#download) to generate self-signed certs used in this implementation.
 ---
-Next Step: [Azure Active Directory Integration](./02-aad.md)
+Next Step: [Generate the CA certificates](./02-ca-certificates.md)

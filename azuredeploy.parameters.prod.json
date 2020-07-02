@@ -16,6 +16,9 @@
     },
     "k8sRbacAadProfileTenantId": {
       "value": "[guid]"
+    },
+    "appGatewayListernerCertificate": {
+      "value": "[base64 cert data]"
     }
   }
 }

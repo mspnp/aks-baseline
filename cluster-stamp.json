@@ -20,6 +20,12 @@
                 "description": "This is tennant where the ServerAppId, ServerAppSecret, ClientAppId all reside"
             }
         },
+        "appGatewayListernerCertificate": {
+            "type": "string",
+            "metadata": {
+                "description": "The certificate data for app gateway TLS termination. It is base64"
+            }
+        },
         "location": {
             "defaultValue": "eastus2",
             "type": "string",
@@ -123,6 +129,9 @@
                         "permissions": {
                             "secrets": [
                                 "get"
+                            ],
+                            "certificates": [
+                                "get"
                             ]
                         }
                     },
@@ -188,6 +197,18 @@
                         }
                     }
                 ]
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "apiVersion": "2019-09-01",
+            "name": "[concat( variables('keyVaultName') , '/sslcert')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName') )]"
+            ],
+            "properties": {
+                "value": "[parameters('appGatewayListernerCertificate')]",
+                "recoveryLevel": "Purgeable"
             }
         },
         {
@@ -305,6 +326,14 @@
                     "ruleSetVersion": "3.0"
                 },
                 "enableHttp2": false,
+                "sslCertificates": [
+                    {
+                        "name": "[concat(variables('agwName'), '-ssl-certificate')]",
+                        "properties": {
+                            "keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/sslcert')]"
+                        }
+                    }
+                ],
                 "probes": [
                     {
                         "name": "probe-bu0001a0008-00.aks-ingress.contoso.com",
@@ -344,12 +373,7 @@
                             "requestTimeout": 20,
                             "probe": {
                                 "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('agwName')),'/probes/probe-bu0001a0008-00.aks-ingress.contoso.com')]"
-                            },
-                            "trustedRootCertificates": [
-                                {
-                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('agwName')), '/trustedRootCertificates/root-cert-wildcard-aks-ingress-contoso')]"
-                                }
-                            ]
+                            }
                         }
                     }
                 ],

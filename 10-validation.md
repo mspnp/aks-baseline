@@ -1,6 +1,6 @@
 # Test the web app
 
-Previously you have deployed an [ASP.NET Core Docker sample web app](./08-workload). This
+Previously you have deployed an [ASP.NET Core Docker sample web app](./09-workload). This
 section will help you to validate the workload is exposed correctly and
 responding to Http requests.
 
@@ -18,4 +18,4 @@ export APPGW_PUBLIC_IP=$(az deployment group show --resource-group rg-enterprise
 
 1. In your browser, go to <https://bicycle.contoso.com>. A TLS warning will be present, due to using a self-signed cert.
 ---
-Next Step: [Cleanup](./10-cleanup.md)
+Next Step: [Cleanup](./11-cleanup.md)

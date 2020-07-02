@@ -1,6 +1,6 @@
 # Hub Spoke Network Topology
 
-Previously you have covered [the Azure AD integration](./02-aad) for this AKS baseline
+Previously you have covered [the Azure AD integration](./03-aad) for this AKS baseline
 reference implementation. The steps below go through the required  networking assets
 to land a new AKS cluster.
 
@@ -56,7 +56,7 @@ to land a new AKS cluster.
 
    ```bash
    # [This takes about five minutes to run.]
-   az deployment group create --resource-group rg-enterprise-networking-hubs --template-file ../../networking/hub-default.json --parameters location=eastus2
+   az deployment group create --resource-group rg-enterprise-networking-hubs --template-file networking/hub-default.json --parameters location=eastus2
    ```
 
 1. Create the all the Azure resources in the spoke resource group
@@ -75,7 +75,8 @@ to land a new AKS cluster.
 
    ```bash
    # [This takes about ten minutes to run.]
-   az deployment group create --resource-group rg-enterprise-networking-spokes --template-file ../../networking/spoke-BU0001A0008.json --parameters location=eastus2 hubVnetResourceId="/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-hubs/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub"
+   HUB_VNET_ID=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-default --query properties.outputs.hubVnetId.value -o tsv)
+   az deployment group create --resource-group rg-enterprise-networking-spokes --template-file networking/spoke-BU0001A0008.json --parameters location=eastus2 hubVnetResourceId="${HUB_VNET_ID}"
    ```
 
 1. Configure the Azure Firewall rules among other features the hub needs to
@@ -88,7 +89,8 @@ to land a new AKS cluster.
 
    ```bash
    # [This takes about three minutes to run.]
-   az deployment group create --resource-group rg-enterprise-networking-hubs --template-file ../../networking/hub-regionA.json --parameters location=eastus2 nodepoolSubnetResourceIds="['/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-clusternodes']"
+   NODEPOOL_SUBNET_RESOURCEIDS=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
+   az deployment group create --resource-group rg-enterprise-networking-hubs --template-file networking/hub-regionA.json --parameters location=eastus2 nodepoolSubnetResourceIds="${NODEPOOL_SUBNET_RESOURCEIDS}"
    ```
 
    > At this point the networking team has delivered a spoke in which BU 0001's app team can lay down
@@ -99,4 +101,4 @@ to land a new AKS cluster.
    > is not included in this reference implementation as this is focused on the AKS baseline and not the networking
    > team's CI/CD practices.
 ---
-Next Step: [AKS cluster](./04-aks-cluster.md)
+Next Step: [AKS cluster](./05-aks-cluster.md)
