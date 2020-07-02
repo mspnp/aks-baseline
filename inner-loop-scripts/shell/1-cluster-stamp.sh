@@ -26,13 +26,6 @@ echo ""
 echo "# Deploying AKS Cluster"
 echo ""
 
-## Cluster Certificate - AKS Internal Load Balancer
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -out traefik-ingress-internal-aks-ingress-contoso-com-tls.crt \
-        -keyout traefik-ingress-internal-aks-ingress-contoso-com-tls.key \
-        -subj "/CN=*.aks-ingress.contoso.com/O=Contoso Aks Ingress"
-ROOT_CERT_WILCARD_AKS_INGRESS_CONTROLLER=$(cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt | base64 -w 0)
-
 # App Gateway Certificate
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -out appgw.crt \
@@ -48,8 +41,7 @@ az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "
                targetVnetResourceId=$CLUSTER_VNET_RESOURCE_ID \
                k8sRbacAadProfileAdminGroupObjectID=$k8sRbacAadProfileAdminGroupObjectID \
                k8sRbacAadProfileTenantId=$k8sRbacAadProfileTenantId \
-               appGatewayListernerCertificate=$APPGW_CERT_DATA \
-               rootCertWilcardIngressController=$ROOT_CERT_WILCARD_AKS_INGRESS_CONTROLLER
+               appGatewayListernerCertificate=$APPGW_CERT_DATA 
 
 AKS_CLUSTER_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.aksClusterName.value -o tsv)
 TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
@@ -57,9 +49,52 @@ TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show -g $RGNAMECL
 KEYVAULT_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.keyVaultName.value -o tsv) 
 APPGW_PUBLIC_IP=$(az deployment group show -g $RGNAMESPOKES -n  spoke-0001 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
 
-az keyvault set-policy --certificate-permissions import -n $KEYVAULT_NAME --upn $(az account show --query user.name -o tsv)
-cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-internal-aks-ingress-contoso-com-tls.key > traefik-ingress-internal-aks-ingress-contoso-com-tls.pem
-az keyvault certificate import --vault-name $KEYVAULT_NAME -f traefik-ingress-internal-aks-ingress-contoso-com-tls.pem -n traefik-ingress-internal-aks-ingress-contoso-com-tls
+az keyvault set-policy --certificate-permissions create get -n $KEYVAULT_NAME --upn $(az account show --query user.name -o tsv) 
+
+cat <<EOF | az keyvault certificate create --vault-name $KEYVAULT_NAME -n traefik-ingress-internal-aks-ingress-contoso-com-tls -p @-
+{
+  "issuerParameters": {
+    "certificateTransparency": null,
+    "name": "Self"
+  },
+  "keyProperties": {
+    "curve": null,
+    "exportable": true,
+    "keySize": 2048,
+    "keyType": "RSA",
+    "reuseKey": true
+  },
+  "lifetimeActions": [
+    {
+      "action": {
+        "actionType": "AutoRenew"
+      },
+      "trigger": {
+        "daysBeforeExpiry": 90
+      }
+    }
+  ],
+  "secretProperties": {
+    "contentType": "application/x-pkcs12"
+  },
+  "x509CertificateProperties": {
+    "keyUsage": [
+      "cRLSign",
+      "dataEncipherment",
+      "digitalSignature",
+      "keyEncipherment",
+      "keyAgreement",
+      "keyCertSign"
+    ],
+    "subject": "O=Contoso Aks Ingress, CN=*.aks-ingress.contoso.com",
+    "validityInMonths": 12
+  }
+}
+EOF
+
+APP_GATEWAY_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.agwName.value -o tsv)
+az network application-gateway root-cert create -g $RGNAMECLUSTER --gateway-name $APP_GATEWAY_NAME --name root-cert-wildcard-aks-ingress-contoso --keyvault-secret 'https://kv-aks-cunypcamxe7pa.vault.azure.net/secrets/sslcert/ce4b294428f243ac941fa78b1c0646cc'
+az network application-gateway http-settings update -g $RGNAMECLUSTER --gateway-name $APP_GATEWAY_NAME -n aks-ingress-contoso-backendpool-httpsettings --root-certs root-cert-wildcard-aks-ingress-contoso --protocol Https --KeyVaultSecretId
 
 echo ""
 echo "# Creating AAD Groups and users for the created cluster"
