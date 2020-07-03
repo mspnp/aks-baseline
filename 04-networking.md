@@ -1,4 +1,4 @@
-# Deploy the hub-spoke network
+# Deploy the Hub-Spoke Network
 
 The prerequisites for the [AKS secure baseline cluster](./) are now completed with [Azure AD group and user work](./03-aad.md) performed in the prior steps. Now we will start with our first Azure resource deployment, the network primitives.
 

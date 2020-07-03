@@ -1,6 +1,6 @@
-# Acquire the CA certificates for the Azure Application Gateway
+# Generate Your Client-Facing TLS Certificate
 
-Now that you have the [prerequisites](./01-prerequisites) met, follow the steps below to create the TLS certificate that Azure Application Gateway will serve for clients connecting to your website. If you already have access to an appropriate certificate, or can procure one from your organization, consider doing so and skipping step 1. The following will describe using a self-signed cert for instructive purposes only.
+Now that you have the [prerequisites](./01-prerequisites) met, follow the steps below to create the TLS certificate that Azure Application Gateway will serve for clients connecting to your web app. If you already have access to an appropriate certificate, or can procure one from your organization, consider doing so and skipping step 1. The following will describe using a self-signed cert for instructive purposes only.
 
 ## Steps
 
