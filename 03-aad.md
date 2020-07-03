@@ -1,6 +1,6 @@
 # Prep for Azure Active Directory Integration
 
-In the prior step, you [generated the user-facing TLS certificate](./02-ca-certificates), now we'll prepare for leveraging Azure AD for Kubernetes role-based access control (RBAC). This is the last of the prerequisites.
+In the prior step, you [generated the user-facing TLS certificate](./02-ca-certificates), now we'll prepare for leveraging Azure AD for Kubernetes role-based access control (RBAC). This is the last of the cluster infrastructure prerequisites.
 
 ## Steps
 
@@ -15,7 +15,7 @@ In the prior step, you [generated the user-facing TLS certificate](./02-ca-certi
 1. Login into the tenant where you are a Azure AD User Administrator playing the role as the Contoso Bicycle Azure AD team
 
    ```bash
-   az login --tenant <repalce-with-tenant-id-with-user-admin-permissions> --allow-no-subscriptions
+   az login --tenant <replace-with-tenant-id-with-user-admin-permissions> --allow-no-subscriptions
    export K8S_RBAC_AAD_PROFILE_TENANTID=$(az account show --query tenantId --output tsv)
    ```
 
