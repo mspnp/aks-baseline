@@ -1,35 +1,34 @@
 # This script might take about 20 minutes
 # Please check the variables
-RGLOCATION=eastus
-RGNAME=rg-enterprise-networking-hubs
-RGNAMESPOKES=rg-enterprise-networking-spokes
-RGNAMECLUSTER=rg-cluster01
-aksName=cluster01
-tenant_guid=**Your tenant id for Identities**
-main_subscription=**Your Main subscription**
+LOCATION=$1
+RGNAMEHUB=$2
+RGNAMESPOKES=$3
+RGNAMECLUSTER=$4
+TENANT_ID=$5
+MAIN_SUBSCRIPTION=$6
 
+AKS_ADMIN_NAME=aksadminuser
 AKS_ENDUSER_NAME=aksuser
-AKS_ENDUSER1_NAME=aksuser1
-AKS_ENDUSER_PASSWORD=**Your valid password**
+AKS_ENDUSER_PASSWORD=ChangeMebu0001a0008AdminChangeMe
 
-k8sRbacAadProfileAdminGroupName="${aksName}-add-admin"
+K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_NAME="add-to-bu0001a000800-cluster-admin"
 
 echo ""
 echo "# Creating users and group for AAD-AKS integration. It could be in a different tenant"
 echo ""
 
 # We are going to use a new tenant to provide identity
-az login  --allow-no-subscriptions -t $tenant_guid
+az login  --allow-no-subscriptions -t $TENANT_ID
 
 K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME=$(az ad signed-in-user show --query 'userPrincipalName' | cut -d '@' -f 2 | sed 's/\"//')
+AKS_ADMIN_NAME=${AKS_ADMIN_NAME}'@'${K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME}
 AKS_ENDUSER_NAME=${AKS_ENDUSER_NAME}'@'${K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME}
-AKS_ENDUSER1_NAME=${AKS_ENDUSER1_NAME}'@'${K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME}
 
 #--Create identities needed for AKS-AAD integration
-AKS_ENDUSR_OBJECTID=$(az ad user create --display-name $AKS_ENDUSER_NAME --user-principal-name $AKS_ENDUSER_NAME --password $AKS_ENDUSER_PASSWORD --query objectId -o tsv)
-k8sRbacAadProfileAdminGroupObjectID=$(az ad group create --display-name ${k8sRbacAadProfileAdminGroupName} --mail-nickname ${k8sRbacAadProfileAdminGroupName} --query objectId -o tsv)
-az ad group member add --group $k8sRbacAadProfileAdminGroupName --member-id $AKS_ENDUSR_OBJECTID
-k8sRbacAadProfileTenantId=$(az account show --query tenantId -o tsv)
+AKS_ADMIN_OBJECTID=$(az ad user create --display-name $AKS_ADMIN_NAME --user-principal-name $AKS_ADMIN_NAME --force-change-password-next-login  --password $AKS_ENDUSER_PASSWORD --query objectId -o tsv)
+K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID=$(az ad group create --display-name ${K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_NAME} --mail-nickname ${K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_NAME} --query objectId -o tsv)
+az ad group member add --group $K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_NAME --member-id $AKS_ADMIN_OBJECTID
+K8S_RBAC_AAD_PROFILE_TENANTID=$(az account show --query tenantId -o tsv)
 
 echo ""
 echo "# Deploying networking"
@@ -37,57 +36,45 @@ echo ""
 
 #back to main subscription
 az login
-az account set -s $main_subscription
+az account set -s $MAIN_SUBSCRIPTION
 
 #Main Network.Build the hub. First arm template execution and catching outputs. This might take about 6 minutes
-az group create --name "${RGNAME}" --location "${RGLOCATION}"
+az group create --name "${RGNAMEHUB}" --location "${LOCATION}"
 
-az deployment group create --resource-group "${RGNAME}" --template-file "../../networking/hub-default.json"  --name "hub-0001" --parameters \
-         location=$RGLOCATION
+az deployment group create --resource-group "${RGNAMEHUB}" --template-file "../../networking/hub-default.json"  --name "hub-0001" --parameters \
+         location=$LOCATION
 
-HUB_VNET_ID=$(az deployment group show -g $RGNAME -n hub-0001 --query properties.outputs.hubVnetId.value -o tsv)
+HUB_VNET_ID=$(az deployment group show -g $RGNAMEHUB -n hub-0001 --query properties.outputs.hubVnetId.value -o tsv)
 
 #Cluster Subnet.Build the spoke. Second arm template execution and catching outputs. This might take about 2 minutes
-az group create --name "${RGNAMESPOKES}" --location "${RGLOCATION}"
+az group create --name "${RGNAMESPOKES}" --location "${LOCATION}"
 
 az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "../../networking/spoke-BU0001A0008.json" --name "spoke-0001" --parameters \
-          location=$RGLOCATION \
+          location=$LOCATION \
           hubVnetResourceId=$HUB_VNET_ID 
 
-CLUSTER_VNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+export TARGET_VNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.clusterVnetResourceId.value -o tsv)
 
-NODEPOOL_SUBNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
+NODEPOOL_SUBNET_RESOURCE_IDS=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
 
 #Main Network Update. Third arm template execution and catching outputs. This might take about 3 minutes
 
-SERVICETAGS_LOCATION=$(az account list-locations --query "[?name=='${RGLOCATION}'].displayName" -o tsv | sed 's/[[:space:]]//g')
-az deployment group create --resource-group "${RGNAME}" --template-file "../../networking/hub-regionA.json" --name "hub-0002" --parameters \
-            location=$RGLOCATION \
-            nodepoolSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID']"
+az deployment group create --resource-group "${RGNAMEHUB}" --template-file "../../networking/hub-regionA.json" --name "hub-0002" --parameters \
+            location=$LOCATION \
+            nodepoolSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_IDS']"
 
 echo ""
 echo "# Preparing cluster parameters"
 echo ""
 
-az group create --name "${RGNAMECLUSTER}" --location "${RGLOCATION}"
+az group create --name "${RGNAMECLUSTER}" --location "${LOCATION}"
 
 cat << EOF
 
 NEXT STEPS
 ---- -----
 
-1) Copy the following AKS CLuster parameters into the 1-cluster-stamp.sh
-
-AKS_ENDUSER_NAME=${AKS_ENDUSER1_NAME}
-AKS_ENDUSER_PASSWORD=${AKS_ENDUSER_PASSWORD}
-CLUSTER_VNET_RESOURCE_ID=${CLUSTER_VNET_RESOURCE_ID}
-RGNAMECLUSTER=${RGNAMECLUSTER}
-RGLOCATION=${RGLOCATION}
-k8sRbacAadProfileAdminGroupObjectID=${k8sRbacAadProfileAdminGroupObjectID}
-k8sRbacAadProfileTenantId=${k8sRbacAadProfileTenantId}
-RGNAMESPOKES=${RGNAMESPOKES}
-tenant_guid=${tenant_guid}
-main_subscription=${main_subscription}
+./1-cluster-stamp.sh $LOCATION $RGNAMECLUSTER $RGNAMESPOKES $TENANT_ID $MAIN_SUBSCRIPTION $TARGET_VNET_RESOURCE_ID $K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID $K8S_RBAC_AAD_PROFILE_TENANTID $AKS_ENDUSER_NAME $AKS_ENDUSER_PASSWORD
 
 EOF
 
