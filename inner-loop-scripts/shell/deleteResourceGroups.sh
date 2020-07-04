@@ -1,16 +1,16 @@
 # This script might take about 30 minutes
 # Please check the variables
-RGLOCATION=eastus
-RGNAME=rg-enterprise-networking-hubs
-RGNAMESPOKES=rg-enterprise-networking-spokes
-RGNAMECLUSTER=rg-cluster01
-AKS_CLUSTER_NAME=aks-cunypcamxe7pa
+RGLOCATION=$1
+RGNAMEHUB=$2
+RGNAMESPOKES=$3
+RGNAMECLUSTER=$4
+AKS_CLUSTER_NAME=$5
 
 echo deleting $RGNAMECLUSTER
 az group delete -n $RGNAMECLUSTER --yes
 
-echo deleting $RGNAME
-az group delete -n $RGNAME --yes
+echo deleting $RGNAMEHUB
+az group delete -n $RGNAMEHUB --yes
 
 echo deleting $RGNAMESPOKES
 az group delete -n $RGNAMESPOKES --yes

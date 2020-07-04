@@ -544,10 +544,6 @@
         "hubVnetId": {
             "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]",
             "type": "string"
-        },
-        "hubfwSubnetResourceId": {
-            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hubVnetName'), 'AzureFirewallSubnet')]",
-            "type": "string"
         }
     }
 }
