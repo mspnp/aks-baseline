@@ -82,7 +82,7 @@ Without a workload deployed to the cluster it will be hard to see how these deci
 
 Now that the cluster and the sample workload is deployed; now it's time to look at how the cluster is functioning.
 
-* [ ] [Perform end-to-end deployment validation](./11-validation.md)
+* [ ] [Perform end-to-end deployment validation](./10-validation.md)
 * [ ] [Learn about built-in observability](./11-observability.md) [NOT YET WRITTEN]
 
 ## :broom: Clean up resources

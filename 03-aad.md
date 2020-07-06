@@ -22,7 +22,7 @@ In the prior step, you [generated the user-facing TLS certificate](./02-ca-certi
 1. Create the first the Azure AD group that is going to map the Kubernetes Cluster Role Admin. If you already have a security group that is appropriate for cluster admins, consider using that group and skipping this step. If using your own group, you will need to update group object names throughout the reference implementation.
 
    ```bash
-   K8S_RBAC_AAD_ADMIN_GROUP_OBJECTID=$(az ad group create --display-name add-to-bu0001a000800-cluster-admin --mail-nickname add-to-bu0001a000800-cluster-admin --query objectId -o tsv)
+   K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID=$(az ad group create --display-name aad-to-bu0001a000800-cluster-admin --mail-nickname aad-to-bu0001a000800-cluster-admin --query objectId -o tsv)
    ```
 
 1. Create a break-glass Cluster Admin user for your AKS cluster
@@ -43,7 +43,7 @@ In the prior step, you [generated the user-facing TLS certificate](./02-ca-certi
    >
 
    ```bash
-   az ad group member add --group add-to-bu0001a000800-cluster-admin --member-id $AKS_ADMIN_OBJECTID
+   az ad group member add --group aad-to-bu0001a000800-cluster-admin --member-id $AKS_ADMIN_OBJECTID
    ```
 
    This object ID will be used later while creating the cluster. This way, once the cluster gets deployed the new group will get the proper Cluster Role bindings in Kubernetes.

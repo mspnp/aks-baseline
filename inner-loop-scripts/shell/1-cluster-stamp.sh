@@ -31,7 +31,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -keyout appgw.key \
         -subj "/CN=bicycle.contoso.com/O=Contoso Bicycle"
 openssl pkcs12 -export -out appgw.pfx -in appgw.crt -inkey appgw.key -passout pass:
-APP_GATEWAY_LISTERNER_CERTIFICATE=$(cat appgw.pfx | base64 -w 0)
+APP_GATEWAY_LISTENER_CERTIFICATE=$(cat appgw.pfx | base64 -w 0)
 
 #AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 10 minutes
 az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "../../cluster-stamp.json" --name "cluster-0001" --parameters \
@@ -40,15 +40,15 @@ az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "
                targetVnetResourceId=$TARGET_VNET_RESOURCE_ID \
                k8sRbacAadProfileAdminGroupObjectID=$K8S_RBAC_AAD_ADMIN_GROUP_OBJECTID \
                k8sRbacAadProfileTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID \
-               appGatewayListernerCertificate=$APP_GATEWAY_LISTERNER_CERTIFICATE 
+               appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE
 
 AKS_CLUSTER_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.aksClusterName.value -o tsv)
 TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
 TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
-KEYVAULT_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.keyVaultName.value -o tsv) 
+KEYVAULT_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.keyVaultName.value -o tsv)
 APPGW_PUBLIC_IP=$(az deployment group show -g $RGNAMESPOKES -n  spoke-0001 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
 
-az keyvault set-policy --certificate-permissions create get -n $KEYVAULT_NAME --upn $(az account show --query user.name -o tsv) 
+az keyvault set-policy --certificate-permissions create get -n $KEYVAULT_NAME --upn $(az account show --query user.name -o tsv)
 
 cat <<EOF | az keyvault certificate create --vault-name $KEYVAULT_NAME -n traefik-ingress-internal-aks-ingress-contoso-com-tls -p @-
 {

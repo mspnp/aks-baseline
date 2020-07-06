@@ -20,7 +20,7 @@
                 "description": "This is tennant where the ServerAppId, ServerAppSecret, ClientAppId all reside"
             }
         },
-        "appGatewayListernerCertificate": {
+        "appGatewayListenerCertificate": {
             "type": "string",
             "metadata": {
                 "description": "The certificate data for app gateway TLS termination. It is base64"
@@ -207,7 +207,7 @@
                 "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName') )]"
             ],
             "properties": {
-                "value": "[parameters('appGatewayListernerCertificate')]",
+                "value": "[parameters('appGatewayListenerCertificate')]",
                 "recoveryLevel": "Purgeable"
             }
         },
