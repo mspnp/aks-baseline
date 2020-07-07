@@ -1,9 +1,8 @@
-# Traefik Ingress Controller with Azure KeyVault CSI integration
+# Configure AKS Ingress Controller with Azure Key Vault integration
 
-Previously you have configured [all the Workload Prerequisites](./07-workload-prerequisites). Following this steps the AKS
-cluter can expose its backend services outside the cluster.
+Previously you have configured [workload prerequisites](./07-workload-prerequisites). These steps configure Traefik, the AKS ingress solution used in this reference implementation, so that it can securely expose the web app to your Application Gateway.
 
----
+## Steps
 
 1. Get the AKS Ingress Controller Managed Identity details
 
@@ -11,16 +10,17 @@ cluter can expose its backend services outside the cluster.
    export TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
    export TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
    ```
-1. Ensure Flux has created the following namespace and then press Ctrl-C
+
+1. Ensure Flux has created the following namespace
 
    ```bash
+   # press Ctrl-C once you receive a successful response
    kubectl get ns a0008 -w
    ```
 
-1. Create the Traefik's Azure Indentity
-   > Create the Traefik Azure Identity and the Azure Identity Binding to let
-   > Azure Active Directory Pod Identity to get tokens on behalf of the Traefik's User Assigned
-   > Identity and later on assign them to the Traefik's pod
+1. Create Traefik's Azure Managed Identity binding
+
+   > Create the Traefik Azure Identity and the Azure Identity Binding to let Azure Active Directory Pod Identity to get tokens on behalf of the Traefik's User Assigned Identity and later on assign them to the Traefik's pod.
 
    ```bash
    cat <<EOF | kubectl apply -f -
@@ -47,9 +47,9 @@ cluter can expose its backend services outside the cluster.
 
 1. Create the Traefik's Secret Provider Class resource
 
-   > Since the ingress controller will be exposing a TLS certificate, they use the Azure KeyVault CSI Provider to mount their TLS certificate managed and stored in Azure KeyVault so Traefik can use it.
-   > Create a SecretProviderClass resource with with your Azure KeyVault parameters
-   > for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
+   > The Ingress Controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
+   >
+   > Create a `SecretProviderClass` resource with with your Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
 
    ```bash
    cat <<EOF | kubectl apply -f -
@@ -77,10 +77,9 @@ cluter can expose its backend services outside the cluster.
    EOF
    ```
 
-1. Install Traefik ingress controller
+1. Install the Traefik Ingress Controller
 
-   > The application is designed to be exposed outside of their AKS cluster. Therefore, an Ingress Controller must be deployed, and Traefik is the one selected to fulfill this assignment.
-   > Install Traefik ingress controller, it will mount the the TLS certificates  with Volumes using the CSI driver as the in-cluster secret management solution.
+   > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
 
    ```bash
    kubectl apply -f https://raw.githubusercontent.com/mspnp/reference-architectures/master/aks/workload/traefik.yaml
@@ -88,11 +87,12 @@ cluter can expose its backend services outside the cluster.
 
 1. Wait for Traefik to be ready
 
-   > During the Traefik's pod creation time, aad-pod-identity will need to retrieve token for Azure KeyVault. This process can take time to complete and it's possible for the pod volume mount to fail during this time but the volume mount will eventually succeed. For more information, please refer to https://github.com/Azure/secrets-store-csi-driver-provider-azure/blob/master/docs/pod-identity-mode.md
+   > During Traefik's pod creation process, AAD Pod Identity will need to retrieve token for Azure Key Vault. This process can take time to complete and it's possible for the pod volume mount to fail during this time but the volume mount will eventually succeed. For more information, please refer to the [Pod Identity documentation](https://github.com/Azure/secrets-store-csi-driver-provider-azure/blob/master/docs/pod-identity-mode.md).
 
    ```bash
    kubectl wait --namespace a0008 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s
    ```
 
----
-Next Step: [Workload](./09-workload.md)
+### Next step
+
+:arrow_forward: [Deploy the Workload](./09-workload.md)
