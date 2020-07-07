@@ -1,10 +1,10 @@
 # Deploy the Workload (ASP.NET Core Docker web app)
 
-The cluster now has an [Traefik configured with a TLS certificate](./08-secret-managment-and-ingress-controller).  The last step in the process is to deploy the workload, which will demonstrate the system's functions.
+The cluster now has an [Traefik configured with a TLS certificate](./08-secret-managment-and-ingress-controller). The last step in the process is to deploy the workload, which will demonstrate the system's functions.
 
 ## Steps
 
-> :book: The Contoso app team is about to conclude this journey, but they need an app to test their new infrastructure. For this task they picked out the venerable [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/master/samples/aspnetapp).
+> :book: The Contoso app team is about to conclude this journey, but they need an app to test their new infrastructure. For this task they've picked out the venerable [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/master/samples/aspnetapp).
 
 1. Deploy the ASP.NET Core Docker sample web app
 
@@ -26,7 +26,7 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    kubectl get ingress aspnetapp-ingress -n a0008
    ```
 
-   > At this point, the route to the workload is established, SSL offloading configured, and a network policy is in place to only allow your Azure Application Gateway to connect. Therefore, please expect a `403` HTTP response if you attempt to connect to it directly.
+   > At this point, the route to the workload is established, SSL offloading configured, and a network policy is in place to only allow Traefik to connect to your workload. Therefore, please expect a `403` HTTP response if you attempt to connect to it directly.
 
 1. Give a try and expect a `403` HTTP response
 

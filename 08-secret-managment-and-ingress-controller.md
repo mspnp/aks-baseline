@@ -47,7 +47,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
 1. Create the Traefik's Secret Provider Class resource
 
-   > The Ingress Controller will be exposing a the wildcard TLS certificate we created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
+   > The Ingress Controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
    >
    > Create a `SecretProviderClass` resource with with your Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
 
@@ -79,7 +79,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
 1. Install the Traefik Ingress Controller
 
-   > Install the Traefik Ingress Controller, it will used the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
+   > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
 
    ```bash
    kubectl apply -f https://raw.githubusercontent.com/mspnp/reference-architectures/master/aks/workload/traefik.yaml
