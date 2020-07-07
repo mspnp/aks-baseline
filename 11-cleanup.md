@@ -1,27 +1,32 @@
 # Clean up
 
-Previously you have [validated an end-to-end case scenario](./10-validation). You can follow these steps to
-delete all resources.
+After you are done exploring your deployed [AKS secure baseline cluster](./), you'll want to delete the created Azure resources to prevent undesired costs from accruing. Follow these steps to
+delete all resources created as part of this reference implementation.
 
----
+## Steps
 
-To delete all Azure resources associated with this reference implementation, you'll need to delete the three resource groups created. Also if any temporary changes were made to Azure AD or Azure RBAC permissions consider removing those as well.
+1. Delete the resource groups as a way to delete all contained Azure resources.
 
-1. Delete the resource groups as a way to delete all Azure resources
+   > To delete all Azure resources associated with this reference implementation, you'll need to delete the three resource groups created.
+
+   :warning: Ensure you are using the correct subscription, and validate that the only resources that exist in these groups are ones you're okay deleting.
 
    ```bash
-   az group delete -n rg-bu0001a0008 --yes
-   az group delete -n rg-enterprise-networking-spokes --yes
-   az group delete -n rg-enterprise-networking-hubs --yes
+   az group delete -n rg-bu0001a0008
+   az group delete -n rg-enterprise-networking-spokes
+   az group delete -n rg-enterprise-networking-hubs
    ```
 
-1. Purge Azure KeyVault
+1. Purge Azure Key Vault
 
-   > Because this reference implementation enables soft delete, execute purge so your next
-   > test deployment of this implementation doesn't run into a naming conflict.
+   > Because this reference implementation enables soft delete on Key Vault, execute a purge so your next deployment of this implementation doesn't run into a naming conflict.
 
    ```bash
    az keyvault purge --name ${KEYVAULT_NAME} --location eastus2
    ```
----
-End: [back to main](./README.md#getting-started)
+
+1. If any temporary changes were made to Azure AD or Azure RBAC permissions consider removing those as well.
+
+### Next step
+
+:arrow_forward: [Review additional information in the main README](./README.md#broom-clean-up-resources)
