@@ -38,7 +38,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
 1. Deploy Flux.
 
-   > If you used your own fork of this GitHub repo, consider updating this `flux.yaml` file to include reference to your own repo and change the URL above to point to yours as well.
+   > If you used your own fork of this GitHub repo, consider updating this [`flux.yaml`](./cluster-baseline-settings/flux.yaml) file to include reference to your own repo and change the URL below to point to yours as well. Also, since Flux will begin processing the manifests in [`cluster-baseline-settings/`](./cluster-baseline-settings/) now would be a good time to update the `<replace-with-an-aad-group-object-id-for-this-cluster-role-binding>` placeholder in [`user-facing-cluster-role-aad-group.yaml`](./cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml) with the Object IDs for the Azure AD Group(s) you created for management purposes. If you don't, the manifest will still apply, but AAD integration will not be mapped to your specific AAD configuration.
 
    ```bash
    kubectl apply -f https://raw.githubusercontent.com/mspnp/reference-architectures/master/aks/secure-baseline/cluster-baseline-settings/flux.yaml
