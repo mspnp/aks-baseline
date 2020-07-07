@@ -1,14 +1,12 @@
 # Workflow Prerequisites
 
-The AKS Cluster has been enrolled in [GitOps management](./06-gitops), wrapping up the infrastructure focus of the [AKS secure Baseline reference implementation](./). Follow the steps below to create the TLS certificate that the Ingress Controller will serve for Application Gateway to connect to your web app. If you already have access to an appropriate certificate, or can procure one from your organization, consider doing so and skipping the generations steps below. The following will describe using a self-signed cert for instructive purposes only.
+The AKS Cluster has been enrolled in [GitOps management](./06-gitops), wrapping up the infrastructure focus of the [AKS secure Baseline reference implementation](./). Follow the steps below to create the TLS certificate that the Ingress Controller will serve for Application Gateway to connect to your web app.
 
 ## Steps
 
 ## Generate the wildcard certificate for the Ingress Controller using Azure KeyVault
 
 > :book: Contoso Bicycle needs to procure a CA certificate for the web site. As this is going to be a user-facing site, they purchase an EV cert from their CA.  This will serve in front of the Azure Application Gateway.  They will also procure another one, a standard cert, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing.
-
-:warning: Do not use the certificate created by this scripts for actual deployments. The use of self-signed certificates are provided for ease of illustration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, _even for development purposes_.
 
 1. Obtain the Azure Key Vault details and give the current user permissions to create certificates.
 
@@ -20,6 +18,10 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops), wrapping 
    ```
 
 1. Generate the Cluster Ingress Controller's Wildcard Certificate for `*.aks-ingress.contoso.com`.
+
+    :warning: If you already have access to an appropriate certificate, or can procure one from your organization, consider skipping this step and instead [import it into Key Vault](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate#import-a-certificate-to-key-vault).
+
+    :warning: Do not use the certificate created by this script for actual deployments. The use of self-signed certificates are provided for ease of illustration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, _even for development purposes_.
 
    ```bash
    cat <<EOF | az keyvault certificate create --vault-name $KEYVAULT_NAME -n traefik-ingress-internal-aks-ingress-contoso-com-tls -p @-
