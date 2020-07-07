@@ -8,6 +8,8 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
 
 1. Deploy the ASP.NET Core Docker sample web app
 
+   > The workload definition demonstrates the inclusion of a Pod Disruption Budget rule, ingress configuration, and pod (anti-)affinity rules for your reference.
+
    ```bash
    kubectl apply -f https://raw.githubusercontent.com/mspnp/reference-architectures/master/aks/secure-baseline/workload/aspnetapp.yaml
    ```
