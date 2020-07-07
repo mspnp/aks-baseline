@@ -117,7 +117,7 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 
        > :book: The DevOps team monitors this Workflow execution instance. In this instance it will impact a critical piece of infrastructure as well as the management. This flow works for both new or an existing AKS cluster.
 
-    1. :fast_forward: The cluster is placed under GitOps managed as part of these GitHub Workflow steps. Therefore, it is you should proceed straight to [Workflow Prerequisites](./07-workload-prerequisites.md).
+    1. :fast_forward: The cluster is placed under GitOps managed as part of these GitHub Workflow steps. Therefore, you should proceed straight to [Workflow Prerequisites](./07-workload-prerequisites.md).
 
 ### Next step
 
