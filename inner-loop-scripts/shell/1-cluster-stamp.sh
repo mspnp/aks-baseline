@@ -93,7 +93,7 @@ EOF
 
 APP_GATEWAY_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.agwName.value -o tsv)
 az network application-gateway root-cert create -g $RGNAMECLUSTER --gateway-name $APP_GATEWAY_NAME --name root-cert-wildcard-aks-ingress-contoso --keyvault-secret 'https://kv-aks-cunypcamxe7pa.vault.azure.net/secrets/sslcert/ce4b294428f243ac941fa78b1c0646cc'
-az network application-gateway http-settings update -g $RGNAMECLUSTER --gateway-name $APP_GATEWAY_NAME -n aks-ingress-contoso-backendpool-httpsettings --root-certs root-cert-wildcard-aks-ingress-contoso --protocol Https --KeyVaultSecretId
+az network application-gateway http-settings update -g $RGNAMECLUSTER --gateway-name $APP_GATEWAY_NAME -n aks-ingress-contoso-backendpool-httpsettings --root-certs root-cert-wildcard-aks-ingress-contoso --protocol Https
 
 az aks get-credentials -n ${AKS_CLUSTER_NAME} -g ${RGNAMECLUSTER} --admin
 kubectl create namespace cluster-baseline-settings
