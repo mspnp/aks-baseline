@@ -1,29 +1,25 @@
 # Workflow Prerequisites
 
-Previously you have configured a [GitOps solution](./06-gitops) for the AKS cluster.
-The following steps will cover the TLS certificate generation using Azure
-KeyVault.
+The AKS Cluster has been enrolled in [GitOps management](./06-gitops), wrapping up the infrastructure focus of the [AKS secure Baseline reference implementation](./). Follow the steps below to create the TLS certificate that the Ingress Controller will serve for Application Gateway to connect to your web app. If you already have access to an appropriate certificate, or can procure one from your organization, consider doing so and skipping the generations steps below. The following will describe using a self-signed cert for instructive purposes only.
 
----
+## Steps
 
 ## Generate the wildcard certificate for the Ingress Controller using Azure KeyVault
 
-   > Contoso Bicycle needs to buy CA certificates, their preference is to use two different TLS certificates. The first one is going to be a user-facing EV cert to serve in front of the Azure Application Gateway and another one a standard cert at the Ingress Controller level which will not be user facing.
+> :book: Contoso Bicycle needs to procure a CA certificate for the web site. As this is going to be a user-facing site, they purchase an EV cert from their CA.  This will serve in front of the Azure Application Gateway.  They will also procure another one, a standard cert, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing.
 
-   > :warning: Do not use the certificates created by these scripts for actual deployments. The self-signed certificates are provided for ease of illustration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, even for development purposes.
+:warning: Do not use the certificate created by this scripts for actual deployments. The use of self-signed certificates are provided for ease of illustration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, _even for development purposes_.
 
-1. Obtain the Azure KeyVault details and give the current user permissions to
-   create certificates.
+1. Obtain the Azure Key Vault details and give the current user permissions to create certificates.
 
-   > Finally the app team wants to import a wildcard certificate `*.aks-ingress.contoso.com`  to AzureKeyVault
-   > A while later this certificate is going to be the one served by a Traefik Ingress Controller wich is
-   > deployed downstream
+   > :book: Finally the app team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller. They use Azure Key Vault to create and manage the lifecycle of this certificate.
 
    ```bash
    KEYVAULT_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
    az keyvault set-policy --certificate-permissions create list get -n $KEYVAULT_NAME --upn $(az account show --query user.name -o tsv)
    ```
-1. Generate the Cluster Ingress Controller Wildcard Certificate: `*.aks-ingress.contoso.com`
+
+1. Generate the Cluster Ingress Controller's Wildcard Certificate for `*.aks-ingress.contoso.com`.
 
    ```bash
    cat <<EOF | az keyvault certificate create --vault-name $KEYVAULT_NAME -n traefik-ingress-internal-aks-ingress-contoso-com-tls -p @-
@@ -68,23 +64,28 @@ KeyVault.
    EOF
    ```
 
-## Integrate Azure Application Gateway and Azure KeyVault
+## Configure Azure Application Gateway and Azure Key Vault
 
-1. Query the BU 0001's Azure Application Gateway Name
+Since we are extending TLS from the Azure Application Gateway through to the Ingress Controller, application gateway needs to know about the root certificate, which it can find from Key Vault.
 
-    ```bash
-    export APP_GATEWAY_NAME=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
-    ```
-
-1. Configure the trusted root cert
+1. Query the Azure Application Gateway name.
 
    ```bash
-   az network application-gateway root-cert create -g rg-bu0001a0008 --gateway-name $APP_GATEWAY_NAME --name root-cert-wildcard-aks-ingress-contoso --keyvault-secret $(az keyvault certificate show --vault-name $KEYVAULT_NAME -n traefik-ingress-internal-aks-ingress-contoso-com-tls --query sid -o tsv)
+   export APP_GATEWAY_NAME=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.agwName.value -o tsv)
    ```
 
-1. configure the http settings to use the root cert
+1. Configure the trusted root certificate.
+
+   ```bash
+   az network application-gateway root-cert create -g rg-bu0001a0008 --gateway-name $APP_GATEWAY_NAME --name  root-cert-wildcard-aks-ingress-contoso --keyvault-secret $(az keyvault certificate show --vault-name  $KEYVAULT_NAME -n traefik-ingress-internal-aks-ingress-contoso-com-tls --query sid -o tsv)
+   ```
+
+1. Configure the HTTP Settings to use the root certificate.
+
    ```bash
    az network application-gateway http-settings update -g rg-bu0001a0008 --gateway-name $APP_GATEWAY_NAME -n aks-ingress-contoso-backendpool-httpsettings --root-certs root-cert-wildcard-aks-ingress-contoso --protocol Https
    ```
----
-Next Step: [Secret Managment and Ingress Controller](./08-secret-managment-and-ingress-controller.md)
+
+### Next step
+
+:arrow_forward: [Configure AKS Ingress Controller with Azure Key Vault integration](./08-secret-managment-and-ingress-controller.md)
