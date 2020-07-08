@@ -19,9 +19,9 @@ This section will help you to validate the workload is exposed correctly and res
 
 1. Create `A` Record for DNS
 
-    > You can simulate this via a local hosts file modification. You're welcome to add a real DNS entry for your specific deployment's application domain name, if you have access to do so.
+    > :bulb: You can simulate this via a local hosts file modification. You're welcome to add a real DNS entry for your specific deployment's application domain name, if you have access to do so.
 
-    Map the Azure Application Gateway public IP address to the application domain name. To do that, please open your hosts file (`C:\Windows\System32\drivers\etc\hosts` or `/etc/hosts`) and add the following record in local host file: `${APPGW_PUBLIC_IP} bicycle.contoso.com`
+    Map the Azure Application Gateway public IP address to the application domain name. To do that, please edit your hosts file (`C:\Windows\System32\drivers\etc\hosts` or `/etc/hosts`) and add the following record to the end: `${APPGW_PUBLIC_IP} bicycle.contoso.com`
 
 1. Browse to the site (e.g. <https://bicycle.contoso.com>).
 
@@ -35,7 +35,7 @@ Azure Monitor is configured to surface cluster logs, here you can see those logs
 
 TODO
 
-## Validate Azure Monitor (Prometheus Scraping)
+## Validate Azure Monitor for containers (Prometheus Metrics)
 
 Azure Monitor is configured to scrape Prometheus metrics. These steps will show you how to see those metrics.
 
