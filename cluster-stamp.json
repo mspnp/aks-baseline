@@ -782,7 +782,10 @@
                         "enabled": false
                     },
                     "azurePolicy": {
-                        "enabled": true
+                        "enabled": true,
+                        "config": {
+                            "version": "v2"
+                        }
                     },
                     "kubeDashboard": {
                         "enabled": false
