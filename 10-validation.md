@@ -27,20 +27,22 @@ This section will help you to validate the workload is exposed correctly and res
 
    > :bulb: A TLS warning will be present due to using a self-signed certificate.
 
-## Validate Azure Monitor for containers (Logs)
+## Validate Azure Monitor (Logs)
 
-Azure Monitor is configured to surface cluster logs, here you can see those logs as they are generated.  
-Monitoring your containers is critical, especially when you're running a production cluster.
+Monitoring your containers is critical, especially when you're running a production cluster. Azure Monitor is configured to surface cluster logs, here you can see those logs as they are generated.
 
 ### Steps
 
-- [Azure Monitor for container is configured](https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-overview).
+- [Azure Monitor for container is configured](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-overview).
 
+  - Open the Azure Portal and sign in
   - On your cluster resource group (rg-bu0001a0008),
   - Select your AKS resource,
   - And then _Insights_
 
-- It is possible to ejecute [Kusto queries](https://docs.microsoft.com/en-us/azure/azure-monitor/log-query/get-started-portal) based on your [cluster information](https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-log-search).
+- It is possible to execute [Kusto queries](https://docs.microsoft.com/azure/azure-monitor/log-query/get-started-portal) based on your [cluster information](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-log-search).
+
+  - Open the Azure Portal and sign in
   - On your cluster resource group (rg-bu0001a0008),
   - Select your AKS resource,
   - And then _Logs_
@@ -48,16 +50,18 @@ Monitoring your containers is critical, especially when you're running a product
 
 ## Validate Azure Monitor for containers (Prometheus Metrics)
 
-[Azure Monitor is configured to scrape Prometheus metrics](https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-prometheus-integration).
+[Azure Monitor is configured to scrape Prometheus metrics](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-prometheus-integration).
 
-The cluster is configured to collect information from two namespaces ([container-azm-ms-agentconfig.yaml](https://github.com/mspnp/reference-architectures/blob/master/aks/secure-baseline/cluster-baseline-settings/container-azm-ms-agentconfig.yaml))
+The cluster is configured to collect Prometheus metrics from two namespaces, as configured in [`container-azm-ms-agentconfig.yaml`](./cluster-baseline-settings/container-azm-ms-agentconfig.yaml)). It is needed some pod that support emitting Prometheus metrics and it has been configured, our examples are:
 
-- a0008, here is collecting [treafik data](https://github.com/mspnp/reference-architectures/blob/master/aks/secure-baseline/workload/traefik.yaml#L199-L201)
-- cluster-baseline-settings, here is collecting [kured data](https://github.com/mspnp/reference-architectures/blob/master/aks/secure-baseline/cluster-baseline-settings/kured-1.4.0-dockerhub.yaml#L80-L82)
+- a0008, here is collecting [treafik data](./workload/traefik.yaml#L199-L201)
+- cluster-baseline-settings, here is collecting [kured data](./cluster-baseline-settings/kured-1.4.0-dockerhub.yaml#L80-L82)
 
 ### Steps
 
-- There are some saved queries as example about consuming that information.
+- This reference implementation ships with some saved queries as an example of how you can write your own and manage them via IaC. To see them in the Azure Portal:
+
+  - Open the Azure Portal and sign in
   - On your cluster resource group (rg-bu0001a0008),
   - Select your Log Analytic Workpace resource,
   - Then _Saved Searches_.
@@ -70,13 +74,17 @@ Azure will generate alerts on the health of your cluster and adjacent resources.
 
 ### Steps
 
-- An alert based on [Azure Monitor for containers information using kusto query](https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-alerts) was configured. Also you can set up your own alets based on your own queries.
+- An alert based on [Azure Monitor for containers information using a kusto query](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts) was configured. Also you can set up your own alerts based on your own queries.
+
+  - Open the Azure Portal and sign in
   - On your cluster resource group (rg-bu0001a0008),
   - Select your _Alerts_,
   - And then _Manage Rule Alerts_
   - There is an alert called "PodFailedPhase" based on a Kusto query described on the article.
 
-* An [Azure Advisor Alert](https://docs.microsoft.com/en-us/azure/advisor/advisor-overview), you can improve the performance, security, and reliability of your resources, as you identify opportunities to reduce your overall Azure spend. You can [customize the azure advisor alert or create new ones](https://docs.microsoft.com/en-us/azure/advisor/advisor-alerts-portal).
+* An [Azure Advisor Alert](https://docs.microsoft.com/azure/advisor/advisor-overview) was configured as well, you can improve the performance, security, and reliability of your resources, as you identify opportunities to reduce your overall Azure spend. You can [customize the azure advisor alert or create new ones](https://docs.microsoft.com/azure/advisor/advisor-alerts-portal).
+
+  - Open the Azure Portal and sign in
   - On your cluster resource group (rg-bu0001a0008),
   - Select your _Alerts_,
   - And then _Manage Rule Alerts_
