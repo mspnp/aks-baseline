@@ -5,8 +5,8 @@
     "iconName": "azure",
     "categories": ["AKS"],
     "filePatterns": [
-        "aks/secure-baseline/cluster-stamp.json$",
-        "aks/secure-baseline/cluster-baseline-settings/flux.yaml$",
-        "aks/secure-baseline/cluster-baseline-settings/*"
+        "cluster-stamp.json$",
+        "cluster-baseline-settings/flux.yaml$",
+        "cluster-baseline-settings/*"
     ]
 }

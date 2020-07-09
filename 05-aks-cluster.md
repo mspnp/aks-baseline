@@ -84,7 +84,7 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 
        ```bash
        mkdir -p .github/workflows
-       cat aks/secure-baseline/github-workflow/aks-deploy.yaml | \
+       cat github-workflow/aks-deploy.yaml | \
            sed "s#<resource-group-location>#eastus2#g" | \
            sed "s#<resource-group-name>#rg-bu0001a0008#g" | \
            sed "s#<resource-group-localtion>#eastus2#g" | \
