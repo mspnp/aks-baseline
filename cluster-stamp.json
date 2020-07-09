@@ -999,6 +999,28 @@
                 }
               }
             }
+        },
+        {
+            "type": "Microsoft.Authorization/policyAssignments",
+            "name": "[concat( 'pa-readonly-root-fs', variables('clusterName'))]",
+            "apiVersion": "2019-09-01",
+            "properties": {
+              "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
+              "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/df49d893-a74c-421d-bc95-c663042e5b80",
+              "parameters": {
+                "excludedNamespaces": {
+                  "value": [
+                    "kube-system",
+                    "gatekeeper-system",
+                    "azure-arc",
+                    "cluster-baseline-settings"
+                  ]
+                },
+                "effect": {
+                  "value": "audit"
+                }
+              }
+            }
         }
     ],
     "outputs": {
