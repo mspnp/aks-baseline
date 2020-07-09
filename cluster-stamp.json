@@ -933,6 +933,28 @@
                 "roleDefinitionId": "[variables('acrPullRole')]",
                 "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]"
             }
+        },
+        {
+            "type": "Microsoft.Authorization/policyAssignments",
+            "name": "[concat( 'pa-restrictive-initiative-', variables('clusterName'))]",
+            "apiVersion": "2019-09-01",
+            "properties": {
+              "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
+              "policyDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/42b8ef37-b724-4e24-bbc8-7a7708edfe00",
+              "parameters": {
+                "excludedNamespaces": {
+                  "value": [
+                    "kube-system",
+                    "gatekeeper-system",
+                    "azure-arc",
+                    "cluster-baseline-settings"
+                  ]
+                },
+                "effect": {
+                  "value": "audit"
+                }
+              }
+            }
         }
     ],
     "outputs": {
