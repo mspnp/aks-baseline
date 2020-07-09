@@ -93,6 +93,7 @@ metadata:
   name: aspnetapp-ingress
   namespace: a0008
   annotations:
+    kubernetes.io/ingress.allow-http: "false"
     # defines controller implementing this ingress resource: https://docs.microsoft.com/en-us/azure/dev-spaces/how-to/ingress-https-traefik
     # ingress.class annotation is being deprecated in Kubernetes 1.18: https://kubernetes.io/docs/concepts/services-networking/ingress/#deprecated-annotation
     # For backwards compatibility, when this annotation is set, precedence is given over the new field ingressClassName under spec.

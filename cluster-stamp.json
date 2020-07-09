@@ -955,6 +955,28 @@
                 }
               }
             }
+        },
+        {
+            "type": "Microsoft.Authorization/policyAssignments",
+            "name": "[concat( 'pa-enforce-https-ingress', variables('clusterName'))]",
+            "apiVersion": "2019-09-01",
+            "properties": {
+              "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
+              "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d",
+              "parameters": {
+                "excludedNamespaces": {
+                  "value": [
+                    "kube-system",
+                    "gatekeeper-system",
+                    "azure-arc",
+                    "cluster-baseline-settings"
+                  ]
+                },
+                "effect": {
+                  "value": "deny"
+                }
+              }
+            }
         }
     ],
     "outputs": {
