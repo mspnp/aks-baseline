@@ -55,6 +55,13 @@ spec:
           capabilities:
             drop:
               - all
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 256Mi
         env:
         - name: ASPNETCORE_URLS
           value: "http://*:8080"
