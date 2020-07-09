@@ -218,7 +218,7 @@ spec:
                 - traefik-ingress-ilb
             topologyKey: "kubernetes.io/hostname"
       containers:
-      - image: traefik:2.2.1
+      - image: registry.hub.docker.com/library/traefik:2.2.1
         name: traefik-ingress-controller
         resources:
           requests:

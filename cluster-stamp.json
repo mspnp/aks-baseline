@@ -1049,6 +1049,31 @@
                 }
               }
             }
+        },
+        {
+            "type": "Microsoft.Authorization/policyAssignments",
+            "name": "[concat( 'pa-whitelist-registries-images', variables('clusterName'))]",
+            "apiVersion": "2019-09-01",
+            "properties": {
+              "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
+              "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469",
+              "parameters": {
+                "allowedContainerImagesRegex": {
+                  "value": "[concat(variables('defaultAcrName'),'.azurecr.io/.+$|mcr.microsoft.com/.+$|registry.hub.docker.com/library/.+$')]"
+                },
+                "excludedNamespaces": {
+                  "value": [
+                    "kube-system",
+                    "gatekeeper-system",
+                    "azure-arc",
+                    "cluster-baseline-settings"
+                  ]
+                },
+                "effect": {
+                  "value": "deny"
+                }
+              }
+            }
         }
     ],
     "outputs": {
