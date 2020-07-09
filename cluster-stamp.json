@@ -977,6 +977,28 @@
                 }
               }
             }
+        },
+        {
+            "type": "Microsoft.Authorization/policyAssignments",
+            "name": "[concat( 'pa-enforce-internal-load-balancers', variables('clusterName'))]",
+            "apiVersion": "2019-09-01",
+            "properties": {
+              "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
+              "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e",
+              "parameters": {
+                "excludedNamespaces": {
+                  "value": [
+                    "kube-system",
+                    "gatekeeper-system",
+                    "azure-arc",
+                    "cluster-baseline-settings"
+                  ]
+                },
+                "effect": {
+                  "value": "deny"
+                }
+              }
+            }
         }
     ],
     "outputs": {
