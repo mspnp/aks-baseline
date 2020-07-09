@@ -82,7 +82,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
 
    ```bash
-   kubectl apply -f https://raw.githubusercontent.com/mspnp/reference-architectures/master/aks/workload/traefik.yaml
+   kubectl apply -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik.yaml
    ```
 
 1. Wait for Traefik to be ready

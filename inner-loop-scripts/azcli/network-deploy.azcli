@@ -44,7 +44,7 @@ az deployment group create --resource-group rg-enterprise-networking-spokes --te
 # Now that their hub has a spoke and can no longer run off of the generic hub template, the networking
 # team creates a named hub template to forever represent this specific hub and the features this specific
 # hub needs in order to support its unique spokes' requirements. As new spokes are attached and new
-# requirements arise for the regional hub, they will be added to this master template file.
+# requirements arise for the regional hub, they will be added to this main template file.
 # [This takes about three minutes to run.]
 az deployment group create --resource-group rg-enterprise-networking-hubs --template-file ../../networking/hub-regionA.json --parameters location=eastus2 nodepoolSubnetResourceIds="['/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-clusternodes']"
 
