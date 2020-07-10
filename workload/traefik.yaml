@@ -218,9 +218,15 @@ spec:
                 - traefik-ingress-ilb
             topologyKey: "kubernetes.io/hostname"
       containers:
-      - image: traefik:2.2.1
+      - image: registry.hub.docker.com/library/traefik:2.2.1
         name: traefik-ingress-controller
         resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
         readinessProbe:
           httpGet:
             path: /ping
