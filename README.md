@@ -96,6 +96,14 @@ Most of the Azure resources deployed in the prior steps will incur ongoing charg
 
 We have provided some sample deployment scripts that you could adapt for your own purposes while doing a POC/spike on this. Those scripts are found in the [inner-loop-scripts directory](./inner-loop-scripts). They include some additional considerations and may include some additional narrative as well. Consider checking them out. They consolidate most of the walk-through performed above into combined execution steps.
 
+## A Note on Preview Features
+
+While this reference implementation tends to avoid preview features of AKS to ensure you have the best customer support experience; there are some features you may wish to evaluate in pre-production clusters that augment features around security, manageability, etc. Consider trying out and providing feedback on the following. As these features come out of preview, this reference implementation may be updated to incorporate them.
+
+* [Azure RBAC for Kubernetes Authentication](https://docs.microsoft.com/azure/aks/manage-azure-rbac) - an extension of the Azure AD integration already in this reference implementation. Instead of AD Group binding, you can bind to Azure RBAC role assignments.
+* [Host-based encryption](https://docs.microsoft.com/azure/aks/enable-host-encryption) - Leverages added data encryption on your VMs' temp and OS disks.
+* [Node image upgrades](https://docs.microsoft.com/azure/aks/node-image-upgrade) - Built-in OS patch management and may be a suitable replacement for a BYO solution, such as Kured.
+
 ## Advanced topics
 
 This reference implementation intentionally does not cover more advanced scenarios. For example topics like the following are not addressed:
@@ -116,7 +124,8 @@ This reference implementation intentionally does not cover more advanced scenari
 * [Bedrock](https://github.com/microsoft/bedrock)
 * [dapr](https://github.com/dapr/dapr)
 
-Keep watching this space, as we build out reference implementation guidance on topics such as these. Further guidance delivered will use this baseline AKS implementation as their starting point. If you would like to contribute or suggest a pattern built on this baseline, [please get in touch](./CONTRIBUTING.md).
+Keep watching this space, as we build out reference implementation guidance on topics such as these. Further guidance delivered will use this baseline AKS implementation as their starting point. If you would 
+like to contribute or suggest a pattern built on this baseline, [please get in touch](./CONTRIBUTING.md).
 
 ## Final thoughts
 
