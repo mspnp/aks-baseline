@@ -17,9 +17,9 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 1. Latest [Azure CLI installed](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) or you can perform this from Azure Cloud Shell by clicking below.
 
    [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
-1. While the following features are still in preview, please enable them manually:
-   1. [register the AAD-V2 feature for AKS-managed Azure AD](https://docs.microsoft.com/azure/aks/managed-aad#before-you-begin) in your subscription.
-   1. [register the required Azure Policy features for AKS](https://docs.microsoft.com/en-us/azure/governance/policy/concepts/policy-for-kubernetes#install-azure-policy-add-on-for-aks) in your subscription.
+1. While the following features are still in _preview_, please enable them manually in your subscription.
+   1. [Register the AAD-V2 feature for AKS-managed Azure AD](https://docs.microsoft.com/azure/aks/managed-aad#before-you-begin).
+   1. [Register the required Azure Policy features for AKS](https://docs.microsoft.com/en-us/azure/governance/policy/concepts/policy-for-kubernetes#install-azure-policy-add-on-for-aks).
 1. Clone/download this repo locally, or even better fork this repository.
 
    > :twisted_rightwards_arrows: If you have forked this reference implementation repo, you'll be able to customize some of the files and commands for a more personalized experience; also ensure references to repos mentioned are updated to use your own (e.g. the following `GITHUB_REPO`).
