@@ -103,9 +103,9 @@ While this reference implementation tends to avoid preview features of AKS to en
 * [Azure RBAC for Kubernetes Authentication](https://docs.microsoft.com/azure/aks/manage-azure-rbac) - an extension of the Azure AD integration already in this reference implementation. Instead of AD Group binding, you can bind to Azure RBAC role assignments.
 * [Host-based encryption](https://docs.microsoft.com/azure/aks/enable-host-encryption) - Leverages added data encryption on your VMs' temp and OS disks.
 * [Node image upgrades](https://docs.microsoft.com/azure/aks/node-image-upgrade) - Built-in OS patch management and may be a suitable replacement for a BYO solution, such as Kured.
-* [AKS Ubuntu 18.04](https://docs.microsoft.com/azure/aks/cluster-configuration#os-configuration-preview)
-* [Containerd support](https://docs.microsoft.com/azure/aks/cluster-configuration#container-runtime-configuration-preview)
-* [Generation 2 VM support](https://docs.microsoft.com/azure/aks/cluster-configuration#generation-2-virtual-machines-preview)
+* [AKS Ubuntu 18.04](https://docs.microsoft.com/azure/aks/cluster-configuration#os-configuration-preview) - Will be the default starting in AKS 1.18.
+* [Containerd support](https://docs.microsoft.com/azure/aks/cluster-configuration#container-runtime-configuration-preview) - Replaces the use of Moby with Containerd directly, reducing node resource consumption and improving startup latency.
+* [Generation 2 VM support](https://docs.microsoft.com/azure/aks/cluster-configuration#generation-2-virtual-machines-preview) - Increased memory options, Intel SGX support, and UEFI-based boot architectures.
 
 ## Advanced topics
 
