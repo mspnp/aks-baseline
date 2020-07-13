@@ -48,6 +48,14 @@ In the prior step, you [generated the user-facing TLS certificate](./02-ca-certi
 
    This object ID will be used later while creating the cluster. This way, once the cluster gets deployed the new group will get the proper Cluster Role bindings in Kubernetes.
 
+1. Set up groups to map into other Kubernetes Roles. (Optional, fork required)
+
+   > :book: The team knows there will be more than just cluster admins that need group-managed access to the cluster.  Out of the box, Kubernetes has other roles like _admin_, _edit_, and _view_ which can also be mapped to Azure AD Groups.
+
+   In the [`user-facing-cluster-role-aad-group.yaml` file](./cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml), you can replace the four `<replace-with-an-aad-group-object-id-for-this-cluster-role-binding>` placeholders with corresponding new or existing AD groups that map to their purpose for this cluster.
+
+   :bulb: Alternatively, you can make these group associations to [Azure RBAC roles](https://docs.microsoft.com/azure/aks/manage-azure-rbac). At the time of this writing, this feature is still in _preview_, but will become the preferred way of mapping identities to Kubernetes RBAC roles.
+
 ### Next step
 
 :arrow_forward: [Deploy the hub-spoke network topology](./04-networking.md)
