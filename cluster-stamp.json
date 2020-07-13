@@ -26,6 +26,13 @@
                 "description": "The certificate data for app gateway TLS termination. It is base64"
             }
         },
+        "clusterAuthorizedIPRanges": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Authorized IP Ranges to kubernetes API server. Passing an empty array it will result in a full access by all ips"
+            }
+        },
         "location": {
             "defaultValue": "eastus2",
             "type": "string",
@@ -71,7 +78,7 @@
             }
         },
         "kubernetesVersion": {
-            "defaultValue": "1.17.5",
+            "defaultValue": "1.17.7",
             "type": "string"
         }
     },
@@ -823,6 +830,7 @@
                     "max-graceful-termination-sec": "600"
                 },
                 "apiServerAccessProfile": {
+                    "authorizedIPRanges": "[parameters('clusterAuthorizedIPRanges')]",
                     "enablePrivateCluster": false
                 }
             },

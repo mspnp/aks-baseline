@@ -33,7 +33,8 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 openssl pkcs12 -export -out appgw.pfx -in appgw.crt -inkey appgw.key -passout pass:
 APP_GATEWAY_LISTENER_CERTIFICATE=$(cat appgw.pfx | base64 -w 0)
 
-#AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 10 minutes
+# AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 10 minutes
+# It is possible to restrict the ips, from where the kubernetes API server is accessed, by setting the clusterAuthorizedIPRanges parameter. By default, full access by all ips.
 az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "../../cluster-stamp.json" --name "cluster-0001" --parameters \
                location=$LOCATION \
                geoRedundancyLocation=$GEOREDUNDANCY_LOCATION \

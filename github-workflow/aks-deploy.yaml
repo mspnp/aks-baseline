@@ -68,6 +68,7 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     # Deploy the cluster into your environment, assuming all prerequisites are up and running.
+    # It is possible to restrict the ips, from where the kubernetes API server is accessed, by setting the clusterAuthorizedIPRanges parameter. By default, full access by all ips.
     - name: Azure CLI - Deploy AKS cluster
       id: aks-cluster
       uses: Azure/cli@v1.0.0

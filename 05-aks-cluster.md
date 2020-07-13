@@ -32,6 +32,7 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
    [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmspnp%2Faks-secure-baseline%2Fmain%2Fcluster-stamp.json)
 
     **Option 2 - Deploy from the command line**
+      It is possible to restrict the ips, from where the kubernetes API server is accessed, by setting the clusterAuthorizedIPRanges parameter.
 
    ```bash
    # [This takes about 15 minutes.]
