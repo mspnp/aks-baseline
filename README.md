@@ -54,7 +54,7 @@ A deployment of AKS-hosted workloads typically experiences a separation of dutie
 There are considerations that must be addressed before you start deploying your cluster. Do I have enough permissions in my subscription and AD tenant to do a deployment of this size? How much of this will be handled by my team directly vs having another team be responsible?
 
 * [ ] Begin by ensuring you [install and meet the prerequisites](./01-prerequisites.md)
-* [ ] [Procure client-facing TLS certificate](./02-ca-certificates.md)
+* [ ] [Procure client-facing and the AKS Ingress Controller TLS certificates](./02-ca-certificates.md)
 * [ ] [Plan your Azure Active Directory integration](./03-aad.md)
 
 ### 2. Build target network
