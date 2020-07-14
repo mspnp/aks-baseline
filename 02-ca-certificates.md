@@ -10,7 +10,7 @@ Now that you have the [prerequisites](./01-prerequisites) met, follow the steps 
 
    :warning: Do not use the certificate created by this script for actual deployments. The use of self-signed certificates are provided for ease of illustration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, _even for development purposes_.
 
-   Create the certificate for Azure Application Gateway with a common name of `bicycle.contoso.com`. When we get to the workload steps, a second TLS certificate is going to be generated, but that one will be generated directly from your Azure Key Vault.
+   Create the certificate for Azure Application Gateway with a common name of `bicycle.contoso.com`.
 
    ```bash
    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out appgw.crt -keyout appgw.key -subj "/CN=bicycle.contoso.com/O=Contoso Bicycle"
