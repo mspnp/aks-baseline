@@ -33,9 +33,16 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 openssl pkcs12 -export -out appgw.pfx -in appgw.crt -inkey appgw.key -passout pass:
 APP_GATEWAY_LISTENER_CERTIFICATE=$(cat appgw.pfx | base64 -w 0)
 
+# AKS Ingress Controller Certificate
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -out traefik-ingress-internal-aks-ingress-contoso-com-tls.crt \
+        -keyout traefik-ingress-internal-aks-ingress-contoso-com-tls.key \
+        -subj "/CN=*.aks-ingress.contoso.com/O=Contoso Aks Ingress"
+AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64=$(cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt | base64 -w 0)
+
 # AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 10 minutes
-# Note: By default, this deployment will allow unrestricted access to your cluster's API Server. 
-#   You should limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, bastion subnet, build agents, or any other networks you'll administer the cluster from), 
+# Note: By default, this deployment will allow unrestricted access to your cluster's API Server.
+#   You should limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, bastion subnet, build agents, or any other networks you'll administer the cluster from),
 #   and can do so by adding a `clusterAuthorizedIPRanges=['range1', 'range2', 'AzureFirewallIP/32']` parameter below.
 az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "../../cluster-stamp.json" --name "cluster-0001" --parameters \
                location=$LOCATION \
@@ -43,7 +50,8 @@ az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "
                targetVnetResourceId=$TARGET_VNET_RESOURCE_ID \
                k8sRbacAadProfileAdminGroupObjectID=$K8S_RBAC_AAD_ADMIN_GROUP_OBJECTID \
                k8sRbacAadProfileTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID \
-               appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE
+               appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE \
+               aksIngressControllerCertificate=$AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64
 
 AKS_CLUSTER_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.aksClusterName.value -o tsv)
 TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
@@ -51,52 +59,10 @@ TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show -g $RGNAMECL
 KEYVAULT_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.keyVaultName.value -o tsv)
 APPGW_PUBLIC_IP=$(az deployment group show -g $RGNAMESPOKES -n  spoke-0001 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
 
-az keyvault set-policy --certificate-permissions create get -n $KEYVAULT_NAME --upn $(az account show --query user.name -o tsv)
+az keyvault set-policy --certificate-permissions import get -n $KEYVAULT_NAME --upn $(az account show --query user.name -o tsv)
 
-cat <<EOF | az keyvault certificate create --vault-name $KEYVAULT_NAME -n traefik-ingress-internal-aks-ingress-contoso-com-tls -p @-
-{
-  "issuerParameters": {
-    "certificateTransparency": null,
-    "name": "Self"
-  },
-  "keyProperties": {
-    "curve": null,
-    "exportable": true,
-    "keySize": 2048,
-    "keyType": "RSA",
-    "reuseKey": true
-  },
-  "lifetimeActions": [
-    {
-      "action": {
-        "actionType": "AutoRenew"
-      },
-      "trigger": {
-        "daysBeforeExpiry": 90
-      }
-    }
-  ],
-  "secretProperties": {
-    "contentType": "application/x-pkcs12"
-  },
-  "x509CertificateProperties": {
-    "keyUsage": [
-      "cRLSign",
-      "dataEncipherment",
-      "digitalSignature",
-      "keyEncipherment",
-      "keyAgreement",
-      "keyCertSign"
-    ],
-    "subject": "O=Contoso Aks Ingress, CN=*.aks-ingress.contoso.com",
-    "validityInMonths": 12
-  }
-}
-EOF
-
-APP_GATEWAY_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.agwName.value -o tsv)
-az network application-gateway root-cert create -g $RGNAMECLUSTER --gateway-name $APP_GATEWAY_NAME --name root-cert-wildcard-aks-ingress-contoso --keyvault-secret 'https://kv-aks-cunypcamxe7pa.vault.azure.net/secrets/sslcert/ce4b294428f243ac941fa78b1c0646cc'
-az network application-gateway http-settings update -g $RGNAMECLUSTER --gateway-name $APP_GATEWAY_NAME -n aks-ingress-contoso-backendpool-httpsettings --root-certs root-cert-wildcard-aks-ingress-contoso --protocol Https
+cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-internal-aks-ingress-contoso-com-tls.key > traefik-ingress-internal-aks-ingress-contoso-com-tls.pem
+az keyvault certificate import --vault-name $KEYVAULT_NAME -f traefik-ingress-internal-aks-ingress-contoso-com-tls.pem -n traefik-ingress-internal-aks-ingress-contoso-com-tls
 
 az aks get-credentials -n ${AKS_CLUSTER_NAME} -g ${RGNAMECLUSTER} --admin
 kubectl create namespace cluster-baseline-settings
