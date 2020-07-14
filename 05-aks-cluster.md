@@ -80,13 +80,12 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
        echo $APP_GATEWAY_LISTENER_CERTIFICATE
        ```
 
-    1. Create `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64` secret in your GitHub repository. For more
-       information, please take a look at [Creating encrypted secrets for a repository](https://docs.github.com/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository).
+    1. Create `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64` secret in your GitHub repository. For more information, please take a look at [Creating encrypted secrets for a repository](https://docs.github.com/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository).
 
        > :bulb:
        >
        >  * Use the env var value of `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64`
-       >  * Ideally fetching this secret from a platform-managed secret store such as [Azure KeyVault](https://github.com/marketplace/actions/azure-key-vault-get-secrets)
+       >  * Ideally fetching this secret from a platform-managed secret store such as [Azure Key Vault](https://github.com/marketplace/actions/azure-key-vault-get-secrets)
 
        ```bash
        echo $AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64

@@ -25,7 +25,7 @@ Now that you have the [prerequisites](./01-prerequisites) met, follow the steps 
    export APP_GATEWAY_LISTENER_CERTIFICATE=$(cat appgw.pfx | base64 -w 0)
    ```
 
-1. Generate the wildcard certificate for the Ingress Controller using Azure KeyVault
+1. Generate the wildcard certificate for the AKS Ingress Controller
 
    > :book: Contoso Bicycle will also procure another TLS certificate, a standard cert, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing. Finally the app team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller.
 
@@ -33,7 +33,7 @@ Now that you have the [prerequisites](./01-prerequisites) met, follow the steps 
    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out traefik-ingress-internal-aks-ingress-contoso-com-tls.crt -keyout traefik-ingress-internal-aks-ingress-contoso-com-tls.key -subj "/CN=*.aks-ingress.contoso.com/O=Contoso Aks Ingress"
    ```
 
-1. Base64 encode the AKS Ingress Controller TLS certificate
+1. Base64 encode the AKS Ingress Controller certificate
 
    :bulb: No matter if you used a certificate from your organization or you generated one from above, you'll need the public certificate (as `.crt` or `.cer`) to be base 64 encoded for proper storage in Key Vault later.
 
