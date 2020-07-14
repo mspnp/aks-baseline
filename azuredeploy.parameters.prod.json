@@ -21,7 +21,7 @@
       "value": "[base64 cert data]"
     },
     "clusterAuthorizedIPRanges": {
-      "value": "[array of ip ranges, like ['168.196.25.0/24','73.140.245.0/28'] ]"
+      "value": "[array of IP ranges, like ['168.196.25.0/24','73.140.245.0/28', AzureFirewallIP/32] ]"
     }
   }
 }

@@ -30,7 +30,7 @@
             "type": "array",
             "defaultValue": [],
             "metadata": {
-                "description": "Authorized IP Ranges to kubernetes API server. Passing an empty array it will result in a full access by all ips"
+                "description": "IP ranges authorized to contact the Kubernetes API server. Passing an empty array will result in no IP restrictions. If any are provided, remember to also provide the public IP of the egress Azure Firewall otherwise your nodes will not be able to talk to the API server (e.g. Flux)."
             }
         },
         "location": {

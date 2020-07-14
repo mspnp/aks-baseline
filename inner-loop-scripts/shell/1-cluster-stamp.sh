@@ -34,7 +34,9 @@ openssl pkcs12 -export -out appgw.pfx -in appgw.crt -inkey appgw.key -passout pa
 APP_GATEWAY_LISTENER_CERTIFICATE=$(cat appgw.pfx | base64 -w 0)
 
 # AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 10 minutes
-# It is possible to restrict the ips, from where the kubernetes API server is accessed, by setting the clusterAuthorizedIPRanges parameter. By default, full access by all ips.
+# Note: By default, this deployment will allow unrestricted access to your cluster's API Server. 
+#   You should limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, bastion subnet, build agents, or any other networks you'll administer the cluster from), 
+#   and can do so by adding a `clusterAuthorizedIPRanges=['range1', 'range2', 'AzureFirewallIP/32']` parameter below.
 az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "../../cluster-stamp.json" --name "cluster-0001" --parameters \
                location=$LOCATION \
                geoRedundancyLocation=$GEOREDUNDANCY_LOCATION \

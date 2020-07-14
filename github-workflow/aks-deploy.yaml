@@ -52,7 +52,7 @@ env:
   TARGET_VNET_RESOURCE_ID: '<cluster-spoke-vnet-resource-id>'                       # The regional network spoke VNet Resource ID that the cluster will be joined to
   K8S_RBAC_AAD_PROFILE_TENANTID: '<tenant-id-with-user-admin-permissions>'          # The tenant to integrate AKS-managed Azure AD
   K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID: '<azure-ad-aks-admin-group-object-id>' # The Azure AD group object ID that has admin access to the AKS cluster
-
+  CLUSTER_AUTHORIZED_IP_RANGES: '[]'                                                # By default, this deployment will allow unrestricted access to your cluster's API Server. You should limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, bastion subnet, build agents, or any other networks you'll administer the cluster from), and can do so by adding a CLUSTER_AUTHORIZED_IP_RANGES="['managementRange1', 'managementRange2', 'AzureFirewallIP/32']"" parameter. 
 jobs:
   deploy:
     name: Deploy AKS cluster and Flux
@@ -85,6 +85,7 @@ jobs:
               k8sRbacAadProfileTenantId=${{ env.K8S_RBAC_AAD_PROFILE_TENANTID }} \
               k8sRbacAadProfileAdminGroupObjectID=${{ env.K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID }} \
               appGatewayListenerCertificate=${{ secrets.APP_GATEWAY_LISTENER_CERTIFICATE_BASE64 }}
+              clusterAuthorizedIPRanges=${{ secrets.CLUSTER_AUTHORIZED_IP_RANGES}}
 
           echo "::set-output name=name::$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} -n cluster-stamp-cd --query properties.outputs.aksClusterName.value -o tsv)"
         azcliversion: 2.6.0

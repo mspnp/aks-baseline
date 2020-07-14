@@ -24,7 +24,7 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
    ```
 
 1. Deploy the cluster ARM template.  
-  It is possible to restrict the ips, from where the kubernetes API server is accessed, by setting the clusterAuthorizedIPRanges parameter. By default, it has full access by all ips.
+  :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server.  You can limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, bastion subnet, build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options.  
 
    **Option 1 - Deploy in the Azure Portal**
 
