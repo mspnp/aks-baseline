@@ -23,7 +23,8 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
    TARGET_VNET_RESOURCE_ID=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)
    ```
 
-1. Deploy the cluster ARM template.
+1. Deploy the cluster ARM template.  
+  :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server.  You can limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, bastion subnet, build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options.  
 
    **Option 1 - Deploy in the Azure Portal**
 
@@ -32,7 +33,6 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
    [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmspnp%2Faks-secure-baseline%2Fmain%2Fcluster-stamp.json)
 
     **Option 2 - Deploy from the command line**
-
    ```bash
    # [This takes about 15 minutes.]
    az deployment group create --resource-group rg-bu0001a0008 --template-file cluster-stamp.json --parameters targetVnetResourceId=$TARGET_VNET_RESOURCE_ID k8sRbacAadProfileAdminGroupObjectID=$K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID k8sRbacAadProfileTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE

@@ -33,7 +33,10 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 openssl pkcs12 -export -out appgw.pfx -in appgw.crt -inkey appgw.key -passout pass:
 APP_GATEWAY_LISTENER_CERTIFICATE=$(cat appgw.pfx | base64 -w 0)
 
-#AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 10 minutes
+# AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 10 minutes
+# Note: By default, this deployment will allow unrestricted access to your cluster's API Server. 
+#   You should limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, bastion subnet, build agents, or any other networks you'll administer the cluster from), 
+#   and can do so by adding a `clusterAuthorizedIPRanges=['range1', 'range2', 'AzureFirewallIP/32']` parameter below.
 az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "../../cluster-stamp.json" --name "cluster-0001" --parameters \
                location=$LOCATION \
                geoRedundancyLocation=$GEOREDUNDANCY_LOCATION \
