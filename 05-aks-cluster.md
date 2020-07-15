@@ -35,7 +35,7 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
     **Option 2 - Deploy from the command line**
    ```bash
    # [This takes about 15 minutes.]
-   az deployment group create --resource-group rg-bu0001a0008 --template-file cluster-stamp.json --parameters targetVnetResourceId=$TARGET_VNET_RESOURCE_ID k8sRbacAadProfileAdminGroupObjectID=$K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID k8sRbacAadProfileTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE
+   az deployment group create --resource-group rg-bu0001a0008 --template-file cluster-stamp.json --parameters targetVnetResourceId=$TARGET_VNET_RESOURCE_ID k8sRbacAadProfileAdminGroupObjectID=$K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID k8sRbacAadProfileTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE aksIngressControllerCertificate=$AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64
    ```
 
    > Alteratively, you could have updated the [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) file and deployed as above, using `--parameters @azuredeploy.parameters.prod.json` instead of the individual key-value pairs.
@@ -78,6 +78,17 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 
        ```bash
        echo $APP_GATEWAY_LISTENER_CERTIFICATE
+       ```
+
+    1. Create `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64` secret in your GitHub repository. For more information, please take a look at [Creating encrypted secrets for a repository](https://docs.github.com/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository).
+
+       > :bulb:
+       >
+       >  * Use the env var value of `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64`
+       >  * Ideally fetching this secret from a platform-managed secret store such as [Azure Key Vault](https://github.com/marketplace/actions/azure-key-vault-get-secrets)
+
+       ```bash
+       echo $AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64
        ```
 
     1. Copy the GitHub workflow file into the expected directory and update the placeholders in it.
