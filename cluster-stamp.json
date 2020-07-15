@@ -406,7 +406,12 @@
                             "requestTimeout": 20,
                             "probe": {
                                 "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('agwName')),'/probes/probe-bu0001a0008-00.aks-ingress.contoso.com')]"
-                            }
+                            },
+                            "trustedRootCertificates": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('agwName')), '/trustedRootCertificates/root-cert-wildcard-aks-ingress-contoso')]"
+                                }
+                            ]
                         }
                     }
                 ],
