@@ -41,7 +41,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 * [Azure KeyVault Secret Store CSI Provider](https://github.com/Azure/secrets-store-csi-driver-provider-azure)
 * [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
 
-![TODO: apply meaningful assistive technology description](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/secure-baseline/images/baseline-network-topology.png)
+![TODO: apply meaningful assistive technology description](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/secure-baseline/_images/baseline-network-topology.png)
 
 ## Deploy the reference implementation
 
