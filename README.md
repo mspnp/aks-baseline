@@ -6,7 +6,7 @@ This reference implementation demonstrates the _recommended starting (baseline) 
 
 ## Azure Architecture Center guidance
 
-This project has a companion set of articles that describe challenges, design patterns, and best practices for a secure AKS cluster. You can find this article on the Azure Architecture Center at [Baseline architecture for a secure AKS cluster](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/secure-baseline/). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
+This project has a companion set of articles that describe challenges, design patterns, and best practices for a secure AKS cluster. You can find this article on the Azure Architecture Center at [Baseline architecture for a secure AKS cluster](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/secure-baseline-aks). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
 
 ## Architecture
 
@@ -41,7 +41,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 * [Azure KeyVault Secret Store CSI Provider](https://github.com/Azure/secrets-store-csi-driver-provider-azure)
 * [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
 
-![TODO: apply meaningful assistive technology description](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/secure-baseline/images/baseline-network-topology.png)
+![Network diagram depicting a hub-spoke network with two peered VNets, each with three labeled subnets.](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/_images/baseline-network-topology.png)
 
 ## Deploy the reference implementation
 
