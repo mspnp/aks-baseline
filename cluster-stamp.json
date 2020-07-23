@@ -819,7 +819,7 @@
                     "aciConnectorLinux": {
                         "enabled": false
                     },
-                    "azurePolicy": {
+                    "azurepolicy": {
                         "enabled": true,
                         "config": {
                             "version": "v2"
