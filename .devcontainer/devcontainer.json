@@ -24,7 +24,8 @@
 	"extensions": [
 		"ms-azuretools.vscode-docker",
 		"ms-kubernetes-tools.vscode-kubernetes-tools",
-		"msazurermtools.azurerm-vscode-tools"
+		"msazurermtools.azurerm-vscode-tools",
+		"hediet.vscode-drawio"
 	]
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
