@@ -26,13 +26,20 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
 1. Get AKS `kubectl` credentials (as a user that has admin permissions to the cluster).
 
+   > This command doesn't use `--admin` here because the user you are using for the process should have been added to the Azure AD security group used to back The Kubernetes RBAC Admin Group in a prior step. Doing the command below will invoke the AAD login process to auth the user of your choice, which will then use Kubernets RBAC to perform the action. The user you choose to log in with must be a member of the AAD group bound to the `cluster-admin` ClusterRole.
+
    ```bash
-   az aks get-credentials -n $AKS_CLUSTER_NAME -g rg-bu0001a0008 --admin
+   az aks get-credentials -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME
    ```
 
 1. Create the cluster baseline settings namespace.
 
    ```bash
+   # Verify the user you logged in with has the appropriate permissions, should result in a "yes" response.
+   # If you receive "yes" to this command, check which user you authenticated as and ensure they are
+   # assigned to the Azure AD Group you designated for cluster admins.
+   kubectl auth can-i create namespace -A
+   
    kubectl create namespace cluster-baseline-settings
    ```
 
