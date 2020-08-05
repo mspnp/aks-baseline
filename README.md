@@ -68,7 +68,7 @@ This is the heart of the guidance in this reference implementation; paired with 
 * [ ] [Deploy the AKS cluster and supporting services](./05-aks-cluster.md)
 * [ ] [Place the cluster under GitOps management](./06-gitops.md)
 
-We perform the prior steps manually here for you to understand the involved components, but we advocate for an automated DevOps process. Therefore, incorporate the prior steps into your CI/CD pipeline, as you would any infrastructure as code (IaC). We have included [a starter GitHub workflow](./TODO) that demonstrates this.
+We perform the prior steps manually here for you to understand the involved components, but we advocate for an automated DevOps process. Therefore, incorporate the prior steps into your CI/CD pipeline, as you would any infrastructure as code (IaC). We have included [a starter GitHub workflow](./github-workflow/aks-deploy.yaml) that demonstrates this.
 
 ### 4. Deploy your workload
 
@@ -135,7 +135,7 @@ Kubernetes is a very flexible platform, giving infrastructure and application op
 
 * [Azure Kubernetes Service Documentation](https://docs.microsoft.com/azure/aks/)
 * [Microsoft Azure Well-Architected Framework](https://docs.microsoft.com/azure/architecture/framework/)
-* [Microservices architecture on AKS](https://docs.microsoft.com/azure/architecture/reference-architectures/microservices/aks)
+* [Microservices architecture on AKS](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks-microservices/aks-microservices)
 
 ## Contributions
 
