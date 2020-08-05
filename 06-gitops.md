@@ -1,6 +1,6 @@
 # Place the Cluster Under GitOps Management
 
-Now that [the AKS cluster](./05-aks-cluster) has been deployed, the next step to configure a GitOps management solution on our cluster, Flux in this case.
+Now that [the AKS cluster](./05-aks-cluster.md) has been deployed, the next step to configure a GitOps management solution on our cluster, Flux in this case.
 
 ## Steps
 

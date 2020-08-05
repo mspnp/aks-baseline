@@ -1,6 +1,6 @@
 # Prep for Azure Active Directory Integration
 
-In the prior step, you [generated the user-facing TLS certificate](./02-ca-certificates), now we'll prepare for leveraging Azure AD for Kubernetes role-based access control (RBAC). This is the last of the cluster infrastructure prerequisites.
+In the prior step, you [generated the user-facing TLS certificate](./02-ca-certificates.md), now we'll prepare for leveraging Azure AD for Kubernetes role-based access control (RBAC). This is the last of the cluster infrastructure prerequisites.
 
 ## Steps
 
