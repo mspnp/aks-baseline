@@ -91,7 +91,7 @@ can easily be recreated consistently and at any time.
 - The workload is stateless. No data will be persisted inside the cluster.
 - Azure Network Policy will be enabled for use, even though there's a single workload in one line-of-business.
 - Azure Container Registry will be used for the container image registry. The cluster will access the registry through Azure Private Link.
-- To stay up to date with OS and security patches, have tools ￼to help the restart of nodes when needed.
+- To stay up to date with OS and security patches, have tools to help the restart of nodes when needed.
 - AKS will be integrated with Azure Active Directory for role-based access control. This choice is aligned with the strategy of using identity as an operational control plane.
 - Azure Monitor will be used for logging, metrics, monitoring, and alerting to use the existing knowledge of Log Analytics.
 - Azure Key Vault will be used to store all secret information including SSL certificates. Key Vault data will be mounted by using Azure Key Vault with Secrets Store Container Storage Interface (CSI) driver.
