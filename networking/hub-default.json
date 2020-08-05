@@ -61,7 +61,7 @@
         "defaultFwPipName": "[concat('pip-fw-', parameters('location'), '-default')]",
         "hubFwName": "[concat('fw-', parameters('location'), '-hub')]",
         "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
-        "hubLaName": "[concat('la-networking-hub-', parameters('location'))]"
+        "hubLaName": "[concat('la-networking-hub-', parameters('location'),'-',uniqueString(resourceId('Microsoft.Network/virtualNetworks',variables('hubVnetName'))))]"
     },
     "resources": [
         {
