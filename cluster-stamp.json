@@ -1070,10 +1070,10 @@
               "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/e345eecc-fa47-480f-9e88-67dcc122b164",
               "parameters": {
                 "cpuLimit": {
-                  "value": "1000"
+                  "value": "1000m"
                 },
                 "memoryLimit": {
-                  "value": "512"
+                  "value": "512Mi"
                 },
                 "excludedNamespaces": {
                   "value": [
