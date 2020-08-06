@@ -78,7 +78,7 @@ jobs:
          az deployment group $([[ ${{ github.event_name }} = pull_request ]] && echo what-if --no-pretty-print || echo create) \
             --resource-group ${{ env.RESOURCE_GROUP }} \
             --template-file "cluster-stamp.json" \
-            --name "cluster-stamp-cd" \
+            --name "cluster-stamp" \
             --parameters \
               location=${{ env.AKS_LOCATION }} \
               geoRedundancyLocation=${{ env.GEO_REDUNDANCY_LOCATION }} \
@@ -89,7 +89,7 @@ jobs:
               appGatewayListenerCertificate=${{ secrets.APP_GATEWAY_LISTENER_CERTIFICATE_BASE64 }} \
               aksIngressControllerCertificate=${{ secrets.AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 }}
 
-          echo "::set-output name=name::$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} -n cluster-stamp-cd --query properties.outputs.aksClusterName.value -o tsv)"
+          echo "::set-output name=name::$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
         azcliversion: 2.6.0
 
     # Set the AKS cluster context
