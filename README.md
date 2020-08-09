@@ -12,7 +12,7 @@ This project has a companion set of articles that describe challenges, design pa
 
 The implementation presented here is the _minimum recommended baseline for most AKS clusters_. This implementation integrates with Azure services that will deliver observability, provide a network topology that will support multi-regional growth, and keep the in-cluster traffic secure as well. This architecture should be considered your starting point for pre-production and production stages.
 
-Throughout the reference implementation, you will see reference to _Contoso Bicycle_. They are a fictional small and fast-growing startup that provides online web services to its clientele on the west coast of North America. They have no on-premises data centers and all their containerized line of business applications are now about to be orchestrated by secure, enterprise-ready AKS clusters. This narrative provides grounding for some implementation details, naming conventions, etc. You should adapt as you see fit.
+Throughout the reference implementation, you will see reference to _Contoso Bicycle_. They are a fictional small and fast-growing startup that provides online web services to its clientele on the west coast of North America. They have no on-premises data centers and all their containerized line of business applications are now about to be orchestrated by secure, enterprise-ready AKS clusters. You can read more about [their requirements and their IT team composition](./contoso-bicycle/README.md). This narrative provides grounding for some implementation details, naming conventions, etc. You should adapt as you see fit.
 
 Finally, this implementation uses the [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/master/samples/aspnetapp) as an example workload. This workload purposefully uninteresting, as it is here exclusively to help you experience the baseline infrastructure.
 
@@ -68,7 +68,7 @@ This is the heart of the guidance in this reference implementation; paired with 
 * [ ] [Deploy the AKS cluster and supporting services](./05-aks-cluster.md)
 * [ ] [Place the cluster under GitOps management](./06-gitops.md)
 
-We perform the prior steps manually here for you to understand the involved components, but we advocate for an automated DevOps process. Therefore, incorporate the prior steps into your CI/CD pipeline, as you would any infrastructure as code (IaC). We have included [a starter GitHub workflow](./TODO) that demonstrates this.
+We perform the prior steps manually here for you to understand the involved components, but we advocate for an automated DevOps process. Therefore, incorporate the prior steps into your CI/CD pipeline, as you would any infrastructure as code (IaC). We have included [a starter GitHub workflow](./github-workflow/aks-deploy.yaml) that demonstrates this.
 
 ### 4. Deploy your workload
 
@@ -135,7 +135,7 @@ Kubernetes is a very flexible platform, giving infrastructure and application op
 
 * [Azure Kubernetes Service Documentation](https://docs.microsoft.com/azure/aks/)
 * [Microsoft Azure Well-Architected Framework](https://docs.microsoft.com/azure/architecture/framework/)
-* [Microservices architecture on AKS](https://docs.microsoft.com/azure/architecture/reference-architectures/microservices/aks)
+* [Microservices architecture on AKS](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks-microservices/aks-microservices)
 
 ## Contributions
 

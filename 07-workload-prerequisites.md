@@ -1,6 +1,6 @@
 # Workload Prerequisites
 
-The AKS Cluster has been enrolled in [GitOps management](./06-gitops), wrapping up the infrastructure focus of the [AKS secure Baseline reference implementation](./). Follow the steps below to import the TLS certificate that the Ingress Controller will serve for Application Gateway to connect to your web app.
+The AKS Cluster has been enrolled in [GitOps management](./06-gitops.md), wrapping up the infrastructure focus of the [AKS secure Baseline reference implementation](./). Follow the steps below to import the TLS certificate that the Ingress Controller will serve for Application Gateway to connect to your web app.
 
 ## Steps
 
@@ -14,7 +14,7 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops), wrapping 
 
    ```bash
    KEYVAULT_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
-   az keyvault set-policy --certificate-permissions import list get -n $KEYVAULT_NAME --upn $(az account show --query user.name -o tsv)
+   az keyvault set-policy --certificate-permissions import list get --upn $(az account show --query user.name -o tsv) -n $KEYVAULT_NAME
    ```
 
 1. Import the AKS Ingress Controller's Wildcard Certificate for `*.aks-ingress.contoso.com`.
@@ -25,7 +25,15 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops), wrapping 
 
    ```bash
    cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-internal-aks-ingress-contoso-com-tls.key > traefik-ingress-internal-aks-ingress-contoso-com-tls.pem
-   az keyvault certificate import --vault-name $KEYVAULT_NAME -f traefik-ingress-internal-aks-ingress-contoso-com-tls.pem -n traefik-ingress-internal-aks-ingress-contoso-com-tls
+   az keyvault certificate import -f traefik-ingress-internal-aks-ingress-contoso-com-tls.pem -n traefik-ingress-internal-aks-ingress-contoso-com-tls --vault-name $KEYVAULT_NAME
+   ```
+
+1. Remove Azure Key Vault import certificates permissions for current user.
+
+   > The Azure Key Vault Policy for your user was a temporary policy to allow you to upload the certificate for this walkthrough. In actual deployments, you would manage these access policies via your ARM templates using [Azure RBAC for Key Vault data plane](https://docs.microsoft.com/azure/key-vault/general/secure-your-key-vault#data-plane-and-access-policies).
+
+   ```bash
+   az keyvault delete-policy --upn $(az account show --query user.name -o tsv) -n $KEYVAULT_NAME
    ```
 
 ## Check Azure Policies are in place

@@ -1,6 +1,6 @@
 # Deploy the Workload (ASP.NET Core Docker web app)
 
-The cluster now has an [Traefik configured with a TLS certificate](./08-secret-managment-and-ingress-controller). The last step in the process is to deploy the workload, which will demonstrate the system's functions.
+The cluster now has an [Traefik configured with a TLS certificate](./08-secret-managment-and-ingress-controller.md). The last step in the process is to deploy the workload, which will demonstrate the system's functions.
 
 ## Steps
 
@@ -33,9 +33,7 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
 1. Give a try and expect a `403` HTTP response
 
    ```bash
-   kubectl -n a0008 run -i --rm --tty curl --image=curlimages/curl -- sh
-   curl --insecure -k -I --resolve bu0001a0008-00.aks-ingress.contoso.com:443:10.240.4.4 https://bu0001a0008-00.aks-ingress.contoso.com
-   exit 0
+   kubectl -n a0008 run -i --rm --tty curl --image=mcr.microsoft.com/powershell --limits=cpu=200m,memory=128M -- curl -kI https://bu0001a0008-00.aks-ingress.contoso.com -w '%{remote_ip}\n'
    ```
 
 ### Next step
