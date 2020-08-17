@@ -88,28 +88,47 @@
             "type": "string"
         }
     },
+    "functions": [
+        {
+            "namespace": "role",
+            "members": {
+                "definition": {
+                    "parameters": [
+                        {
+                            "name": "roleDefinitionId",
+                            "type": "string"
+                        }
+                    ],
+                    "output": {
+                        "value": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/', parameters('roleDefinitionId'))]",
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    ],
     "variables": {
-        "networkContributorRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7')]",
-        "monitoringMetricsPublisherRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
-        "acrPullRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
-        "managedIdentityOperatorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830')]",
-        "virtualMachineContributorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
-        "readerRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
-
+        "networkContributorRole": "[role.definition('4d97b98b-1d4f-4787-a291-c67834d212e7')]",
+        "monitoringMetricsPublisherRole": "[role.definition('3913510d-42f4-4e42-8a64-420c390055eb')]",
+        "acrPullRole": "[role.definition('7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
+        "managedIdentityOperatorRole": "[role.definition('f1a07417-d97a-45cb-824c-7a7467783830')]",
+        "virtualMachineContributorRole": "[role.definition('9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
+        "readerRole": "[role.definition('acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+        
         "subRgUniqueString": "[uniqueString('aks', subscription().subscriptionId, resourceGroup().id)]",
-
+        
         "nodeResourceGroupName": "[concat('rg-', variables('clusterName'), '-nodepools')]",
         "clusterName": "[concat('aks-', variables('subRgUniqueString'))]",
         "logAnalyticsWorkspaceName": "[concat('la-', variables('clusterName'))]",
         "containerInsightsSolutionName": "[concat('ContainerInsights(', variables('logAnalyticsWorkspaceName'),')')]",
         "defaultAcrName": "[concat('acraks', variables('subRgUniqueString'))]",
-
+        
         "vNetResourceGroup": "[split(parameters('targetVnetResourceId'),'/')[4]]",
         "vnetNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-clusternodes')]",
-
+        
         "agwName": "[concat( 'apw-', variables('clusterName')) ]",
         "apwResourceId": "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]",
-
+        
         "keyVaultName": "[concat( 'kv-', variables('clusterName'))]"
     },
     "resources": [
@@ -470,7 +489,7 @@
                     "contentVersion": "1.0.0.0",
                     "resources": [
                         {
-                            "type": "Microsoft.Network/virtualNetworks/providers/roleAssignments",
+                            "type": "Microsoft.Network/virtualNetworks/providers/roleAssignmentswadwa",
                             "apiVersion": "2018-09-01-preview",
                             "name": "[concat(split(parameters('targetVnetResourceId'),'/')[8], '/Microsoft.Authorization/', guid(resourceGroup().id, variables('networkContributorRole'),'-aks-system-assigned-managed-identity-ilb'))]",
                             "properties": {
