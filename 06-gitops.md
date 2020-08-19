@@ -31,12 +31,19 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    ```bash
    az aks get-credentials -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME
    ```
+   :Note: At this point two important steps are happening: 
+   1. The `az aks get-credentials` command will be fetch a `kubeconfig` containing references to the AKS cluster you have created earlier.
+   1. To _actually_ use the cluster you will need to authenticate. For that, run any `kubectl` commands which at this stage will prompt you to authenticate against Azure Active Directory. For example, run the following command:
+   ```bash
+   kubectl get nodes
+   ```
+   When prompted to authenticate, make sure to use the user that was created earlier on the Azure Active Directory Integration (e.g.: `bu0001a0008-admin`) for this. Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes please refer to https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens)
 
 1. Create the cluster baseline settings namespace.
 
    ```bash
    # Verify the user you logged in with has the appropriate permissions, should result in a "yes" response.
-   # If you receive "yes" to this command, check which user you authenticated as and ensure they are
+   # If you receive "no" to this command, check which user you authenticated as and ensure they are
    # assigned to the Azure AD Group you designated for cluster admins.
    kubectl auth can-i create namespace -A
    
