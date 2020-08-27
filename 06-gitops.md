@@ -37,7 +37,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    ```bash
    kubectl get nodes
    ```
-   When prompted to authenticate, make sure to use the user that was created earlier on the Azure Active Directory Integration (e.g.: `bu0001a0008-admin`) for this. Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes please refer to https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens)
+   Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes please refer to https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens)
 
 1. Create the cluster baseline settings namespace.
 
