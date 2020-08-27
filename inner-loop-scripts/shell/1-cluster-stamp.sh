@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -e
+
 # This script might take about 10 minutes
 
 # Cluster Parameters.
