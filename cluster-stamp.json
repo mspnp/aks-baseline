@@ -60,7 +60,7 @@
             }
         },
         "geoRedundancyLocation": {
-            "defaultValue": "australiaeast",
+            "defaultValue": "australiasoutheast",
             "type": "string",
             "allowedValues": [
                 "eastus2",
@@ -79,7 +79,8 @@
                 "uksouth",
                 "japaneast",
                 "southeastasia",
-                "australiaeast"
+                "australiaeast", 
+                "australiasoutheast"
             ],
             "metadata": {
                 "description": "For Azure resources that support native geo-redunancy, provide the location the redundant service will have its secondary. Should be different than the location parameter and ideally should be a paired region - https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions. This region does not need to support availability zones."
