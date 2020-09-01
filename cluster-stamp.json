@@ -89,9 +89,9 @@
         }
     },
     "variables": {
-        "networkContributorRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7')]",
-        "monitoringMetricsPublisherRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
-        "acrPullRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
+        "networkContributorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7')]",
+        "monitoringMetricsPublisherRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
+        "acrPullRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
         "managedIdentityOperatorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830')]",
         "virtualMachineContributorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
         "readerRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
@@ -476,7 +476,8 @@
                             "properties": {
                                 "roleDefinitionId": "[variables('networkContributorRole')]",
                                 "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01', 'Full').identity.principalId]",
-                                "scope": "[parameters('targetVnetResourceId')]"
+                                "scope": "[parameters('targetVnetResourceId')]",
+                                "principalType": "ServicePrincipal"
                             }
                         }
                     ]
@@ -504,7 +505,8 @@
                             "comments": "It is required to grant the AKS cluster with Virtual Machine Contributor role permissions over the cluster infrastructure resource group to work with Managed Identities and aad-pod-identity. Otherwise MIC component fails while attempting to update MSI on VMSS cluster nodes",
                             "properties": {
                                 "roleDefinitionId": "[variables('virtualMachineContributorRole')]",
-                                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]"
+                                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]",
+                                "principalType": "ServicePrincipal"
                             }
                         }
                     ]
@@ -900,7 +902,8 @@
             ],
             "properties": {
                 "roleDefinitionId": "[variables('monitoringMetricsPublisherRole')]",
-                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]"
+                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]",
+                "principalType": "ServicePrincipal"
             }
         },
         {
@@ -913,7 +916,8 @@
             ],
             "properties": {
                 "roleDefinitionId": "[variables('managedIdentityOperatorRole')]",
-                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]"
+                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]",
+                "principalType": "ServicePrincipal"
             }
         },
         {
@@ -928,7 +932,8 @@
             "properties": {
                 "roleDefinitionId": "[variables('readerRole')]",
                 "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','aksic-to-keyvault')).principalId]",
-                "scope": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+                "scope": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+                "principalType": "ServicePrincipal"
             }
         },
         {
@@ -970,7 +975,8 @@
             ],
             "properties": {
                 "roleDefinitionId": "[variables('acrPullRole')]",
-                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]"
+                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-03-01').identityProfile.kubeletidentity.objectId]",
+                "principalType": "ServicePrincipal"
             }
         },
         {
@@ -1091,7 +1097,7 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[concat( 'pa-whitelist-registries-images-', variables('clusterName'))]",
+            "name": "[concat( 'pa-allowed-registries-images-', variables('clusterName'))]",
             "apiVersion": "2019-09-01",
             "properties": {
               "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",

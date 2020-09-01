@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+
+set -e
+
 # This script might take about 20 minutes
 # Please check the variables
 LOCATION=$1
@@ -13,6 +17,39 @@ AKS_ENDUSER_PASSWORD=ChangeMebu0001a0008AdminChangeMe
 
 K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_NAME="add-to-bu0001a000800-cluster-admin"
 
+__usage="
+    [-c RGNAMECLUSTER]
+    [-h RGNAMEHUB]
+    [-l LOCATION]
+    [-s MAIN_SUBSCRIPTION]
+    [-t TENANT_ID]
+    [-p RGNAMESPOKES]
+"
+
+usage() {
+    echo "usage: ${0##*/}"
+    echo "${__usage/[[:space:]]/}"
+    exit 1
+}
+
+while getopts "c:h:l:s:t:p:" opt; do
+    case $opt in
+    c)  RGNAMECLUSTER="${OPTARG}";;
+    h)  RGNAMEHUB="${OPTARG}";;
+    l)  LOCATION="${OPTARG}";;
+    s)  MAIN_SUBSCRIPTION="${OPTARG}";;
+    t)  TENANT_ID="${OPTARG}";;
+    p)  RGNAMESPOKES="${OPTARG}";;
+    *)  usage;;
+    esac
+done
+shift $(( $OPTIND - 1 ))
+
+if [ $OPTIND = 1 ]; then
+    usage
+    exit 0
+fi
+
 echo ""
 echo "# Creating users and group for AAD-AKS integration. It could be in a different tenant"
 echo ""
@@ -20,7 +57,7 @@ echo ""
 # We are going to use a new tenant to provide identity
 az login  --allow-no-subscriptions -t $TENANT_ID
 
-K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME=$(az ad signed-in-user show --query 'userPrincipalName' | cut -d '@' -f 2 | sed 's/\"//')
+K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
 AKS_ADMIN_NAME=${AKS_ADMIN_NAME}'@'${K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME}
 AKS_ENDUSER_NAME=${AKS_ENDUSER_NAME}'@'${K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME}
 
