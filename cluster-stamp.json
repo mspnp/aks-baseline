@@ -40,7 +40,7 @@
             }
         },
         "location": {
-            "defaultValue": "eastus2",
+            "defaultValue": "[resourceGroup().location]",
             "type": "string",
             "allowedValues": [
                 "centralus",
