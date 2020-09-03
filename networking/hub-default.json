@@ -3,6 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "location": {
+            "defaultValue": "[resourceGroup().location]",
             "type": "string",
             "allowedValues": [
                 "centralus",

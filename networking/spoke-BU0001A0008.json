@@ -9,6 +9,7 @@
             }
         },
         "location": {
+            "defaultValue": "[resourceGroup().location]",
             "type": "string",
             "allowedValues": [
                 "centralus",
