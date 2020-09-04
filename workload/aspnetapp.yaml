@@ -75,11 +75,12 @@ apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: aspnetapp-pdb
+  namespace: a0008
 spec:
   minAvailable: 75%
   selector:
     matchLabels:
-      app: aspnetapp
+      app.kubernetes.io/name: aspnetapp
 ---
 kind: Service
 apiVersion: v1
