@@ -99,7 +99,6 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
        cat github-workflow/aks-deploy.yaml | \
            sed "s#<resource-group-location>#eastus2#g" | \
            sed "s#<resource-group-name>#rg-bu0001a0008#g" | \
-           sed "s#<resource-group-localtion>#eastus2#g" | \
            sed "s#<geo-redundancy-location>#centralus#g" | \
            sed "s#<cluster-spoke-vnet-resource-id>#$TARGET_VNET_RESOURCE_ID#g" | \
            sed "s#<tenant-id-with-user-admin-permissions>#$K8S_RBAC_AAD_PROFILE_TENANTID#g" | \
