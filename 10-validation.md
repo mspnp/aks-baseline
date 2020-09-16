@@ -27,7 +27,24 @@ This section will help you to validate the workload is exposed correctly and res
 
    > :bulb: A TLS warning will be present due to using a self-signed certificate.
 
-## Validate Azure Monitor Insights and Logs
+## Validate Web Application Firewall functionality
+
+Your workload is placed behind a Web Application Firewall (WAF), which has rules designed to stop intentionally malicious activity. You can test this by triggering one of the built-in rules with a request that looks malcious.
+
+   > :bulb: This reference implementation enables the built-in OWASP 3.0 ruleset, in **Prevention** mode.
+
+### Steps
+
+1. Browse to the site with the following appended to the URL: `?sql=DELETE%20FROM` (e.g. <https://bicycle.contoso.com/?sql=DELETE%20FROM>).
+1. Observe that your request was blocked by Application Gateway's WAF rules and your workload never saw this potentially dangerous request.
+1. Blocked requests (along with other gateway data) will be visable in the attached Log Analytics workspace. Execute the following query to show WAF logs, for example.
+
+   ```
+   AzureDiagnostics 
+   | where ResourceProvider == "MICROSOFT.NETWORK" and Category == "ApplicationGatewayFirewallLog"
+   ```
+
+## Validate Cluster Azure Monitor Insights and Logs
 
 Monitoring your cluster is critical, especially when you're running a production cluster. Azure Monitor is configured to surface cluster logs, here you can see those logs as they are generated. [Azure Monitor for containers](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-overview) is configured on this cluster for this purpose.
 
