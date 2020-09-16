@@ -76,6 +76,30 @@ Azure Monitor is configured to [scrape Prometheus metrics](https://docs.microsof
 1. Type _Prometheus_ in the filter.
 1. You are able to select and execute the saved query over the scraped metrics.
 
+## Validate Workload Logs
+
+The example workload uses the standard dotnet logger interface, which are captured in `ContainerLogs` in Azure Monitor. You could also include additional logging and telemetry frameworks in your workload, such as Application Insights. Here are the steps to view the built-in application logs.
+
+### Steps
+
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
+1. Select your Log Analytic Workspace resource.
+1. Execute the following query
+
+   ```
+   let podInventory = KubePodInventory
+   | where ContainerName endswith "aspnetcore-webapp-sample"
+   | distinct ContainerID, ContainerName
+   | project-rename Name=ContainerName;
+   ContainerLog
+   | project-away Name
+   | join kind=inner
+       podInventory
+   on ContainerID
+   | project TimeGenerated, LogEntry, Computer, Name, ContainerID
+   | order by TimeGenerated desc
+   ```
+
 ## Validate Azure Alerts
 
 Azure will generate alerts on the health of your cluster and adjacent resources. This reference implementation sets up an alert that all you need to do it subscribe to.
