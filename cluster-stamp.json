@@ -84,7 +84,7 @@
             }
         },
         "kubernetesVersion": {
-            "defaultValue": "1.18.6",
+            "defaultValue": "1.18.8",
             "type": "string"
         }
     },
@@ -914,6 +914,10 @@
                     },
                     {
                         "category": "kube-controller-manager",
+                        "enabled": true
+                    },
+                    {
+                        "category": "kube-audit-admin",
                         "enabled": true
                     }
                 ]
