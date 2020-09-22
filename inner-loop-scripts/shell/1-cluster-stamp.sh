@@ -98,6 +98,8 @@ az ad group member add --group k8s-view-clusterrole --member-id $AKS_ENDUSR_OBJE
 az login
 az account set -s  $MAIN_SUBSCRIPTION
 
+# unset errexit as per https://github.com/mspnp/aks-secure-baseline/issues/69
+set +e
 echo $'Ensure Flux has created the following namespace and then press Ctrl-C'
 kubectl get ns a0008 --watch
 
