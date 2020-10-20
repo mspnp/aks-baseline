@@ -84,7 +84,7 @@
             }
         },
         "kubernetesVersion": {
-            "defaultValue": "1.17.9",
+            "defaultValue": "1.18.8",
             "type": "string"
         }
     },
@@ -456,6 +456,32 @@
             }
         },
         {
+            "type": "Microsoft.Network/applicationGateways/providers/diagnosticSettings",
+            "apiVersion": "2017-05-01-preview",
+            "name": "[concat(variables('agwName'), '/Microsoft.Insights/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]",
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+            ],
+            "properties": {
+                "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+                "logs": [
+                    {
+                        "category": "ApplicationGatewayAccessLog",
+                        "enabled": true
+                    },
+                    {
+                        "category": "ApplicationGatewayPerformanceLog",
+                        "enabled": true
+                    },
+                    {
+                        "category": "ApplicationGatewayFirewallLog",
+                        "enabled": true
+                    }
+                ]
+            }
+        },
+        {
             "type": "Microsoft.Resources/deployments",
             "name": "EnsureClusterSpHasRbacToVNet",
             "apiVersion": "2017-05-10",
@@ -746,7 +772,7 @@
         },
         {
             "type": "Microsoft.ContainerService/managedClusters",
-            "apiVersion": "2020-03-01",
+            "apiVersion": "2020-07-01",
             "name": "[variables('clusterName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -888,6 +914,10 @@
                     },
                     {
                         "category": "kube-controller-manager",
+                        "enabled": true
+                    },
+                    {
+                        "category": "kube-audit-admin",
                         "enabled": true
                     }
                 ]

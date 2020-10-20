@@ -1,10 +1,10 @@
-# Azure Kubernetes Service (AKS) Secure Baseline Reference Implementation
+# Azure Kubernetes Service (AKS) Baseline Cluster
 
 This reference implementation demonstrates the _recommended starting (baseline) infrastructure architecture_ for an [AKS cluster](https://azure.microsoft.com/services/kubernetes-service). This is implementation and document is meant to guide an interdisciplinary team or multiple distinct teams like networking, security and development through the process of getting this secure baseline infrastructure deployed and understanding the components of it.
 
 ## Azure Architecture Center guidance
 
-This project has a companion set of articles that describe challenges, design patterns, and best practices for a secure AKS cluster. You can find this article on the Azure Architecture Center at [Baseline architecture for a secure AKS cluster](https://aka.ms/architecture/aks-baseline). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
+This project has a companion set of articles that describe challenges, design patterns, and best practices for a secure AKS cluster. You can find this article on the Azure Architecture Center at [Azure Kubernetes Service (AKS) Baseline Cluster](https://aka.ms/architecture/aks-baseline). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
 
 ## Architecture
 
@@ -14,13 +14,13 @@ The implementation presented here is the _minimum recommended baseline for most 
 
 Throughout the reference implementation, you will see reference to _Contoso Bicycle_. They are a fictional small and fast-growing startup that provides online web services to its clientele on the west coast of North America. They have no on-premises data centers and all their containerized line of business applications are now about to be orchestrated by secure, enterprise-ready AKS clusters. You can read more about [their requirements and their IT team composition](./contoso-bicycle/README.md). This narrative provides grounding for some implementation details, naming conventions, etc. You should adapt as you see fit.
 
-Finally, this implementation uses the [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/master/samples/aspnetapp) as an example workload. This workload purposefully uninteresting, as it is here exclusively to help you experience the baseline infrastructure.
+Finally, this implementation uses the [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/master/samples/aspnetapp) as an example workload. This workload is purposefully uninteresting, as it is here exclusively to help you experience the baseline infrastructure.
 
 ### Core architecture components
 
 #### Azure platform
 
-* AKS v1.17
+* AKS v1.18
   * System and User [node pool separation](https://docs.microsoft.com/azure/aks/use-system-pools)
   * [AKS-managed Azure AD](https://docs.microsoft.com/azure/aks/managed-aad)
   * Managed Identities
@@ -100,7 +100,6 @@ While this reference implementation tends to avoid _preview_ features of AKS to 
 
 * [Azure RBAC for Kubernetes Authentication](https://docs.microsoft.com/azure/aks/manage-azure-rbac) - An extension of the Azure AD integration already in this reference implementation. Allowing you to bind Kubernetes authentication to Azure RBAC role assignments.
 * [Host-based encryption](https://docs.microsoft.com/azure/aks/enable-host-encryption) - Leverages added data encryption on your VMs' temp and OS disks.
-* [AKS Ubuntu 18.04](https://docs.microsoft.com/azure/aks/cluster-configuration#os-configuration-preview) - Will be the default starting in AKS 1.18.
 * [Containerd support](https://docs.microsoft.com/azure/aks/cluster-configuration#container-runtime-configuration-preview) - Replaces the use of Moby with Containerd directly, reducing node resource consumption and improving startup latency.
 * [Generation 2 VM support](https://docs.microsoft.com/azure/aks/cluster-configuration#generation-2-virtual-machines-preview) - Increased memory options, Intel SGX support, and UEFI-based boot architectures.
 
