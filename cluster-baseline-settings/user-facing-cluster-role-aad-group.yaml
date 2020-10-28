@@ -14,7 +14,7 @@ roleRef:
   name: cluster-admin
 subjects:
   - kind: Group
-    name: 76237ddd-9f24-4cd8-8018-3ae2023baefa
+    name: b311c8bf-855a-432a-8928-cfa4206addf6
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -26,7 +26,7 @@ roleRef:
   name: admin
 subjects:
   - kind: Group
-    name: 76237ddd-9f24-4cd8-8018-3ae2023baefa
+    name: b311c8bf-855a-432a-8928-cfa4206addf6
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -38,4 +38,4 @@ roleRef:
   name: view
 subjects:
   - kind: Group
-    name: de52bbde-36c6-4a98-be4d-2a42f7e55d90
+    name: b311c8bf-855a-432a-8928-cfa4206addf6
