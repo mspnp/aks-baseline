@@ -1171,6 +1171,10 @@
         "keyVaultName": {
             "type": "string",
             "value": "[variables('keyVaultName')]"
+        },
+        "containerRegistryName": {
+            "type": "string",
+            "value": "[variables('defaultAcrName')]"
         }
     }
 }

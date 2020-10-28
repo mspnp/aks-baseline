@@ -130,6 +130,12 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 
     1. :fast_forward: The cluster is placed under GitOps managed as part of these GitHub Workflow steps. Therefore, you should proceed straight to [Workflow Prerequisites](./07-workload-prerequisites.md).
 
+## Container registry note
+
+:warning: To aid in ease of deployment of this cluster and your experimentation with workloads, the Azure Policy and Azure Firewall are currently allowing your cluster to pull images from public container registries such as Docker Hub. For a production system, you'll want to update the Azure Policy named `pa-allowed-registries-images` in your `cluster-stamp.json` file to only list those container registries that you are willing to take a dependency on. This will protect your cluster from unapproved registries being used, which may prevent issues while trying to pull images from a container registry you don't have an SLA for. Also add specific firewall rules to your Azure Firewall ruleset if you do take a dependency on a public container registry.
+
+This deployment creates an SLA-backed Azure Container Registry for your cluster's needs. Your organization may have a central Container Registry for you to use, or your registry may be tied specifically to your application (as demonstrated in this implementation). **Only use container registries that map to the availability needs of your application.**
+
 ### Next step
 
 :arrow_forward: [Place the cluster under GitOps management](./06-gitops.md)
