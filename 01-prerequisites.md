@@ -11,8 +11,8 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
    > * [Contributor role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#contributor) is _required_ at the subscription level to have the ability to create resource groups and perform deployments.
    > * [User Access Administrator role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#user-access-administrator) is _required_ at the subscription level since you'll be granting least-privilege RBAC access to managed identities.
    >   * One such example is detailed in the [Container Insights documentation](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-troubleshoot#authorization-error-during-onboarding-or-update-operation).
-   
-1. An Azure AD tenent to associate your Kubernetes RBAC configuration to.
+
+1. An Azure AD tenant to associate your Kubernetes RBAC configuration to.
 
    > :warning: The user or service principal initiating the deployment process _must_ have the following minimal set of Azure AD permissions assigned:
    >
