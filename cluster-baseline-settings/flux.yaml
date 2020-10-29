@@ -64,7 +64,13 @@ spec:
           secretName: flux-git-deploy
       containers:
       - name: flux
-        image: docker.io/fluxcd/flux:1.19.0
+        # PRODUCTION READINESS CHANGE REQUIRED
+        # This image should be sourced from a non-public container registry, such as the
+        # one deployed along side of this reference implementation.
+        # az acr import --source docker.io/fluxcd/flux:1.19.0 -n <your-acr-instance-name>
+        # and then set this to
+        # image: <your-acr-instance-name>.azurecr.io/fluxcd/flux:1.19.0
+        image: acraksnsag5lvqcnyzu.azurecr.io/fluxcd/flux:1.19.0
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -139,7 +145,13 @@ spec:
         agentpool: npuser01
       containers:
       - name: memcached
-        image: memcached:1.5.20
+        # PRODUCTION READINESS CHANGE REQUIRED
+        # This image should be sourced from a non-public container registry, such as the
+        # one deployed along side of this reference implementation.
+        # az acr import --source docker.io/library/memcached:1.5.20 -n <your-acr-instance-name>
+        # and then set this to
+        # image: <your-acr-instance-name>.azurecr.io/library/memcached:1.5.20
+        image: acraksnsag5lvqcnyzu.azurecr.io/library/memcached:1.5.20
         imagePullPolicy: IfNotPresent
         resources:
           requests:

@@ -89,7 +89,13 @@ spec:
       restartPolicy: Always
       containers:
         - name: kured
-          image: docker.io/weaveworks/kured:1.4.0
+          # PRODUCTION READINESS CHANGE REQUIRED
+          # This image should be sourced from a non-public container registry, such as the
+          # one deployed along side of this reference implementation.
+          # az acr import --source docker.io/weaveworks/kured:1.4.0 -n <your-acr-instance-name>
+          # and then set this to
+          # image: <your-acr-instance-name>.azurecr.io/weaveworks/kured:1.4.0
+          image: acraksnsag5lvqcnyzu.azurecr.io/weaveworks/kured:1.4.0
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true
