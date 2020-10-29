@@ -133,7 +133,7 @@ If you configured your third-party images to be pulled from your Azure Container
    | where OperationName == 'Pull'
    ```
 
-1. You should see logs for kured, CSI, flux, and memcached.  You'll see multiple for some as the image was pulled to multiple nodes to satisfy ReplicaSet/DaemonSet placement.
+1. You should see logs for CSI, flux, kured, memcached, and traefik.  You'll see multiple for some as the image was pulled to multiple nodes to satisfy ReplicaSet/DaemonSet placement.
 
 ## Next step
 
