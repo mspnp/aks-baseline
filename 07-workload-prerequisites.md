@@ -48,21 +48,13 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops.md), wrappi
 
    A similar output as the one showed below should be returned
 
-   ```bash
+   ```output
    NAME                                     AGE
-   k8sazureallowedcapabilities              75m
-   k8sazureallowedseccomp                   75m
-   k8sazureallowedusersgroups               75m
-   k8sazureblockhostnamespace               75m
-   k8sazurecontainerallowedimages           75m
-   k8sazurecontainerlimits                  75m
-   k8sazurecontainernoprivilege             75m
-   k8sazurecontainernoprivilegeescalation   75m
-   k8sazurehostnetworkingports              75m
-   k8sazureingresshttpsonly                 75m
-   k8sazureloadbalancernopublicips          75m
-   k8sazurereadonlyrootfilesystem           75m
-   k8sazurevolumetypes                      75m
+   k8sazureallowedcapabilities              21m
+   k8sazureallowedseccomp                   21m
+   … more …
+   k8sazureserviceallowedports              21m
+   k8sazurevolumetypes                      21m
    ```
 
 ### Next step

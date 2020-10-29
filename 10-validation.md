@@ -118,6 +118,23 @@ An [Azure Advisor Alert](https://docs.microsoft.com/azure/advisor/advisor-overvi
 1. Select _Alerts_, then _Manage Rule Alerts_.
 1. There is an alert called "AllAzureAdvisorAlert" that will be triggered based on new Azure Advisor alerts.
 
+## Validate Azure Container Registry Image Pulls
+
+If you configured your third-party images to be pulled from your Azure Container Registry vs public registries, you can validate that the container registry logs show `Pull` logs for your cluster when you applied your flux configuration.
+
+### Steps
+
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`) and then your Azure Container Registry instances (starts with `acraks`).
+1. Select _Logs_.
+1. Execute the following query, for whatever time range is appropriate.
+
+   ```kusto
+   ContainerRegistryRepositoryEvents
+   | where OperationName == 'Pull'
+   ```
+
+1. You should see logs for kured, CSI, flux, and memcached.  You'll see multiple for some as the image was pulled to multiple nodes to satisfy ReplicaSet/DaemonSet placement.
+
 ## Next step
 
 :arrow_forward: [Clean Up Azure Resources](./11-cleanup.md)
