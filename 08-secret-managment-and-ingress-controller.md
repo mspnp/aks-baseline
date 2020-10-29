@@ -79,7 +79,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
 1. Import the Traefik container image to your container registry
 
-   > Responsible application operators like to minimize their risk with third party dependencies for container registries. Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for an application that needs to pull an image _right now_. As you bring in third-party images as part of your application, consider where you're storing them. It is recommended to pull in the images that you use into a registry you control, such as the SLA-backed Azure Container Registry deployed with the cluster.
+   > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for an application that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
 
    ```bash
    # Get your ACR cluster name
