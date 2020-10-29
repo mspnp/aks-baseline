@@ -56,7 +56,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
 1. Import cluster management images to your container registry.
 
-   > Responsible cluster operators like to minimize their risk with third party dependencies for container registries. Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for a system that needs to pull an image _right now_. The AKS service itself depends on Microsoft-hosted container registries. As you bring in third-party images in your cluster, consider where you're storing them. Ideally, you'll depend on your own personal container registry wherever possible. As such, it is recommended to pull in the images that you use into a registry you control, such as the SLA-backed Azure Container Registry deployed with the cluster.
+   > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for a system that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
 
    ```bash
    # Get your ACR cluster name
