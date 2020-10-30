@@ -95,7 +95,7 @@ spec:
           # az acr import --source docker.io/weaveworks/kured:1.4.0 -n <your-acr-instance-name>
           # and then set this to
           # image: <your-acr-instance-name>.azurecr.io/weaveworks/kured:1.4.0
-          image: docker.io/weaveworks/kured:1.4.0
+          image: acraksnsag5lvqcnyzu.azurecr.io/weaveworks/kured:1.4.0
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true
