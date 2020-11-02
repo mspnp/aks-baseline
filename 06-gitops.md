@@ -67,8 +67,8 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    az acr import --source docker.io/fluxcd/flux:1.19.0 -n $ACR_NAME
    az acr import --source docker.io/weaveworks/kured:1.4.0 -n $ACR_NAME
    az acr import --source quay.io/k8scsi/csi-node-driver-registrar:v1.2.0 -n $ACR_NAME
-   az acr import --source docker.io/deislabs/secrets-store-csi:v0.0.11 -n $ACR_NAME
-   az acr import --source quay.io/k8scsi/livenessprobe:v1.1.0 -n $ACR_NAME
+   az acr import --source us.gcr.io/k8s-artifacts-prod/csi-secrets-store/driver:v0.0.16 -n $ACR_NAME
+   az acr import --source quay.io/k8scsi/livenessprobe:v2.0.0 -n $ACR_NAME
    ```
 
 1. Deploy Flux.

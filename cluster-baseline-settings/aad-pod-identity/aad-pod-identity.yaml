@@ -247,7 +247,7 @@ spec:
               cpu: 100m
               memory: 256Mi
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
         agentpool: npuser01
 ---
 apiVersion: apps/v1
@@ -316,5 +316,5 @@ spec:
         hostPath:
           path: /etc/kubernetes/azure.json
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
         agentpool: npuser01
