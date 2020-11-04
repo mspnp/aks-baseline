@@ -34,7 +34,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 #### In-cluster OSS components
 
 * [Flux GitOps Operator](https://fluxcd.io)
-* [Traefik Ingress Controller](https://docs.microsoft.com/azure/dev-spaces/how-to/ingress-https-traefik)
+* [Traefik Ingress Controller](https://doc.traefik.io/traefik/v1.7/user-guide/kubernetes/)
 * [Azure AD Pod Identity](https://github.com/Azure/aad-pod-identity)
 * [Azure KeyVault Secret Store CSI Provider](https://github.com/Azure/secrets-store-csi-driver-provider-azure)
 * [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
@@ -108,7 +108,7 @@ While this reference implementation tends to avoid _preview_ features of AKS to 
 This reference implementation intentionally does not cover more advanced scenarios. For example topics like the following are not addressed:
 
 * Cluster lifecycle management with regard to SDLC and GitOps
-* Workload SDLC integration (including concepts like [DevSpaces](https://docs.microsoft.com/azure/dev-spaces/), advanced deployment techniques, etc)
+* Workload SDLC integration (including concepts like [Bridge to Kubernetes](https://docs.microsoft.com/visualstudio/containers/bridge-to-kubernetes?view=vs-2019), advanced deployment techniques, etc)
 * Mapping decisions to [CIS benchmark controls](https://www.cisecurity.org/benchmark/kubernetes/)
 * Container security
 * Multi-region clusters
