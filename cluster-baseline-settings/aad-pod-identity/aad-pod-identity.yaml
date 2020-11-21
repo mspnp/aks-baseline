@@ -210,7 +210,7 @@ spec:
           path: /run/xtables.lock
           type: FileOrCreate
         name: iptableslock
-	    - hostPath:
+      - hostPath:
           path: /etc/default/kubelet
         name: kubelet-config
       containers:
@@ -226,14 +226,14 @@ spec:
               fieldRef:
                 fieldPath: spec.nodeName
         securityContext:
-	        runAsUser: 0
+          runAsUser: 0
           capabilities:
             add:
             - NET_ADMIN
         volumeMounts:
         - mountPath: /run/xtables.lock
           name: iptableslock
-	      - mountPath: /etc/default/kubelet
+        - mountPath: /etc/default/kubelet
           name: kubelet-config
           readOnly: true
         livenessProbe:
@@ -281,12 +281,12 @@ spec:
       serviceAccountName: aad-pod-identity-mic
       containers:
       - name: mic
-	      image: "mcr.microsoft.com/oss/azure/aad-pod-identity/mic:v1.7.0"
+        image: "mcr.microsoft.com/oss/azure/aad-pod-identity/mic:v1.7.0"
         imagePullPolicy: Always
         args:
           - "--cloudconfig=/etc/kubernetes/azure.json"
           - "--logtostderr"
-	      securityContext:
+        securityContext:
           runAsUser: 0
         env:
         - name: MIC_POD_NAMESPACE
