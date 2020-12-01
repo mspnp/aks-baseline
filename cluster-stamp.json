@@ -1418,7 +1418,7 @@
                     ],
                     "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria"
                 },
-                "description": "This alert monitors pods in the ready state.",
+                "description": "This alert monitors for excessive pods not in the ready state.",
                 "enabled": true,
                 "evaluationFrequency": "PT1M",
                 "scopes": [
