@@ -395,7 +395,7 @@
                                 },
                                 {
                                     "name": "ubuntu-security-patches",
-                                    "description": "This address lets the Linux cluster nodes download the required security patches and updates.",
+                                    "description": "This address lets the Linux cluster nodes download the required security patches and updates per https://docs.microsoft.com/azure/aks/limit-egress-traffic#optional-recommended-fqdn--application-rules-for-aks-clusters.",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -413,7 +413,7 @@
                                 },
                                 {
                                     "name": "azure-monitor",
-                                    "description": "All required for Azure Monitor for containers per https://docs.microsoft.com/en-us/azure/aks/limit-egress-traffic#required-addresses-and-ports-with-azure-monitor-for-containers-enabled",
+                                    "description": "All required for Azure Monitor for containers per https://docs.microsoft.com/azure/aks/limit-egress-traffic#azure-monitor-for-containers",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -433,7 +433,7 @@
                                 },
                                 {
                                     "name": "azure-policy",
-                                    "description": "All required for Azure Policy per https://docs.microsoft.com/en-us/azure/aks/limit-egress-traffic#required-addresses-and-ports-for-aks-clusters-with-azure-policy-in-public-preview-enabled",
+                                    "description": "All required for Azure Policy per https://docs.microsoft.com/azure/aks/limit-egress-traffic#azure-policy",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -446,9 +446,9 @@
                                     "targetFqdns": [
                                         "gov-prod-policy-data.trafficmanager.net",
                                         "raw.githubusercontent.com",
-                                        "*.gk.eastus2.azmk8s.io",
-                                        "*.microsoftonline.com",
-                                        "dc.services.visualstudio.com"
+                                        "dc.services.visualstudio.com",
+                                        "data.policy.core.windows.net",
+                                        "store.policy.core.windows.net"
                                     ]
                                 }
                             ]

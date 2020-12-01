@@ -11,7 +11,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 * CSI driver and Azure KeyVault CSI Provider
 * the workload's namespace named `a0008`
 
-1. Install `kubectl` 1.18 or newer. (`kubctl` supports +/-1 Kubernetes version.)
+1. Install `kubectl` 1.19 or newer. (`kubctl` supports +/-1 Kubernetes version.)
 
    ```bash
    sudo az aks install-cli
