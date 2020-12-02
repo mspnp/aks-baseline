@@ -1062,7 +1062,7 @@
                             "metricNamespace": "Insights.Container/containers",
                             "name": "Metric1",
                             "operator": "GreaterThan",
-                            "threshold": 95.0,
+                            "threshold": 90.0,
                             "timeAggregation": "Average"
                         }
                     ],
@@ -1114,7 +1114,7 @@
                             "metricNamespace": "Insights.Container/containers",
                             "name": "Metric1",
                             "operator": "GreaterThan",
-                            "threshold": 95.0,
+                            "threshold": 90.0,
                             "timeAggregation": "Average"
                         }
                     ],
@@ -1585,7 +1585,7 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[concat( 'pa-restrictive-initiative-', variables('clusterName'))]",
+            "name": "[concat('Cluster pod security restricted standards for ', variables('clusterName'))]",
             "apiVersion": "2019-09-01",
             "properties": {
               "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
@@ -1607,7 +1607,7 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[concat( 'pa-enforce-https-ingress-', variables('clusterName'))]",
+            "name": "[concat('Enforce HTTPS ingress in ', variables('clusterName'))]",
             "apiVersion": "2019-09-01",
             "properties": {
               "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
@@ -1629,7 +1629,7 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[concat( 'pa-enforce-internal-load-balancers-', variables('clusterName'))]",
+            "name": "[concat('Enforce internal load balancers in ', variables('clusterName'))]",
             "apiVersion": "2019-09-01",
             "properties": {
               "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
@@ -1651,7 +1651,7 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[concat( 'pa-readonly-root-fs-', variables('clusterName'))]",
+            "name": "[concat('Ensure container read only root file system in ', variables('clusterName'))]",
             "apiVersion": "2019-09-01",
             "properties": {
               "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
@@ -1673,7 +1673,7 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[concat( 'pa-enforce-resources-wo-exceeding-', variables('clusterName'))]",
+            "name": "[concat('Ensure container resource limits honored in ', variables('clusterName'))]",
             "apiVersion": "2019-09-01",
             "properties": {
               "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
@@ -1701,7 +1701,7 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[concat( 'pa-allowed-registries-images-', variables('clusterName'))]",
+            "name": "[concat('Ensure only allowed container images in ', variables('clusterName'))]",
             "apiVersion": "2019-09-01",
             "properties": {
               "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",

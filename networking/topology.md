@@ -22,7 +22,7 @@ This VNet Spoke is meant to hold the following subnets:
 
 * [AKS System Nodepool] and [AKS User Nodepool] subnet
 * [AKS Internal Load Balancer subnet]
-* [Azure Application Gateway subnet]
+* [Azure Application Gateway subnet][Gateway subnet]
 
 In the future, this VNet might hold more subnets like [ACI Provider instance] subnets, more [AKS Nodepools subnets], and more.
 
@@ -62,5 +62,5 @@ In the future, this VNet might hold more subnets like [ACI Provider instance] su
 [AKS System Nodepool]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
 [AKS User Nodepool]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
 [AKS Internal Load Balancer subnet]: https://docs.microsoft.com/azure/aks/internal-lb#specify-a-different-subnet
-[ACI Provider Instances]: https://docs.microsoft.com/azure/container-instances/container-instances-vnet
+[ACI Provider Instance]: https://docs.microsoft.com/azure/container-instances/container-instances-vnet
 [AKS Nodepools subnets]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
