@@ -20,7 +20,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 #### Azure platform
 
-* AKS v1.18
+* AKS v1.19
   * System and User [node pool separation](https://docs.microsoft.com/azure/aks/use-system-pools)
   * [AKS-managed Azure AD](https://docs.microsoft.com/azure/aks/managed-aad)
   * Managed Identities
@@ -100,8 +100,11 @@ While this reference implementation tends to avoid _preview_ features of AKS to 
 
 * [Azure RBAC for Kubernetes Authentication](https://docs.microsoft.com/azure/aks/manage-azure-rbac) - An extension of the Azure AD integration already in this reference implementation. Allowing you to bind Kubernetes authentication to Azure RBAC role assignments.
 * [Host-based encryption](https://docs.microsoft.com/azure/aks/enable-host-encryption) - Leverages added data encryption on your VMs' temp and OS disks.
-* [Containerd support](https://docs.microsoft.com/azure/aks/cluster-configuration#container-runtime-configuration-preview) - Replaces the use of Moby with Containerd directly, reducing node resource consumption and improving startup latency.
 * [Generation 2 VM support](https://docs.microsoft.com/azure/aks/cluster-configuration#generation-2-virtual-machines-preview) - Increased memory options, Intel SGX support, and UEFI-based boot architectures.
+* [Auto Upgrade Profile support](https://github.com/Azure/AKS/issues/1303)
+* [Customizable Node & Kublet config](https://github.com/Azure/AKS/issues/323)
+* [GitOps as an add-on](https://github.com/Azure/AKS/issues/1967)
+* [Azure AD Pod Identity as an add-on](https://docs.microsoft.com/azure/aks/use-azure-ad-pod-identity)
 
 ## Advanced topics
 

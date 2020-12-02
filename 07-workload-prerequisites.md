@@ -53,7 +53,7 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops.md), wrappi
    k8sazureallowedcapabilities              21m
    k8sazureallowedseccomp                   21m
    … more …
-   k8sazureserviceallowedports              21m
+   k8sazurereadonlyrootfilesystem           21m
    k8sazurevolumetypes                      21m
    ```
 

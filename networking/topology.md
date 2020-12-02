@@ -22,15 +22,15 @@ This VNet Spoke is meant to hold the following subnets:
 
 * [AKS System Nodepool] and [AKS User Nodepool] subnet
 * [AKS Internal Load Balancer subnet]
-* [Azure Application Gateway subnet]
+* [Azure Application Gateway subnet][Gateway subnet]
 
 In the future, this VNet might hold more subnets like [ACI Provider instance] subnets, more [AKS Nodepools subnets], and more.
 
 ## Subnet details
 
-| Subnet                                                 | Upgrade Node | Nodes/VMs/Instance | % Xmas scale out | +Nodes/VMs | Max Ips/Pods per VM/Node | [% Max Surge] | [% Max Unavailable] | +Ips/Pods per VM/Node | Tot. Ips/Pods per VM/Node | [Azure Subnet not assignable Ips factor] | [Private Endpoints] | [Minimum Subnet size] | Scaled Subnet size | [Subnet Mask bits] | Cidr           | Host        | Broadcast     |
+| Subnet                                                 | Upgrade Node | Nodes/VMs/Instance | % Seasonal scale out | +Nodes/VMs | Max Ips/Pods per VM/Node | [% Max Surge] | [% Max Unavailable] | +Ips/Pods per VM/Node | Tot. Ips/Pods per VM/Node | [Azure Subnet not assignable Ips factor] | [Private Endpoints] | [Minimum Subnet size] | Scaled Subnet size | [Subnet Mask bits] | Cidr           | Host        | Broadcast     |
 |--------------------------------------------------------|--------------|--------------------|------------------|------------|--------------------------|---------------|---------------------|-----------------------|---------------------------|------------------------------------------|---------------------|-----------------------|--------------------|--------------------|----------------|-------------|---------------|
-| AKS System and User Nodepool Subnet                    | 1            | 5                  | 200              | 10         | [30]                     | 100           | 0                   | 30                    | 60                        | 5                                        | 2                   | 373                   | 983                | 22                 | 10.240.0.0/22  | 10.240.0.0  | 10.240.3.255  |
+| AKS System and User Nodepool Subnet                    | 2            | 5                  | 200              | 10         | [30]                     | 100           | 0                   | 30                    | 60                        | 5                                        | 2                   | 373                   | 983                | 22                 | 10.240.0.0/22  | 10.240.0.0  | 10.240.3.255  |
 | AKS Internal Load Balancer Services Subnet             | 0            | 0                  | 0                | 0          | 5                        | 100           | 100                 | 0                     | 5                         | 5                                        | 0                   | 10                    | 10                 | 28                 | 10.240.4.0/28  | 10.240.4.0  | 10.240.4.15   |
 | Azure Application Gateway Subnet                       | 0            | [11]               | 0                | 0          | 0                        | 100           | 100                 | 0                     | 0                         | 5                                        | 0                   | 16                    | 16                 | 28                 | 10.240.4.0/28  | 10.240.4.16 | 10.240.4.31   |
 | Gateway Subnet (GatewaySubnet)                         | 0            | [27<sup>1</sup>]   | 0                | 0          | 0                        | 100           | 100                 | 0                     | 0                         | 5                                        | 0                   | 32                    | 32                 | 27                 | 10.200.0.64/27 | 10.200.0.64 | 10.200.0.95   |
@@ -62,5 +62,5 @@ In the future, this VNet might hold more subnets like [ACI Provider instance] su
 [AKS System Nodepool]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
 [AKS User Nodepool]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
 [AKS Internal Load Balancer subnet]: https://docs.microsoft.com/azure/aks/internal-lb#specify-a-different-subnet
-[ACI Provider Instances]: https://docs.microsoft.com/azure/container-instances/container-instances-vnet
+[ACI Provider Instance]: https://docs.microsoft.com/azure/container-instances/container-instances-vnet
 [AKS Nodepools subnets]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
