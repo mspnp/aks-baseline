@@ -1585,9 +1585,10 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[concat('Cluster pod security restricted standards for ', variables('clusterName'))]",
-            "apiVersion": "2019-09-01",
+            "name": "[guid('42b8ef37-b724-4e24-bbc8-7a7708edfe00', resourceGroup().name, variables('clusterName'))]",
+            "apiVersion": "2020-03-01",
             "properties": {
+              "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policySetDefinitions/42b8ef37-b724-4e24-bbc8-7a7708edfe00', '2020-09-01').displayName)]",
               "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
               "policyDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/42b8ef37-b724-4e24-bbc8-7a7708edfe00",
               "parameters": {
@@ -1607,9 +1608,10 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[concat('Enforce HTTPS ingress in ', variables('clusterName'))]",
-            "apiVersion": "2019-09-01",
+            "name": "[guid('1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d', resourceGroup().name, variables('clusterName'))]",
+            "apiVersion": "2020-03-01",
             "properties": {
+              "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d', '2020-09-01').displayName)]",
               "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
               "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d",
               "parameters": {
@@ -1629,9 +1631,10 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[concat('Enforce internal load balancers in ', variables('clusterName'))]",
-            "apiVersion": "2019-09-01",
+            "name": "[guid('3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e', resourceGroup().name, variables('clusterName'))]",
+            "apiVersion": "2020-03-01",
             "properties": {
+              "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e', '2020-09-01').displayName)]",
               "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
               "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e",
               "parameters": {
@@ -1651,9 +1654,10 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[concat('Ensure container read only root file system in ', variables('clusterName'))]",
-            "apiVersion": "2019-09-01",
+            "name": "[guid('df49d893-a74c-421d-bc95-c663042e5b80', resourceGroup().name, variables('clusterName'))]",
+            "apiVersion": "2020-03-01",
             "properties": {
+              "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/df49d893-a74c-421d-bc95-c663042e5b80', '2020-09-01').displayName)]",
               "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
               "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/df49d893-a74c-421d-bc95-c663042e5b80",
               "parameters": {
@@ -1673,9 +1677,10 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[concat('Ensure container resource limits honored in ', variables('clusterName'))]",
-            "apiVersion": "2019-09-01",
+            "name": "[guid('e345eecc-fa47-480f-9e88-67dcc122b164', resourceGroup().name, variables('clusterName'))]",
+            "apiVersion": "2020-03-01",
             "properties": {
+              "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/e345eecc-fa47-480f-9e88-67dcc122b164', '2020-09-01').displayName)]",
               "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
               "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/e345eecc-fa47-480f-9e88-67dcc122b164",
               "parameters": {
@@ -1701,9 +1706,10 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[concat('Ensure only allowed container images in ', variables('clusterName'))]",
-            "apiVersion": "2019-09-01",
+            "name": "[guid('febd0533-8e55-448f-b837-bd0e06f16469', resourceGroup().name, variables('clusterName'))]",
+            "apiVersion": "2020-03-01",
             "properties": {
+              "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469', '2020-09-01').displayName)]",
               "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
               "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469",
               "parameters": {
