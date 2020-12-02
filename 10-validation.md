@@ -110,7 +110,7 @@ An alert based on [Azure Monitor for containers information using a Kusto query]
 
 1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
 1. Select _Alerts_, then _Manage Rule Alerts_.
-1. There is an alert called "PodFailedPhase" that will be triggered based on the custom query response.
+1. There is an alert called "PodFailedScheduledQuery" that will be triggered based on the custom query response.
 
 An [Azure Advisor Alert](https://docs.microsoft.com/azure/advisor/advisor-overview) was configured as well in this reference implementation.
 
