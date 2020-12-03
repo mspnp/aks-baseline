@@ -976,6 +976,99 @@
             }
         },
         {
+            "condition": false,
+            "type": "Microsoft.Insights/metricAlerts",
+            "location": "global",
+            "apiVersion": "2018-03-01",
+            "name": "[concat('Node CPU utilization high for ', variables('clusterName'), ' CI-1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
+                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+            ],
+            "properties": {
+                "actions": [],
+                "criteria": {
+                    "allOf": [
+                        {
+                            "criterionType": "StaticThresholdCriterion",
+                            "dimensions": [
+                                {
+                                    "name": "host",
+                                    "operator": "Include",
+                                    "values": [
+                                        "*"
+                                    ]
+                                }
+                            ],
+                            "metricName": "cpuUsagePercentage",
+                            "metricNamespace": "Insights.Container/nodes",
+                            "name": "Metric1",
+                            "operator": "GreaterThan",
+                            "threshold": 80.0,
+                            "timeAggregation": "Average"
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria"
+                },
+                "description": "Node CPU utilization across the cluster.",
+                "enabled": true,
+                "evaluationFrequency": "PT1M",
+                "scopes": [
+                    "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+                ],
+                "severity": 3,
+                "targetResourceType": "microsoft.containerservice/managedclusters",
+                "windowSize": "PT5M"
+            }
+        },
+        {
+            "condition": false,
+            "type": "Microsoft.Insights/metricAlerts",
+            "location": "global",
+            "apiVersion": "2018-03-01",
+            "name": "[concat('Node working set memory utilization high for ', variables('clusterName'), ' CI-2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
+                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+            ],
+            "properties": {
+                "actions": [],
+                "criteria": {
+                    "allOf": [
+                        {
+                            "criterionType": "StaticThresholdCriterion",
+                            "dimensions": [
+                                {
+                                    "name": "host",
+                                    "operator": "Include",
+                                    "values": [
+                                        "*"
+                                    ]
+                                }
+                            ],
+                            "metricName": "memoryWorkingSetPercentage",
+                            "metricNamespace": "Insights.Container/nodes",
+                            "name": "Metric1",
+                            "operator": "GreaterThan",
+                            "threshold": 80.0,
+                            "timeAggregation": "Average"
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria"
+                },
+                "description": "Node working set memory utilization across the cluster.",
+                "enabled": true,
+                "evaluationFrequency": "PT1M",
+                "scopes": [
+                    "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+                ],
+                "severity": 3,
+                "targetResourceType": "microsoft.containerservice/managedclusters",
+                "windowSize": "PT5M"
+            }
+        },
+        {
+            "condition": false,
             "type": "Microsoft.Insights/metricAlerts",
             "location": "global",
             "apiVersion": "2018-03-01",
@@ -1028,6 +1121,7 @@
             }
         },
         {
+            "condition": false,
             "type": "Microsoft.Insights/metricAlerts",
             "location": "global",
             "apiVersion": "2018-03-01",
@@ -1080,6 +1174,7 @@
             }
         },
         {
+            "condition": false,
             "type": "Microsoft.Insights/metricAlerts",
             "location": "global",
             "apiVersion": "2018-03-01",
@@ -1132,6 +1227,7 @@
             }
         },
         {
+            "condition": false,
             "type": "Microsoft.Insights/metricAlerts",
             "location": "global",
             "apiVersion": "2018-03-01",
@@ -1177,6 +1273,7 @@
             }
         },
         {
+            "condition": false,
             "type": "Microsoft.Insights/metricAlerts",
             "location": "global",
             "apiVersion": "2018-03-01",
@@ -1229,6 +1326,7 @@
             }
         },
         {
+            "condition": false,
             "type": "Microsoft.Insights/metricAlerts",
             "location": "global",
             "apiVersion": "2018-03-01",
@@ -1274,6 +1372,7 @@
             }
         },
         {
+            "condition": false,
             "type": "Microsoft.Insights/metricAlerts",
             "location": "global",
             "apiVersion": "2018-03-01",
@@ -1326,6 +1425,7 @@
             }
         },
         {
+            "condition": false,
             "type": "Microsoft.Insights/metricAlerts",
             "location": "global",
             "apiVersion": "2018-03-01",
@@ -1378,6 +1478,7 @@
             }
         },
         {
+            "condition": false,
             "type": "Microsoft.Insights/metricAlerts",
             "location": "global",
             "apiVersion": "2018-03-01",
@@ -1430,6 +1531,7 @@
             }
         },
         {
+            "condition": false,
             "type": "Microsoft.Insights/metricAlerts",
             "location": "global",
             "apiVersion": "2018-03-01",

@@ -118,11 +118,11 @@ An [Azure Advisor Alert](https://docs.microsoft.com/azure/advisor/advisor-overvi
 1. Select _Alerts_, then _Manage Rule Alerts_.
 1. There is an alert called "AllAzureAdvisorAlert" that will be triggered based on new Azure Advisor alerts.
 
-A series of metric alerts were configured as well in this reference implementation.
+A series of metric alerts can be configured as well in this reference implementation.
 
 1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
 1. Select your cluster, then _Insights_.
-1. Select _Recommended alerts_ to see those enabled. (Feel free to enable/disable as you see fit.)
+1. Select _Recommended alerts_ and enable those that you wish to configure.
 
 ## Validate Azure Container Registry Image Pulls
 
