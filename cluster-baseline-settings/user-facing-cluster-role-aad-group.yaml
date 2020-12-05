@@ -14,7 +14,7 @@ roleRef:
   name: cluster-admin
 subjects:
   - kind: Group
-    name: <replace-with-an-aad-group-object-id-for-this-cluster-role-binding>
+    name: 36386a66-6f3f-4178-99b0-1cbe627c9472
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
