@@ -66,9 +66,6 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME
    az acr import --source docker.io/fluxcd/flux:1.19.0 -n $ACR_NAME
    az acr import --source docker.io/weaveworks/kured:1.4.0 -n $ACR_NAME
-   az acr import --source quay.io/k8scsi/csi-node-driver-registrar:v1.2.0 -n $ACR_NAME
-   az acr import --source us.gcr.io/k8s-artifacts-prod/csi-secrets-store/driver:v0.0.16 -n $ACR_NAME
-   az acr import --source quay.io/k8scsi/livenessprobe:v2.0.0 -n $ACR_NAME
    ```
 
 1. Deploy Flux.
@@ -76,10 +73,9 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    > If you used your own fork of this GitHub repo, update the [`flux.yaml`](./cluster-baseline-settings/flux.yaml) file to include reference to your own repo and change the URL below to point to yours as well. Also, since Flux will begin processing the manifests in [`cluster-baseline-settings/`](./cluster-baseline-settings/) now would be a good time to:
    >
    > * update the `<replace-with-an-aad-group-object-id-for-this-cluster-role-binding>` placeholder in [`user-facing-cluster-role-aad-group.yaml`](./cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml) with the Object IDs for the Azure AD group(s) you created for management purposes. If you don't, the manifest will still apply, but AAD integration will not be mapped to your specific AAD configuration.
-   > * Update six `image` manifest references to your container registry instead of the default public container registry. See comment in each file for instructions.
+   > * Update three `image` manifest references to your container registry instead of the default public container registry. See comment in each file for instructions.
    >   * update the two `image:` values in [`flux.yaml`](./cluster-baseline-settings/flux.yaml).
    >   * update the one `image:` values in [`kured-1.4.0-dockerhub.yaml`](./cluster-baseline-settings/kured-1.4.0-dockerhub.yaml).
-   >   * update the three `image:` values in [`akv-secrets-store-csi.yaml`](./cluster-baseline-settings/akv-secrets-store-csi.yaml).
 
    :warning: Deploying the flux configuration using the `flux.yaml` file unmodified from this repo will be deploying your cluster to take dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure _all_ image references are from _your_ container registry (as imported in the prior step) or another that you feel confident relying on.
 
