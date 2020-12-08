@@ -1,7 +1,6 @@
 # Clean up
 
-After you are done exploring your deployed [AKS secure baseline cluster](./), you'll want to delete the created Azure resources to prevent undesired costs from accruing. Follow these steps to
-delete all resources created as part of this reference implementation.
+After you are done exploring your deployed [AKS secure baseline cluster](./), you'll want to delete the created Azure resources to prevent undesired costs from accruing. Follow these steps to delete all resources created as part of this reference implementation.
 
 ## Steps
 
@@ -26,6 +25,8 @@ delete all resources created as part of this reference implementation.
    ```
 
 1. If any temporary changes were made to Azure AD or Azure RBAC permissions consider removing those as well.
+
+1. [Remove the Azure Policy assignments](https://portal.azure.com/#blade/Microsoft_Azure_Policy/PolicyMenuBlade/Compliance) scoped to the cluster's resource group. To identify those created by this implementation, look for ones that are prefixed with `[your-cluster-name] `.
 
 ### Next step
 

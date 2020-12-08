@@ -75,11 +75,12 @@ apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: aspnetapp-pdb
+  namespace: a0008
 spec:
   minAvailable: 75%
   selector:
     matchLabels:
-      app: aspnetapp
+      app.kubernetes.io/name: aspnetapp
 ---
 kind: Service
 apiVersion: v1
@@ -94,7 +95,7 @@ spec:
     port: 80
     targetPort: 8080
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: aspnetapp-ingress
@@ -124,7 +125,10 @@ spec:
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: aspnetapp-service
-          servicePort: http
+          service:
+            name: aspnetapp-service
+            port:
+              number: 80
 ---

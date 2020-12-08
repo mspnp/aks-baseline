@@ -1,7 +1,7 @@
 kind: ConfigMap
 apiVersion: v1
 data:
-  #https://github.com/microsoft/OMS-docker/blob/ci_feature_prod/Kubernetes/container-azm-ms-agentconfig.yaml
+  # https://raw.githubusercontent.com/microsoft/Docker-Provider/ci_prod/kubernetes/container-azm-ms-agentconfig.yaml
   schema-version: v1
   config-version: ver1
   log-data-collection-settings: |-
@@ -26,11 +26,20 @@ data:
     [prometheus_data_collection_settings.node]
         interval = "1m"
         urls = ["http://$NODE_IP:9103/metrics"]
+  metric_collection_settings: |-
+    [metric_collection_settings.collect_kube_system_pv_metrics]
+        enabled = true
   alertable-metrics-configuration-settings: |-
     [alertable_metrics_configuration_settings.container_resource_utilization_thresholds]
-        container_cpu_threshold_percentage = 95.0
-        container_memory_rss_threshold_percentage = 95.0
-        container_memory_working_set_threshold_percentage = 95.0
+        container_cpu_threshold_percentage = 90.0
+        container_memory_rss_threshold_percentage = 90.0
+        container_memory_working_set_threshold_percentage = 90.0
+    [alertable_metrics_configuration_settings.pv_utilization_thresholds]
+        pv_usage_threshold_percentage = 75.0
+  integrations: |-
+    [integrations.azure_network_policy_manager]
+        collect_basic_metrics = true
+        collect_advanced_metrics = false
 metadata:
   name: container-azm-ms-agentconfig
   namespace: kube-system

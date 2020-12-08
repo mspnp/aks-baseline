@@ -13,6 +13,17 @@ az group create --name rg-bu0001a0008 --location eastus2
 # [This takes about 15 minutes.]
 az deployment group create --resource-group rg-bu0001a0008 --template-file ../../cluster-stamp.json --parameters "@../../azuredeploy.parameters.prod.json"
 
+# Next, the app team is not willing to risk using a public container registiry for their containers, and
+# instead import their dependencies into their own container registry.
+# [This takes about 1 minute.]
+ACR_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv) && \
+az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME && \
+az acr import --source docker.io/fluxcd/flux:1.19.0 -n $ACR_NAME && \
+az acr import --source docker.io/weaveworks/kured:1.4.0 -n $ACR_NAME && \
+az acr import --source quay.io/k8scsi/csi-node-driver-registrar:v1.2.0 -n $ACR_NAME && \
+az acr import --source us.gcr.io/k8s-artifacts-prod/csi-secrets-store/driver:v0.0.16 -n $ACR_NAME && \
+az acr import --source quay.io/k8scsi/livenessprobe:v2.0.0 -n $ACR_NAME
+
 # Finally the app team wants to import a wildcard certificate *.aks-ingress.contoso.com to AzureKeyVault
 # A while later this certificate is going to be the one served by a Traefik Ingress Controller wich is
 # deployed downstream

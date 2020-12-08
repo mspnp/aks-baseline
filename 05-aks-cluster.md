@@ -99,7 +99,6 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
        cat github-workflow/aks-deploy.yaml | \
            sed "s#<resource-group-location>#eastus2#g" | \
            sed "s#<resource-group-name>#rg-bu0001a0008#g" | \
-           sed "s#<resource-group-localtion>#eastus2#g" | \
            sed "s#<geo-redundancy-location>#centralus#g" | \
            sed "s#<cluster-spoke-vnet-resource-id>#$TARGET_VNET_RESOURCE_ID#g" | \
            sed "s#<tenant-id-with-user-admin-permissions>#$K8S_RBAC_AAD_PROFILE_TENANTID#g" | \
@@ -130,6 +129,12 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
        > :book: The DevOps team monitors this Workflow execution instance. In this instance it will impact a critical piece of infrastructure as well as the management. This flow works for both new or an existing AKS cluster.
 
     1. :fast_forward: The cluster is placed under GitOps managed as part of these GitHub Workflow steps. Therefore, you should proceed straight to [Workflow Prerequisites](./07-workload-prerequisites.md).
+
+## Container registry note
+
+:warning: To aid in ease of deployment of this cluster and your experimentation with workloads, Azure Policy is currently configured to allow your cluster to pull images from _public container registries_ such as Docker Hub and Quay. For a production system, you'll want to update the Azure Policy named `pa-allowed-registries-images` in your `cluster-stamp.json` file to only list those container registries that you are willing to take a dependency on and what namespaces those policies apply to. This will protect your cluster from unapproved registries being used, which may prevent issues while trying to pull images from a registry which doesn't provide SLA guarantees for your deployment.
+
+This deployment creates an SLA-backed Azure Container Registry for your cluster's needs. Your organization may have a central container registry for you to use, or your registry may be tied specifically to your application's infrastructure (as demonstrated in this implementation). **Only use container registries that satisfy the availability needs of your application.**
 
 ### Next step
 

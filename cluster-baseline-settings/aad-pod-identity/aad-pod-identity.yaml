@@ -139,7 +139,7 @@ rules:
   resources: ["azureassignedidentities"]
   verbs: ["get", "list", "watch"]
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: aad-pod-identity-mic
@@ -156,7 +156,7 @@ roleRef:
   name: aad-pod-identity-mic
   apiGroup: rbac.authorization.k8s.io
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: aad-pod-identity-nmi
@@ -186,11 +186,14 @@ metadata:
   annotations:
     description: Deploy components for aad-pod-identity
 spec:
+  updateStrategy:
+    type: RollingUpdate
   selector:
     matchLabels:
       app.kubernetes.io/name: aad-pod-identity
       app.kubernetes.io/instance: aad-pod-identity
       app.kubernetes.io/component: nmi
+      tier: node
   template:
     metadata:
       labels:
@@ -201,53 +204,53 @@ spec:
     spec:
       serviceAccountName: aad-pod-identity-nmi
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       volumes:
       - hostPath:
           path: /run/xtables.lock
           type: FileOrCreate
         name: iptableslock
+      - hostPath:
+          path: /etc/default/kubelet
+        name: kubelet-config
       containers:
       - name: nmi
-        image: "mcr.microsoft.com/k8s/aad-pod-identity/nmi:1.6.1"
+        image: "mcr.microsoft.com/oss/azure/aad-pod-identity/nmi:v1.7.0"
         imagePullPolicy: Always
         args:
-          - "--host-ip=$(HOST_IP)"
           - "--node=$(NODE_NAME)"
-          - --operation-mode=standard
+          - "--http-probe-port=8085"
         env:
-          - name: HOST_IP
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
           - name: NODE_NAME
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
-          - name: FORCENAMESPACED
-            value: "false"
         securityContext:
-          privileged: true
+          runAsUser: 0
           capabilities:
             add:
             - NET_ADMIN
         volumeMounts:
         - mountPath: /run/xtables.lock
           name: iptableslock
+        - mountPath: /etc/default/kubelet
+          name: kubelet-config
+          readOnly: true
         livenessProbe:
           httpGet:
             path: /healthz
-            port: 8080
+            port: 8085
           initialDelaySeconds: 10
           periodSeconds: 5
         resources:
-            limits:
-              cpu: 200m
-              memory: 512Mi
-            requests:
-              cpu: 100m
-              memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
         agentpool: npuser01
 ---
 apiVersion: apps/v1
@@ -278,23 +281,22 @@ spec:
       serviceAccountName: aad-pod-identity-mic
       containers:
       - name: mic
-        image: "mcr.microsoft.com/k8s/aad-pod-identity/mic:1.6.1"
+        image: "mcr.microsoft.com/oss/azure/aad-pod-identity/mic:v1.7.0"
         imagePullPolicy: Always
         args:
           - "--cloudconfig=/etc/kubernetes/azure.json"
           - "--logtostderr"
+        securityContext:
+          runAsUser: 0
         env:
-          - name: MIC_POD_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
+        - name: MIC_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         volumeMounts:
-          - name: certificates
-            mountPath: /etc/kubernetes/certs
-            readOnly: true
-          - name: k8s-azure-file
-            mountPath: /etc/kubernetes/azure.json
-            readOnly: true
+        - name: k8s-azure-file
+          mountPath: /etc/kubernetes/azure.json
+          readOnly: true
         livenessProbe:
           httpGet:
             path: /healthz
@@ -302,19 +304,63 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 5
         resources:
-            limits:
-              cpu: 200m
-              memory: 1024Mi
-            requests:
-              cpu: 100m
-              memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 1024Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
       volumes:
-      - name: certificates
-        hostPath:
-          path: /etc/kubernetes/certs
       - name: k8s-azure-file
         hostPath:
           path: /etc/kubernetes/azure.json
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
         agentpool: npuser01
+---
+apiVersion: aadpodidentity.k8s.io/v1
+kind: AzurePodIdentityException
+metadata:
+  name: aad-pod-identity-mic-exception
+  namespace: cluster-baseline-settings
+spec:
+  podLabels:
+    app.kubernetes.io/name: aad-pod-identity
+    app.kubernetes.io/instance: aad-pod-identity
+    app.kubernetes.io/component: mic
+---
+apiVersion: aadpodidentity.k8s.io/v1
+kind: AzurePodIdentityException
+metadata:
+  name: aks-addon-exception
+  namespace: kube-system
+spec:
+  podLabels:
+    kubernetes.azure.com/managedby: aks
+---
+apiVersion: aadpodidentity.k8s.io/v1
+kind: AzurePodIdentityException
+metadata:
+  name: aks-azure-policy-exception
+  namespace: kube-system
+spec:
+  podLabels:
+    app: azure-policy
+---
+apiVersion: aadpodidentity.k8s.io/v1
+kind: AzurePodIdentityException
+metadata:
+  name: oms-agent-exception
+  namespace: kube-system
+spec:
+  podLabels:
+    component: oms-agent
+---
+apiVersion: aadpodidentity.k8s.io/v1
+kind: AzurePodIdentityException
+metadata:
+  name: oms-agent-rs-exception
+  namespace: kube-system
+spec:
+  podLabels:
+    rsName: omsagent-rs

@@ -1,10 +1,10 @@
-# Azure Kubernetes Service (AKS) Secure Baseline Reference Implementation
+# Azure Kubernetes Service (AKS) Baseline Cluster
 
 This reference implementation demonstrates the _recommended starting (baseline) infrastructure architecture_ for an [AKS cluster](https://azure.microsoft.com/services/kubernetes-service). This is implementation and document is meant to guide an interdisciplinary team or multiple distinct teams like networking, security and development through the process of getting this secure baseline infrastructure deployed and understanding the components of it.
 
 ## Azure Architecture Center guidance
 
-This project has a companion set of articles that describe challenges, design patterns, and best practices for a secure AKS cluster. You can find this article on the Azure Architecture Center at [Baseline architecture for a secure AKS cluster](https://aka.ms/architecture/aks-baseline). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
+This project has a companion set of articles that describe challenges, design patterns, and best practices for a secure AKS cluster. You can find this article on the Azure Architecture Center at [Azure Kubernetes Service (AKS) Baseline Cluster](https://aka.ms/architecture/aks-baseline). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
 
 ## Architecture
 
@@ -14,13 +14,13 @@ The implementation presented here is the _minimum recommended baseline for most 
 
 Throughout the reference implementation, you will see reference to _Contoso Bicycle_. They are a fictional small and fast-growing startup that provides online web services to its clientele on the west coast of North America. They have no on-premises data centers and all their containerized line of business applications are now about to be orchestrated by secure, enterprise-ready AKS clusters. You can read more about [their requirements and their IT team composition](./contoso-bicycle/README.md). This narrative provides grounding for some implementation details, naming conventions, etc. You should adapt as you see fit.
 
-Finally, this implementation uses the [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/master/samples/aspnetapp) as an example workload. This workload purposefully uninteresting, as it is here exclusively to help you experience the baseline infrastructure.
+Finally, this implementation uses the [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/master/samples/aspnetapp) as an example workload. This workload is purposefully uninteresting, as it is here exclusively to help you experience the baseline infrastructure.
 
 ### Core architecture components
 
 #### Azure platform
 
-* AKS v1.17
+* AKS v1.19
   * System and User [node pool separation](https://docs.microsoft.com/azure/aks/use-system-pools)
   * [AKS-managed Azure AD](https://docs.microsoft.com/azure/aks/managed-aad)
   * Managed Identities
@@ -34,7 +34,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 #### In-cluster OSS components
 
 * [Flux GitOps Operator](https://fluxcd.io)
-* [Traefik Ingress Controller](https://docs.microsoft.com/azure/dev-spaces/how-to/ingress-https-traefik)
+* [Traefik Ingress Controller](https://doc.traefik.io/traefik/v1.7/user-guide/kubernetes/)
 * [Azure AD Pod Identity](https://github.com/Azure/aad-pod-identity)
 * [Azure KeyVault Secret Store CSI Provider](https://github.com/Azure/secrets-store-csi-driver-provider-azure)
 * [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
@@ -100,17 +100,18 @@ While this reference implementation tends to avoid _preview_ features of AKS to 
 
 * [Azure RBAC for Kubernetes Authentication](https://docs.microsoft.com/azure/aks/manage-azure-rbac) - An extension of the Azure AD integration already in this reference implementation. Allowing you to bind Kubernetes authentication to Azure RBAC role assignments.
 * [Host-based encryption](https://docs.microsoft.com/azure/aks/enable-host-encryption) - Leverages added data encryption on your VMs' temp and OS disks.
-* [Node image upgrades](https://docs.microsoft.com/azure/aks/node-image-upgrade) - Built-in OS patch management; replacement for BYO solutions, such as Kured used in this reference implementation.
-* [AKS Ubuntu 18.04](https://docs.microsoft.com/azure/aks/cluster-configuration#os-configuration-preview) - Will be the default starting in AKS 1.18.
-* [Containerd support](https://docs.microsoft.com/azure/aks/cluster-configuration#container-runtime-configuration-preview) - Replaces the use of Moby with Containerd directly, reducing node resource consumption and improving startup latency.
 * [Generation 2 VM support](https://docs.microsoft.com/azure/aks/cluster-configuration#generation-2-virtual-machines-preview) - Increased memory options, Intel SGX support, and UEFI-based boot architectures.
+* [Auto Upgrade Profile support](https://github.com/Azure/AKS/issues/1303)
+* [Customizable Node & Kublet config](https://github.com/Azure/AKS/issues/323)
+* [GitOps as an add-on](https://github.com/Azure/AKS/issues/1967)
+* [Azure AD Pod Identity as an add-on](https://docs.microsoft.com/azure/aks/use-azure-ad-pod-identity)
 
 ## Advanced topics
 
 This reference implementation intentionally does not cover more advanced scenarios. For example topics like the following are not addressed:
 
 * Cluster lifecycle management with regard to SDLC and GitOps
-* Workload SDLC integration (including concepts like [DevSpaces](https://docs.microsoft.com/azure/dev-spaces/), advanced deployment techniques, etc)
+* Workload SDLC integration (including concepts like [Bridge to Kubernetes](https://docs.microsoft.com/visualstudio/containers/bridge-to-kubernetes?view=vs-2019), advanced deployment techniques, etc)
 * Mapping decisions to [CIS benchmark controls](https://www.cisecurity.org/benchmark/kubernetes/)
 * Container security
 * Multi-region clusters

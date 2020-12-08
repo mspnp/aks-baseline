@@ -34,14 +34,14 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -keyout appgw.key \
         -subj "/CN=bicycle.contoso.com/O=Contoso Bicycle"
 openssl pkcs12 -export -out appgw.pfx -in appgw.crt -inkey appgw.key -passout pass:
-APP_GATEWAY_LISTENER_CERTIFICATE=$(cat appgw.pfx | base64 -w 0)
+APP_GATEWAY_LISTENER_CERTIFICATE=$(cat appgw.pfx | base64 | tr -d '\n')
 
 # AKS Ingress Controller Certificate
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -out traefik-ingress-internal-aks-ingress-contoso-com-tls.crt \
         -keyout traefik-ingress-internal-aks-ingress-contoso-com-tls.key \
         -subj "/CN=*.aks-ingress.contoso.com/O=Contoso Aks Ingress"
-AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64=$(cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt | base64 -w 0)
+AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64=$(cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt | base64 | tr -d '\n')
 
 # AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 10 minutes
 # Note: By default, this deployment will allow unrestricted access to your cluster's API Server.
@@ -98,6 +98,8 @@ az ad group member add --group k8s-view-clusterrole --member-id $AKS_ENDUSR_OBJE
 az login
 az account set -s  $MAIN_SUBSCRIPTION
 
+# unset errexit as per https://github.com/mspnp/aks-secure-baseline/issues/69
+set +e
 echo $'Ensure Flux has created the following namespace and then press Ctrl-C'
 kubectl get ns a0008 --watch
 
