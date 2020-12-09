@@ -140,16 +140,22 @@ layout: false
 ## Azure Kubernetes Service (AKS) Secure Baseline Reference Implementation
 
 This reference implementation demonstrates the _recommended starting (baseline) infrastructure architecture_ for an [AKS cluster](https://azure.microsoft.com/services/kubernetes-service). This is implementation and document is meant to guide an interdisciplinary team or multiple distinct teams like networking, security and development through the process of getting this secure baseline infrastructure deployed and understanding the components of it.
+
 ]
 ---
+
 layout: false
 .left-column[
+
   # Introduction
+
 ]
 .right-column[
+
 ## Azure Architecture Center guidance
 
 This project has a companion set of articles that describe challenges, design patterns, and best practices for a secure AKS cluster. You can find this article on the Azure Architecture Center at [Baseline architecture for a secure AKS cluster](https://aka.ms/architecture/aks-baseline). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
+
 ]
 
 ---
@@ -213,6 +219,7 @@ layout: false
 .right-column[
 
 .image-90[![Network diagram depicting a hub-spoke network with two peered VNets, each with three subnets and main Azure resources.](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)]
+
 ]
 ---
 template: inverse
@@ -220,7 +227,9 @@ template: inverse
 ---
 layout: false
 .left-column[
+
   ## Deploy the reference implementation
+
 ]
 .right-column[
 
@@ -238,12 +247,16 @@ In the following sections we will cover:
 
 ---
 template:inverse
+
 # 1. Preparing for the cluster
+
 ---
 layout: false
 .left-column[
+
   ## Deploy the reference implementation
   #### 1. Preparing for the cluster
+
 ]
 .right-column[
 
@@ -252,25 +265,32 @@ There are considerations that must be addressed before you start deploying your 
 * [ ] Begin by ensuring you [install and meet the prerequisites](./01-prerequisites.md)
 * [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./02-ca-certificates.md)
 * [ ] [Plan your Azure Active Directory integration](./03-aad.md)
+
 ]
 
 ---
 layout: false
 .left-column[
+
   ## Deploy the reference implementation
   #### 1. Preparing for the cluster
+
 ]
 .right-column[
+
 # Prerequisites
 
 This is the starting point for the instructions on deploying the [AKS Secure Baseline reference implementation](./). There is required access and tooling you'll need in order to accomplish this. Follow the instructions below and on the subsequent pages so that you can get your environment ready to proceed with the AKS cluster creation.
+
 ]
 ---
 layout: false
 .left-column[
+
   ## Deploy the reference implementation
   #### 1. Preparing for the cluster
   ##### Prerequisites
+
 ]
 .right-column[
 
@@ -278,13 +298,12 @@ layout: false
 
 1. An Azure subscription. If you don't have an Azure subscription, you can create a [free account](https://azure.microsoft.com/free).
 
-   > Important: the user or service principal initiating the deployment process must have the following minimal set of Azure Role-Based Access Control (RBAC) roles and Azure AD permissions assigned:
+   > Important: The user or service principal initiating the deployment process _**must**_ have the following minimal set of Azure Role-Based Access Control (RBAC) roles and Azure AD permissions assigned:
    >
-   > * [Contributor role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#contributor) is required at the subscription level to have the ability to create resource groups and perform deployments.
-   > * [User Access Administrator role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#user-access-administrator) is required at the subscription level since you'll be granting least-privilege RBAC access to resources as well as assigning built-in policy definitions to your AKS cluster.
+   > * [Contributor role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#contributor) is _**required**_ at the subscription level to have the ability to create resource groups and perform deployments.
+   > * [User Access Administrator role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#user-access-administrator) is _**required**_ at the subscription level since you'll be granting least-privilege RBAC access to resources as well as assigning built-in policy definitions to your AKS cluster.
    >   * One such example is detailed in the [Container Insights documentation](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-troubleshoot#authorization-error-during-onboarding-or-update-operation).
-   > * Azure AD [User Administrator](https://docs.microsoft.com/azure/active-directory/users-groups-roles/directory-assign-admin-roles#user-administrator-permissions).
-   >   * If you are not part of the User Administrator group in the tenant associated to your Azure subscription, please consider [creating a new tenant](https://docs.microsoft.com/azure/active-directory/fundamentals/active-directory-access-create-new-tenant#create-a-new-tenant-for-your-organization) to use while evaluating this implementation.
+
   ]
 ---
 layout: false
@@ -294,11 +313,28 @@ layout: false
   ##### Prerequisites
 ]
 .right-column[
-2\. Latest [Azure CLI installed](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) or you can perform this from Azure Cloud Shell by clicking below.
+
+2\. An Azure AD tenant to associate your Kubernetes RBAC configuration to.
+
+  > Note: The user or service principal initiating the deployment process _must_ have the following minimal set of Azure AD permissions assigned:
+  > * Azure AD [User Administrator](https://docs.microsoft.com/azure/active-directory/users-groups-roles/directory-assign-admin-roles#user-administrator-permissions) is _**required**_ to create a "break glass" AKS admin Active Directory Security Group and User. Alternatively, you could get your Azure AD admin to create this for you when instructed to do so.
+   >   * If you are not part of the User Administrator group in the tenant associated to your Azure subscription, please consider [creating a new tenant](https://docs.microsoft.com/azure/active-directory/fundamentals/active-directory-access-create-new-tenant#create-a-new-tenant-for-your-organization) to use while evaluating this implementation.
+
+3\. Latest [Azure CLI installed](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) or you can perform this from Azure Cloud Shell by clicking below.
 
    [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
-3\. While the following features are still in _preview_, please enable them manually in your subscription.
-   1. [Register the required Azure Policy features for AKS](https://docs.microsoft.com/en-us/azure/governance/policy/concepts/policy-for-kubernetes#install-azure-policy-add-on-for-aks).
+]
+---
+layout: false
+.left-column[
+
+  ## Deploy the reference implementation
+  #### 1. Preparing for the cluster
+  ##### Prerequisites
+
+]
+.right-column[
+
 4\. Clone/download this repo locally, or even better fork this repository.
 
    > Note: If you have forked this reference implementation repo, you'll be able to customize some of the files and commands for a more personalized experience; also ensure references to repos mentioned are updated to use your own (e.g. the following `GITHUB_REPO`).
@@ -337,6 +373,7 @@ layout: false
   # Generate Your Client-Facing and AKS Ingress Controller TLS Certificates
 
 Now that you have the [prerequisites](./01-prerequisites.md) met, follow the steps below to create the TLS certificates that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS Ingress Controller. If you already have access to an appropriate certificates, or can procure them from your organization, consider doing so and skipping the certificate generation steps. The following will describe using a self-signed certs for instructive purposes only.
+
 ]
 ---
 layout: false
@@ -479,7 +516,7 @@ layout: false
 3\. Create the first the Azure AD group that is going to map the Kubernetes Cluster Role Admin. If you already have a security group that is appropriate for cluster admins, consider using that group and skipping this step. If using your own group, you will need to update group object names throughout the reference implementation.
 
    ```bash
-   K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID=$(az ad group create --display-name aad-to-bu0001a000800-cluster-admin --mail-nickname aad-to-bu0001a000800-cluster-admin --query objectId -o tsv)
+   export K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID=$(az ad group create --display-name aad-to-bu0001a000800-cluster-admin --mail-nickname aad-to-bu0001a000800-cluster-admin --query objectId -o tsv)
    ```
 
 4\. Create a break-glass Cluster Admin user for your AKS cluster
@@ -487,8 +524,8 @@ layout: false
    > Note: The organization knows the value of having a break-glass admin user for their critical infrastructure. The app team requests a cluster admin user and Azure AD Admin team proceeds with the creation of the user from Azure AD.
 
    ```bash
-   K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME=$(az ad signed-in-user show --query 'userPrincipalName' | cut -d '@' -f 2 | sed 's/\"//')
-   AKS_ADMIN_OBJECTID=$(az ad user create --display-name=bu0001a0008-admin --user-principal-name bu0001a0008-admin@${K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME} --force-change-password-next-login --password ChangeMebu0001a0008AdminChangeMe --query objectId -o tsv)
+   export K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME=$(az ad signed-in-user show --query 'userPrincipalName' | cut -d '@' -f 2 | sed 's/\"//')
+   export AKS_ADMIN_OBJECTID=$(az ad user create --display-name=bu0001a0008-admin --user-principal-name bu0001a0008-admin@${K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME} --force-change-password-next-login --password ChangeMebu0001a0008AdminChangeMe --query objectId -o tsv)
    ```
 ]
 ---
@@ -643,20 +680,8 @@ layout: false
    az deployment group create --resource-group rg-enterprise-networking-hubs --template-file networking/hub-default.json --parameters location=eastus2
    ```
 
-   Continues on next slide 
-]
----
-layout: false
-.left-column[
-  ## Deploy the reference implementation
-  #### 1. Preparing for the cluster
-  #### 2. Build target network
-  ##### Deploy the Hub-Spoke Network Topology
-]
-.right-column[
-   The hub creation will emit the following:
+   Continues on next slide
 
-      * `hubVnetId` - which you'll will need to know for future spokes that get created. E.g. `/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-hubs/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub`
 ]
 ---
 layout: false
@@ -667,6 +692,22 @@ layout: false
   ##### Deploy the Hub-Spoke Network Topology
 ]
 .right-column[
+  
+  The hub creation will emit the following:
+
+  * `hubVnetId` - which you'll will need to know for future spokes that get created. E.g. `/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-hubs/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub`
+
+]
+---
+layout: false
+.left-column[
+  ## Deploy the reference implementation
+  #### 1. Preparing for the cluster
+  #### 2. Build target network
+  ##### Deploy the Hub-Spoke Network Topology
+]
+.right-column[
+
 5\. Create the spoke that will be home to the AKS cluster and its adjacent resources.
 
    > Note:  The networking team receives a request from an app team in business unit (BU) 0001 for a network spoke to house their new AKS-based application (Internally know as Application ID: A0008). The network team talks with the app team to understand their requirements and aligns those needs with Microsoft's best practices for a secure AKS cluster deployment. They capture those specific requirements and deploy the spoke, aligning to those specs, and connecting it to the matching regional hub.
@@ -676,12 +717,22 @@ layout: false
    HUB_VNET_ID=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-default --query properties.outputs.hubVnetId.value -o tsv)
    az deployment group create --resource-group rg-enterprise-networking-spokes --template-file networking/spoke-BU0001A0008.json --parameters location=eastus2 hubVnetResourceId="${HUB_VNET_ID}"
    ```
+]
+---
+layout: false
+.left-column[
+  ## Deploy the reference implementation
+  #### 1. Preparing for the cluster
+  #### 2. Build target network
+  ##### Deploy the Hub-Spoke Network Topology
+]
+.right-column[
 
    The spoke creation will emit the following:
 
-     * `appGwPublicIpAddress` - The Public IP address of the Azure Application Gateway (WAF) that will receive traffic for your workload.
-     * `clusterVnetResourceId` - The resource ID of the VNet that the cluster will land in. E.g. `/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00`
-     * `nodepoolSubnetResourceIds` - An array containing the subnet resource IDs of the AKS node pools in the spoke. E.g. `["/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-clusternodes"]`
+  * `appGwPublicIpAddress` - The Public IP address of the Azure Application Gateway (WAF) that will receive traffic for your workload.
+  * `clusterVnetResourceId` - The resource ID of the VNet that the cluster will land in. E.g. `/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00`
+  * `nodepoolSubnetResourceIds` - An array containing the subnet resource IDs of the AKS node pools in the spoke. E.g. `["/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-clusternodes"]`
 ]
 ---
 layout: false
@@ -849,7 +900,7 @@ export APP_ID=$(grep -oP '(?<="clientId": ").*?[^\\](?=",)' sp.json)
  az role assignment create --assignee $APP_ID --role 'Contributor'
 
 # Assign built-in User Access Administrator RBAC role since granting RBAC acc to other resources during the cluster creation will be required at subiption level (e.g. AKS-managed Internal Load Balancer, ACR, Managed Ideties, etc.)
- az role assignment create --assignee $APP_ID --role 'User Access Admstrator' 
+ az role assignment create --assignee $APP_ID --role 'User Access Administrator' 
 ```
 
 II\. Create `AZURE_CREDENTIALS` secret in your GitHub repository. For more
@@ -926,7 +977,7 @@ VI. Push the changes to your forked repo.
 git add .github/workflows/aks-deploy.yaml && git commit -m "setup GitHub CD workflow"
 git push origin HEAD:kick-off-workflow
 ```
-> Note: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, please take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/configuring-and-managing-workflows/sharing-workflow-templates-within-your-organization).
+Note: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information: [Sharing Workflow Templates within your organization](https://docs.github.com/actions/configuring-and-managing-workflows/sharing-workflow-templates-within-your-organization).
 ]
 ---
 layout: false
@@ -950,6 +1001,28 @@ VIII. Once the GitHub Workflow validation finished successfully, please proceed 
 > Note: The DevOps team monitors this Workflow execution instance. In this instance it will impact a critical piece of infrastructure as well as the management. This flow works for both new or an existing AKS cluster.
 
 XI. The cluster is placed under GitOps managed as part of these GitHub Workflow steps. Therefore, you should proceed straight to [Workflow Prerequisites](https://github.com/mspnp/aks-secure-baseline/blob/main/07-workload-prerequisites.md).
+]
+---
+layout: false
+.left-column[
+
+  ## Deploy the reference implementation
+  #### 1. Preparing for the cluster
+  #### 2. Build target network
+  #### 3. Deploying the cluster
+  ##### Deploy the AKS Cluster
+
+ ]
+ .right-column[
+
+## Container registry note
+
+**Warning:** To aid in ease of deployment of this cluster and your experimentation with workloads, Azure Policy is currently configured to allow your cluster to pull images from _public container registries_ such as Docker Hub and Quay. For a production system, you'll want to update the Azure Policy named `pa-allowed-registries-images` in your `cluster-stamp.json` file to only list those container registries that you are willing to take a dependency on and what namespaces those policies apply to. This will protect your cluster from unapproved registries being used, which may prevent issues while trying to pull images from a registry which doesn't provide SLA guarantees for your deployment.
+
+This deployment creates an SLA-backed Azure Container Registry for your cluster's needs. Your organization may have a central container registry for you to use, or your registry may be tied specifically to your application's infrastructure (as demonstrated in this implementation). 
+
+**Only use container registries that satisfy the availability needs of your application.**
+
 ]
 ---
 layout: false
@@ -1012,7 +1085,7 @@ layout: false
 ]
 .right-column[
 
-1. Install `kubectl` 1.18 or newer. (`kubctl` supports +/-1 Kubernetes version.)
+1. Install `kubectl` 1.19 or newer. (`kubctl` supports +/-1 Kubernetes version.)
 
    ```bash
    sudo az aks install-cli
@@ -1038,7 +1111,11 @@ layout: false
 .right-column[
 3\. Get AKS `kubectl` credentials (as a user that has admin permissions to the cluster).
 
-   > In the [Azure Active Directory Integration](03-aad.md) step, we placed our cluster under AAD group-backed RBAC. This is the first time we are seeing this used. `az aks get-credentials` allows you to use `kubectl` commands against your cluster. Without the AAD integration, you'd have to use `--admin` here, which isn't what we want to happen. Here, you'll log in with a user that has been added to the Azure AD security group used to back the Kubernetes RBAC admin role. Executing the command below will invoke the AAD login process to auth the _user of your choice_, which will then be checked against Kubernets RBAC to perform the action. The user you choose to log in with _must be a member of the AAD group bound_ to the `cluster-admin` ClusterRole. For simplicity could either use the "break-glass" admin user created in [Azure Active Directory Integration](03-aad.md) (`bu0001a0008-admin`) or any user you assign to the `cluster-admin` group assignment in your [`user-facing-cluster-role-aad-group.yaml`](cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml) file. If you skipped those steps you can use `--admin` to proceed, but proper AAD group-based RBAC access is a critical security function that you should invest time in setting up.
+   > In the [Azure Active Directory Integration](03-aad.md) step, we placed our cluster under AAD group-backed RBAC. This is the first time we are seeing this used. `az aks get-credentials` allows you to use `kubectl` commands against your cluster. Without the AAD integration, you'd have to use `--admin` here, which isn't what we want to happen. 
+   
+   > Here, you'll log in with a user that has been added to the Azure AD security group used to back the Kubernetes RBAC admin role. Executing the command below will invoke the AAD login process to auth the _user of your choice_, which will then be checked against Kubernets RBAC to perform the action. The user you choose to log in with _must be a member of the AAD group bound_ to the `cluster-admin` ClusterRole. 
+   
+   > For simplicity could either use the "break-glass" admin user created in [Azure Active Directory Integration](03-aad.md) (`bu0001a0008-admin`) or any user you assign to the `cluster-admin` group assignment in your [`user-facing-cluster-role-aad-group.yaml`](cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml) file. If you skipped those steps you can use `--admin` to proceed, but proper AAD group-based RBAC access is a critical security function that you should invest time in setting up.
 
    ```bash
    az aks get-credentials -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME
@@ -1067,9 +1144,51 @@ layout: false
    kubectl create namespace cluster-baseline-settings
    ```
 
-5\. Deploy Flux.
+5\. Import cluster management images to your container registry.
 
-   > If you used your own fork of this GitHub repo, consider updating this [`flux.yaml`](./cluster-baseline-settings/flux.yaml) file to include reference to your own repo and change the URL below to point to yours as well. Also, since Flux will begin processing the manifests in [`cluster-baseline-settings/`](./cluster-baseline-settings/) now would be a good time to update the `<replace-with-an-aad-group-object-id-for-this-cluster-role-binding>` placeholder in [`user-facing-cluster-role-aad-group.yaml`](./cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml) with the Object IDs for the Azure AD Group(s) you created for management purposes. If you don't, the manifest will still apply, but AAD integration will not be mapped to your specific AAD configuration.
+   > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for a system that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
+
+   ```bash
+   # Get your ACR cluster name
+   export ACR_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+
+   # Import cluster management images hosted in public container registries
+   az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME
+   az acr import --source docker.io/fluxcd/flux:1.19.0 -n $ACR_NAME
+   az acr import --source docker.io/weaveworks/kured:1.4.0 -n $ACR_NAME
+   ```
+]
+---
+layout: false
+.left-column[
+  ## Deploy the reference implementation
+  #### 1. Preparing for the cluster
+  #### 2. Build target network
+  #### 3. Deploying the cluster
+  ##### Deploy the AKS Cluster
+  ##### Place the Cluster Under GitOps Management
+]
+.right-column[
+6\. Deploy Flux.
+   > If you used your own fork of this GitHub repo, update the [`flux.yaml`](./cluster-baseline-settings/flux.yaml) file to include reference to your own repo and change the URL below to point to yours as well. Also, since Flux will begin processing the manifests in [`cluster-baseline-settings/`](./cluster-baseline-settings/) now would be a good time to:
+   >
+   > * update the `<replace-with-an-aad-group-object-id-for-this-cluster-role-binding>` placeholder in [`user-facing-cluster-role-aad-group.yaml`](./cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml) with the Object IDs for the Azure AD group(s) you created for management purposes. If you don't, the manifest will still apply, but AAD integration will not be mapped to your specific AAD configuration.
+   > * Update three `image` manifest references to your container registry instead of the default public container registry. See comment in each file for instructions.
+   >   * update the two `image:` values in [`flux.yaml`](./cluster-baseline-settings/flux.yaml).
+   >   * update the one `image:` values in [`kured-1.4.0-dockerhub.yaml`](./cluster-baseline-settings/kured-1.4.0-dockerhub.yaml).
+]
+---
+layout: false
+.left-column[
+  ## Deploy the reference implementation
+  #### 1. Preparing for the cluster
+  #### 2. Build target network
+  #### 3. Deploying the cluster
+  ##### Deploy the AKS Cluster
+  ##### Place the Cluster Under GitOps Management
+]
+.right-column[
+   Warning: Deploying the flux configuration using the `flux.yaml` file unmodified from this repo will be deploying your cluster to take dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure _all_ image references are from _your_ container registry (as imported in the prior step) or another that you feel confident relying on.
 
    ```bash
    kubectl apply -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/cluster-baseline-settings/flux.yaml
@@ -1086,7 +1205,7 @@ layout: false
   ##### Place the Cluster Under GitOps Management
 ]
 .right-column[
-6\. Wait for Flux to be ready before proceeding.
+7\. Wait for Flux to be ready before proceeding.
 
    ```bash
    kubectl wait --namespace cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s
@@ -1172,14 +1291,14 @@ layout: false
 
    Warning: If you already have access to an appropriate certificate, or can procure one from your organization, consider using it for this step. For more information, please take a look at the [import certificate tutorial using Azure Key Vault](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate#import-a-certificate-to-key-vault).
 
-   Warning: Do not use the certificate created by this script for actual deployments. The use of self-signed certificates are provided for ease of illustration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, _even for development purposes_.
+   Warning: Do not use the certificate created by this script for actual deployments. The use of self-signed certificates are provided for ease of illustration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, _**even for development purposes**_.
 
    ```bash
    cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-internal-aks-ingress-contoso-com-tls.key > traefik-ingress-internal-aks-ingress-contoso-com-tls.pem
    az keyvault certificate import -f traefik-ingress-internal-aks-ingress-contoso-com-tls.pem -n traefik-ingress-internal-aks-ingress-contoso-com-tls --vault-name $KEYVAULT_NAME
    ```
 
-2\. Remove Azure Key Vault import certificates permissions for current user.
+3\. Remove Azure Key Vault import certificates permissions for current user.
 
    > The Azure Key Vault Policy for your user was a temporary policy to allow you to upload the certificate for this walkthrough. In actual deployments, you would manage these access policies via your ARM templates using [Azure RBAC for Key Vault data plane](https://docs.microsoft.com/azure/key-vault/general/secure-your-key-vault#data-plane-and-access-policies).
 
@@ -1200,7 +1319,9 @@ layout: false
 .right-column[
 ## Check Azure Policies are in place
 
-> Note:: The app team wants to apply Azure Policy over their cluster like they do other Azure resources. Their pods will be covered using the [Azure Policy add-on for AKS](https://docs.microsoft.com/en-us/azure/aks/use-pod-security-on-azure-policy). Some of these audits might end up in the denial of a specific Kubernetes API request operation to ensure the pod's specification is compliance with the organization's security best practices. Moreover [data is generated by Azure Policy](https://docs.microsoft.com/azure/governance/policy/how-to/get-compliance-data) to assist the app team in the process of assessing the current compliance state of the AKS cluster. The app team is going to assign at the resource group level the [Azure Policy for Kubernetes built-in restricted initiative](https://docs.microsoft.com/azure/aks/use-pod-security-on-azure-policy#built-in-policy-initiatives) as well as five more [built-in individual Azure policies](https://docs.microsoft.com/azure/aks/policy-samples#microsoftcontainerservice) that enforce that pods perform resource requests, define trusted container registries, allow root filesystem access in read-only mode, enforce the usage of internal load balancers, and enforce https-only Kuberentes Ingress objects.
+> Note: The app team wants to apply Azure Policy over their cluster like they do other Azure resources. Their pods will be covered using the [Azure Policy add-on for AKS](https://docs.microsoft.com/en-us/azure/aks/use-pod-security-on-azure-policy). Some of these audits might end up in the denial of a specific Kubernetes API request operation to ensure the pod's specification is compliance with the organization's security best practices. Moreover [data is generated by Azure Policy](https://docs.microsoft.com/azure/governance/policy/how-to/get-compliance-data) to assist the app team in the process of assessing the current compliance state of the AKS cluster. 
+
+> The app team is going to assign at the resource group level the [Azure Policy for Kubernetes built-in restricted initiative](https://docs.microsoft.com/azure/aks/use-pod-security-on-azure-policy#built-in-policy-initiatives) as well as five more [built-in individual Azure policies](https://docs.microsoft.com/azure/aks/policy-samples#microsoftcontainerservice) that enforce that pods perform resource requests, define trusted container registries, allow root filesystem access in read-only mode, enforce the usage of internal load balancers, and enforce https-only Kuberentes Ingress objects.
 
 1. Confirm policies are applied to the AKS cluster
 
@@ -1224,19 +1345,11 @@ layout: false
 
    ```bash
    NAME                                     AGE
-   k8sazureallowedcapabilities              75m
-   k8sazureallowedseccomp                   75m
-   k8sazureallowedusersgroups               75m
-   k8sazureblockhostnamespace               75m
-   k8sazurecontainerallowedimages           75m
-   k8sazurecontainerlimits                  75m
-   k8sazurecontainernoprivilege             75m
-   k8sazurecontainernoprivilegeescalation   75m
-   k8sazurehostnetworkingports              75m
-   k8sazureingresshttpsonly                 75m
-   k8sazureloadbalancernopublicips          75m
-   k8sazurereadonlyrootfilesystem           75m
-   k8sazurevolumetypes                      75m
+   k8sazureallowedcapabilities              21m
+   k8sazureallowedseccomp                   21m
+   ... more ...
+   k8sazurereadonlyrootfilesystem           21m
+   k8sazurevolumetypes                      21m
    ```
 ]
 ---
@@ -1410,21 +1523,62 @@ layout: false
 
 ]
 .right-column[
-5\. Install the Traefik Ingress Controller
 
-   > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
+5\.Import the Traefik container image to your container registry
 
-   ```bash
-   kubectl apply -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik.yaml
-   ```
+   > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for an application that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
 
-6\. Wait for Traefik to be ready
+  ```bash
+  # Get your ACR cluster name
+  export ACR_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+
+  # Import ingress controller image hosted in public container registries
+  az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME
+  ```
+]
+---
+layout: false
+.left-column[
+  ## Deploy the reference implementation
+  #### 1. Preparing for the cluster
+  #### 2. Build target network
+  #### 3. Deploying the cluster
+  #### 4. Deploy your workload
+  ##### Workload Prerequisites
+  ##### Configure AKS Ingress Controller with Azure Key Vault integration
+]
+.right-column[
+6\. Install the Traefik Ingress Controller
+
+  > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
+
+  > If you used your own fork of this GitHub repo, update the one `image:` value in [`traefik.yaml`](./workload/traefik.yaml) to reference your container registry instead of the default public container registry and change the URL below to point to yours as well.
+
+  Warning: Deploying the traefik `traefik.yaml` file unmodified from this repo will be deploying your workload to take dependencies on a public container registry. This is generally okay for learning/testing, but not suitable for production. Before going to production, ensure _all_ image references are from _your_ container registry or another that you feel confident relying on.
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik.yaml
+```
+]
+---
+layout: false
+.left-column[
+  ## Deploy the reference implementation
+  #### 1. Preparing for the cluster
+  #### 2. Build target network
+  #### 3. Deploying the cluster
+  #### 4. Deploy your workload
+  ##### Workload Prerequisites
+  ##### Configure AKS Ingress Controller with Azure Key Vault integration
+]
+.right-column[
+7\. Wait for Traefik to be ready
 
    > During Traefik's pod creation process, AAD Pod Identity will need to retrieve token for Azure Key Vault. This process can take time to complete and it's possible for the pod volume mount to fail during this time but the volume mount will eventually succeed. For more information, please refer to the [Pod Identity documentation](https://github.com/Azure/secrets-store-csi-driver-provider-azure/blob/master/docs/pod-identity-mode.md).
 
-   ```bash
-   kubectl wait --namespace a0008 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s
-   ```
+```bash
+kubectl wait --namespace a0008 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s
+```
 ]
 ---
 layout: false
@@ -1607,9 +1761,37 @@ layout: false
 
    Map the Azure Application Gateway public IP address to the application domain name. To do that, please edit your hosts file (`C:\Windows\System32\drivers\etc\hosts` or `/etc/hosts`) and add the following record to the end: `${APPGW_PUBLIC_IP} bicycle.contoso.com`
 
-1. Browse to the site (e.g. <https://bicycle.contoso.com>).
-   
-   > Note: A TLS warning will be present due to using a self-signed certificate.
+1. Browse to the site (e.g. <https://bicycle.contoso.com>). 
+  > Note: A TLS warning will be present due to using a self-signed certificate.
+]
+---
+layout: false
+.left-column[
+  ## Deploy the reference implementation
+  #### 1. Preparing for the cluster
+  #### 2. Build target network
+  #### 3. Deploying the cluster
+  #### 4. Deploy your workload
+  #### 5. Validation
+  ##### End-to-End Validation
+]
+.right-column[
+## Validate Web Application Firewall functionality
+
+Your workload is placed behind a Web Application Firewall (WAF), which has rules designed to stop intentionally malicious activity. You can test this by triggering one of the built-in rules with a request that looks malcious.
+
+   > Note: This reference implementation enables the built-in OWASP 3.0 ruleset, in **Prevention** mode.
+
+### Steps
+
+1. Browse to the site with the following appended to the URL: `?sql=DELETE%20FROM` (e.g. <https://bicycle.contoso.com/?sql=DELETE%20FROM>).
+1. Observe that your request was blocked by Application Gateway's WAF rules and your workload never saw this potentially dangerous request.
+1. Blocked requests (along with other gateway data) will be visable in the attached Log Analytics workspace. Execute the following query to show WAF logs, for example.
+
+   ```
+   AzureDiagnostics
+   | where ResourceProvider == "MICROSOFT.NETWORK" and Category == "ApplicationGatewayFirewallLog"
+   ```
 ]
 ---
 layout: false
@@ -1705,6 +1887,57 @@ layout: false
 ]
 
 .right-column[
+
+## Validate Workload Logs
+
+The example workload uses the standard dotnet logger interface, which are captured in `ContainerLogs` in Azure Monitor. You could also include additional logging and telemetry frameworks in your workload, such as Application Insights. Here are the steps to view the built-in application logs.
+]
+---
+layout: false
+.left-column[
+  ## Deploy the reference implementation
+  #### 1. Preparing for the cluster
+  #### 2. Build target network
+  #### 3. Deploying the cluster
+  #### 4. Deploy your workload
+  #### 5. Validation
+  ##### End-to-End Validation
+]
+
+.right-column[
+### Steps
+
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
+1. Select your Log Analytic Workspace resource.
+1. Execute the following query
+
+   ```
+   let podInventory = KubePodInventory
+   | where ContainerName endswith "aspnetcore-webapp-sample"
+   | distinct ContainerID, ContainerName
+   | project-rename Name=ContainerName;
+   ContainerLog
+   | project-away Name
+   | join kind=inner
+       podInventory
+   on ContainerID
+   | project TimeGenerated, LogEntry, Computer, Name, ContainerID
+   | order by TimeGenerated desc
+   ```
+]
+---
+layout: false
+.left-column[
+  ## Deploy the reference implementation
+  #### 1. Preparing for the cluster
+  #### 2. Build target network
+  #### 3. Deploying the cluster
+  #### 4. Deploy your workload
+  #### 5. Validation
+  ##### End-to-End Validation
+]
+
+.right-column[
 ## Validate Azure Alerts
 
 Azure will generate alerts on the health of your cluster and adjacent resources. This reference implementation sets up an alert that all you need to do it subscribe to.
@@ -1722,19 +1955,55 @@ layout: false
 ]
 
 .right-column[
-#### Steps
+### Steps
 
 An alert based on [Azure Monitor for containers information using a Kusto query](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts) was configured in this reference implementation.
 
 1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
 1. Select _Alerts_, then _Manage Rule Alerts_.
-1. There is an alert called "PodFailedPhase" that will be triggered based on the custom query response.
+1. There is an alert called "PodFailedScheduledQuery" that will be triggered based on the custom query response.
 
 An [Azure Advisor Alert](https://docs.microsoft.com/azure/advisor/advisor-overview) was configured as well in this reference implementation.
 
 1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
 1. Select _Alerts_, then _Manage Rule Alerts_.
 1. There is an alert called "AllAzureAdvisorAlert" that will be triggered based on new Azure Advisor alerts.
+
+A series of metric alerts were configured as well in this reference implementation.
+
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
+1. Select your cluster, then _Insights_.
+1. Select _Recommended alerts_ to see those enabled. (Feel free to enable/disable as you see fit.)
+]
+---
+layout: false
+.left-column[
+  ## Deploy the reference implementation
+  #### 1. Preparing for the cluster
+  #### 2. Build target network
+  #### 3. Deploying the cluster
+  #### 4. Deploy your workload
+  #### 5. Validation
+  ##### End-to-End Validation
+]
+
+.right-column[
+## Validate Azure Container Registry Image Pulls
+
+If you configured your third-party images to be pulled from your Azure Container Registry vs public registries, you can validate that the container registry logs show `Pull` logs for your cluster when you applied your flux configuration.
+
+### Steps
+
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`) and then your Azure Container Registry instances (starts with `acraks`).
+1. Select _Logs_.
+1. Execute the following query, for whatever time range is appropriate.
+
+   ```kusto
+   ContainerRegistryRepositoryEvents
+   | where OperationName == 'Pull'
+   ```
+
+1. You should see logs for CSI, flux, kured, memcached, and traefik.  You'll see multiple for some as the image was pulled to multiple nodes to satisfy ReplicaSet/DaemonSet placement.
 ]
 ---
 layout: false
@@ -1806,6 +2075,9 @@ layout: false
    ```
 
 1. If any temporary changes were made to Azure AD or Azure RBAC permissions consider removing those as well.
+
+1. [Remove the Azure Policy assignments](https://portal.azure.com/#blade/Microsoft_Azure_Policy/PolicyMenuBlade/Compliance) scoped to the cluster's resource group. To identify those created by this implementation, look for ones that are prefixed with `[your-cluster-name] `.
+
 ]
 ---
 template: inverse
@@ -1836,12 +2108,12 @@ While this reference implementation tends to avoid _preview_ features of AKS to 
 
 * [Azure RBAC for Kubernetes Authentication](https://docs.microsoft.com/azure/aks/manage-azure-rbac) - An extension of the Azure AD integration already in this reference implementation. Allowing you to bind Kubernetes authentication to Azure RBAC role assignments.
 * [Host-based encryption](https://docs.microsoft.com/azure/aks/enable-host-encryption) - Leverages added data encryption on your VMs' temp and OS disks.
-* [Node image upgrades](https://docs.microsoft.com/azure/aks/node-image-upgrade) - Built-in OS patch management; replacement for BYO solutions, such as Kured used in this reference implementation.
-* [AKS Ubuntu 18.04](https://docs.microsoft.com/azure/aks/cluster-configuration#os-configuration-preview) - Will be the default starting in AKS 1.18.
-* [Containerd support](https://docs.microsoft.com/azure/aks/cluster-configuration#container-runtime-configuration-preview) - Replaces the use of Moby with Containerd directly, reducing node resource consumption and improving startup latency.
 * [Generation 2 VM support](https://docs.microsoft.com/azure/aks/cluster-configuration#generation-2-virtual-machines-preview) - Increased memory options, Intel SGX support, and UEFI-based boot architectures.
+* [Auto Upgrade Profile support](https://github.com/Azure/AKS/issues/1303)
+* [Customizable Node & Kublet config](https://github.com/Azure/AKS/issues/323)
+* [GitOps as an add-on](https://github.com/Azure/AKS/issues/1967)
+* [Azure AD Pod Identity as an add-on](https://docs.microsoft.com/azure/aks/use-azure-ad-pod-identity)
 ]
-
 ---
 template:inverse
 # Advanced Topics
@@ -1856,7 +2128,7 @@ layout: false
 This reference implementation intentionally does not cover more advanced scenarios. For example topics like the following are not addressed:
 
 * Cluster lifecycle management with regard to SDLC and GitOps
-* Workload SDLC integration (including concepts like [DevSpaces](https://docs.microsoft.com/azure/dev-spaces/), advanced deployment techniques, etc)
+* Workload SDLC integration (including concepts like [Bridge to Kubernetes](https://docs.microsoft.com/visualstudio/containers/bridge-to-kubernetes?view=vs-2019), advanced deployment techniques, etc)
 * Mapping decisions to [CIS benchmark controls](https://www.cisecurity.org/benchmark/kubernetes/)
 * Container security
 * Multi-region clusters
@@ -1891,12 +2163,9 @@ layout: false
   ## Related documentation
 ]
 .right-column[
-
-
 * [Azure Kubernetes Service Documentation](https://docs.microsoft.com/azure/aks/)
 * [Microsoft Azure Well-Architected Framework](https://docs.microsoft.com/azure/architecture/framework/)
-* [Microservices architecture on AKS](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks-microservices/aks-microservices)
-]
+* [Microservices architecture on AKS](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks-microservices/aks-microservices)]
 ---
 layout: false
 .left-column[
