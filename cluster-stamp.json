@@ -893,9 +893,6 @@
                         "config": {
                             "version": "v2"
                         }
-                    },
-                    "kubeDashboard": {
-                        "enabled": false
                     }
                 },
                 "nodeResourceGroup": "[variables('nodeResourceGroupName')]",
