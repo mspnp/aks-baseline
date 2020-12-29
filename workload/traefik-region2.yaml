@@ -108,18 +108,14 @@ data:
       [providers.file]
         filename = "/config/traefik.toml"
         watch = true
-      # Traefik provider that supports the native Kubernetes Ingress specification
-      # and derives the corresponding dynamic configuration from it. https://kubernetes.io/docs/concepts/services-networking/ingress/
-      [providers.kubernetesingress]
-        ingressClass = "traefik-internal"
+      [providers.kubernetesCRD]
+        ingressClass = "traefik-internal-crd"
         namespaces = ["a0042"]
-        [providers.kubernetesIngress.ingressEndpoint]
-          publishedService = "a0042/traefik-ingress-service"
     # Enable gzip compression
     [http.middlewares]
       [http.middlewares.gzip-compress.compress]
       [http.middlewares.app-gateway-snet.ipWhiteList]
-        sourceRange = ["10.243.4.16/28"]
+        sourceRange = ["10.244.4.16/28"]
     [entryPoints]
       [entryPoints.metrics]
         address = ":8082"
@@ -128,7 +124,7 @@ data:
       [entryPoints.websecure]
         address = ":8443"
         [entryPoints.web.forwardedHeaders]
-          trustedIPs = ["10.243.4.16/28"]
+          trustedIPs = ["10.244.4.16/28"]
         [entryPoints.websecure.http.tls]
           options = "default"
     [ping]
@@ -164,7 +160,7 @@ metadata:
     service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-clusteringressservices"
 spec:
   type: LoadBalancer
-  loadBalancerIP: 10.243.4.4
+  loadBalancerIP: 10.244.4.4
   externalTrafficPolicy: Local
   selector:
     app.kubernetes.io/name: traefik-ingress-ilb
