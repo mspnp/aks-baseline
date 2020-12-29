@@ -46,8 +46,8 @@ spec:
                   - traefik-ingress-ilb
               topologyKey: "kubernetes.io/hostname"
       containers:
-      - name: aspnetcore-webapp-sample
-        image: mcr.microsoft.com/dotnet/core/samples:aspnetapp
+      - name: aspnet-webapp-sample
+        image: mcr.microsoft.com/dotnet/samples:aspnetapp
         imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: false
