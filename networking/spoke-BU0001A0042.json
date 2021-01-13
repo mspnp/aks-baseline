@@ -1,0 +1,256 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "hubVnetResourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "The hub networking which it is going to be peering"
+            }
+        },
+        "location": {
+            "type": "string",
+            "allowedValues": [
+                "australiaeast",
+                "canadacentral",
+                "centralus",
+                "eastus",
+                "eastus2",
+                "westus2",
+                "francecentral",
+                "germanywestcentral",
+                "northeurope",
+                "southafricanorth",
+                "southcentralus",
+                "uksouth",
+                "westeurope",
+                "japaneast",
+                "southeastasia"
+            ],
+            "metadata": {
+                "description": "The spokes's regional affinity. All resources tied to this spoke will also be homed in this region.  The network team maintains this approved regional list which is a subset of zones with Availability Zone support."
+            }
+        }
+    },
+    "variables": {
+        "orgAppId": "BU0001A0042",
+        "clusterVNetName": "[concat('vnet-hub-spoke-', variables('orgAppId'), '-00')]",
+
+        "routeTableName": "[concat('route-', variables('clusterVNetName'), '-clusternodes-to-hub')]",
+        "hubRgName": "[split(parameters('hubVnetResourceId'),'/')[4]]",
+        "hubNetworkName": "[split(parameters('hubVnetResourceId'),'/')[8]]",
+
+        "acrPrivateDnsZonesName": "privatelink.azurecr.io",
+        "akvPrivateDnsZonesName": "privatelink.vaultcore.azure.net"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2020-07-01",
+            "location": "[parameters('location')]",
+            "name": "[variables('routeTableName')]",
+            "properties": {
+                "routes": [
+                    {
+                        "name": "r-nexthop-to-fw",
+                        "properties": {
+                            "nextHopType": "VirtualAppliance",
+                            "addressPrefix": "0.0.0.0/0",
+                            "nextHopIpAddress": "[reference(resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', concat('fw-', parameters('location'), '-hub')), '2019-11-01', 'Full').properties.ipConfigurations[0].properties.privateIpAddress]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-07-01",
+            "name": "[variables('clusterVNetName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.241.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "snet-clusternodes",
+                        "properties": {
+                            "addressPrefix": "10.241.0.0/22",
+                            "serviceEndpoints": [
+                            ],
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
+                            },
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    },
+                    {
+                        "name": "snet-clusteringressservices",
+                        "properties": {
+                            "addressPrefix": "10.241.4.0/28"
+                        }
+                    },
+                    {
+                        "name": "snet-applicationgateways",
+                        "properties": {
+                            "addressPrefix": "10.241.4.16/28"
+                        }
+                    }
+                ],
+                "enableDdosProtection": false,
+                "enableVmProtection": false
+            },
+            "resources": [
+                {
+                    "type": "virtualNetworkPeerings",
+                    "apiVersion": "2019-11-01",
+                    "name": "[concat('spoke-to-', variables('hubNetworkName'))]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+                    ],
+                    "properties": {
+                        "remoteVirtualNetwork": {
+                            "id": "[parameters('hubVnetResourceId')]"
+                        },
+                        "allowForwardedTraffic": true,
+                        "allowVirtualNetworkAccess": true,
+                        "allowGatewayTransit": false,
+                        "useRemoteGateways": false
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/providers/diagnosticSettings",
+            "apiVersion": "2017-05-01-preview",
+            "name": "[concat(variables('clusterVNetName'), '/Microsoft.Insights/toHub')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+            ],
+            "properties": {
+                "workspaceId": "[resourceId(variables('hubRgName'), 'Microsoft.OperationalInsights/workspaces', concat('la-networking-hub-', reference(parameters('hubVnetResourceId'), '2019-11-01', 'Full').location,'-',uniqueString(parameters('hubVnetResourceId'))))]",
+                "metrics": [
+                    {
+                        "category": "AllMetrics",
+                        "enabled": true
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "[concat('CreateHubToSpokePeer')]",
+            "apiVersion": "2020-10-01",
+            "resourceGroup": "[variables('hubRgName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                            "apiVersion": "2020-07-01",
+                            "name": "[concat(variables('hubNetworkName'), '/hub-to-', variables('clusterVNetName'))]",
+                            "location": "[reference(parameters('hubVnetResourceId'), '2019-11-01', 'Full').location]",
+                            "properties": {
+                                "remoteVirtualNetwork": {
+                                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+                                },
+                                "allowForwardedTraffic": false,
+                                "allowGatewayTransit": false,
+                                "allowVirtualNetworkAccess": true,
+                                "useRemoteGateways": false
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2020-06-01",
+            "name": "[variables('acrPrivateDnsZonesName')]",
+            "location": "global",
+            "properties": {
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2020-06-01",
+            "name": "[variables('akvPrivateDnsZonesName')]",
+            "location": "global",
+            "properties": {
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(variables('acrPrivateDnsZonesName'), '/', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))))]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
+            ],
+            "properties": {
+                "virtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+                },
+                "registrationEnabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(variables('akvPrivateDnsZonesName'), '/', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))))]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('akvPrivateDnsZonesName'))]"
+            ],
+            "properties": {
+                "virtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+                },
+                "registrationEnabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2020-07-01",
+            "name": "[concat('pip-', variables('orgAppId'), '-00')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "publicIPAddressVersion": "IPv4"
+            }
+        }
+    ],
+    "outputs": {
+        "clusterVnetResourceId": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
+            "type": "string"
+        },
+        "nodepoolSubnetResourceIds": {
+            "value": "[createArray(resourceId('Microsoft.Network/virtualNetworks/subnets', variables('clusterVNetName'), 'snet-clusternodes'))]",
+            "type": "array"
+        },
+        "appGwPublicIpAddress": {
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', concat('pip-', variables('orgAppId'), '-00'))).ipAddress]",
+            "type": "string"
+        }
+    }
+}
