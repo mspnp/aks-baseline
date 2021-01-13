@@ -94,6 +94,10 @@ The prerequisites for the [AKS secure baseline cluster](./) are now completed wi
    >
    > Hubs and spokes are controlled by the networking team's GitHub Actions workflows. This automation is not included in this reference implementation as this body of work is focused on the AKS baseline and not the networking team's CI/CD practices.
 
+   The network topology diagram after the hub specialization is complete:
+
+   ![Network topology diagram depicting a hub-spokes network with three peered VNets, each with three subnets and main Azure resources.](imgs/multi-cluster-network-topology.svg)
+
 ### Next step
 
 :arrow_forward: [Deploy the AKS cluster](./05-aks-cluster.md)
