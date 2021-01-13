@@ -46,7 +46,7 @@
     "resources": [
         {
             "type": "Microsoft.Network/routeTables",
-            "apiVersion": "2019-11-01",
+            "apiVersion": "2020-07-01",
             "location": "[parameters('location')]",
             "name": "[variables('routeTableName')]",
             "properties": {
@@ -64,7 +64,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2019-11-01",
+            "apiVersion": "2020-07-01",
             "name": "[variables('clusterVNetName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -146,7 +146,7 @@
         {
             "type": "Microsoft.Resources/deployments",
             "name": "[concat('CreateHubToSpokePeer')]",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2020-10-01",
             "resourceGroup": "[variables('hubRgName')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
@@ -159,7 +159,7 @@
                     "resources": [
                         {
                             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
-                            "apiVersion": "2019-11-01",
+                            "apiVersion": "2020-07-01",
                             "name": "[concat(variables('hubNetworkName'), '/hub-to-', variables('clusterVNetName'))]",
                             "location": "[reference(parameters('hubVnetResourceId'), '2019-11-01', 'Full').location]",
                             "properties": {
@@ -178,7 +178,7 @@
         },
         {
             "type": "Microsoft.Network/privateDnsZones",
-            "apiVersion": "2018-09-01",
+            "apiVersion": "2020-06-01",
             "name": "[variables('acrPrivateDnsZonesName')]",
             "location": "global",
             "properties": {
@@ -186,7 +186,7 @@
         },
         {
             "type": "Microsoft.Network/privateDnsZones",
-            "apiVersion": "2018-09-01",
+            "apiVersion": "2020-06-01",
             "name": "[variables('akvPrivateDnsZonesName')]",
             "location": "global",
             "properties": {
@@ -194,7 +194,7 @@
         },
         {
             "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-            "apiVersion": "2018-09-01",
+            "apiVersion": "2020-06-01",
             "name": "[concat(variables('acrPrivateDnsZonesName'), '/', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))))]",
             "location": "global",
             "dependsOn": [
@@ -210,7 +210,7 @@
         },
         {
             "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-            "apiVersion": "2018-09-01",
+            "apiVersion": "2020-06-01",
             "name": "[concat(variables('akvPrivateDnsZonesName'), '/', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))))]",
             "location": "global",
             "dependsOn": [
@@ -225,8 +225,8 @@
             }
         },
         {
-            "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2020-07-01",
             "name": "[concat('pip-', variables('orgAppId'), '-00')]",
             "location": "[parameters('location')]",
             "sku": {
