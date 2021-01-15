@@ -2,6 +2,40 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "appInstanceId": {
+            "type": "string",
+            "allowedValues": [
+                "03",
+                "04"
+            ],
+            "metadata": {
+                "description": "The application instance id helps to generate a unique application instance identifier for multiple instances of the same application. This number is also going to be used to derive its adjacent resources details when needed"
+            }
+        },
+        "clusterVNetAddressPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "The AKS cluster Virtual Network address prefix. All the subnets within the cluster-related will partially allocate address ranges from this space"
+            }
+        },
+        "clusterNodesSubnetAddressPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "The AKS cluster nodes subnet address prefix. This prefix belongs to the address space passed as part of the clusterVNetAddressPrefix parameter value"
+            }
+        },
+        "clusterIngressServicesSubnetAdressPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "The AKS cluster ingress services subnet address prefix. This prefix belongs to the address space passed as part of the clusterVNetAddressPrefix parameter value"
+            }
+        },
+        "applicationGatewaySubnetAddressPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "The AKS cluster ingress services subnet address prefix. This prefix belongs to the address space passed as part of the clusterVNetAddressPrefix parameter value"
+            }
+        },
         "hubVnetResourceId": {
             "type": "string",
             "metadata": {
@@ -33,8 +67,8 @@
         }
     },
     "variables": {
-        "orgAppId": "BU0001A0008",
-        "clusterVNetName": "[concat('vnet-spoke-', variables('orgAppId'), '-00')]",
+        "appId": "[concat('BU0001A0042-', parameters('appInstanceId'))]",
+        "clusterVNetName": "[concat('vnet-hub-spoke-', variables('appId'))]",
 
         "routeTableName": "[concat('route-to-', parameters('location'), '-hub-fw')]",
         "hubRgName": "[split(parameters('hubVnetResourceId'),'/')[4]]",
@@ -50,8 +84,7 @@
     "resources": [
         {
             "type": "Microsoft.Network/routeTables",
-            "apiVersion": "2020-05-01",
-            "name": "[variables('routeTableName')]",
+            "apiVersion": "2020-07-01",
             "location": "[parameters('location')]",
             "comments": "Next hop to regional hub Azure Firewall",
             "properties": {
@@ -237,7 +270,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2020-07-01",
             "name": "[variables('clusterVNetName')]",
             "location": "[parameters('location')]",
             "comments": "65,536 (-reserved) IPs available to the workload, split across two subnets for AKS and one for App Gateway.",
@@ -250,14 +283,14 @@
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "10.240.0.0/16"
+                        "[parameters('clusterVNetAddressPrefix')]"
                     ]
                 },
                 "subnets": [
                     {
                         "name": "snet-clusternodes",
                         "properties": {
-                            "addressPrefix": "10.240.0.0/22",
+                            "addressPrefix": "[parameters('clusterNodesSubnetAddressPrefix')]",
                             "routeTable": {
                                 "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
                             },
@@ -271,7 +304,7 @@
                     {
                         "name": "snet-clusteringressservices",
                         "properties": {
-                            "addressPrefix": "10.240.4.0/28",
+                            "addressPrefix": "[parameters('clusterIngressServicesSubnetAdressPrefix')]",
                             "routeTable": {
                                 "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
                             },
@@ -285,7 +318,7 @@
                     {
                         "name": "snet-applicationgateway",
                         "properties": {
-                            "addressPrefix": "10.240.4.16/28",
+                            "addressPrefix":  "[parameters('applicationGatewaySubnetAddressPrefix')]",
                             "networkSecurityGroup": {
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-appgw'))]"
                             },
@@ -335,7 +368,7 @@
         },
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2020-10-01",
             "name": "[concat('CreateHubTo', variables('clusterVNetName'), 'Peer')]",
             "resourceGroup": "[variables('hubRgName')]",
             "comments": "Sub incremental deployment to perform hub-to-spoke peering",
@@ -350,7 +383,7 @@
                     "resources": [
                         {
                             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
-                            "apiVersion": "2020-05-01",
+                            "apiVersion": "2020-07-01",
                             "name": "[concat(variables('hubNetworkName'), '/hub-to-', variables('clusterVNetName'))]",
                             "properties": {
                                 "remoteVirtualNetwork": {
@@ -367,8 +400,56 @@
             }
         },
         {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2020-06-01",
+            "name": "[variables('acrPrivateDnsZonesName')]",
+            "location": "global",
+            "properties": {
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2020-06-01",
+            "name": "[variables('akvPrivateDnsZonesName')]",
+            "location": "global",
+            "properties": {
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(variables('acrPrivateDnsZonesName'), '/', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))))]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
+            ],
+            "properties": {
+                "virtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+                },
+                "registrationEnabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(variables('akvPrivateDnsZonesName'), '/', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))))]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('akvPrivateDnsZonesName'))]"
+            ],
+            "properties": {
+                "virtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+                },
+                "registrationEnabled": false
+            }
+        },
+        {
             "type": "Microsoft.Network/publicIpAddresses",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2020-07-01",
             "name": "[variables('primaryClusterPipName')]",
             "location": "[parameters('location')]",
             "comments": "Used as primary entry point for workload. Expected to be assigned to an Azure Application Gateway.",
