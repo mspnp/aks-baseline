@@ -49,19 +49,15 @@ The prerequisites for the [AKS secure baseline cluster](./) are now completed wi
 
       * `hubVnetId` - which you'll will need to know for future spokes that get created. E.g. `/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-hubs/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub`
 
-1. Obtain the Hub Virtual Network Resource Id that is going to be used to create the following spokes
+1. Create two spokes that will be home to the two AKS clusters for the app team working on the A0042 and its adjacent resources.
 
-   ```bash
-   HUB_VNET_ID=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-default --query properties.outputs.hubVnetId.value -o tsv)
-   ```
-
-1. Create the first spoke that will be home to the AKS cluster for the app team working on the A0008 and its adjacent resources.
-
-   > :book:  The networking team receives a request from an app team in business unit (BU) 0001 for a network spoke to house their new AKS-based application (Internally know as Application ID: A0008). The network team talks with the app team to understand their requirements and aligns those needs with Microsoft's best practices for a secure AKS cluster deployment. They capture those specific requirements and deploy the spoke, aligning to those specs, and connecting it to the matching regional hub.
+   > :book:  The networking team receives a request from an app team in business unit (BU) 0001. This is for the creation of network spokes to house their new AKS-based application (Internally know as Application ID: A0042). The network team talks with the app team to understand their requirements and aligns those needs with Microsoft's best practices for a secure AKS cluster deployment. As part of the non-functional requirements, the app team mentions they need to run 2 separated infrastructure instances of the same application.  This is because the app team wants to be ready in case AKS introduces _Preview Features_ that could be a breaking in upcoming major releases like happened with `containerd` as the new default runtime.  In those situtations, the app team wants to do some A/B testing of A0042 without fully disrupting its live and stable AKS cluster.  The networking team realizes they are going to need two different spokes to fullfil the app team's desire.  They capture those specific requirements and deploy the spokes (`BU0001A0042-03` and `BU0001A0042-04`), aligning to those specs, and connecting it to the matching regional hub.
 
    ```bash
    # [This takes about ten minutes to run.]
-   az deployment group create --resource-group rg-enterprise-networking-spokes --template-file networking/spoke-BU0001A0008.json --parameters location=eastus2 hubVnetResourceId="${HUB_VNET_ID}"
+   HUB_VNET_ID=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-default --query properties.outputs.hubVnetId.value -o tsv)
+   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-03 -p location=eastus2 hubVnetResourceId="${HUB_VNET_ID}" appInstanceId="03" clusterVNetAddressPrefix="10.243.0.0/16" clusterNodesSubnetAddressPrefix="10.243.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.243.4.0/28" applicationGatewaySubnetAddressPrefix="10.243.4.16/28"
+   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-04 -p location=eastus2 hubVnetResourceId="${HUB_VNET_ID}" appInstanceId="04" clusterVNetAddressPrefix="10.244.0.0/16" clusterNodesSubnetAddressPrefix="10.244.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.244.4.0/28" applicationGatewaySubnetAddressPrefix="10.244.4.16/28"
    ```
 
    The spoke creation will emit the following:
@@ -70,27 +66,18 @@ The prerequisites for the [AKS secure baseline cluster](./) are now completed wi
      * `clusterVnetResourceId` - The resource ID of the VNet that the cluster will land in. E.g. `/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00`
      * `nodepoolSubnetResourceIds` - An array containing the subnet resource IDs of the AKS node pools in the spoke. E.g. `["/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-clusternodes"]`
 
-1. Create the second spoke that will be home to the AKS cluster for the app team working on A0042 and its adjacent resources.
-
-   > :book:  The networking team receives a second request from another app team under the same business unit (BU) 0001, this is for the creation of a second network spoke. In this opportunity, this is also for an AKS-based application (Internally known as Application ID: A0042). Same as before, the networking and app teams talk each other to understand the requirements and while capturing them, they will realize that it needs to be located in the exact same region as the first spoke.  Given that, the networking team will deploy the new spoke connecting it to the same regional hub A assigning new address prefixes to the new vnet and subnets, otherwise they will be conflicting at the time of peering them together.  This starts depicting the Contoso organization's multinancy model at the infrastructure level.
-
-   ```bash
-   # [This takes about ten minutes to run.]
-   az deployment group create --resource-group rg-enterprise-networking-spokes --template-file networking/spoke-BU0001A0042.json --parameters location=eastus2 hubVnetResourceId="${HUB_VNET_ID}"
-   ```
-
 1. Update the shared, regional hub deployment to account for the requirements of the multiple spokes.
 
    > :book: Once their hub has one or more spokes, it can no longer run off of the generic hub template. The networking team creates a named hub template (e.g. `hub-eastus2.json`) to forever represent this specific hub and the features this specific hub needs in order to support its spokes' requirements. As new spokes are attached and new requirements arise for the regional hub, they will be added to this template file.
 
    ```bash
    # [This takes about three minutes to run.]
-   NODEPOOL_SUBNET_RESOURCEIDS_SPOKE_BU0001A0008=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
-   NODEPOOL_SUBNET_RESOURCEIDS_SPOKE_BU0001A0042=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
-   az deployment group create --resource-group rg-enterprise-networking-hubs --template-file networking/hub-regionA.json --parameters location=eastus2 nodepoolSubnetResourceIds="['${NODEPOOL_SUBNET_RESOURCEIDS_SPOKE_BU0001A0008}','${NODEPOOL_SUBNET_RESOURCEIDS_SPOKE_BU0001A0042}']"
+   export NODEPOOL_SUBNET_RESOURCEIDS_SPOKE_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
+   export NODEPOOL_SUBNET_RESOURCEIDS_SPOKE_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
+   az deployment group create --resource-group rg-enterprise-networking-hubs --template-file networking/hub-regionA.json --parameters location=eastus2 nodepoolSubnetResourceIds="['${NODEPOOL_SUBNET_RESOURCEIDS_SPOKE_BU0001A0042_03}','${NODEPOOL_SUBNET_RESOURCEIDS_SPOKE_BU0001A0042_04}']"
    ```
 
-   > :book: At this point the networking team has delivered two spokes in which the BU 0001's app teams can lay down their AKS clusters (IDs: A0008, and A0042). The networking team provides the necessary information to the app teams for them to reference in their Infrastructure-as-Code artifacts.
+   > :book: At this point the networking team has delivered two spokes in which the BU 0001's app team can lay down their AKS clusters. The networking team provides the necessary information to the app teams for them to reference in their Infrastructure-as-Code artifacts.
    >
    > Hubs and spokes are controlled by the networking team's GitHub Actions workflows. This automation is not included in this reference implementation as this body of work is focused on the AKS baseline and not the networking team's CI/CD practices.
 
