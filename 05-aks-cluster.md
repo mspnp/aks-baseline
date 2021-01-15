@@ -1,36 +1,37 @@
 # Deploy the AKS Cluster
 
-Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS cluster and its adjacent Azure resources.
+Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS clusters and its adjacent Azure resources.
 
 ## Steps
 
-1. Create the AKS cluster resource group.
+1. Create the first AKS cluster resource group.
 
-   > :book: The app team working on behalf of business unit 0001 (BU001) is looking to create an AKS cluster of the app they are creating (Application ID: 0008). They have worked with the organization's networking team and have been provisioned a spoke network in which to lay their cluster and network-aware external resources into (such as Application Gateway). They took that information and added it to their [`cluster-stamp.json`](./cluster-stamp.json) and [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) files.
+   > :book: The app team working on behalf of business unit 0001 (BU001) is looking to create the two AKS cluster for the app instances they are creating (Application ID: 0042 | Instance IDs: 03 and 04). They have worked with the organization's networking team and have been provisioned the spoke networks in which to lay their clusters and network-aware external resources into (such as Application Gateway). They took that information and added it to their [`cluster-stamp.json`](./cluster-stamp.json) and [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) files.
    >
-   > They create this resource group to be the parent group for the application.
+   > They create these resource groups to be the parent group for the application instances with separted infrastructure resources.
 
    ```bash
    # [This takes less than one minute.]
-   az group create --name rg-bu0001a0008 --location eastus2
+   az group create --name rg-bu0001a0042-03 --location eastus2
+   az group create --name rg-bu0001a0042-04 --location eastus2
    ```
 
-1. Get the AKS cluster spoke VNet resource ID.
+1. Get the corresponding AKS cluster spoke VNet resource IDs for the app team working on the application A0042.
 
    > :book: The app team will be deploying to a spoke VNet, that was already provisioned by the network team.
 
    ```bash
-   RESOURCEID_VNET_CLUSTERSPOKE=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+   RESOURCEID_VNET_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+   RESOURCEID_VNET_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.clusterVnetResourceId.value -o tsv)
    ```
 
-1. Deploy the cluster ARM template.  
+1. Deploy the two AKS clusters.
   :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server.  You can limit access to the API Server to a set of well-known IP addresses (i.,e. a jump box subnet (connected to by Azure Bastion), build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options.  
 
-    **Option 1 - Deploy from the command line**
-
    ```bash
-   # [This takes about 15 minutes.]
-   az deployment group create -g rg-bu0001a0008 -f cluster-stamp.json -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE} clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64}
+   # [This takes about 30 minutes.]
+   az deployment group create -g rg-bu0001a0042-03 -f cluster-stamp.json -p targetVnetResourceId=$RESOURCEID_VNET_BU0001A0042_03  clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} appInstanceId="03" clusterInternalLoadBalancerIpAddress="10.243.4.4"
+   az deployment group create -g rg-bu0001a0042-04 -f cluster-stamp.json -p targetVnetResourceId=$RESOURCEID_VNET_BU0001A0042_04  clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} appInstanceId="04" clusterInternalLoadBalancerIpAddress="10.244.4.4"
    ```
 
    > Alteratively, you could have updated the [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) file and deployed as above, using `-p "@azuredeploy.parameters.prod.json"` instead of providing the individual key-value pairs.

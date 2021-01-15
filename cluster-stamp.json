@@ -2,6 +2,22 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "0.0.0.5",
     "parameters": {
+        "appInstanceId": {
+            "type": "string",
+            "allowedValues": [
+                "03",
+                "04"
+            ],
+            "metadata": {
+                "description": "The application instance id helps to generate a unique application instance identifier for multiple instances of the same application. This number is also going to be used to derive its adjacent resources details when needed"
+            }
+        },
+        "clusterInternalLoadBalancerIpAddress": {
+            "type": "string",
+            "metadata": {
+                "description": "The AKS cluster Iternal Load Balancer Ip Address"
+            }
+        },
         "targetVnetResourceId": {
             "type": "string",
             "minLength": 79,
@@ -100,6 +116,8 @@
         }
     },
     "variables": {
+        "appId": "[concat('BU0001A0042-', parameters('appInstanceId'))]",
+
         "networkContributorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7')]",
         "monitoringMetricsPublisherRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
         "acrPullRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
@@ -387,22 +405,22 @@
         {
             "type": "Microsoft.Network/privateDnsZones",
             "apiVersion": "2018-09-01",
-            "name": "aks-ingress.contoso.com",
+            "name": "[concat(toLower(variables('appId')), '.aks-ingress.contoso.com')]",
             "location": "global",
             "properties": {},
             "resources": [
                 {
                     "type": "A",
                     "apiVersion": "2018-09-01",
-                    "name": "bu0001a0008-00",
+                    "name": "[toLower(variables('appId'))]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateDnsZones', 'aks-ingress.contoso.com')]"
+                        "[resourceId('Microsoft.Network/privateDnsZones', concat(toLower(variables('appId')), '.aks-ingress.contoso.com'))]"
                     ],
                     "properties": {
                         "ttl": 3600,
                         "aRecords": [
                             {
-                                "ipv4Address": "10.240.4.4"
+                                "ipv4Address": "[parameters('clusterInternalLoadBalancerIpAddress')]"
                             }
                         ]
                     }
@@ -479,7 +497,7 @@
                         "name": "apw-frontend-ip-configuration",
                         "properties": {
                             "PublicIPAddress": {
-                                "id": "[resourceId(subscription().subscriptionId, variables('vNetResourceGroup'), 'Microsoft.Network/publicIpAddresses', 'pip-BU0001A0008-00')]"
+                                "id": "[resourceId(subscription().subscriptionId,variables('vNetResourceGroup'),'Microsoft.Network/publicIpAddresses','pip-agw-',variables('appId'))]"
                             }
                         }
                     }
@@ -513,7 +531,7 @@
                 ],
                 "probes": [
                     {
-                        "name": "probe-bu0001a0008-00.aks-ingress.contoso.com",
+                        "name": "[concat('probe-',toLower(variables('appId'),'.aks-ingress.contoso.com')]",
                         "properties": {
                             "protocol": "Https",
                             "path": "/favicon.ico",
@@ -529,11 +547,11 @@
                 ],
                 "backendAddressPools": [
                     {
-                        "name": "bu0001a0008-00.aks-ingress.contoso.com",
+                        "name": "[concat(toLower(variables('appId')),'.aks-ingress.contoso.com')]",
                         "properties": {
                             "backendAddresses": [
                                 {
-                                    "fqdn": "bu0001a0008-00.aks-ingress.contoso.com"
+                                    "fqdn": "[concat(toLower(variables('appId')),'.aks-ingress.contoso.com')]"
                                 }
                             ]
                         }
@@ -549,7 +567,7 @@
                             "pickHostNameFromBackendAddress": true,
                             "requestTimeout": 20,
                             "probe": {
-                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('agwName')), '/probes/probe-bu0001a0008-00.aks-ingress.contoso.com')]"
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('agwName')),'/probes/,'probe-',toLower(variables('appId'),'.aks-ingress.contoso.com')]"
                             },
                             "trustedRootCertificates": [
                                 {
@@ -589,7 +607,7 @@
                                 "id": "[concat(variables('apwResourceId'), '/httpListeners/listener-https')]"
                             },
                             "backendAddressPool": {
-                                "id": "[concat(variables('apwResourceId'), '/backendAddressPools/bu0001a0008-00.aks-ingress.contoso.com')]"
+                                "id": "[concat(variables('apwResourceId'), '/backendAddressPools/',toLower(variables('appId'),'.aks-ingress.contoso.com')]"
                             },
                             "backendHttpSettings": {
                                 "id": "[concat(variables('apwResourceId'), '/backendHttpSettingsCollection/aks-ingress-contoso-backendpool-httpsettings')]"
