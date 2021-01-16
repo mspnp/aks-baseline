@@ -115,7 +115,8 @@
         }
     },
     "variables": {
-        "appId": "[concat('BU0001A0042-', parameters('appInstanceId'))]",
+        "orgAppId": "BU0001A0042",
+        "appId": "[concat(variables('orgAppId'),'-', parameters('appInstanceId'))]",
 
         "networkContributorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7')]",
         "monitoringMetricsPublisherRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
@@ -291,15 +292,15 @@
         {
             "type": "Microsoft.Network/privateDnsZones",
             "apiVersion": "2018-09-01",
-            "name": "[concat(toLower(variables('appId')), '.aks-ingress.contoso.com')]",
+            "name": "aks-ingress.contoso.com",
             "location": "global",
             "resources": [
                 {
                     "type": "A",
                     "apiVersion": "2018-09-01",
-                    "name": "[toLower(variables('appId'))]",
+                    "name": "[toLower(variables('orgAppId'))]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateDnsZones', concat(toLower(variables('appId')), '.aks-ingress.contoso.com'))]"
+                        "[resourceId('Microsoft.Network/privateDnsZones', 'aks-ingress.contoso.com')]"
                     ],
                     "properties": {
                         "ttl": 3600,
@@ -317,10 +318,10 @@
         {
             "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
             "apiVersion": "2018-09-01",
-            "name": "[concat('aks-ingress.contoso.com/cluster-dns-link')]",
+            "name": "aks-ingress.contoso.com/cluster-dns-link",
             "location": "global",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones','aks-ingress.contoso.com')]"
+                "[resourceId('Microsoft.Network/privateDnsZones', 'aks-ingress.contoso.com')]"
             ],
             "properties": {
                 "virtualNetwork": {
@@ -387,7 +388,7 @@
                         "name": "apw-frontend-ip-configuration",
                         "properties": {
                             "PublicIPAddress": {
-                                "id": "[resourceId(subscription().subscriptionId,variables('vNetResourceGroup'),'Microsoft.Network/publicIpAddresses','pip-agw-',variables('appId'))]"
+                                "id": "[resourceId(subscription().subscriptionId,variables('vNetResourceGroup'),'Microsoft.Network/publicIpAddresses',concat('pip-agw-',variables('appId')))]"
                             }
                         }
                     }
@@ -421,7 +422,7 @@
                 ],
                 "probes": [
                     {
-                        "name": "[concat('probe-',toLower(variables('appId'),'.aks-ingress.contoso.com')]",
+                        "name": "[concat('probe-',toLower(variables('appId')),'.aks-ingress.contoso.com')]",
                         "properties": {
                             "protocol": "Https",
                             "path": "/favicon.ico",
@@ -441,7 +442,7 @@
                         "properties": {
                             "backendAddresses": [
                                 {
-                                    "fqdn": "[concat(toLower(variables('appId')),'.aks-ingress.contoso.com')]"
+                                    "fqdn": "[concat(toLower(variables('orgAppId')),'.aks-ingress.contoso.com')]"
                                 }
                             ]
                         }
@@ -457,7 +458,7 @@
                             "pickHostNameFromBackendAddress": true,
                             "requestTimeout": 20,
                             "probe": {
-                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('agwName')),'/probes/,'probe-',toLower(variables('appId'),'.aks-ingress.contoso.com')]"
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('agwName')),'/probes/probe-',toLower(variables('appId')),'.aks-ingress.contoso.com')]"
                             },
                             "trustedRootCertificates": [
                                 {
@@ -497,7 +498,7 @@
                                 "id": "[concat(variables('apwResourceId'), '/httpListeners/listener-https')]"
                             },
                             "backendAddressPool": {
-                                "id": "[concat(variables('apwResourceId'), '/backendAddressPools/',toLower(variables('appId'),'.aks-ingress.contoso.com')]"
+                                "id": "[concat(variables('apwResourceId'), '/backendAddressPools/',toLower(variables('appId')),'.aks-ingress.contoso.com')]"
                             },
                             "backendHttpSettings": {
                                 "id": "[concat(variables('apwResourceId'), '/backendHttpSettingsCollection/aks-ingress-contoso-backendpool-httpsettings')]"
