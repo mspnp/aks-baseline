@@ -9,7 +9,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 * Cluster Role Bindings for the AKS-managed Azure AD integration
 * AAD Pod Identity
 * CSI driver and Azure KeyVault CSI Provider
-* the workload's namespace named `a0008`
+* the workload's namespace named `a0042`
 
 1. Install `kubectl` 1.19 or newer. (`kubctl` supports +/-1 Kubernetes version.)
 
@@ -21,15 +21,15 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 1. Get the cluster name.
 
    ```bash
-   export AKS_CLUSTER_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
+   export AKS_CLUSTER_NAME_BU0001A0042_03=$(az deployment group show --resource-group rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
    ```
 
 1. Get AKS `kubectl` credentials (as a user that has admin permissions to the cluster).
 
-   > In the [Azure Active Directory Integration](03-aad.md) step, we placed our cluster under AAD group-backed RBAC. This is the first time we are seeing this used. `az aks get-credentials` allows you to use `kubectl` commands against your cluster. Without the AAD integration, you'd have to use `--admin` here, which isn't what we want to happen. Here, you'll log in with a user that has been added to the Azure AD security group used to back the Kubernetes RBAC admin role. Executing the first `kubectl` command below will invoke the AAD login process to auth the _user of your choice_, which will then be checked against Kubernets RBAC to perform the action. The user you choose to log in with _must be a member of the AAD group bound_ to the `cluster-admin` ClusterRole. For simplicity could either use the "break-glass" admin user created in [Azure Active Directory Integration](03-aad.md) (`bu0001a0008-admin`) or any user you assign to the `cluster-admin` group assignment in your [`user-facing-cluster-role-aad-group.yaml`](cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml) file. If you skipped those steps you can use `--admin` to proceed, but proper AAD group-based RBAC access is a critical security function that you should invest time in setting up.
+   > In the [Azure Active Directory Integration](03-aad.md) step, we placed our cluster under AAD group-backed RBAC. This is the first time we are seeing this used. `az aks get-credentials` allows you to use `kubectl` commands against your cluster. Without the AAD integration, you'd have to use `--admin` here, which isn't what we want to happen. Here, you'll log in with a user that has been added to the Azure AD security group used to back the Kubernetes RBAC admin role. Executing the first `kubectl` command below will invoke the AAD login process to auth the _user of your choice_, which will then be checked against Kubernets RBAC to perform the action. The user you choose to log in with _must be a member of the AAD group bound_ to the `cluster-admin` ClusterRole. For simplicity could either use the "break-glass" admin user created in [Azure Active Directory Integration](03-aad.md) (`bu0001a0042-admin`) or any user you assign to the `cluster-admin` group assignment in your [`user-facing-cluster-role-aad-group.yaml`](cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml) file. If you skipped those steps you can use `--admin` to proceed, but proper AAD group-based RBAC access is a critical security function that you should invest time in setting up.
 
    ```bash
-   az aks get-credentials -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME
+   az aks get-credentials -g rg-bu0001a0042-03 -n $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
    :warning: At this point two important steps are happening:
@@ -60,12 +60,12 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    ```bash
    # Get your ACR cluster name
-   export ACR_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   export ACR_NAME_BU0001A0042_03=$(az deployment group show --resource-group rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
 
    # Import cluster management images hosted in public container registries
-   az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME
-   az acr import --source docker.io/fluxcd/flux:1.19.0 -n $ACR_NAME
-   az acr import --source docker.io/weaveworks/kured:1.4.0 -n $ACR_NAME
+   az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME_BU0001A0042_03
+   az acr import --source docker.io/fluxcd/flux:1.19.0 -n $ACR_NAME_BU0001A0042_03
+   az acr import --source docker.io/weaveworks/kured:1.4.0 -n $ACR_NAME_BU0001A0042_03
    ```
 
 1. Deploy Flux.
@@ -86,6 +86,16 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 1. Wait for Flux to be ready before proceeding.
 
    ```bash
+   kubectl wait --namespace cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s
+   ```
+
+1. Deploy the gitops solution in the second cluster (BU0001A0042-04)
+
+   ```bash
+   export AKS_CLUSTER_NAME_BU0001A0042_04=$(az deployment group show --resource-group rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
+   az aks get-credentials -g rg-bu0001a0042-04 -n $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl create namespace cluster-baseline-settings
+   kubectl apply -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/cluster-baseline-settings/flux.yaml
    kubectl wait --namespace cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s
    ```
 

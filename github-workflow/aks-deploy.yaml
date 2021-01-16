@@ -15,7 +15,7 @@
 #    │   ├── flux.yaml
 #    │   ├── ingress-network-policy.yaml
 #    │   ├── kured-1.4.0-dockerhub.yaml
-#    │   ├── ns-a0008.yaml
+#    │   ├── ns-a0042.yaml
 #    │   ├── ns-cluster-baseline-settings.yaml
 #    │   └── user-facing-cluster-role-aad-group.yaml
 #    └── cluster-stamp.json

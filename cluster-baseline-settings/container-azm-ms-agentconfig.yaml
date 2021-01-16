@@ -22,7 +22,7 @@ data:
     [prometheus_data_collection_settings.cluster]
         interval = "1m"
         monitor_kubernetes_pods = true
-        monitor_kubernetes_pods_namespaces = ["a0008","cluster-baseline-settings"]
+        monitor_kubernetes_pods_namespaces = ["a0042","cluster-baseline-settings"]
     [prometheus_data_collection_settings.node]
         interval = "1m"
         urls = ["http://$NODE_IP:9103/metrics"]

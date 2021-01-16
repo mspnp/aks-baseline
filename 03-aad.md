@@ -4,7 +4,7 @@ In the prior step, you [generated the user-facing TLS certificate](./02-ca-certi
 
 ## Steps
 
-> :book: The Contoso Bicycle Azure AD team requires all admin access to AKS clusters be security-group based. This applies to the new Secure AKS cluster that is being built for Application ID a0008 under the BU001 business unit. Kubernetes RBAC will be AAD-backed and access granted based on a user's identity or directory group membership.
+> :book: The Contoso Bicycle Azure AD team requires all admin access to AKS clusters be security-group based. This applies to the new Secure AKS cluster that is being built for Application ID a0042 under the BU001 business unit. Kubernetes RBAC will be AAD-backed and access granted based on a user's identity or directory group membership.
 
 1. Query and save your Azure subscription tenant id
 
@@ -22,7 +22,7 @@ In the prior step, you [generated the user-facing TLS certificate](./02-ca-certi
 1. Create the first the Azure AD group that is going to map the Kubernetes Cluster Role Admin. If you already have a security group that is appropriate for cluster admins, consider using that group and skipping this step. If using your own group, you will need to update group object names throughout the reference implementation.
 
    ```bash
-   export K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID=$(az ad group create --display-name aad-to-bu0001a000800-cluster-admin --mail-nickname aad-to-bu0001a000800-cluster-admin --query objectId -o tsv)
+   export K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID=$(az ad group create --display-name aad-to-bu0001a004200-cluster-admin --mail-nickname aad-to-bu0001a004200-cluster-admin --query objectId -o tsv)
    ```
 
 1. Create a break-glass Cluster Admin user for your AKS cluster
@@ -31,7 +31,7 @@ In the prior step, you [generated the user-facing TLS certificate](./02-ca-certi
 
    ```bash
    export K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
-   export AKS_ADMIN_OBJECTID=$(az ad user create --display-name=bu0001a0008-admin --user-principal-name bu0001a0008-admin@${K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME} --force-change-password-next-login --password ChangeMebu0001a0008AdminChangeMe --query objectId -o tsv)
+   export AKS_ADMIN_OBJECTID=$(az ad user create --display-name=bu0001a0042-admin --user-principal-name bu0001a0042-admin@${K8S_RBAC_AAD_PROFILE_TENANT_DOMAIN_NAME} --force-change-password-next-login --password ChangeMebu0001a0042AdminChangeMe --query objectId -o tsv)
    ```
 
 1. Add the new admin user to new security group so can be granted with the Kubernetes Cluster Admin role.
@@ -43,7 +43,7 @@ In the prior step, you [generated the user-facing TLS certificate](./02-ca-certi
    >
 
    ```bash
-   az ad group member add --group aad-to-bu0001a000800-cluster-admin --member-id $AKS_ADMIN_OBJECTID
+   az ad group member add --group aad-to-bu0001a004200-cluster-admin --member-id $AKS_ADMIN_OBJECTID
    ```
 
    This object ID will be used later while creating the cluster. This way, once the cluster gets deployed the new group will get the proper Cluster Role bindings in Kubernetes.
