@@ -7,15 +7,15 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 1. Get the AKS Ingress Controller Managed Identity details
 
    ```bash
-   export TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
-   export TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
+   export TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_03=$(az deployment group show --resource-group rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
+   export TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_03=$(az deployment group show --resource-group rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
    ```
 
 1. Ensure Flux has created the following namespace
 
    ```bash
    # press Ctrl-C once you receive a successful response
-   kubectl get ns a0008 -w
+   kubectl get ns a0042 -w --context $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
 1. Create Traefik's Azure Managed Identity binding
@@ -23,22 +23,22 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > Create the Traefik Azure Identity and the Azure Identity Binding to let Azure Active Directory Pod Identity to get tokens on behalf of the Traefik's User Assigned Identity and later on assign them to the Traefik's pod.
 
    ```bash
-   cat <<EOF | kubectl apply -f -
+   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_03 -f -
    apiVersion: "aadpodidentity.k8s.io/v1"
    kind: AzureIdentity
    metadata:
      name: aksic-to-keyvault-identity
-     namespace: a0008
+     namespace: a0042
    spec:
      type: 0
-     resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
-     clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
+     resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_03
+     clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_03
    ---
    apiVersion: "aadpodidentity.k8s.io/v1"
    kind: AzureIdentityBinding
    metadata:
      name: aksic-to-keyvault-identity-binding
-     namespace: a0008
+     namespace: a0042
    spec:
      azureIdentity: aksic-to-keyvault-identity
      selector: traefik-ingress-controller
@@ -52,17 +52,17 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > Create a `SecretProviderClass` resource with with your Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
 
    ```bash
-   cat <<EOF | kubectl apply -f -
+   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_03 -f -
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
    kind: SecretProviderClass
    metadata:
      name: aks-ingress-contoso-com-tls-secret-csi-akv
-     namespace: a0008
+     namespace: a0042
    spec:
      provider: azure
      parameters:
        usePodIdentity: "true"
-       keyvaultName: "${KEYVAULT_NAME}"
+       keyvaultName: "${KEYVAULT_NAME_BU0001A0042_03}"
        objects:  |
          array:
            - |
@@ -83,10 +83,10 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
    ```bash
    # Get your ACR cluster name
-   export ACR_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   export ACR_NAME_BU0001A0042_03=$(az deployment group show --resource-group rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
 
    # Import ingress controller image hosted in public container registries
-   az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME
+   az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME_BU0001A0042_03
    ```
 
 1. Install the Traefik Ingress Controller
@@ -98,7 +98,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    :warning: Deploying the traefik `traefik.yaml` file unmodified from this repo will be deploying your workload to take dependencies on a public container registry. This is generally okay for learning/testing, but not suitable for production. Before going to production, ensure _all_ image references are from _your_ container registry or another that you feel confident relying on.
 
    ```bash
-   kubectl apply -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik.yaml
+   kubectl apply -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik-03.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
 1. Wait for Traefik to be ready
@@ -106,7 +106,62 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > During Traefik's pod creation process, AAD Pod Identity will need to retrieve token for Azure Key Vault. This process can take time to complete and it's possible for the pod volume mount to fail during this time but the volume mount will eventually succeed. For more information, please refer to the [Pod Identity documentation](https://github.com/Azure/secrets-store-csi-driver-provider-azure/blob/master/docs/pod-identity-mode.md).
 
    ```bash
-   kubectl wait --namespace a0008 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s
+   kubectl wait --namespace a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_03
+   ```
+
+1. Install the Traefik Ingress Controller in the second AKS Cluster
+
+   ```bash
+   export TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04=$(az deployment group show --resource-group rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
+   export TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show --resource-group rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
+
+   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04 -f -
+   apiVersion: "aadpodidentity.k8s.io/v1"
+   kind: AzureIdentity
+   metadata:
+     name: aksic-to-keyvault-identity
+     namespace: a0042
+   spec:
+     type: 0
+     resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04
+     clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04
+   ---
+   apiVersion: "aadpodidentity.k8s.io/v1"
+   kind: AzureIdentityBinding
+   metadata:
+     name: aksic-to-keyvault-identity-binding
+     namespace: a0042
+   spec:
+     azureIdentity: aksic-to-keyvault-identity
+     selector: traefik-ingress-controller
+   EOF
+
+   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04 -f -
+   apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+   kind: SecretProviderClass
+   metadata:
+     name: aks-ingress-contoso-com-tls-secret-csi-akv
+     namespace: a0042
+   spec:
+     provider: azure
+     parameters:
+       usePodIdentity: "true"
+       keyvaultName: "${KEYVAULT_NAME_BU0001A0042_04}"
+       objects:  |
+         array:
+           - |
+             objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+             objectAlias: tls.crt
+             objectType: cert
+           - |
+             objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+             objectAlias: tls.key
+             objectType: secret
+       tenantId: "${TENANT_ID}"
+   EOF
+
+   kubectl apply -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik-04.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl wait --namespace a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04
    ```
 
 ### Next step

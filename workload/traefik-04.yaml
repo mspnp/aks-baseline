@@ -2,7 +2,7 @@ kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: traefik-ingress-controller
-  namespace: a0008
+  namespace: a0042
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
@@ -11,7 +11,7 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: traefik-ingress-controller
-  namespace: a0008
+  namespace: a0042
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
@@ -59,7 +59,7 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: traefik-watch-workloads
-  namespace: a0008
+  namespace: a0042
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
@@ -70,13 +70,13 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: traefik-ingress-controller
-  namespace: a0008
+  namespace: a0042
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: traefik-ingress-config
-  namespace: a0008
+  namespace: a0042
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
@@ -112,14 +112,14 @@ data:
       # and derives the corresponding dynamic configuration from it. https://kubernetes.io/docs/concepts/services-networking/ingress/
       [providers.kubernetesingress]
         ingressClass = "traefik-internal"
-        namespaces = ["a0008"]
+        namespaces = ["a0042"]
         [providers.kubernetesIngress.ingressEndpoint]
-          publishedService = "a0008/traefik-ingress-service"
+          publishedService = "a0042/traefik-ingress-service"
     # Enable gzip compression
     [http.middlewares]
       [http.middlewares.gzip-compress.compress]
       [http.middlewares.app-gateway-snet.ipWhiteList]
-        sourceRange = ["10.240.4.16/28"]
+        sourceRange = ["10.244.4.16/28"]
     [entryPoints]
       [entryPoints.metrics]
         address = ":8082"
@@ -128,7 +128,7 @@ data:
       [entryPoints.websecure]
         address = ":8443"
         [entryPoints.web.forwardedHeaders]
-          trustedIPs = ["10.240.4.16/28"]
+          trustedIPs = ["10.244.4.16/28"]
         [entryPoints.websecure.http.tls]
           options = "default"
     [ping]
@@ -155,7 +155,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: traefik-ingress-service
-  namespace: a0008
+  namespace: a0042
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
@@ -164,7 +164,7 @@ metadata:
     service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-clusteringressservices"
 spec:
   type: LoadBalancer
-  loadBalancerIP: 10.240.4.4
+  loadBalancerIP: 10.244.4.4
   externalTrafficPolicy: Local
   selector:
     app.kubernetes.io/name: traefik-ingress-ilb
@@ -178,7 +178,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: traefik-ingress-controller
-  namespace: a0008
+  namespace: a0042
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
