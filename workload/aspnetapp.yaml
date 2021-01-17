@@ -7,7 +7,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: aspnetapp-deployment
-  namespace: a0008
+  namespace: a0042
   labels:
     app.kubernetes.io/name: aspnetapp
 spec:
@@ -75,7 +75,7 @@ apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: aspnetapp-pdb
-  namespace: a0008
+  namespace: a0042
 spec:
   minAvailable: 75%
   selector:
@@ -86,7 +86,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: aspnetapp-service
-  namespace: a0008
+  namespace: a0042
 spec:
   selector:
     app.kubernetes.io/name: aspnetapp
@@ -99,7 +99,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: aspnetapp-ingress
-  namespace: a0008
+  namespace: a0042
   annotations:
     kubernetes.io/ingress.allow-http: "false"
     # defines controller implementing this ingress resource: https://docs.microsoft.com/en-us/azure/dev-spaces/how-to/ingress-https-traefik
@@ -114,14 +114,14 @@ spec:
   # ingressClassName: "traefik-internal"
   tls:
   - hosts:
-      - bu0001a0008-00.aks-ingress.contoso.com
+      - bu0001a0042.aks-ingress.contoso.com
         # it is possible to opt for certificate management strategy with dedicated
         # certificates for each TLS SNI route.
         # In this Rereference Implementation for the sake of simplicity we use a
         # wildcard default certificate added at Ingress Controller configuration level which is *.example.com
-        # secretName: <bu0001a0008-00-example-com-tls-secret>
+        # secretName: <bu0001a0042-00-example-com-tls-secret>
   rules:
-  - host: bu0001a0008-00.aks-ingress.contoso.com
+  - host: bu0001a0042.aks-ingress.contoso.com
     http:
       paths:
       - path: /
