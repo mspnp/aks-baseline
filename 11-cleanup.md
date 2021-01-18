@@ -11,7 +11,8 @@ After you are done exploring your deployed [AKS secure baseline cluster](./), yo
    :warning: Ensure you are using the correct subscription, and validate that the only resources that exist in these groups are ones you're okay deleting.
 
    ```bash
-   az group delete -n rg-bu0001a0008
+   az group delete -n rg-bu0001a0042-03
+   az group delete -n rg-bu0001a0042-04
    az group delete -n rg-enterprise-networking-spokes
    az group delete -n rg-enterprise-networking-hubs
    ```

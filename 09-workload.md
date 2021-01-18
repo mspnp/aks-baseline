@@ -11,13 +11,13 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    > The workload definition demonstrates the inclusion of a Pod Disruption Budget rule, ingress configuration, and pod (anti-)affinity rules for your reference.
 
    ```bash
-   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/aspnetapp.yaml
+   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/aspnetapp.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
 1. Wait until is ready to process requests running
 
    ```bash
-   kubectl wait -n a0008 --for=condition=ready pod --selector=app.kubernetes.io/name=aspnetapp --timeout=90s
+   kubectl wait -n a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=aspnetapp --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
 1. Check your Ingress resource status as a way to confirm the AKS-managed Internal Load Balancer is functioning
@@ -25,19 +25,17 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    > In this moment your Ingress Controller (Traefik) is reading your ingress resource object configuration, updating its status, and creating a router to fulfill the new exposed workloads route. Please take a look at this and notice that the address is set with the Internal Load Balancer IP from the configured subnet.
 
    ```bash
-   kubectl get ingress aspnetapp-ingress -n a0008
+   kubectl get ingress aspnetapp-ingress -n a0042 --context $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
    > At this point, the route to the workload is established, SSL offloading configured, and a network policy is in place to only allow Traefik to connect to your workload. Therefore, you should expect a `403` HTTP response if you attempt to connect to it directly.
 
-1. Give it a try and see a `403` HTTP response.
+1. Deploy the same workload as another instance in the second AKS cluster
 
    ```bash
-   kubectl run curl -n a0008 -i --tty --rm --image=mcr.microsoft.com/azure-cli --limits='cpu=200m,memory=128Mi'
-   
-   # From within the open shell
-   curl -kI https://bu0001a0008-00.aks-ingress.contoso.com -w '%{remote_ip}\n'
-   exit
+   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/aspnetapp.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl wait -n a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=aspnetapp --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl get ingress aspnetapp-ingress -n a0042 --context $AKS_CLUSTER_NAME_BU0001A0042_04
    ```
 
 ### Next step

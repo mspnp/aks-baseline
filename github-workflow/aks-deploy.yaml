@@ -7,11 +7,17 @@
 #    ├── .github
 #    │   ├── workflows
 #    │   │   └── aks-deploy.yaml
-#    ├── cluster-manifests
-#    │   ├── a0008/*
-#    │   ├── cluster-baseline-settings/*
-#    │   ├── kube-system/*
-#    │   ├── cluster-rbac.yaml
+#    ├── cluster-baseline-settings
+#    │   ├── aad-pod-identity
+#    │   │   └── aad-pod-identity.yaml
+#    │   ├── akv-secrets-store-csi.yaml
+#    │   ├── container-azm-ms-agentconfig.yaml
+#    │   ├── flux.yaml
+#    │   ├── ingress-network-policy.yaml
+#    │   ├── kured-1.4.0-dockerhub.yaml
+#    │   ├── ns-a0042.yaml
+#    │   ├── ns-cluster-baseline-settings.yaml
+#    │   └── user-facing-cluster-role-aad-group.yaml
 #    └── cluster-stamp.json
 #
 # 2. Ensure you have followed the prior sections before deploying this AKS cluster. This way, you will be capable of setting:

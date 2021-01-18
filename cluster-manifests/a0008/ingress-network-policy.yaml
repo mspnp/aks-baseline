@@ -2,7 +2,7 @@ kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: allow-only-ingress-to-workload
-  namespace: a0008
+  namespace: a0042
 spec:
   podSelector:
     matchLabels:
