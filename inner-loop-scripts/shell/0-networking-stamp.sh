@@ -7,18 +7,20 @@ set -e
 LOCATION=$1
 RGNAMEHUB=$2
 RGNAMESPOKES=$3
-RGNAMECLUSTER=$4
-TENANT_ID=$5
-MAIN_SUBSCRIPTION=$6
+RGNAMECLUSTER1=$4
+RGNAMECLUSTER2=$5
+TENANT_ID=$6
+MAIN_SUBSCRIPTION=$7
 
-AKS_ADMIN_NAME=aksadminuser
+AKS_ADMIN_NAME=bu0001a0042-admin
 AKS_ENDUSER_NAME=aksuser
 AKS_ENDUSER_PASSWORD=ChangeMebu0001a0008AdminChangeMe
 
-K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_NAME="add-to-bu0001a000800-cluster-admin"
+K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_NAME="aad-to-bu0001a004200-cluster-admin"
 
 __usage="
-    [-c RGNAMECLUSTER]
+    [-c RGNAMECLUSTER1]
+    [-d RGNAMECLUSTER2]
     [-h RGNAMEHUB]
     [-l LOCATION]
     [-s MAIN_SUBSCRIPTION]
@@ -32,9 +34,10 @@ usage() {
     exit 1
 }
 
-while getopts "c:h:l:s:t:p:" opt; do
+while getopts "c:d:h:l:s:t:p:" opt; do
     case $opt in
-    c)  RGNAMECLUSTER="${OPTARG}";;
+    c)  RGNAMECLUSTER1="${OPTARG}";;
+    d)  RGNAMECLUSTER2="${OPTARG}";;
     h)  RGNAMEHUB="${OPTARG}";;
     l)  LOCATION="${OPTARG}";;
     s)  MAIN_SUBSCRIPTION="${OPTARG}";;
@@ -86,32 +89,51 @@ HUB_VNET_ID=$(az deployment group show -g $RGNAMEHUB -n hub-0001 --query propert
 #Cluster Subnet.Build the spoke. Second arm template execution and catching outputs. This might take about 2 minutes
 az group create --name "${RGNAMESPOKES}" --location "${LOCATION}"
 
-az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "../../networking/spoke-BU0001A0008.json" --name "spoke-0001" --parameters \
+az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "../../networking/spoke-BU0001A0042.json" --name "spoke-BU0001A0042-03" --parameters \
           location=$LOCATION \
-          hubVnetResourceId=$HUB_VNET_ID 
+          hubVnetResourceId=$HUB_VNET_ID  \
+          appInstanceId="03" \
+          clusterVNetAddressPrefix="10.243.0.0/16" \
+          clusterNodesSubnetAddressPrefix="10.243.0.0/22" \
+          clusterIngressServicesSubnetAdressPrefix="10.243.4.0/28" \
+          applicationGatewaySubnetAddressPrefix="10.243.4.16/28"
 
-export TARGET_VNET_RESOURCE_ID=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+TARGET_VNET_RESOURCE_ID1=$(az deployment group show -g $RGNAMESPOKES -n spoke-BU0001A0042-03 --query properties.outputs.clusterVnetResourceId.value -o tsv)
 
-NODEPOOL_SUBNET_RESOURCE_IDS=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
+NODEPOOL_SUBNET_RESOURCE_IDS_SPOKE_BU0001A0042_03=$(az deployment group show -g $RGNAMESPOKES -n spoke-BU0001A0042-03 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
+
+az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "../../networking/spoke-BU0001A0042.json" --name "spoke-BU0001A0042-04" --parameters \
+          location=$LOCATION \
+          hubVnetResourceId=$HUB_VNET_ID  \
+          appInstanceId="04" \
+          clusterVNetAddressPrefix="10.244.0.0/16" \
+          clusterNodesSubnetAddressPrefix="10.244.0.0/22" \
+          clusterIngressServicesSubnetAdressPrefix="10.244.4.0/28" \
+          applicationGatewaySubnetAddressPrefix="10.244.4.16/28"
+
+TARGET_VNET_RESOURCE_ID2=$(az deployment group show -g $RGNAMESPOKES -n spoke-BU0001A0042-04 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+
+NODEPOOL_SUBNET_RESOURCE_IDS_SPOKE_BU0001A0042_04=$(az deployment group show -g $RGNAMESPOKES -n spoke-BU0001A0042-04 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
 
 #Main Network Update. Third arm template execution and catching outputs. This might take about 3 minutes
 
 az deployment group create --resource-group "${RGNAMEHUB}" --template-file "../../networking/hub-regionA.json" --name "hub-0002" --parameters \
             location=$LOCATION \
-            nodepoolSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_IDS']"
+            nodepoolSubnetResourceIds="['${NODEPOOL_SUBNET_RESOURCE_IDS_SPOKE_BU0001A0042_03}','${NODEPOOL_SUBNET_RESOURCE_IDS_SPOKE_BU0001A0042_04}']"
 
 echo ""
 echo "# Preparing cluster parameters"
 echo ""
 
-az group create --name "${RGNAMECLUSTER}" --location "${LOCATION}"
+az group create --name "${RGNAMECLUSTER1}" --location "${LOCATION}"
+az group create --name "${RGNAMECLUSTER2}" --location "${LOCATION}"
 
 cat << EOF
 
 NEXT STEPS
 ---- -----
 
-./1-cluster-stamp.sh $LOCATION $RGNAMECLUSTER $RGNAMESPOKES $TENANT_ID $MAIN_SUBSCRIPTION $TARGET_VNET_RESOURCE_ID $K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID $K8S_RBAC_AAD_PROFILE_TENANTID $AKS_ENDUSER_NAME $AKS_ENDUSER_PASSWORD
+./1-cluster-stamp.sh $LOCATION $RGNAMECLUSTER1 $RGNAMECLUSTER2 $RGNAMESPOKES $TENANT_ID $MAIN_SUBSCRIPTION $TARGET_VNET_RESOURCE_ID1 $TARGET_VNET_RESOURCE_ID2 $K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID $K8S_RBAC_AAD_PROFILE_TENANTID $AKS_ENDUSER_NAME $AKS_ENDUSER_PASSWORD
 
 EOF
 
