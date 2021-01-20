@@ -361,15 +361,16 @@
         },
         {
             "type": "Microsoft.Network/ipGroups",
-            "apiVersion": "2019-11-01",
-            "location": "[parameters('location')]",
+            "apiVersion": "2020-05-01",
             "name": "[variables('aksIpGroupName')]",
+            "location": "[parameters('location')]",
+            "comments": "This holds IP addresses of known nodepool subnets in spokes.",
             "properties": {
                 "copy": [
                     {
                         "name": "ipAddresses",
                         "count": "[length(parameters('nodepoolSubnetResourceIds'))]",
-                        "input": "[reference(parameters('nodepoolSubnetResourceIds')[copyIndex('ipAddresses')], '2019-11-01').addressPrefix]"
+                        "input": "[reference(parameters('nodepoolSubnetResourceIds')[copyIndex('ipAddresses')], '2020-05-01').addressPrefix]"
                     }
                 ]
             }
@@ -490,11 +491,10 @@
                                         "TCP"
                                     ],
                                     "destinationPorts": [
-                                        "22",
                                         "9000"
                                     ],
                                     "destinationAddresses": [
-                                        "*"
+                                        "[concat('AzureCloud.', parameters('location'))]"
                                     ]
                                 },
                                 {
@@ -539,8 +539,7 @@
                                         }
                                     ],
                                     "targetFqdns": [
-                                        "*.hcp.eastus2.azmk8s.io",
-                                        "*.tun.eastus2.azmk8s.io"
+                                        "[concat('*.hcp.', parameters('location'), '.azmk8s.io')]"
                                     ]
                                 },
                                 {
@@ -556,7 +555,6 @@
                                         }
                                     ],
                                     "targetFqdns": [
-                                        "*.cdn.mscr.io",
                                         "mcr.microsoft.com",
                                         "*.data.mcr.microsoft.com"
                                     ]
@@ -573,8 +571,8 @@
                                             "port": 443
                                         }
                                     ],
-                                    "targetFqdns": [
-                                        "management.azure.com"
+                                    "fqdnTags": [
+                                        "AzureKubernetesService"
                                     ]
                                 },
                                 {
@@ -655,12 +653,8 @@
                                             "port": 443
                                         }
                                     ],
-                                    "targetFqdns": [
-                                        "dc.services.visualstudio.com",
-                                        "*.ods.opinsights.azure.com",
-                                        "*.oms.opinsights.azure.com",
-                                        "*.microsoftonline.com",
-                                        "*.monitoring.azure.com"
+                                    "fqdnTags": [
+                                        "AzureMonitor"
                                     ]
                                 },
                                 {
@@ -707,7 +701,29 @@
                                         }
                                     ],
                                     "targetFqdns": [
-                                        "github.com"
+                                        "github.com",
+                                        "api.github.com",
+                                        "ghcr.io",
+                                        "github-production-container-registry.s3.amazonaws.com"
+                                    ]
+                                },
+                                {
+                                    "name": "pull-flux-images",
+                                    "description": "Allows pulling images from your container registry or GitHub container registry",
+                                    "sourceIpGroups": [
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                    ],
+                                    "protocols": [
+                                        {
+                                            "protocolType": "Https",
+                                            "port": 443
+                                        }
+                                    ],
+                                    "targetFqdns": [
+                                        "*.azurecr.io",
+                                        "*.privatelink.azurecr.io",
+                                        "ghcr.io",
+                                        "github-production-container-registry.s3.amazonaws.com"
                                     ]
                                 }
                             ]
