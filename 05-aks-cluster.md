@@ -20,28 +20,22 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
    > :book: The app team will be deploying to a spoke VNet, that was already provisioned by the network team.
 
    ```bash
-   TARGET_VNET_RESOURCE_ID=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+   RESOURCEID_VNET_CLUSTERSPOKE=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)
    ```
 
 1. Deploy the cluster ARM template.  
-  :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server.  You can limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, bastion subnet, build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options.  
+  :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server.  You can limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, a jump box subnet, build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options.  
 
-   **Option 1 - Deploy in the Azure Portal**
-
-   Use the following deploy to Azure button to create the baseline cluster from the Azure Portal. You'll need to provide the parameter values as returned from prior steps in this guide.
-
-   [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmspnp%2Faks-secure-baseline%2Fmain%2Fcluster-stamp.json)
-
-    **Option 2 - Deploy from the command line**
+    **Option 1 - Deploy from the command line**
 
    ```bash
    # [This takes about 15 minutes.]
-   az deployment group create --resource-group rg-bu0001a0008 --template-file cluster-stamp.json --parameters targetVnetResourceId=$TARGET_VNET_RESOURCE_ID k8sRbacAadProfileAdminGroupObjectID=$K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID k8sRbacAadProfileTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE aksIngressControllerCertificate=$AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64
+   az deployment group create -g rg-bu0001a0008 -f cluster-stamp.json -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE} k8sRbacAadProfileAdminGroupObjectID=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sRbacAadProfileTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64}
    ```
 
-   > Alteratively, you could have updated the [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) file and deployed as above, using `--parameters "@azuredeploy.parameters.prod.json"` instead of the individual key-value pairs.
+   > Alteratively, you could have updated the [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) file and deployed as above, using `-p "@azuredeploy.parameters.prod.json"` instead of the individual key-value pairs.
 
-    **Option 3 - Automated deploy using GitHub Actions (fork is required)**
+    **Option 2 - Automated deploy using GitHub Actions (fork is required)**
 
     1. Create the Azure Credentials for the GitHub CD workflow.
 
@@ -100,9 +94,9 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
            sed "s#<resource-group-location>#eastus2#g" | \
            sed "s#<resource-group-name>#rg-bu0001a0008#g" | \
            sed "s#<geo-redundancy-location>#centralus#g" | \
-           sed "s#<cluster-spoke-vnet-resource-id>#$TARGET_VNET_RESOURCE_ID#g" | \
-           sed "s#<tenant-id-with-user-admin-permissions>#$K8S_RBAC_AAD_PROFILE_TENANTID#g" | \
-           sed "s#<azure-ad-aks-admin-group-object-id>#$K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID#g" \
+           sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_CLUSTERSPOKE}#g" | \
+           sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" | \
+           sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" \
            > .github/workflows/aks-deploy.yaml
        ```
 
@@ -132,7 +126,7 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 
 ## Container registry note
 
-:warning: To aid in ease of deployment of this cluster and your experimentation with workloads, Azure Policy is currently configured to allow your cluster to pull images from _public container registries_ such as Docker Hub and Quay. For a production system, you'll want to update the Azure Policy named `pa-allowed-registries-images` in your `cluster-stamp.json` file to only list those container registries that you are willing to take a dependency on and what namespaces those policies apply to. This will protect your cluster from unapproved registries being used, which may prevent issues while trying to pull images from a registry which doesn't provide SLA guarantees for your deployment.
+:warning: To aid in ease of deployment of this cluster and your experimentation with workloads, Azure Policy is currently configured to allow your cluster to pull images from _public container registries_ such as Docker Hub and Quay. For a production system, you'll want to update Azure Policy parameter named `allowedContainerImagesRegex` in your `cluster-stamp.json` file to only list those container registries that you are willing to take a dependency on and what namespaces those policies apply to. This will protect your cluster from unapproved registries being used, which may prevent issues while trying to pull images from a registry which doesn't provide SLA guarantees for your deployment.
 
 This deployment creates an SLA-backed Azure Container Registry for your cluster's needs. Your organization may have a central container registry for you to use, or your registry may be tied specifically to your application's infrastructure (as demonstrated in this implementation). **Only use container registries that satisfy the availability needs of your application.**
 

@@ -1,6 +1,8 @@
 # Azure Kubernetes Service (AKS) Baseline Cluster
 
-This reference implementation demonstrates the _recommended starting (baseline) infrastructure architecture_ for an [AKS cluster](https://azure.microsoft.com/services/kubernetes-service). This is implementation and document is meant to guide an interdisciplinary team or multiple distinct teams like networking, security and development through the process of getting this secure baseline infrastructure deployed and understanding the components of it.
+This reference implementation demonstrates the _recommended starting (baseline) infrastructure architecture_ for a general purpose [AKS cluster](https://azure.microsoft.com/services/kubernetes-service). This is implementation and document is meant to guide an interdisciplinary team or multiple distinct teams like networking, security and development through the process of getting this secure baseline infrastructure deployed and understanding the components of it.
+
+We walk through the deployment here in a rather _verbose_ method to help you understand each component of this cluster, ideally teaching you about each layer and providing you with the knowledge necessary to apply it to your workload.
 
 ## Azure Architecture Center guidance
 
@@ -11,6 +13,8 @@ This project has a companion set of articles that describe challenges, design pa
 **This architecture is infrastructure focused**, more so than workload. It concentrates on the AKS cluster itself, including concerns with identity, post-deployment configuration, secret management, and network topologies.
 
 The implementation presented here is the _minimum recommended baseline for most AKS clusters_. This implementation integrates with Azure services that will deliver observability, provide a network topology that will support multi-regional growth, and keep the in-cluster traffic secure as well. This architecture should be considered your starting point for pre-production and production stages.
+
+The material here is relatively dense. We strongly encourage you to dedicate time to walk through these instructions, with a mind to learning. We do NOT provide any "one click" deployment here. However, once you've understood the components involved and identified the shared responsibilities between your team and your great organization, it is encouraged that you build suitable, auditable deployment processes around your final infrastructure.
 
 Throughout the reference implementation, you will see reference to _Contoso Bicycle_. They are a fictional small and fast-growing startup that provides online web services to its clientele on the west coast of North America. They have no on-premises data centers and all their containerized line of business applications are now about to be orchestrated by secure, enterprise-ready AKS clusters. You can read more about [their requirements and their IT team composition](./contoso-bicycle/README.md). This narrative provides grounding for some implementation details, naming conventions, etc. You should adapt as you see fit.
 
@@ -27,9 +31,9 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
   * Azure CNI
   * [Azure Monitor for containers](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-overview)
 * Azure Virtual Networks (hub-spoke)
+  * Azure Firewall managed egress
 * Azure Application Gateway (WAF)
 * AKS-managed Internal Load Balancers
-* Azure Firewall
 
 #### In-cluster OSS components
 
