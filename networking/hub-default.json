@@ -295,12 +295,7 @@
                     {
                         "name": "AzureFirewallSubnet",
                         "properties": {
-                            "addressPrefix": "[parameters('azureFirewallSubnetAddressSpace')]",
-                            "serviceEndpoints": [
-                                {
-                                    "service": "Microsoft.KeyVault"
-                                }
-                            ]
+                            "addressPrefix": "[parameters('azureFirewallSubnetAddressSpace')]"
                         }
                     },
                     {
