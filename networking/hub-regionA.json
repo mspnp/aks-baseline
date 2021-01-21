@@ -701,9 +701,6 @@
                                         }
                                     ],
                                     "targetFqdns": [
-                                        "gov-prod-policy-data.trafficmanager.net",
-                                        "raw.githubusercontent.com",
-                                        "dc.services.visualstudio.com",
                                         "data.policy.core.windows.net",
                                         "store.policy.core.windows.net"
                                     ]

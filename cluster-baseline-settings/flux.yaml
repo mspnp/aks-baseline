@@ -151,7 +151,7 @@ spec:
         # az acr import --source docker.io/library/memcached:1.5.20 -n <your-acr-instance-name>
         # and then set this to
         # image: <your-acr-instance-name>.azurecr.io/library/memcached:1.5.20
-        image: library/memcached:1.5.20
+        image: docker.io/library/memcached:1.5.20
         imagePullPolicy: IfNotPresent
         resources:
           requests:

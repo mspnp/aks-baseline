@@ -1906,21 +1906,20 @@
             "type": "Microsoft.Authorization/policyAssignments",
             "name": "[guid('febd0533-8e55-448f-b837-bd0e06f16469', resourceGroup().name, variables('clusterName'))]",
             "apiVersion": "2020-03-01",
-            "comments": "Applying the 'Allowed Container Images' regex policy at the resource group level.",
+            "comments": "Applying the 'Allowed Container Images' regex policy at the resource group level. If all images are pull into your ARC instance, remove the docker.io entries.",
             "properties": {
                 "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469', '2020-09-01').displayName)]",
                 "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
                 "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469",
                 "parameters": {
                     "allowedContainerImagesRegex": {
-                        "value": "[concat(variables('defaultAcrName'),'.azurecr.io/.+$|mcr.microsoft.com/.+$|registry.hub.docker.com/library/.+$')]"
+                        "value": "[concat(variables('defaultAcrName'),'.azurecr.io/.+$|mcr.microsoft.com/.+$|docker.io/fluxcd/flux.+$|docker.io/weaveworks/kured.+$|docker.io/library/.+$')]"
                     },
                     "excludedNamespaces": {
                         "value": [
                             "kube-system",
                             "gatekeeper-system",
-                            "azure-arc",
-                            "cluster-baseline-settings"
+                            "azure-arc"
                         ]
                     },
                     "effect": {
