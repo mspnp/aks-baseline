@@ -466,39 +466,7 @@
                                     "destinationAddresses": [
                                         "*"
                                     ]
-                                },
-                                {
-                                    "name": "ntp",
-                                    "description": "Network Time Protocol (NTP) time synchronization",
-                                    "sourceAddresses": [
-                                        "*"
-                                    ],
-                                    "protocols": [
-                                        "UDP"
-                                    ],
-                                    "destinationPorts": [
-                                        "123"
-                                    ],
-                                    "destinationAddresses": [
-                                        "*"
-                                    ]
-                                }/*,
-                                {
-                                    "name": "HTTP-and-HTTPS",
-                                    "sourceAddresses": [
-                                        "*"
-                                    ],
-                                    "protocols": [
-                                        "TCP"
-                                    ],
-                                    "destinationPorts": [
-                                        "80",
-                                        "443"
-                                    ],
-                                    "destinationAddresses": [
-                                        "*"
-                                    ]
-                                }*/
+                                }
                             ]
                         }
                     },
@@ -511,8 +479,24 @@
                             "priority": 200,
                             "rules": [
                                 {
+                                    "name": "ntp",
+                                    "description": "Network Time Protocol (NTP) time synchronization for nodepool nodes. These use ubuntu's NTP pools.",
+                                    "sourceIpGroups": [
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                    ],
+                                    "protocols": [
+                                        "UDP"
+                                    ],
+                                    "destinationPorts": [
+                                        "123"
+                                    ],
+                                    "destinationAddresses": [
+                                        "*"
+                                    ]
+                                },
+                                {
                                     "name": "tunnelfront-pod-tcp",
-                                    "description": "Tunnelfront pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers. This can be removed once Konnectivity replaces tunnelfront.",
+                                    "description": "Tunnelfront pod to communicate with the tunnel end on the API server. Technically only needed to our API servers instead of AzureCloud.EastUS2. Restrict this to your clusters' Cluster API Public IP; done this way for easy of demonstration. Not needed for private clusters.",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -528,7 +512,7 @@
                                 },
                                 {
                                     "name": "tunnelfront-pod-udp",
-                                    "description": "Tunnelfront pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers. This can be removed once Konnectivity replaces tunnelfront.",
+                                    "description": "Tunnelfront pod to communicate with the tunnel end on the API server. Technically only needed to our API servers instead of AzureCloud.EastUS2. Restrict this to your clusters' Cluster API Public IP; done this way for easy of demonstration. Not needed for private clusters.",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -537,6 +521,22 @@
                                     ],
                                     "destinationPorts": [
                                         "1194"
+                                    ],
+                                    "destinationAddresses": [
+                                        "[concat('AzureCloud.', parameters('location'))]"
+                                    ]
+                                },
+                                {
+                                    "name": "pod-to-api-server",
+                                    "description": "Allows pods to communicate to the Cluster API server (e.g. Flux). Technically only needed to our API servers instead of AzureCloud.EastUS2. Restrict this to your clusters' Cluster API Public IP; done this way for easy of demonstration. Not needed for private clusters.",
+                                    "sourceIpGroups": [
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                    ],
+                                    "protocols": [
+                                        "TCP"
+                                    ],
+                                    "destinationPorts": [
+                                        "443"
                                     ],
                                     "destinationAddresses": [
                                         "[concat('AzureCloud.', parameters('location'))]"

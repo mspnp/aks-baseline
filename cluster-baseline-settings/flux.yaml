@@ -62,6 +62,7 @@ spec:
       - name: git-key
         secret:
           secretName: flux-git-deploy
+          defaultMode: 0400
       containers:
       - name: flux
         # PRODUCTION READINESS CHANGE REQUIRED
