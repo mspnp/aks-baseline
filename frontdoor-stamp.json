@@ -1,0 +1,123 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+    },
+    "variables": {
+        "subRgUniqueString": "[uniqueString('fd', subscription().subscriptionId, resourceGroup().id)]",
+        "frontDoorName": "[concat('multicluster-fd-', variables('subRgUniqueString'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/frontdoors",
+            "apiVersion": "2020-05-01",
+            "name": "[variables('frontDoorName')]",
+            "location": "Global",
+            "properties": {
+                "resourceState": "Enabled",
+                "backendPools": [
+                    {
+                        "name": "MultiClusterBackendPool",
+                        "properties": {
+                            "backends": [
+                                {
+                                    "address": "20.62.143.103",
+                                    "httpPort": 80,
+                                    "httpsPort": 443,
+                                    "priority": 1,
+                                    "weight": 50,
+                                    "backendHostHeader": "[concat(variables('frontDoorName'), '.contoso.com')]",
+                                    "enabledState": "Enabled"
+                                },
+                                {
+                                    "address": "40.88.195.235",
+                                    "httpPort": 80,
+                                    "httpsPort": 443,
+                                    "priority": 1,
+                                    "weight": 50,
+                                    "backendHostHeader": "[concat(variables('frontDoorName'), '.contoso.com')]",
+                                    "enabledState": "Enabled"
+                                }
+                            ],
+                            "healthProbeSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/frontdoors', variables('frontDoorName')), '/HealthProbeSettings/healthProbeSettings')]"
+                            },
+                            "loadBalancingSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/frontdoors', variables('frontDoorName')), '/LoadBalancingSettings/loadBalancingSettings')]"
+                            },
+                            "resourceState": "Enabled"
+                        }
+                    }
+                ],
+                "healthProbeSettings": [
+                    {
+                        "name": "healthProbeSettings",
+                        "properties": {
+                            "intervalInSeconds": 30,
+                            "path": "/favicon.ico",
+                            "protocol": "Http",
+                            "resourceState": "Enabled",
+                            "enabledState": "Enabled",
+                            "healthProbeMethod": "Get"
+                        }
+                    }
+                ],
+                "frontendEndpoints": [
+                    {
+                        "name": "MultiClusterFrontendEndpoint",
+                        "properties": {
+                            "hostName": "[concat(variables('frontDoorName'), '.azurefd.net')]",
+                            "sessionAffinityEnabledState": "Disabled",
+                            "sessionAffinityTtlSeconds": 0,
+                            "resourceState": "Enabled"
+                        }
+                    }
+                ],
+                "loadBalancingSettings": [
+                    {
+                        "name": "loadBalancingSettings",
+                        "properties": {
+                            "additionalLatencyMilliseconds": 0,
+                            "sampleSize": 4,
+                            "successfulSamplesRequired": 2,
+                            "resourceState": "Enabled"
+                        }
+                    }
+                ],
+                "routingRules": [
+                    {
+                        "name": "MultiClusterRule",
+                        "properties": {
+                            "frontendEndpoints": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors',  variables('frontDoorName')), concat('/FrontendEndpoints/',  'MultiClusterFrontendEndpoint'))]"
+                                }
+                            ],
+                            "acceptedProtocols": [
+                                "Http"
+                            ],
+                            "patternsToMatch": [
+                                "/*"
+                            ],
+                            "enabledState": "Enabled",
+                            "resourceState": "Enabled",
+                            "routeConfiguration": {
+                                "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
+                                "forwardingProtocol": "HttpOnly",
+                                "backendPool": {
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors',  variables('frontDoorName')), concat('/backendPools/',  'MultiClusterBackendPool'))]"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "backendPoolsSettings": {
+                    "enforceCertificateNameCheck": "Enabled",
+                    "sendRecvTimeoutSeconds": 30
+                },
+                "enabledState": "Enabled",
+                "friendlyName": "[variables('frontDoorName')]"
+            }
+        }
+    ]
+}
