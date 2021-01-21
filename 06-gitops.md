@@ -43,17 +43,6 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes please refer to [the related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).
 
-1. Create the cluster baseline settings namespace.
-
-   ```bash
-   # Verify the user you logged in with has the appropriate permissions, should result in a "yes" response.
-   # If you receive "no" to this command, check which user you authenticated as and ensure they are
-   # assigned to the Azure AD Group you designated for cluster admins.
-   kubectl auth can-i create namespace -A
-
-   kubectl create namespace cluster-baseline-settings
-   ```
-
 1. Import cluster management images to your container registry.
 
    > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for a system that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
@@ -65,7 +54,18 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    # Import cluster management images hosted in public container registries
    az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME
    az acr import --source docker.io/fluxcd/flux:1.19.0 -n $ACR_NAME
-   az acr import --source docker.io/weaveworks/kured:1.4.0 -n $ACR_NAME
+   az acr import --source docker.io/weaveworks/kured:1.6.1 -n $ACR_NAME
+   ```
+
+1. Create the cluster baseline settings namespace.
+
+   ```bash
+   # Verify the user you logged in with has the appropriate permissions, should result in a "yes" response.
+   # If you receive "no" to this command, check which user you authenticated as and ensure they are
+   # assigned to the Azure AD Group you designated for cluster admins.
+   kubectl auth can-i create namespace -A
+
+   kubectl create namespace cluster-baseline-settings
    ```
 
 1. Deploy Flux.
