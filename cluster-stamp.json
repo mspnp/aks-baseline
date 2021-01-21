@@ -386,7 +386,7 @@
                         "name": "apw-ip-configuration",
                         "properties": {
                             "subnet": {
-                                "id": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-applicationgateways')]"
+                                "id": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-applicationgateway')]"
                             }
                         }
                     }

@@ -9,7 +9,7 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
    > :warning: The user or service principal initiating the deployment process _must_ have the following minimal set of Azure Role-Based Access Control (RBAC) roles:
    >
    > * [Contributor role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#contributor) is _required_ at the subscription level to have the ability to create resource groups and perform deployments.
-   > * [User Access Administrator role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#user-access-administrator) is _required_ at the subscription level since you'll be performing role assignments to managed identities.
+   > * [User Access Administrator role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#user-access-administrator) is _required_ at the subscription level since you'll be performing role assignments to managed identities across various resource groups.
 
 1. An Azure AD tenant to associate your Kubernetes RBAC Cluster API authentication to.
 
@@ -26,7 +26,7 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 
 1. Clone/download this repo locally, or even better fork this repository.
 
-   > :twisted_rightwards_arrows: If you have forked this reference implementation repo, you'll be able to customize some of the files and commands for a more personalized experience; also ensure references to repos mentioned are updated to use your own (e.g. the following `GITHUB_REPO`).
+   > :twisted_rightwards_arrows: If you have forked this reference implementation repo, you'll be able to customize some of the files and commands for a more personalized experience; also ensure references to this git repository mentioned throughout the walk through are updated to use your own (e.g. the following `GITHUB_REPO`).
 
    ```bash
    export GITHUB_REPO=https://github.com/mspnp/aks-secure-baseline.git

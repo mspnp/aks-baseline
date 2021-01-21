@@ -81,11 +81,44 @@
             },
             "resources": [
                 {
+                    "type": "providers/diagnosticSettings",
+                    "apiVersion": "2017-05-01-preview",
+                    "name": "Microsoft.Insights/toHub",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-nodepools'))]"
+                    ],
+                    "properties": {
+                        "workspaceId": "[variables('hubLaWorkspaceResourceId')]",
+                        "logs": [
+                            {
+                                "category": "NetworkSecurityGroupEvent",
+                                "enabled": true
+                            },
+                            {
+                                "category": "NetworkSecurityGroupRuleCounter",
+                                "enabled": true
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-05-01",
+            "name": "[concat('nsg-', variables('clusterVNetName'), '-aksilbs')]",
+            "location": "[parameters('location')]",
+            "comments": "Default NSG on the AKS ILB subnet. Feel free to constrict further!",
+            "properties": {
+                "securityRules": []
+            },
+            "resources": [
+                {
                     "name": "Microsoft.Insights/toHub",
                     "type": "providers/diagnosticSettings",
                     "apiVersion": "2017-05-01-preview",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-nodepools'))]"
+                        "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-aksilbs'))]"
                     ],
                     "properties": {
                         "workspaceId": "[variables('hubLaWorkspaceResourceId')]",
@@ -214,7 +247,8 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-appgw'))]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-nodepools'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-nodepools'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-aksilbs'))]"
             ],
             "properties": {
                 "addressSpace": {
@@ -242,12 +276,12 @@
                         "properties": {
                             "addressPrefix": "10.240.4.0/28",
                             "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-nodepools'))]"
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-aksilbs'))]"
                             }
                         }
                     },
                     {
-                        "name": "snet-applicationgateways",
+                        "name": "snet-applicationgateway",
                         "properties": {
                             "addressPrefix": "10.240.4.16/28",
                             "networkSecurityGroup": {

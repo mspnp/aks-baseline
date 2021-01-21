@@ -71,7 +71,12 @@
     },
     "variables": {
         "aksIpGroupName": "[concat('ipg-', parameters('location'), '-AksNodepools')]",
-        "defaultFwPipName": "[concat('pip-fw-', parameters('location'))]",
+        "baseFwPipName": "[concat('pip-fw-', parameters('location'))]",
+        "hubFwPipNames": [
+            "[concat(variables('baseFwPipName'), '-default')]",
+            "[concat(variables('baseFwPipName'), '-01')]",
+            "[concat(variables('baseFwPipName'), '-02')]"
+        ],
         "hubFwName": "[concat('fw-', parameters('location'))]",
         "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
         "bastionNetworkNsgName": "[concat('nsg-', parameters('location'), '-bastion')]",
@@ -88,7 +93,9 @@
                 "sku": {
                     "name": "PerGB2018"
                 },
-                "retentionInDays": 30
+                "retentionInDays": 30,
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled"
             }
         },
         {
@@ -347,9 +354,9 @@
         {
             "type": "Microsoft.Network/publicIpAddresses",
             "apiVersion": "2020-05-01",
-            "name": "[variables('defaultFwPipName')]",
+            "name": "[variables('hubFwPipNames')[copyIndex()]]",
             "location": "[parameters('location')]",
-            "comments": "This is the public IP for this regional hub's firewall.",
+            "comments": "This is a public IP for this regional hub's firewall. You'll want as many as necessary to avoid SNAT port exhaustion. Typical production hubs may require 20 IPs -- we only deploy three here as a reference.",
             "sku": {
                 "name": "Standard"
             },
@@ -357,6 +364,11 @@
                 "publicIPAllocationMethod": "Static",
                 "idleTimeoutInMinutes": 4,
                 "publicIPAddressVersion": "IPv4"
+            },
+            "copy": {
+                "name": "create-fw-pips",
+                "count": "[length(variables('hubFwPipNames'))]",
+                "mode": "Parallel"
             }
         },
         {
@@ -387,7 +399,7 @@
                 "3"
             ],
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIpAddresses', variables('defaultFwPipName'))]",
+                "create-fw-pips",
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]",
                 "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
             ],
@@ -399,16 +411,32 @@
                     "name": "AZFW_VNet",
                     "tier": "Standard"
                 },
-                "threatIntelMode": "Alert",
+                "threatIntelMode": "Deny",
                 "ipConfigurations": [
                     {
-                        "name": "[variables('defaultFwPipName')]",
+                        "name": "[variables('hubFwPipNames')[0]]",
                         "properties": {
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hubVnetName'), 'AzureFirewallSubnet')]"
                             },
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('defaultFwPipName'))]"
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('hubFwPipNames')[0])]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('hubFwPipNames')[1]]",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('hubFwPipNames')[1])]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('hubFwPipNames')[2]]",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('hubFwPipNames')[2])]"
                             }
                         }
                     }
@@ -425,17 +453,18 @@
                             "rules": [
                                 {
                                     "name": "DNS",
+                                    "description": "Consider restricting this to only DNS servers you expect to be used.",
                                     "sourceAddresses": [
                                         "*"
                                     ],
                                     "protocols": [
                                         "UDP"
                                     ],
-                                    "destinationAddresses": [
-                                        "*"
-                                    ],
                                     "destinationPorts": [
                                         "53"
+                                    ],
+                                    "destinationAddresses": [
+                                        "*"
                                     ]
                                 },
                                 {
@@ -453,7 +482,7 @@
                                     "destinationAddresses": [
                                         "*"
                                     ]
-                                },
+                                }/*,
                                 {
                                     "name": "HTTP-and-HTTPS",
                                     "sourceAddresses": [
@@ -469,7 +498,7 @@
                                     "destinationAddresses": [
                                         "*"
                                     ]
-                                }
+                                }*/
                             ]
                         }
                     },
@@ -483,7 +512,7 @@
                             "rules": [
                                 {
                                     "name": "tunnel-front-pod-tcp",
-                                    "description": "Tunnel front pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers.",
+                                    "description": "Tunnel front pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers. This can be removed once Konnectivity v4 is released.",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -499,7 +528,7 @@
                                 },
                                 {
                                     "name": "tunnel-front-pod-udp",
-                                    "description": "Tunnel front pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers.",
+                                    "description": "Tunnel front pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers. This can be removed once Konnectivity v4 is released.",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -510,7 +539,7 @@
                                         "1194"
                                     ],
                                     "destinationAddresses": [
-                                        "*"
+                                        "[concat('AzureCloud.', parameters('location'))]"
                                     ]
                                 }
                             ]
@@ -544,7 +573,7 @@
                                 },
                                 {
                                     "name": "microsoft-container-registry",
-                                    "description": "All URLs related to MCR needed by AKS",
+                                    "description": "Required to access images in Microsoft Container Registry (MCR). This registry contains first-party images (E.g., coreDNS, etc.). These images are required for the correct creation and functioning of the cluster, including scale and upgrade operations.",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -609,7 +638,7 @@
                                 },
                                 {
                                     "name": "cluster-binaries",
-                                    "description": "This address is for the repository required to install required binaries like kubenet and Azure CNI.",
+                                    "description": "This address is for the repository required to download and install required binaries like kubenet and Azure CNI.",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -642,8 +671,8 @@
                                     ]
                                 },
                                 {
-                                    "name": "azure-monitor",
-                                    "description": "All required for Azure Monitor for containers per https://docs.microsoft.com/azure/aks/limit-egress-traffic#azure-monitor-for-containers",
+                                    "name": "azure-monitor-addon",
+                                    "description": "All required for Azure Monitor for containers per https://docs.microsoft.com/azure/aks/limit-egress-traffic#azure-monitor-for-containers - Optionally you can restrict the ods and oms wildcards to JUST your clusters' log analytics instances.",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -653,12 +682,15 @@
                                             "port": 443
                                         }
                                     ],
-                                    "fqdnTags": [
-                                        "AzureMonitor"
+                                    "targetFqdns": [
+                                        "dc.services.visualstudio.com",
+                                        "*.ods.opinsights.azure.com",
+                                        "*.oms.opinsights.azure.com",
+                                        "*.monitoring.azure.com"
                                     ]
                                 },
                                 {
-                                    "name": "azure-policy",
+                                    "name": "azure-policy-addon",
                                     "description": "All required for Azure Policy per https://docs.microsoft.com/azure/aks/limit-egress-traffic#azure-policy",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
@@ -702,14 +734,12 @@
                                     ],
                                     "targetFqdns": [
                                         "github.com",
-                                        "api.github.com",
-                                        "ghcr.io",
-                                        "github-production-container-registry.s3.amazonaws.com"
+                                        "api.github.com"
                                     ]
                                 },
                                 {
                                     "name": "pull-flux-images",
-                                    "description": "Allows pulling images from your container registry or GitHub container registry",
+                                    "description": "Allows pulling images from public container registries. Not necessary when using your private ACR instance via Private Link for images you've push or imported. Included here only for those that did not fork the repo.",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -720,8 +750,7 @@
                                         }
                                     ],
                                     "targetFqdns": [
-                                        "*.azurecr.io",
-                                        "*.privatelink.azurecr.io",
+                                        "docker.io",
                                         "ghcr.io",
                                         "github-production-container-registry.s3.amazonaws.com"
                                     ]

@@ -63,7 +63,12 @@
         }
     },
     "variables": {
-        "defaultFwPipName": "[concat('pip-fw-', parameters('location'))]",
+        "baseFwPipName": "[concat('pip-fw-', parameters('location'))]",
+        "hubFwPipNames": [
+            "[concat(variables('baseFwPipName'), '-default')]",
+            "[concat(variables('baseFwPipName'), '-01')]",
+            "[concat(variables('baseFwPipName'), '-02')]"
+        ],
         "hubFwName": "[concat('fw-', parameters('location'))]",
         "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
         "bastionNetworkNsgName": "[concat('nsg-', parameters('location'), '-bastion')]",
@@ -80,7 +85,9 @@
                 "sku": {
                     "name": "PerGB2018"
                 },
-                "retentionInDays": 30
+                "retentionInDays": 30,
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled"
             }
         },
         {
@@ -339,9 +346,9 @@
         {
             "type": "Microsoft.Network/publicIpAddresses",
             "apiVersion": "2020-05-01",
-            "name": "[variables('defaultFwPipName')]",
+            "name": "[variables('hubFwPipNames')[copyIndex()]]",
             "location": "[parameters('location')]",
-            "comments": "This is the public IP for this regional hub's firewall.",
+            "comments": "This is a public IP for this regional hub's firewall. You'll want as many as necessary to avoid SNAT port exhaustion. Typical production hubs may require 20 IPs -- we only deploy three here as a reference.",
             "sku": {
                 "name": "Standard"
             },
@@ -349,6 +356,11 @@
                 "publicIPAllocationMethod": "Static",
                 "idleTimeoutInMinutes": 4,
                 "publicIPAddressVersion": "IPv4"
+            },
+            "copy": {
+                "name": "create-fw-pips",
+                "count": "[length(variables('hubFwPipNames'))]",
+                "mode": "Parallel"
             }
         },
         {
@@ -363,7 +375,7 @@
                 "3"
             ],
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIpAddresses', variables('defaultFwPipName'))]",
+                "create-fw-pips",
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]"
             ],
             "properties": {
@@ -374,16 +386,32 @@
                     "name": "AZFW_VNet",
                     "tier": "Standard"
                 },
-                "threatIntelMode": "Alert",
+                "threatIntelMode": "Deny",
                 "ipConfigurations": [
                     {
-                        "name": "[variables('defaultFwPipName')]",
+                        "name": "[variables('hubFwPipNames')[0]]",
                         "properties": {
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hubVnetName'), 'AzureFirewallSubnet')]"
                             },
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('defaultFwPipName'))]"
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('hubFwPipNames')[0])]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('hubFwPipNames')[1]]",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('hubFwPipNames')[1])]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('hubFwPipNames')[2]]",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('hubFwPipNames')[2])]"
                             }
                         }
                     }
@@ -400,17 +428,18 @@
                             "rules": [
                                 {
                                     "name": "DNS",
+                                    "description": "Consider restricting this to only DNS servers you expect to be used.",
                                     "sourceAddresses": [
                                         "*"
                                     ],
                                     "protocols": [
                                         "UDP"
                                     ],
-                                    "destinationAddresses": [
-                                        "*"
-                                    ],
                                     "destinationPorts": [
                                         "53"
+                                    ],
+                                    "destinationAddresses": [
+                                        "*"
                                     ]
                                 },
                                 {
@@ -428,7 +457,7 @@
                                     "destinationAddresses": [
                                         "*"
                                     ]
-                                },
+                                }/*,
                                 {
                                     "name": "HTTP-and-HTTPS",
                                     "sourceAddresses": [
@@ -437,14 +466,14 @@
                                     "protocols": [
                                         "TCP"
                                     ],
+                                    "destinationAddresses": [
+                                        "*"
+                                    ],
                                     "destinationPorts": [
                                         "80",
                                         "443"
-                                    ],
-                                    "destinationAddresses": [
-                                        "*"
                                     ]
-                                }
+                                }*/
                             ]
                         }
                     }
