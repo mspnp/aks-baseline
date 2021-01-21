@@ -511,8 +511,8 @@
                             "priority": 200,
                             "rules": [
                                 {
-                                    "name": "tunnel-front-pod-tcp",
-                                    "description": "Tunnel front pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers. This can be removed once Konnectivity v4 is released.",
+                                    "name": "tunnelfront-pod-tcp",
+                                    "description": "Tunnelfront pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers. This can be removed once Konnectivity replaces tunnelfront.",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -527,8 +527,8 @@
                                     ]
                                 },
                                 {
-                                    "name": "tunnel-front-pod-udp",
-                                    "description": "Tunnel front pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers. This can be removed once Konnectivity v4 is released.",
+                                    "name": "tunnelfront-pod-udp",
+                                    "description": "Tunnelfront pod to communicate with the tunnel end on the API server.  Technically only needed to our API servers. This can be removed once Konnectivity replaces tunnelfront.",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -683,10 +683,9 @@
                                         }
                                     ],
                                     "targetFqdns": [
-                                        "dc.services.visualstudio.com",
                                         "*.ods.opinsights.azure.com",
                                         "*.oms.opinsights.azure.com",
-                                        "*.monitoring.azure.com"
+                                        "[concat(parameters('location'), '.monitoring.azure.com')]"
                                     ]
                                 },
                                 {
