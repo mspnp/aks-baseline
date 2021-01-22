@@ -70,14 +70,13 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
 1. Deploy Flux.
 
-   > If you used your own fork of this GitHub repo, update the [`flux.yaml`](./cluster-baseline-settings/flux.yaml) file to include reference to your own repo and change the URL below to point to yours as well. Also, since Flux will begin processing the manifests in [`cluster-baseline-settings/`](./cluster-baseline-settings/) now would be the right time push the following changes to your fork:
+   > If you used your own fork of this GitHub repo, update the [`flux.yaml`](./cluster-manifests/cluster-baseline-settings/flux.yaml) file to include reference to your own repo and change the URL below to point to yours as well. Also, since Flux will begin processing the manifests in [`cluster-manifests/`](./cluster-manifests/) now would be the right time push the following changes to your fork:
    >
-   > * update the `<replace-with-an-aad-group-object-id-for-this-cluster-role-binding>` placeholder in [`user-facing-cluster-role-aad-group.yaml`](./cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml) with the Object IDs for the Azure AD group(s) you created for management purposes. If you don't, the manifest will still apply, but AAD integration will not be mapped to your specific AAD configuration.
-   > * Update three `image` manifest references to your container registry instead of the default public container registry. See comment in each file for instructions.
-   >   * update the two `image:` values in [`flux.yaml`](./cluster-baseline-settings/flux.yaml).
-   >   * update the one `image:` values in [`kured.yaml`](./cluster-baseline-settings/kured.yaml).
+   > * Update three `image` references to use your container registry instead of public container registries. See the comment in each file for instructions.
+   >   * update the two `image:` values in [`flux.yaml`](./cluster-manifests/cluster-baseline-settings/flux.yaml).
+   >   * update the one `image:` values in [`kured.yaml`](./cluster-manifests/cluster-baseline-settings/kured.yaml).
 
-   :warning: Deploying the flux configuration using the `flux.yaml` file unmodified from this repo will be deploying your cluster to take dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure _all_ image references are from _your_ container registry (as imported in the prior step) or another that you feel confident relying on.
+   :warning: Deploying the flux configuration using the `flux.yaml` file unmodified from this repo will be deploying your cluster to take dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure _all_ image references your bring to your cluster are from _your_ container registry (as imported in the prior step) or another that you feel confident relying on.
 
    ```bash
    kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/cluster-baseline-settings/flux.yaml

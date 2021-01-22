@@ -20,14 +20,14 @@ Following the steps below you will result in an Azure AD configuration that will
 1. Query and save your Azure subscription's tenant id. _Skip if using the same tenant for both Azure RBAC and Kubernetes RBAC._
 
    ```bash
-   export TENANTID_AZURERBAC=$(az account show --query tenantId -o tsv)
+   TENANTID_AZURERBAC=$(az account show --query tenantId -o tsv)
    ```
 
 1. Playing the role as the Contoso Bicycle Azure AD team, login into the tenant where Kubernetes Cluster API authorization will be associated with. _Skip if using the same tenant for both Azure RBAC and Kubernetes RBAC._
 
    ```bash
    az login -t <Replace-With-ClusterApi-AzureAD-TenantId> --allow-no-subscriptions
-   export TENANTID_K8SRBAC=$(az account show --query tenantId -o tsv)
+   TENANTID_K8SRBAC=$(az account show --query tenantId -o tsv)
    ```
 
 1. Create/identify the Azure AD security group that is going to map to the [Kubernetes Cluster Admin](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) role `cluster-admin`.
@@ -59,13 +59,13 @@ Following the steps below you will result in an Azure AD configuration that will
 
    This object ID will be used later while creating the cluster. This way, once the cluster gets deployed the new group will get the proper Cluster Role bindings in Kubernetes.
 
-1. Set up groups to map into other Kubernetes Roles. (Optional, fork required)
+1. Set up groups to map into other Kubernetes Roles. _Optional, fork required._
 
-   > :book: The team knows there will be more than just cluster admins that need group-managed access to the cluster.  Out of the box, Kubernetes has other roles like _admin_, _edit_, and _view_ which can also be mapped to Azure AD Groups.
+   > :book: The team knows there will be more than just cluster admins that need group-managed access to the cluster.  Out of the box, Kubernetes has other roles like _admin_, _edit_, and _view_ which can also be mapped to Azure AD Groups for use both at namespace and at the cluster level.
 
-   In the [`user-facing-cluster-role-aad-group.yaml` file](./cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml), you can replace the four `<replace-with-an-aad-group-object-id-for-this-cluster-role-binding>` placeholders with corresponding new or existing AD groups that map to their purpose for this cluster.
+   In the [`cluster-rbac.yaml` file](./cluster-manifests/cluster-rbac.yaml) and the various namespaced [`rbac.yaml files`](./cluster-manifests/cluster-baseline-settings/rbac.yaml), you can uncomment what you wish and replace the `<replace-with-an-aad-group-object-id...>` placeholders with corresponding new or existing AD groups that map to their purpose for this cluster or namespace. You do not need to perform this action for this walk through. They are only here for your reference.
 
-   :bulb: Alternatively, you can make these group associations to [Azure RBAC roles](https://docs.microsoft.com/azure/aks/manage-azure-rbac). At the time of this writing, this feature is still in _preview_. This reference implementation has not been validated with that feature.
+   :bulb: Alternatively/Additionally, you can make some of these group associations to [Azure RBAC roles](https://docs.microsoft.com/azure/aks/manage-azure-rbac). At the time of this writing, this feature is still in _preview_. This reference implementation has not been validated with that feature.
 
 ### Next step
 

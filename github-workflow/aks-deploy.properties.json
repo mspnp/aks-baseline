@@ -6,7 +6,7 @@
     "categories": ["AKS"],
     "filePatterns": [
         "cluster-stamp.json$",
-        "cluster-baseline-settings/flux.yaml$",
-        "cluster-baseline-settings/*"
+        "cluster-manifests/cluster-baseline-settings/flux.yaml$",
+        "cluster-manifests/*"
     ]
 }
