@@ -53,7 +53,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    # Import cluster management images hosted in public container registries
    az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME
-   az acr import --source docker.io/fluxcd/flux:1.19.0 -n $ACR_NAME
+   az acr import --source docker.io/fluxcd/flux:1.21.1 -n $ACR_NAME
    az acr import --source docker.io/weaveworks/kured:1.6.1 -n $ACR_NAME
    ```
 

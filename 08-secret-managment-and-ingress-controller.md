@@ -23,24 +23,24 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > Create the Traefik Azure Identity and the Azure Identity Binding to let Azure Active Directory Pod Identity to get tokens on behalf of the Traefik's User Assigned Identity and later on assign them to the Traefik's pod.
 
    ```bash
-   cat <<EOF | kubectl apply -f -
-   apiVersion: "aadpodidentity.k8s.io/v1"
+   cat <<EOF | kubectl create -f -
+   apiVersion: aadpodidentity.k8s.io/v1
    kind: AzureIdentity
    metadata:
-     name: aksic-to-keyvault-identity
+     name: podmi-ingress-controller
      namespace: a0008
    spec:
      type: 0
      resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
      clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
    ---
-   apiVersion: "aadpodidentity.k8s.io/v1"
+   apiVersion: aadpodidentity.k8s.io/v1
    kind: AzureIdentityBinding
    metadata:
-     name: aksic-to-keyvault-identity-binding
+     name: podmi-ingress-controller-binding
      namespace: a0008
    spec:
-     azureIdentity: aksic-to-keyvault-identity
+     azureIdentity: podmi-ingress-controller
      selector: traefik-ingress-controller
    EOF
    ```
@@ -52,7 +52,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > Create a `SecretProviderClass` resource with with your Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
 
    ```bash
-   cat <<EOF | kubectl apply -f -
+   cat <<EOF | kubectl create -f -
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
    kind: SecretProviderClass
    metadata:
@@ -83,7 +83,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
    ```bash
    # Get your ACR cluster name
-   export ACR_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   ACR_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
 
    # Import ingress controller image hosted in public container registries
    az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME
@@ -98,7 +98,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    :warning: Deploying the traefik `traefik.yaml` file unmodified from this repo will be deploying your workload to take dependencies on a public container registry. This is generally okay for learning/testing, but not suitable for production. Before going to production, ensure _all_ image references are from _your_ container registry or another that you feel confident relying on.
 
    ```bash
-   kubectl apply -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik.yaml
+   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik.yaml
    ```
 
 1. Wait for Traefik to be ready
@@ -106,7 +106,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > During Traefik's pod creation process, AAD Pod Identity will need to retrieve token for Azure Key Vault. This process can take time to complete and it's possible for the pod volume mount to fail during this time but the volume mount will eventually succeed. For more information, please refer to the [Pod Identity documentation](https://github.com/Azure/secrets-store-csi-driver-provider-azure/blob/master/docs/pod-identity-mode.md).
 
    ```bash
-   kubectl wait --namespace a0008 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s
+   kubectl wait -n a0008 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s
    ```
 
 ### Next step

@@ -574,7 +574,7 @@
                             "type": "Microsoft.Authorization/roleAssignments",
                             "apiVersion": "2020-04-01-preview",
                             "name": "[guid(variables('vnetIngressServicesSubnetResourceId'), variables('networkContributorRole'), variables('clusterControlPlaneIdentityName'))]",
-                            "scope": "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'), '/subnets/', 'snet-cluster-ingressservices')]",
+                            "scope": "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'), '/subnets/', 'snet-clusteringressservices')]",
                             "properties": {
                                 "roleDefinitionId": "[variables('networkContributorRole')]",
                                 "description": "Allows cluster identity to join ingress resources to this subnet.",
