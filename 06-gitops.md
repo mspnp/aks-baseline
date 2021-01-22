@@ -21,7 +21,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 1. Get the cluster name.
 
    ```bash
-   export AKS_CLUSTER_NAME=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
+   AKS_CLUSTER_NAME=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
    ```
 
 1. Get AKS `kubectl` credentials.
@@ -80,7 +80,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    :warning: Deploying the flux configuration using the `flux.yaml` file unmodified from this repo will be deploying your cluster to take dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure _all_ image references are from _your_ container registry (as imported in the prior step) or another that you feel confident relying on.
 
    ```bash
-   kubectl apply -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/cluster-baseline-settings/flux.yaml
+   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/cluster-baseline-settings/flux.yaml
    ```
 
 1. Wait for Flux to be ready before proceeding.

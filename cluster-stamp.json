@@ -103,9 +103,9 @@
         "networkContributorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7')]",
         "monitoringMetricsPublisherRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb')]",
         "acrPullRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
-        //"managedIdentityOperatorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830')]",
+        "managedIdentityOperatorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830')]",
         "virtualMachineContributorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
-        //"readerRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+        "readerRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
 
         "subRgUniqueString": "[uniqueString('aks', subscription().subscriptionId, resourceGroup().id)]",
 
@@ -1791,26 +1791,11 @@
                 "windowSize": "PT1M"
             }
         },
-        /*{
-            "type": "Microsoft.ContainerService/managedClusters/providers/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
-            "comments": "Grant the Kublet's Managed Identity the metrics publisher role for enhanced monitoring",
-            "name": "[concat(variables('clusterName'), '/Microsoft.Authorization/', guid(resourceGroup().id, variables('clusterName'), 'kubelet', variables('monitoringMetricsPublisherRole')))]",
-            "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
-            ],
-            "properties": {
-                "roleDefinitionId": "[variables('monitoringMetricsPublisherRole')]",
-                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-11-01').identityProfile.kubeletidentity.objectId]",
-                "principalType": "ServicePrincipal"
-            }
-        },
         {
             "type": "Microsoft.ManagedIdentity/userAssignedIdentities/providers/roleAssignments",
-            "name": "[concat('aksic-to-keyvault', '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('managedIdentityOperatorRole')))]",
+            "name": "[concat('podmi-ingress-controller', '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('managedIdentityOperatorRole')))]",
             "apiVersion": "2018-09-01-preview",
-            "comments": "Grant the AKS cluster with Manage Identity Operator role permissions over the cluster resource group",
+            "comments": "Grant the AKS cluster with Manage Identity Operator role permissions over the managed identity used for the ingress controller.  Allows it to be assigned to the underlying VMSS.",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
@@ -1828,14 +1813,14 @@
                 "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'aksic-to-keyvault')]"
             ],
-            "comments": "Grant the AKS cluster ingress controller with reader role permissions over KeyVault",
+            "comments": "Grant the AKS cluster ingress controller pod managed identity with reader role permissions over KeyVault",
             "properties": {
                 "roleDefinitionId": "[variables('readerRole')]",
                 "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','aksic-to-keyvault')).principalId]",
                 "scope": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
                 "principalType": "ServicePrincipal"
             }
-        },*/
+        },
         {
             "type": "Microsoft.Authorization/policyAssignments",
             "name": "[guid('42b8ef37-b724-4e24-bbc8-7a7708edfe00', resourceGroup().name, variables('clusterName'))]",
@@ -1864,18 +1849,14 @@
             "type": "Microsoft.Authorization/policyAssignments",
             "name": "[guid('1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d', resourceGroup().name, variables('clusterName'))]",
             "apiVersion": "2020-03-01",
+            "comments": "Applying the 'Enforce HTTPS ingress in Kubernetes cluster' policy to the resource group.",
             "properties": {
                 "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d', '2020-09-01').displayName)]",
                 "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
                 "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d",
                 "parameters": {
                     "excludedNamespaces": {
-                        "value": [
-                            "kube-system",
-                            "gatekeeper-system",
-                            "azure-arc",
-                            "cluster-baseline-settings"
-                        ]
+                        "value": []
                     },
                     "effect": {
                         "value": "deny"
@@ -1887,18 +1868,14 @@
             "type": "Microsoft.Authorization/policyAssignments",
             "name": "[guid('3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e', resourceGroup().name, variables('clusterName'))]",
             "apiVersion": "2020-03-01",
+            "comments": "Applying the 'Enforce internal load balancers in Kubernetes cluster' policy to the resource group.",
             "properties": {
                 "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e', '2020-09-01').displayName)]",
                 "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
                 "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e",
                 "parameters": {
                     "excludedNamespaces": {
-                        "value": [
-                            "kube-system",
-                            "gatekeeper-system",
-                            "azure-arc",
-                            "cluster-baseline-settings"
-                        ]
+                        "value": []
                     },
                     "effect": {
                         "value": "deny"
@@ -1910,6 +1887,7 @@
             "type": "Microsoft.Authorization/policyAssignments",
             "name": "[guid('df49d893-a74c-421d-bc95-c663042e5b80', resourceGroup().name, variables('clusterName'))]",
             "apiVersion": "2020-03-01",
+            "comments": "Applying the 'Kubernetes cluster containers should run with a read only root file system' policy to the resource group.",
             "properties": {
                 "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/df49d893-a74c-421d-bc95-c663042e5b80', '2020-09-01').displayName)]",
                 "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
@@ -1919,8 +1897,7 @@
                         "value": [
                             "kube-system",
                             "gatekeeper-system",
-                            "azure-arc",
-                            "cluster-baseline-settings"
+                            "azure-arc"
                         ]
                     },
                     "effect": {
@@ -1963,7 +1940,7 @@
             "type": "Microsoft.Authorization/policyAssignments",
             "name": "[guid('febd0533-8e55-448f-b837-bd0e06f16469', resourceGroup().name, variables('clusterName'))]",
             "apiVersion": "2020-03-01",
-            "comments": "Applying the 'Allowed Container Images' regex policy at the resource group level. If all images are pull into your ARC instance, remove the docker.io entries.",
+            "comments": "Applying the 'Allowed Container Images' regex policy at the resource group level. If all images are pull into your ARC instance as described in these instructions you can remove the docker.io entries.",
             "properties": {
                 "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469', '2020-09-01').displayName)]",
                 "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
