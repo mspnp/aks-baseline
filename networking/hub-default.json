@@ -441,39 +441,7 @@
                                     "destinationAddresses": [
                                         "*"
                                     ]
-                                },
-                                {
-                                    "name": "ntp",
-                                    "description": "Network Time Protocol (NTP) time synchronization",
-                                    "sourceAddresses": [
-                                        "*"
-                                    ],
-                                    "protocols": [
-                                        "UDP"
-                                    ],
-                                    "destinationPorts": [
-                                        "123"
-                                    ],
-                                    "destinationAddresses": [
-                                        "*"
-                                    ]
-                                }/*,
-                                {
-                                    "name": "HTTP-and-HTTPS",
-                                    "sourceAddresses": [
-                                        "*"
-                                    ],
-                                    "protocols": [
-                                        "TCP"
-                                    ],
-                                    "destinationAddresses": [
-                                        "*"
-                                    ],
-                                    "destinationPorts": [
-                                        "80",
-                                        "443"
-                                    ]
-                                }*/
+                                }
                             ]
                         }
                     }
