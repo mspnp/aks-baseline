@@ -123,6 +123,9 @@
         "agwName": "[concat('apw-', variables('clusterName'))]",
         "apwResourceId": "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]",
 
+        "acrPrivateDnsZonesName": "privatelink.azurecr.io",
+        "akvPrivateDnsZonesName": "privatelink.vaultcore.azure.net",
+
         "clusterControlPlaneIdentityName": "[concat('mi-', variables('clusterName'), '-controlplane')]",
 
         "keyVaultName": "[concat('kv-', variables('clusterName'))]"
@@ -286,17 +289,70 @@
                     "name": "default",
                     "location": "[parameters('location')]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateEndpoints', 'nodepools-to-akv')]"
+                        "[resourceId('Microsoft.Network/privateEndpoints', 'nodepools-to-akv')]",
+                        "[resourceId('Microsoft.Network/privateDnsZones', variables('akvPrivateDnsZonesName'))]"
                     ],
                     "properties": {
                         "privateDnsZoneConfigs": [
                             {
                                 "name": "privatelink-akv-net",
                                 "properties": {
-                                    "privateDnsZoneId": "[resourceId(variables('vNetResourceGroup'), 'Microsoft.Network/privateDnsZones', 'privatelink.vaultcore.azure.net')]"
+                                    "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('akvPrivateDnsZonesName'))]"
                                 }
                             }
                         ]
+                    }
+                }
+            ]
+        },
+{
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2020-06-01",
+            "name": "[variables('acrPrivateDnsZonesName')]",
+            "location": "global",
+            "comments": "Enabling Azure Container Registry Private Link on vnet.",
+            "properties": {},
+            "resources": [
+                {
+                    "type": "virtualNetworkLinks",
+                    "apiVersion": "2020-06-01",
+                    "name": "[concat('to_', variables('vnetName'))]",
+                    "location": "global",
+                    "comments": "Enabling cluster vnet private zone DNS lookup - used by cluster vnet for direct DNS queries (ones not proxied via the hub).",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
+                    ],
+                    "properties": {
+                        "virtualNetwork": {
+                            "id": "[parameters('targetVnetResourceId')]"
+                        },
+                        "registrationEnabled": false
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2018-09-01",
+            "name": "[variables('akvPrivateDnsZonesName')]",
+            "location": "global",
+            "comments": "Enabling Azure Key Vault Private Link support.",
+            "properties": {},
+            "resources": [
+                {
+                    "name": "[concat('to_', variables('vnetName'))]",
+                    "type": "virtualNetworkLinks",
+                    "apiVersion": "2020-06-01",
+                    "location": "global",
+                    "comments": "Enabling Azure Key Vault Private Link on cluster vnet.",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/privateDnsZones', variables('akvPrivateDnsZonesName'))]"
+                    ],
+                    "properties": {
+                        "virtualNetwork": {
+                            "id": "[parameters('targetVnetResourceId')]"
+                        },
+                        "registrationEnabled": false
                     }
                 }
             ]
@@ -326,8 +382,8 @@
                 },
                 {
                     "type": "virtualNetworkLinks",
-                    "apiVersion": "2018-09-01",
-                    "name": "cluster-dns-link",
+                    "apiVersion": "2020-06-01",
+                    "name": "[concat('to_', variables('vnetName'))]",
                     "location": "global",
                     "dependsOn": [
                         "[resourceId('Microsoft.Network/privateDnsZones', 'aks-ingress.contoso.com')]"
@@ -915,14 +971,15 @@
                     "name": "default",
                     "location": "[parameters('location')]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateEndpoints', 'nodepool-to-acr')]"
+                        "[resourceId('Microsoft.Network/privateEndpoints', 'nodepool-to-acr')]",
+                        "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
                     ],
                     "properties": {
                         "privateDnsZoneConfigs": [
                             {
                                 "name": "privatelink-azurecr-io",
                                 "properties": {
-                                    "privateDnsZoneId": "[resourceId(variables('vNetResourceGroup'), 'Microsoft.Network/privateDnsZones', 'privatelink.azurecr.io')]"
+                                    "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
                                 }
                             }
                         ]
@@ -1068,7 +1125,7 @@
                     "enablePrivateCluster": false
                 },
                 "podIdentityProfile": { 
-                    "enabled": true,
+                    "enabled": false,
                     "userAssignedIdentities": [],
                     "userAssignedIdentityExceptions": []
                 }

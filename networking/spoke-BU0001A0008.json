@@ -45,9 +45,6 @@
         "hubLaWorkspaceResourceId": "[resourceId(variables('hubRgName'), 'Microsoft.OperationalInsights/workspaces', variables('hubLaWorkspaceName'))]",
         "toHubPeeringName": "[concat('spoke-to-', variables('hubNetworkName'))]",
 
-        "acrPrivateDnsZonesName": "privatelink.azurecr.io",
-        "akvPrivateDnsZonesName": "privatelink.vaultcore.azure.net",
-
         "primaryClusterPipName": "[concat('pip-', variables('orgAppId'), '-00')]"
     },
     "resources": [
@@ -361,60 +358,6 @@
                     ]
                 }
             }
-        },
-        {
-            "type": "Microsoft.Network/privateDnsZones",
-            "apiVersion": "2020-06-01",
-            "name": "[variables('acrPrivateDnsZonesName')]",
-            "location": "global",
-            "comments": "Enabling Azure Container Registry Private Link on vnet.",
-            "properties": {},
-            "resources": [
-                {
-                    "type": "virtualNetworkLinks",
-                    "apiVersion": "2020-06-01",
-                    "name": "[concat('to_', variables('clusterVNetName'))]",
-                    "location": "global",
-                    "comments": "Enabling cluster vnet private zone DNS lookup - used by cluster vnet for direct DNS queries (ones not proxied via the hub).",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
-                        "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
-                    ],
-                    "properties": {
-                        "virtualNetwork": {
-                            "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
-                        },
-                        "registrationEnabled": false
-                    }
-                }
-            ]
-        },
-        {
-            "type": "Microsoft.Network/privateDnsZones",
-            "apiVersion": "2018-09-01",
-            "name": "[variables('akvPrivateDnsZonesName')]",
-            "location": "global",
-            "comments": "Enabling Azure Key Vault Private Link support.",
-            "properties": {},
-            "resources": [
-                {
-                    "name": "[concat('to_', variables('clusterVNetName'))]",
-                    "type": "virtualNetworkLinks",
-                    "apiVersion": "2020-06-01",
-                    "location": "global",
-                    "comments": "Enabling Azure Key Vault Private Link on cluster vnet.",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
-                        "[resourceId('Microsoft.Network/privateDnsZones', variables('akvPrivateDnsZonesName'))]"
-                    ],
-                    "properties": {
-                        "virtualNetwork": {
-                            "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
-                        },
-                        "registrationEnabled": false
-                    }
-                }
-            ]
         },
         {
             "type": "Microsoft.Network/publicIpAddresses",
