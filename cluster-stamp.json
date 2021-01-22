@@ -128,7 +128,20 @@
 
         "clusterControlPlaneIdentityName": "[concat('mi-', variables('clusterName'), '-controlplane')]",
 
-        "keyVaultName": "[concat('kv-', variables('clusterName'))]"
+        "keyVaultName": "[concat('kv-', variables('clusterName'))]",
+
+        "policyResourceIdAKSLinuxRestrictive": "/providers/Microsoft.Authorization/policySetDefinitions/42b8ef37-b724-4e24-bbc8-7a7708edfe00",
+        "policyResourceIdEnforceHttpsIngress": "/providers/Microsoft.Authorization/policyDefinitions/1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d",
+        "policyResourceIdEnforceInternalLoadBalancers": "/providers/Microsoft.Authorization/policyDefinitions/3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e",
+        "policyResourceIdRoRootFilesystem": "/providers/Microsoft.Authorization/policyDefinitions/df49d893-a74c-421d-bc95-c663042e5b80",
+        "policyResourceIdEnforceResourceLimits": "/providers/Microsoft.Authorization/policyDefinitions/e345eecc-fa47-480f-9e88-67dcc122b164",
+        "policyResourceIdEnforceImageSource": "/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469",
+        "policyAssignmentNameAKSLinuxRestrictive": "[guid(variables('policyResourceIdAKSLinuxRestrictive'), resourceGroup().name, variables('clusterName'))]",
+        "policyAssignmentNameEnforceHttpsIngress": "[guid(variables('policyResourceIdEnforceHttpsIngress'), resourceGroup().name, variables('clusterName'))]",
+        "policyAssignmentNameEnforceInternalLoadBalancers": "[guid(variables('policyResourceIdEnforceInternalLoadBalancers'), resourceGroup().name, variables('clusterName'))]",
+        "policyAssignmentNameRoRootFilesystem": "[guid(variables('policyResourceIdRoRootFilesystem'), resourceGroup().name, variables('clusterName'))]",
+        "policyAssignmentNameEnforceResourceLimits": "[guid(variables('policyResourceIdEnforceResourceLimits'), resourceGroup().name, variables('clusterName'))]",
+        "policyAssignmentNameEnforceImageSource": "[guid(variables('policyResourceIdEnforceImageSource'), resourceGroup().name, variables('clusterName'))]"
     },
     "resources": [
         {
@@ -995,7 +1008,13 @@
             "dependsOn": [
                 "[resourceId('Microsoft.OperationsManagement/solutions', variables('containerInsightsSolutionName'))]",
                 "[resourceId(variables('vNetResourceGroup'), 'Microsoft.Resources/deployments', 'EnsureClusterIdentityHasRbacToSelfManagedResources')]",
-                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))]"
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))]",
+                "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameAKSLinuxRestrictive'))]",
+                "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceHttpsIngress'))]",
+                "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceImageSource'))]",
+                "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceInternalLoadBalancers'))]",
+                "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceResourceLimits'))]",
+                "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameRoRootFilesystem'))]"
             ],
             "properties": {
                 "kubernetesVersion": "[parameters('kubernetesVersion')]",
@@ -1823,13 +1842,13 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[guid('42b8ef37-b724-4e24-bbc8-7a7708edfe00', resourceGroup().name, variables('clusterName'))]",
             "apiVersion": "2020-03-01",
+            "name": "[variables('policyAssignmentNameAKSLinuxRestrictive')]",
             "comments": "Applying the 'AKS Linux Restrictive' policy to the resource group",
             "properties": {
-                "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policySetDefinitions/42b8ef37-b724-4e24-bbc8-7a7708edfe00', '2020-09-01').displayName)]",
+                "displayName": "[concat('[', variables('clusterName'),'] ', reference(variables('policyResourceIdAKSLinuxRestrictive'), '2020-09-01').displayName)]",
                 "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
-                "policyDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/42b8ef37-b724-4e24-bbc8-7a7708edfe00",
+                "policyDefinitionId": "[variables('policyResourceIdAKSLinuxRestrictive')]",
                 "parameters": {
                     "excludedNamespaces": {
                         "value": [
@@ -1847,13 +1866,13 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[guid('1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d', resourceGroup().name, variables('clusterName'))]",
             "apiVersion": "2020-03-01",
+            "name": "[variables('policyAssignmentNameEnforceHttpsIngress')]",
             "comments": "Applying the 'Enforce HTTPS ingress in Kubernetes cluster' policy to the resource group.",
             "properties": {
-                "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d', '2020-09-01').displayName)]",
+                "displayName": "[concat('[', variables('clusterName'),'] ', reference(variables('policyResourceIdEnforceHttpsIngress'), '2020-09-01').displayName)]",
                 "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
-                "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d",
+                "policyDefinitionId": "[variables('policyResourceIdEnforceHttpsIngress')]",
                 "parameters": {
                     "excludedNamespaces": {
                         "value": []
@@ -1866,13 +1885,13 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[guid('3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e', resourceGroup().name, variables('clusterName'))]",
             "apiVersion": "2020-03-01",
+            "name": "[variables('policyAssignmentNameEnforceInternalLoadBalancers')]",
             "comments": "Applying the 'Enforce internal load balancers in Kubernetes cluster' policy to the resource group.",
             "properties": {
-                "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e', '2020-09-01').displayName)]",
+                "displayName": "[concat('[', variables('clusterName'),'] ', reference(variables('policyResourceIdEnforceInternalLoadBalancers'), '2020-09-01').displayName)]",
                 "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
-                "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e",
+                "policyDefinitionId": "[variables('policyResourceIdEnforceInternalLoadBalancers')]",
                 "parameters": {
                     "excludedNamespaces": {
                         "value": []
@@ -1885,13 +1904,13 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[guid('df49d893-a74c-421d-bc95-c663042e5b80', resourceGroup().name, variables('clusterName'))]",
             "apiVersion": "2020-03-01",
+            "name": "[variables('policyAssignmentNameRoRootFilesystem')]",
             "comments": "Applying the 'Kubernetes cluster containers should run with a read only root file system' policy to the resource group.",
             "properties": {
-                "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/df49d893-a74c-421d-bc95-c663042e5b80', '2020-09-01').displayName)]",
+                "displayName": "[concat('[', variables('clusterName'),'] ', reference(variables('policyResourceIdRoRootFilesystem'), '2020-09-01').displayName)]",
                 "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
-                "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/df49d893-a74c-421d-bc95-c663042e5b80",
+                "policyDefinitionId": "[variables('policyResourceIdRoRootFilesystem')]",
                 "parameters": {
                     "excludedNamespaces": {
                         "value": [
@@ -1908,13 +1927,13 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[guid('e345eecc-fa47-480f-9e88-67dcc122b164', resourceGroup().name, variables('clusterName'))]",
             "apiVersion": "2020-03-01",
+            "name": "[variables('policyAssignmentNameEnforceResourceLimits')]",
             "comments": "Applying the 'Container Images Resource Limits' policy at the resource group level.",
             "properties": {
-                "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/e345eecc-fa47-480f-9e88-67dcc122b164', '2020-09-01').displayName)]",
+                "displayName": "[concat('[', variables('clusterName'),'] ', reference(variables('policyResourceIdEnforceResourceLimits'), '2020-09-01').displayName)]",
                 "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
-                "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/e345eecc-fa47-480f-9e88-67dcc122b164",
+                "policyDefinitionId": "[variables('policyResourceIdEnforceResourceLimits')]",
                 "parameters": {
                     "cpuLimit": {
                         "value": "1000m"
@@ -1938,13 +1957,13 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "name": "[guid('febd0533-8e55-448f-b837-bd0e06f16469', resourceGroup().name, variables('clusterName'))]",
             "apiVersion": "2020-03-01",
+            "name": "[variables('policyAssignmentNameEnforceImageSource')]",
             "comments": "Applying the 'Allowed Container Images' regex policy at the resource group level. If all images are pull into your ARC instance as described in these instructions you can remove the docker.io entries.",
             "properties": {
-                "displayName": "[concat('[', variables('clusterName'),'] ', reference('/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469', '2020-09-01').displayName)]",
+                "displayName": "[concat('[', variables('clusterName'),'] ', reference(variables('policyResourceIdEnforceImageSource'), '2020-09-01').displayName)]",
                 "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
-                "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469",
+                "policyDefinitionId": "[variables('policyResourceIdEnforceImageSource')]",
                 "parameters": {
                     "allowedContainerImagesRegex": {
                         "value": "[concat(variables('defaultAcrName'),'.azurecr.io/.+$|mcr.microsoft.com/.+$|docker.io/fluxcd/flux.+$|docker.io/weaveworks/kured.+$|docker.io/library/.+$')]"
@@ -1972,11 +1991,11 @@
             "type": "string",
             "value": "[variables('agwName')]"
         },
-        "aksIngressControllerUserManageIdentityResourceId": {
+        "aksIngressControllerPodManagedIdentityResourceId": {
             "type": "string",
             "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')]"
         },
-        "aksIngressControllerUserManageIdentityClientId": {
+        "aksIngressControllerPodManagedIdentityClientId": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','podmi-ingress-controller'), '2018-11-30').clientId]"
         },

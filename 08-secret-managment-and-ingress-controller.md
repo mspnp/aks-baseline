@@ -7,8 +7,8 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 1. Get the AKS Ingress Controller Managed Identity details
 
    ```bash
-   export TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
-   export TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
+   export TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
+   export TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
    ```
 
 1. Ensure Flux has created the following namespace
@@ -75,7 +75,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
              objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
              objectAlias: tls.key
              objectType: secret
-       tenantId: "${TENANT_ID}"
+       tenantId: "${TENANTID_AZURERBAC}"
    EOF
    ```
 
