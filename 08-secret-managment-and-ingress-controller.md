@@ -27,7 +27,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    apiVersion: aadpodidentity.k8s.io/v1
    kind: AzureIdentity
    metadata:
-     name: podmi-ingress-controller
+     name: podmi-ingress-controller-identity
      namespace: a0008
    spec:
      type: 0
@@ -40,8 +40,8 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
      name: podmi-ingress-controller-binding
      namespace: a0008
    spec:
-     azureIdentity: podmi-ingress-controller
-     selector: traefik-ingress-controller
+     azureIdentity: podmi-ingress-controller-identity
+     selector: podmi-ingress-controller
    EOF
    ```
 

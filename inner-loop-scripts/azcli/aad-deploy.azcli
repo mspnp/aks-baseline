@@ -22,10 +22,10 @@ az ad group member add --group add-to-bu0001a000800-cluster-admin --member-id $A
 
 # Later on the Azure AD Admin team will review the baseline settings of the Secure AKS cluster
 # and edit the file:
-#  - aks/security-baseline/cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml
+#  - aks/cluster-manifests/cluster-baseline-settings/cluster-rbac.yaml
 # to replace the placeholder:
-#  - <replace-with-an-aad-group-object-id-for-this-cluster-role-binding>
-# using other created Azure AD group object ids that map the CLuster Role Bindings.
+#  - <replace-with-an-aad-group-object-id-for...>
+# using other created Azure AD group object ids that map the (Cluster) Role Bindings.
 # from the manifest file
 
 # At this moment the Azure AD Admin team hands off this process to the networking team
