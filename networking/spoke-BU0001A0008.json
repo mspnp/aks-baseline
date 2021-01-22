@@ -272,9 +272,14 @@
                         "name": "snet-clusteringressservices",
                         "properties": {
                             "addressPrefix": "10.240.4.0/28",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
+                            },
                             "networkSecurityGroup": {
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-aksilbs'))]"
-                            }
+                            },
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Disabled"
                         }
                     },
                     {
@@ -283,7 +288,9 @@
                             "addressPrefix": "10.240.4.16/28",
                             "networkSecurityGroup": {
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-appgw'))]"
-                            }
+                            },
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Disabled"
                         }
                     }
                 ]

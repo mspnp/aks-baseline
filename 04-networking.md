@@ -8,12 +8,22 @@ This reference implementation is split across several resource groups in a singl
 
 ## Expected results
 
-The following three resource groups will be created and populated with networking resources in the steps below.
+### Resource Groups
+
+The following two resource groups will be created and populated with networking resources in the steps below.
 
 | Name                            | Purpose                                   |
 |---------------------------------|-------------------------------------------|
 | rg-enterprise-networking-hubs   | Contains all of your organization's regional hubs. A regional hubs include an egress firewall and Log Analytics for network logging. |
 | rg-enterprise-networking-spokes | Contains all of your organization's regional spokes and related networking resources. All spokes will peer with their regional hub and subnets will egress through the regional firewall in the hub. |
+
+### Resources
+
+* Regional Azure Firewall in Hub Virtual Network
+* Network Spoke for the Cluster
+* Network Peering from the Spoke to the Hub
+* Force Tunnel UDR for Cluster Subnets to the Hub
+* Network Security Groups for all subnets that support them
 
 ## Steps
 

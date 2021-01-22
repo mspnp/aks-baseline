@@ -528,7 +528,7 @@
                                 },
                                 {
                                     "name": "pod-to-api-server",
-                                    "description": "Allows pods to communicate to the Cluster API server (e.g. Flux). Technically only needed to our API servers instead of AzureCloud.EastUS2. Restrict this to your clusters' Cluster API Public IP; done this way for easy of demonstration. Not needed for private clusters.",
+                                    "description": "Allows pods to communicate to the Cluster API server (e.g. Flux). Technically only needed to our API servers instead of AzureCloud.EastUS2. Restrict this to your clusters' Cluster API Public IP; done this way for ease of demonstration. Not needed for private clusters.",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],

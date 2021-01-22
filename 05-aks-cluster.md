@@ -24,7 +24,7 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
    ```
 
 1. Deploy the cluster ARM template.  
-  :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server.  You can limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, a jump box subnet, build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options.  
+  :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server.  You can limit access to the API Server to a set of well-known IP addresses (i.,e. a jump box subnet (connected to by Azure Bastion), build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options.  
 
     **Option 1 - Deploy from the command line**
 
