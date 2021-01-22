@@ -2,6 +2,12 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "backendNames": { 
+            "type": "array",
+            "metadata": {
+                "description": "List of backend apps domain name or public ips which will be part of the backend pool"
+            }
+         }
     },
     "variables": {
         "subRgUniqueString": "[uniqueString('fd', subscription().subscriptionId, resourceGroup().id)]",
@@ -19,24 +25,18 @@
                     {
                         "name": "MultiClusterBackendPool",
                         "properties": {
-                            "backends": [
-                                {
-                                    "address": "20.62.143.103",
-                                    "httpPort": 80,
-                                    "httpsPort": 443,
-                                    "priority": 1,
-                                    "weight": 50,
-                                    "backendHostHeader": "[concat(variables('frontDoorName'), '.contoso.com')]",
-                                    "enabledState": "Enabled"
-                                },
-                                {
-                                    "address": "40.88.195.235",
-                                    "httpPort": 80,
-                                    "httpsPort": 443,
-                                    "priority": 1,
-                                    "weight": 50,
-                                    "backendHostHeader": "[concat(variables('frontDoorName'), '.contoso.com')]",
-                                    "enabledState": "Enabled"
+                            "copy": [
+                               {
+                                    "name": "backends",
+                                    "count": "[length(parameters('backendNames'))]",
+                                    "input": {
+                                        "address": "[parameters('backendNames')[copyIndex('backends')]]",
+                                        "httpPort": 80,
+                                        "httpsPort": 443,
+                                        "priority": 1,
+                                        "weight": 50,
+                                        "enabledState": "Enabled"
+                                    }
                                 }
                             ],
                             "healthProbeSettings": {
@@ -58,7 +58,7 @@
                             "protocol": "Http",
                             "resourceState": "Enabled",
                             "enabledState": "Enabled",
-                            "healthProbeMethod": "Get"
+                            "healthProbeMethod": "HEAD"
                         }
                     }
                 ],
@@ -94,7 +94,8 @@
                                 }
                             ],
                             "acceptedProtocols": [
-                                "Http"
+                                "Http",
+                                "Https"
                             ],
                             "patternsToMatch": [
                                 "/*"
