@@ -244,7 +244,6 @@
                         "recoveryLevel": "Purgeable"
                     }
                 },
-
                 {
                     "name": "Microsoft.Insights/default",
                     "type": "providers/diagnosticSettings",
@@ -267,6 +266,21 @@
                                 "enabled": true
                             }
                         ]
+                    }
+                },
+                {
+                    "type": "providers/roleAssignments",
+                    "apiVersion": "2018-09-01-preview",
+                    "name": "[concat('Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('readerRole')))]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')]"
+                    ],
+                    "comments": "Grant the AKS cluster ingress controller pod managed identity with reader role permissions over Key Vault; paired with the Access Policy, this allows our ingress controller to pull certificates.",
+                    "properties": {
+                        "roleDefinitionId": "[variables('readerRole')]",
+                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')).principalId]",
+                        "principalType": "ServicePrincipal"
                     }
                 }
             ]
@@ -353,9 +367,9 @@
             "properties": {},
             "resources": [
                 {
-                    "name": "[concat('to_', variables('vnetName'))]",
                     "type": "virtualNetworkLinks",
                     "apiVersion": "2020-06-01",
+                    "name": "[concat('to_', variables('vnetName'))]",
                     "location": "global",
                     "comments": "Enabling Azure Key Vault Private Link on cluster vnet.",
                     "dependsOn": [
@@ -634,7 +648,7 @@
                             "scope": "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'), '/subnets/', 'snet-clusternodes')]",
                             "properties": {
                                 "roleDefinitionId": "[variables('networkContributorRole')]",
-                                "description": "Allows cluster identity to join the nodepool to this subnet.",
+                                "description": "Allows cluster identity to join the nodepool vmss resources to this subnet.",
                                 "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))).principalId]",
                                 "principalType": "ServicePrincipal"
                             }
@@ -646,7 +660,7 @@
                             "scope": "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'), '/subnets/', 'snet-clusteringressservices')]",
                             "properties": {
                                 "roleDefinitionId": "[variables('networkContributorRole')]",
-                                "description": "Allows cluster identity to join ingress resources to this subnet.",
+                                "description": "Allows cluster identity to join load balancers (ingress resources) to this subnet.",
                                 "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))).principalId]",
                                 "principalType": "ServicePrincipal"
                             }
@@ -1009,12 +1023,12 @@
                 "[resourceId('Microsoft.OperationsManagement/solutions', variables('containerInsightsSolutionName'))]",
                 "[resourceId(variables('vNetResourceGroup'), 'Microsoft.Resources/deployments', 'EnsureClusterIdentityHasRbacToSelfManagedResources')]",
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))]",
-                "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameAKSLinuxRestrictive'))]",
-                "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceHttpsIngress'))]",
-                "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceImageSource'))]",
-                "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceInternalLoadBalancers'))]",
-                "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceResourceLimits'))]",
-                "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameRoRootFilesystem'))]"
+                "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameAKSLinuxRestrictive'))]",
+                "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceHttpsIngress'))]",
+                "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceImageSource'))]",
+                "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceInternalLoadBalancers'))]",
+                "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceResourceLimits'))]",
+                "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameRoRootFilesystem'))]"
             ],
             "properties": {
                 "kubernetesVersion": "[parameters('kubernetesVersion')]",
@@ -1821,22 +1835,6 @@
             "properties": {
                 "roleDefinitionId": "[variables('managedIdentityOperatorRole')]",
                 "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-11-01').identityProfile.kubeletidentity.objectId]",
-                "principalType": "ServicePrincipal"
-            }
-        },
-        {
-            "type": "Microsoft.KeyVault/vaults/providers/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
-            "name": "[concat(variables('keyVaultName'), '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('readerRole')))]",
-            "dependsOn": [
-                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
-                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'aksic-to-keyvault')]"
-            ],
-            "comments": "Grant the AKS cluster ingress controller pod managed identity with reader role permissions over KeyVault",
-            "properties": {
-                "roleDefinitionId": "[variables('readerRole')]",
-                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','aksic-to-keyvault')).principalId]",
-                "scope": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
                 "principalType": "ServicePrincipal"
             }
         },

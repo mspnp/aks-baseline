@@ -59,7 +59,7 @@ The following two resource groups will be created and populated with networking 
    >
    > The networking team has decided that `10.200.[0-9].0` will be where all regional hubs are homed on their organization's network space. The `eastus2` hub (created below) will be `10.200.0.0/24`.
    >
-   > Note: Azure Bastion and the On-Prem Connectivity is not actually deployed in this reference implementation, just the subnets for them are. Also, since this reference implementation is expected to be deployed isolated from existing infrastructure; these IP addresses should not come in conflict with any existing networking you have, even if those IP addresses overlap. However, if you need to join existing networks, even for this walk through, you'll need to adjust the IP space as per your requirements as to not conflict in the reference ARM templates.
+   > Note: Azure Bastion and the on-prem connectivity is not actually deployed in this reference implementation, just the subnets for them are. Also, since this reference implementation is expected to be deployed isolated from existing infrastructure; these IP addresses should not come in conflict with any existing networking you have, even if those IP addresses overlap. However, if you need to join existing networks, even for this walk through, you'll need to adjust the IP space as per your requirements as to not conflict in the reference ARM templates.
 
    ```bash
    # [This takes about five minutes to run.]

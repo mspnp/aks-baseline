@@ -64,7 +64,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
      provider: azure
      parameters:
        usePodIdentity: "true"
-       keyvaultName: "${KEYVAULT_NAME}"
+       keyvaultName: $KEYVAULT_NAME
        objects:  |
          array:
            - |
@@ -75,17 +75,17 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
              objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
              objectAlias: tls.key
              objectType: secret
-       tenantId: "${TENANTID_AZURERBAC}"
+       tenantId: $TENANTID_AZURERBAC
    EOF
    ```
 
-1. Import the Traefik container image to your container registry
+1. Import the Traefik container image to your container registry.
 
    > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for an application that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
 
    ```bash
    # Get your ACR cluster name
-   ACR_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   ACR_NAME=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
 
    # Import ingress controller image hosted in public container registries
    az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME

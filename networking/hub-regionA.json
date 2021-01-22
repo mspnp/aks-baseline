@@ -453,7 +453,7 @@
                             "rules": [
                                 {
                                     "name": "DNS",
-                                    "description": "Consider restricting this to only DNS servers you expect to be used.",
+                                    "description": "Consider restricting this to only DNS servers you expect to be used by spokes of this hub.",
                                     "sourceAddresses": [
                                         "*"
                                     ],
