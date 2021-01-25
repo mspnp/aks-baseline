@@ -37,7 +37,7 @@ Your workload is placed behind a Web Application Firewall (WAF), which has rules
 
 1. Browse to the site with the following appended to the URL: `?sql=DELETE%20FROM` (e.g. <https://bicycle.contoso.com/?sql=DELETE%20FROM>).
 1. Observe that your request was blocked by Application Gateway's WAF rules and your workload never saw this potentially dangerous request.
-1. Blocked requests (along with other gateway data) will be visable in the attached Log Analytics workspace. Execute the following query to show WAF logs, for example.
+1. Blocked requests (along with other gateway data) will be visible in the attached Log Analytics workspace. Execute the following query to show WAF logs, for example.
 
    ```
    AzureDiagnostics

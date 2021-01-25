@@ -1,5 +1,8 @@
-kind: ConfigMap
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: container-azm-ms-agentconfig
+  namespace: kube-system
 data:
   # https://raw.githubusercontent.com/microsoft/Docker-Provider/ci_prod/kubernetes/container-azm-ms-agentconfig.yaml
   schema-version: v1
@@ -40,6 +43,3 @@ data:
     [integrations.azure_network_policy_manager]
         collect_basic_metrics = true
         collect_advanced_metrics = false
-metadata:
-  name: container-azm-ms-agentconfig
-  namespace: kube-system

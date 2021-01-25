@@ -10,7 +10,7 @@ This regional VNet Hub (Shared) is meant to hold the following subnets:
 
 * [Azure Firewall subnet]
 * [Gateway subnet]
-* [Azure Bastion subnet]
+* [Azure Bastion subnet], with reference NSG in place
 
 > Note: For more information about this topology, you can read more at [Azure Hub-Spoke topology].
 
@@ -23,6 +23,7 @@ This VNet Spoke is meant to hold the following subnets:
 * [AKS System Nodepool] and [AKS User Nodepool] subnet
 * [AKS Internal Load Balancer subnet]
 * [Azure Application Gateway subnet][Gateway subnet]
+* All with basic NSGs around each
 
 In the future, this VNet might hold more subnets like [ACI Provider instance] subnets, more [AKS Nodepools subnets], and more.
 

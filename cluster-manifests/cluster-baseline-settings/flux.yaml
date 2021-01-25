@@ -62,15 +62,16 @@ spec:
       - name: git-key
         secret:
           secretName: flux-git-deploy
+          defaultMode: 0400
       containers:
       - name: flux
         # PRODUCTION READINESS CHANGE REQUIRED
         # This image should be sourced from a non-public container registry, such as the
         # one deployed along side of this reference implementation.
-        # az acr import --source docker.io/fluxcd/flux:1.19.0 -n <your-acr-instance-name>
+        # az acr import --source docker.io/fluxcd/flux:1.21.1 -n <your-acr-instance-name>
         # and then set this to
-        # image: <your-acr-instance-name>.azurecr.io/fluxcd/flux:1.19.0
-        image: docker.io/fluxcd/flux:1.19.0
+        # image: <your-acr-instance-name>.azurecr.io/fluxcd/flux:1.21.1
+        image: docker.io/fluxcd/flux:1.21.1
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -106,7 +107,7 @@ spec:
         args:
         - --git-url=https://github.com/mspnp/aks-secure-baseline.git
         - --git-branch=main
-        - --git-path=cluster-baseline-settings
+        - --git-path=cluster-manifests
         # this configuration prevents flux from syncing changes from your cluster to the git repo. If two way sync is required, please take a look at  https://docs.fluxcd.io/en/1.19.0/tutorials/get-started/#giving-write-access
         - --git-readonly
         - --sync-state=secret
@@ -151,7 +152,7 @@ spec:
         # az acr import --source docker.io/library/memcached:1.5.20 -n <your-acr-instance-name>
         # and then set this to
         # image: <your-acr-instance-name>.azurecr.io/library/memcached:1.5.20
-        image: library/memcached:1.5.20
+        image: docker.io/library/memcached:1.5.20
         imagePullPolicy: IfNotPresent
         resources:
           requests:

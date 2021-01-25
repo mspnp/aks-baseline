@@ -7,17 +7,11 @@
 #    ├── .github
 #    │   ├── workflows
 #    │   │   └── aks-deploy.yaml
-#    ├── cluster-baseline-settings
-#    │   ├── aad-pod-identity
-#    │   │   └── aad-pod-identity.yaml
-#    │   ├── akv-secrets-store-csi.yaml
-#    │   ├── container-azm-ms-agentconfig.yaml
-#    │   ├── flux.yaml
-#    │   ├── ingress-network-policy.yaml
-#    │   ├── kured-1.4.0-dockerhub.yaml
-#    │   ├── ns-a0008.yaml
-#    │   ├── ns-cluster-baseline-settings.yaml
-#    │   └── user-facing-cluster-role-aad-group.yaml
+#    ├── cluster-manifests
+#    │   ├── a0008/*
+#    │   ├── cluster-baseline-settings/*
+#    │   ├── kube-system/*
+#    │   ├── cluster-rbac.yaml
 #    └── cluster-stamp.json
 #
 # 2. Ensure you have followed the prior sections before deploying this AKS cluster. This way, you will be capable of setting:
@@ -81,14 +75,14 @@ jobs:
               location=${{ env.AKS_LOCATION }} \
               geoRedundancyLocation=${{ env.GEO_REDUNDANCY_LOCATION }} \
               targetVnetResourceId=${{ env.TARGET_VNET_RESOURCE_ID }} \
-              k8sRbacAadProfileTenantId=${{ env.K8S_RBAC_AAD_PROFILE_TENANTID }} \
-              k8sRbacAadProfileAdminGroupObjectID=${{ env.K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID }} \
+              k8sControlPlaneAuthorizationTenantId=${{ env.K8S_RBAC_AAD_PROFILE_TENANTID }} \
+              clusterAdminAadGroupObjectId=${{ env.K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID }} \
               clusterAuthorizedIPRanges=${{ env.CLUSTER_AUTHORIZED_IP_RANGES}} \
               appGatewayListenerCertificate=${{ secrets.APP_GATEWAY_LISTENER_CERTIFICATE_BASE64 }} \
               aksIngressControllerCertificate=${{ secrets.AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 }}
 
           echo "::set-output name=name::$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
-        azcliversion: 2.6.0
+        azcliversion: 2.17.1
 
     # Set the AKS cluster context
     - name: Set the AKS cluster context
@@ -106,5 +100,5 @@ jobs:
       with:
         namespace: 'cluster-baseline-settings'
         manifests: |
-          cluster-baseline-settings/ns-cluster-baseline-settings.yaml
-          cluster-baseline-settings/flux.yaml
+          cluster-manifests/cluster-baseline-settings/ns-cluster-baseline-settings.yaml
+          cluster-manifests/cluster-baseline-settings/flux.yaml

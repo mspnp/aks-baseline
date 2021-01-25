@@ -51,16 +51,16 @@ az deployment group create --resource-group "${RGNAMECLUSTER}" --template-file "
                location=$LOCATION \
                geoRedundancyLocation=$GEOREDUNDANCY_LOCATION \
                targetVnetResourceId=$TARGET_VNET_RESOURCE_ID \
-               k8sRbacAadProfileAdminGroupObjectID=$K8S_RBAC_AAD_ADMIN_GROUP_OBJECTID \
-               k8sRbacAadProfileTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID \
+               clusterAdminAadGroupObjectId=$K8S_RBAC_AAD_ADMIN_GROUP_OBJECTID \
+               k8sControlPlaneAuthorizationTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID \
                appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE \
                aksIngressControllerCertificate=$AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64
 
 AKS_CLUSTER_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.aksClusterName.value -o tsv)
-TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
-TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
-KEYVAULT_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001  --query properties.outputs.keyVaultName.value -o tsv)
-APPGW_PUBLIC_IP=$(az deployment group show -g $RGNAMESPOKES -n  spoke-0001 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
+TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
+TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
+KEYVAULT_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.keyVaultName.value -o tsv)
+APPGW_PUBLIC_IP=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
 
 az keyvault set-policy --certificate-permissions import get -n $KEYVAULT_NAME --upn $(az account show --query user.name -o tsv)
 
@@ -69,7 +69,7 @@ az keyvault certificate import --vault-name $KEYVAULT_NAME -f traefik-ingress-in
 
 az aks get-credentials -n ${AKS_CLUSTER_NAME} -g ${RGNAMECLUSTER} --admin
 kubectl create namespace cluster-baseline-settings
-kubectl apply -f ../../cluster-baseline-settings/flux.yaml
+kubectl apply -f ../../cluster-manifests/cluster-baseline-settings/flux.yaml
 kubectl wait --namespace cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s
 
 echo ""
@@ -108,21 +108,21 @@ cat <<EOF | kubectl apply -f -
 apiVersion: "aadpodidentity.k8s.io/v1"
 kind: AzureIdentity
 metadata:
-  name: aksic-to-keyvault-identity
+  name: podmi-ingress-controller-identity
   namespace: a0008
 spec:
   type: 0
   resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
   clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
 ---
-apiVersion: "aadpodidentity.k8s.io/v1"
+apiVersion: aadpodidentity.k8s.io/v1
 kind: AzureIdentityBinding
 metadata:
-  name: aksic-to-keyvault-identity-binding
+  name: podmi-ingress-controller-binding
   namespace: a0008
 spec:
-  azureIdentity: aksic-to-keyvault-identity
-  selector: traefik-ingress-controller
+  azureIdentity: podmi-ingress-controller-identity
+  selector: podmi-ingress-controller
 EOF
 
 cat <<EOF | kubectl apply -f -

@@ -182,7 +182,7 @@ metadata:
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
-    aadpodidbinding: traefik-ingress-controller
+    aadpodidbinding: podmi-ingress-controller
 spec:
   replicas: 2
   selector:
@@ -202,7 +202,7 @@ spec:
       labels:
         app.kubernetes.io/name: traefik-ingress-ilb
         app.kubernetes.io/instance: traefik-ingress-ilb
-        aadpodidbinding: traefik-ingress-controller
+        aadpodidbinding: podmi-ingress-controller
     spec:
       hostNetwork: false
       serviceAccountName: traefik-ingress-controller
@@ -221,10 +221,10 @@ spec:
         # PRODUCTION READINESS CHANGE REQUIRED
         # This image should be sourced from a non-public container registry, such as the
         # one deployed along side of this reference implementation.
-        # az acr import --source registry.hub.docker.com/library/traefik:2.2.1 -n <your-acr-instance-name>
+        # az acr import --source docker.io/library/traefik:2.2.1 -n <your-acr-instance-name>
         # and then set this to
         # image: <your-acr-instance-name>.azurecr.io/library/traefik:2.2.1
-      - image: registry.hub.docker.com/library/traefik:2.2.1
+      - image: docker.io/library/traefik:2.2.1
         name: traefik-ingress-controller
         resources:
           requests:
@@ -289,7 +289,7 @@ spec:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
-              secretProviderClass: "aks-ingress-contoso-com-tls-secret-csi-akv"
+              secretProviderClass: aks-ingress-contoso-com-tls-secret-csi-akv
         - name: data
           emptyDir: {}
       nodeSelector:
