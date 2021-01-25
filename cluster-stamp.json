@@ -12,7 +12,7 @@
         "clusterAdminAadGroupObjectId": {
             "type": "string",
             "metadata": {
-                "description": "Azure AD Group in the identified tenant that will be granted the highly prividledged cluster-admin role."
+                "description": "Azure AD Group in the identified tenant that will be granted the highly privileged cluster-admin role."
             }
         },
         "k8sControlPlaneAuthorizationTenantId": {
