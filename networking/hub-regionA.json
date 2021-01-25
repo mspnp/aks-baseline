@@ -746,6 +746,8 @@
                                         }
                                     ],
                                     "targetFqdns": [
+                                        "*.docker.com",
+                                        "*.docker.io",
                                         "docker.io",
                                         "ghcr.io",
                                         "github-production-container-registry.s3.amazonaws.com"
