@@ -4,21 +4,21 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
 ## Steps
 
-1. Get the AKS Ingress Controller Managed Identity details
+1. Get the AKS Ingress Controller Managed Identity details.
 
    ```bash
    export TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
    export TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
    ```
 
-1. Ensure Flux has created the following namespace
+1. Ensure Flux has created the following namespace.
 
    ```bash
    # press Ctrl-C once you receive a successful response
    kubectl get ns a0008 -w
    ```
 
-1. Create Traefik's Azure Managed Identity binding
+1. Create Traefik's Azure Managed Identity binding.
 
    > Create the Traefik Azure Identity and the Azure Identity Binding to let Azure Active Directory Pod Identity to get tokens on behalf of the Traefik's User Assigned Identity and later on assign them to the Traefik's pod.
 
@@ -45,7 +45,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    EOF
    ```
 
-1. Create the Traefik's Secret Provider Class resource
+1. Create the Traefik's Secret Provider Class resource.
 
    > The Ingress Controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
    >
@@ -91,7 +91,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME
    ```
 
-1. Install the Traefik Ingress Controller
+1. Install the Traefik Ingress Controller.
 
    > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
 
@@ -103,7 +103,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik.yaml
    ```
 
-1. Wait for Traefik to be ready
+1. Wait for Traefik to be ready.
 
    > During Traefik's pod creation process, AAD Pod Identity will need to retrieve token for Azure Key Vault. This process can take time to complete and it's possible for the pod volume mount to fail during this time but the volume mount will eventually succeed. For more information, please refer to the [Pod Identity documentation](https://github.com/Azure/secrets-store-csi-driver-provider-azure/blob/master/docs/pod-identity-mode.md).
 

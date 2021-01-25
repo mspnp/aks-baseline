@@ -59,7 +59,7 @@ The following two resource groups will be created and populated with networking 
    >
    > The networking team has decided that `10.200.[0-9].0` will be where all regional hubs are homed on their organization's network space. The `eastus2` hub (created below) will be `10.200.0.0/24`.
    >
-   > Note: Azure Bastion and the on-prem connectivity is not actually deployed in this reference implementation, just the subnets for them are. Also, since this reference implementation is expected to be deployed isolated from existing infrastructure; these IP addresses should not come in conflict with any existing networking you have, even if those IP addresses overlap. However, if you need to join existing networks, even for this walk through, you'll need to adjust the IP space as per your requirements as to not conflict in the reference ARM templates.
+   > Note: The subnets for Azure Bastion and on-prem connectivity are deployed in this reference architecture, but the resources are not deployed. Since this reference implementation is expected to be deployed isolated from existing infrastructure; these IP addresses should not conflict with any existing networking you have, even if those IP addresses overlap. If you need to connect the reference implementation to existing networks, you will need to adjust the IP space as per your requirements as to not conflict in the reference ARM templates.
 
    ```bash
    # [This takes about five minutes to run.]
@@ -72,7 +72,7 @@ The following two resource groups will be created and populated with networking 
 
 1. Create the spoke that will be home to the AKS cluster and its adjacent resources.
 
-   > :book:  The networking team receives a request from an app team in business unit (BU) 0001 for a network spoke to house their new AKS-based application (Internally know as Application ID: A0008). The network team talks with the app team to understand their requirements and aligns those needs with Microsoft's best practices for a secure AKS cluster deployment. They capture those specific requirements and deploy the spoke, aligning to those specs, and connecting it to the matching regional hub.
+   > :book: The networking team receives a request from an app team in business unit (BU) 0001 for a network spoke to house their new AKS-based application (Internally know as Application ID: A0008). The network team talks with the app team to understand their requirements and aligns those needs with Microsoft's best practices for a secure AKS cluster deployment. They capture those specific requirements and deploy the spoke, aligning to those specs, and connecting it to the matching regional hub.
 
    ```bash
    RESOURCEID_VNET_HUB=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-default --query properties.outputs.hubVnetId.value -o tsv)
