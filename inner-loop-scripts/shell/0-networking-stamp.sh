@@ -12,6 +12,8 @@ RGNAMECLUSTER2=$5
 TENANT_ID=$6
 MAIN_SUBSCRIPTION=$7
 RGNAME_FRONT_DOOR=$8
+CLUSTER_SUBDOMAIN1=$9
+CLUSTER_SUBDOMAIN2=${10}
 
 AKS_ADMIN_NAME=bu0001a0042-admin
 AKS_ENDUSER_NAME=aksuser
@@ -28,6 +30,8 @@ __usage="
     [-t TENANT_ID]
     [-p RGNAMESPOKES]
     [-f RGNAME_FRONT_DOOR]
+    [-m CLUSTER_SUBDOMAIN1]
+    [-n CLUSTER_SUBDOMAIN2]
 "
 
 usage() {
@@ -36,7 +40,7 @@ usage() {
     exit 1
 }
 
-while getopts "c:d:h:l:s:t:p:f:" opt; do
+while getopts "c:d:h:l:s:t:p:f:m:n:" opt; do
     case $opt in
     c)  RGNAMECLUSTER1="${OPTARG}";;
     d)  RGNAMECLUSTER2="${OPTARG}";;
@@ -46,6 +50,8 @@ while getopts "c:d:h:l:s:t:p:f:" opt; do
     t)  TENANT_ID="${OPTARG}";;
     p)  RGNAMESPOKES="${OPTARG}";;
     f)  RGNAME_FRONT_DOOR="${OPTARG}";;
+    m)  CLUSTER_SUBDOMAIN1="${OPTARG}";;
+    n)  CLUSTER_SUBDOMAIN2="${OPTARG}";;
     *)  usage;;
     esac
 done
@@ -99,7 +105,8 @@ az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "
           clusterVNetAddressPrefix="10.243.0.0/16" \
           clusterNodesSubnetAddressPrefix="10.243.0.0/22" \
           clusterIngressServicesSubnetAdressPrefix="10.243.4.0/28" \
-          applicationGatewaySubnetAddressPrefix="10.243.4.16/28"
+          applicationGatewaySubnetAddressPrefix="10.243.4.16/28" \
+          subdomainName=$CLUSTER_SUBDOMAIN1
 
 TARGET_VNET_RESOURCE_ID1=$(az deployment group show -g $RGNAMESPOKES -n spoke-BU0001A0042-03 --query properties.outputs.clusterVnetResourceId.value -o tsv)
 
@@ -112,7 +119,8 @@ az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "
           clusterVNetAddressPrefix="10.244.0.0/16" \
           clusterNodesSubnetAddressPrefix="10.244.0.0/22" \
           clusterIngressServicesSubnetAdressPrefix="10.244.4.0/28" \
-          applicationGatewaySubnetAddressPrefix="10.244.4.16/28"
+          applicationGatewaySubnetAddressPrefix="10.244.4.16/28" \
+          subdomainName=$CLUSTER_SUBDOMAIN2
 
 TARGET_VNET_RESOURCE_ID2=$(az deployment group show -g $RGNAMESPOKES -n spoke-BU0001A0042-04 --query properties.outputs.clusterVnetResourceId.value -o tsv)
 
@@ -136,7 +144,7 @@ cat << EOF
 NEXT STEPS
 ---- -----
 
-./1-cluster-stamp.sh $LOCATION $RGNAMECLUSTER1 $RGNAMECLUSTER2 $RGNAMESPOKES $TENANT_ID $MAIN_SUBSCRIPTION $TARGET_VNET_RESOURCE_ID1 $TARGET_VNET_RESOURCE_ID2 $K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID $K8S_RBAC_AAD_PROFILE_TENANTID $AKS_ENDUSER_NAME $AKS_ENDUSER_PASSWORD $RGNAME_FRONT_DOOR
+./1-cluster-stamp.sh $LOCATION $RGNAMECLUSTER1 $RGNAMECLUSTER2 $RGNAMESPOKES $TENANT_ID $MAIN_SUBSCRIPTION $TARGET_VNET_RESOURCE_ID1 $TARGET_VNET_RESOURCE_ID2 $K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID $K8S_RBAC_AAD_PROFILE_TENANTID $AKS_ENDUSER_NAME $AKS_ENDUSER_PASSWORD $RGNAME_FRONT_DOOR $CLUSTER_SUBDOMAIN1 $CLUSTER_SUBDOMAIN2
 
 EOF
 

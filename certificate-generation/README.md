@@ -12,7 +12,7 @@ LOCATION=eastus2
 DOMAIN_NAME=myname
 
 az group create --name "${RGNAME}" --location "${LOCATION}"
-az deployment group create -g "${RGNAME}" --template-file "resources-stamp.json"  --name "cert-0001" --parameters location=$LOCATION domain_name=$DOMAIN_NAME
+az deployment group create -g "${RGNAME}" --template-file "resources-stamp.json"  --name "cert-0001" --parameters location=$LOCATION subdomainName=$DOMAIN_NAME
 FQDN=$(az deployment group show -g $RGNAME -n cert-0001 --query properties.outputs.fqdn.value -o tsv)
 
 3- Add a container and a file on azure blob
@@ -49,12 +49,12 @@ sudo certbot certonly --email your@mail.com -d $FQDN --agree-tos --manual
 
 //follow instruction presenting by cerbot.
 // create a file with that name and content
-//upload de file , for example
+//upload de file , for example (or azure portal)
 az storage blob upload \
  --account-name $DOMAIN_NAME \
  --container-name verificationdata \
- --name yuV9ui3A1LEdSMpMmxhkapiKRctuL-C0RUp444QjDfs \
- --file ./yuV9ui3A1LEdSMpMmxhkapiKRctuL-C0RUp444QjDfs \
+ --name 4FCuByAUW3weHUCHHzZKEQLFUQTJIpsULlfHvBthUNo.txt \
+ --file ./4FCuByAUW3weHUCHHzZKEQLFUQTJIpsULlfHvBthUNo.txt \
  --auth-mode key
 
 //testing
@@ -72,8 +72,7 @@ sudo cp /etc/letsencrypt/live/$FQDN/cert.pem ./files
 sudo cp /etc/letsencrypt/live/$FQDN/chain.pem ./files
 cd files
 
-sudo openssl pkcs12 -export -out $DOMAIN_NAME.pfx -inkey privkey.pem -in cert.pem -certfile chain.pem
-//add password
+openssl pkcs12 -export -out $DOMAIN_NAME.pfx -inkey privkey.pem -in cert.pem -certfile chain.pem -passout pass:
 
 You will have your pfx on the directory
 

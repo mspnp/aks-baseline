@@ -57,7 +57,7 @@ az login
 az account set -s $MAIN_SUBSCRIPTION
 
 echo deleting $RGNAME_FRONT_DOOR
-#az group delete -n $RGNAME_FRONT_DOOR --yes
+az group delete -n $RGNAME_FRONT_DOOR --yes
 
 echo deleting $RGNAMECLUSTER_BU0001A0042_03
 az group delete -n $RGNAMECLUSTER_BU0001A0042_03 --yes

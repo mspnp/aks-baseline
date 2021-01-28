@@ -17,11 +17,12 @@ K8S_RBAC_AAD_PROFILE_TENANTID=${10}
 AKS_ENDUSER_NAME=${11}
 AKS_ENDUSER_PASSWORD=${12}
 RGNAME_FRONT_DOOR=${13}
+CLUSTER_SUBDOMAIN1=${14}
+CLUSTER_SUBDOMAIN2=${15}
 
 # Used for services that support native geo-redundancy (Azure Container Registry)
 # Ideally should be the paired region of $LOCATION
 GEOREDUNDANCY_LOCATION=centralus
-APPGW_APP_URL=bicycle.contoso.com
 
 az login
 az account set -s $MAIN_SUBSCRIPTION
@@ -30,13 +31,10 @@ echo ""
 echo "# Deploying AKS Cluster"
 echo ""
 
-# App Gateway Certificate
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -out appgw.crt \
-        -keyout appgw.key \
-        -subj "/CN=bicycle.contoso.com/O=Contoso Bicycle"
-openssl pkcs12 -export -out appgw.pfx -in appgw.crt -inkey appgw.key -passout pass:
-APP_GATEWAY_LISTENER_CERTIFICATE=$(cat appgw.pfx | base64 | tr -d '\n')
+# App Gateway Certificate. These files should be provided in advance
+APP_GATEWAY_LISTENER_CERTIFICATE3=$(cat ${CLUSTER_SUBDOMAIN1}.pfx | base64 | tr -d '\n')
+APP_GATEWAY_LISTENER_CERTIFICATE4=$(cat ${CLUSTER_SUBDOMAIN2}.pfx | base64 | tr -d '\n')
+
 
 # AKS Ingress Controller Certificate
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
@@ -55,16 +53,17 @@ az deployment group create --resource-group "${RGNAMECLUSTER_BU0001A0042_03}" --
                targetVnetResourceId=$TARGET_VNET_RESOURCE_ID_BU0001A0042_03 \
                clusterAdminAadGroupObjectId=$K8S_RBAC_AAD_ADMIN_GROUP_OBJECTID \
                k8sControlPlaneAuthorizationTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID \
-               appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE \
+               appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE3 \
                aksIngressControllerCertificate=$AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 \
                appInstanceId="03" \
-               clusterInternalLoadBalancerIpAddress="10.243.4.4"
+               clusterInternalLoadBalancerIpAddress="10.243.4.4" \
+               subdomainName=${CLUSTER_SUBDOMAIN1}
 
 AKS_CLUSTER_NAME_BU0001A0042_03=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_03 -n cluster-BU0001A0042_03 --query properties.outputs.aksClusterName.value -o tsv)
 TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_03=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_03 -n cluster-BU0001A0042_03  --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
 TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_03=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_03 -n cluster-BU0001A0042_03  --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
 KEYVAULT_NAME_BU0001A0042_03=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_03 -n cluster-BU0001A0042_03  --query properties.outputs.keyVaultName.value -o tsv)
-APPGW_PUBLIC_IP_BU0001A0042_03=$(az deployment group show -g $RGNAMESPOKES -n  spoke-BU0001A0042-03 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
+APPGW_PUBLIC_IP_BU0001A0042_03=$(az deployment group show -g $RGNAMESPOKES -n  spoke-BU0001A0042-03 --query properties.outputs.appGwFqdn.value -o tsv)
 ACR_NAME_BU0001A0042_03=$(az deployment group show --resource-group $RGNAMECLUSTER_BU0001A0042_03 -n cluster-BU0001A0042_03 --query properties.outputs.containerRegistryName.value -o tsv)
 az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME_BU0001A0042_03
 
@@ -74,16 +73,17 @@ az deployment group create --resource-group "${RGNAMECLUSTER_BU0001A0042_04}" --
                targetVnetResourceId=$TARGET_VNET_RESOURCE_ID_BU0001A0042_04 \
                k8sRbacAadProfileAdminGroupObjectID=$K8S_RBAC_AAD_ADMIN_GROUP_OBJECTID \
                k8sRbacAadProfileTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID \
-               appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE \
+               appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE4 \
                aksIngressControllerCertificate=$AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 \
                appInstanceId="04" \
-               clusterInternalLoadBalancerIpAddress="10.244.4.4"
+               clusterInternalLoadBalancerIpAddress="10.244.4.4"\
+               subdomainName=${CLUSTER_SUBDOMAIN2}
 
 AKS_CLUSTER_NAME_BU0001A0042_04=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_04 -n cluster-BU0001A0042_04 --query properties.outputs.aksClusterName.value -o tsv)
 TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_04 -n cluster-BU0001A0042_04  --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
 TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_04 -n cluster-BU0001A0042_04  --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
 KEYVAULT_NAME_BU0001A0042_04=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_04 -n cluster-BU0001A0042_04  --query properties.outputs.keyVaultName.value -o tsv)
-APPGW_PUBLIC_IP_BU0001A0042_04=$(az deployment group show -g $RGNAMESPOKES -n  spoke-BU0001A0042-04 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
+APPGW_PUBLIC_IP_BU0001A0042_04=$(az deployment group show -g $RGNAMESPOKES -n  spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
 ACR_NAME_BU0001A0042_04=$(az deployment group show --resource-group $RGNAMECLUSTER_BU0001A0042_04 -n cluster-BU0001A0042_04 --query properties.outputs.containerRegistryName.value -o tsv)
 az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME_BU0001A0042_04
 
@@ -250,7 +250,9 @@ echo ""
 echo "# Deploy Front Door"
 echo ""
 az group create --name ${RGNAME_FRONT_DOOR} --location ${LOCATION}
-az deployment group  create --resource-group ${RGNAME_FRONT_DOOR} --template-file "../../frontdoor-stamp.json"  --parameters backendNames="['${APPGW_PUBLIC_IP_BU0001A0042_03}','${APPGW_PUBLIC_IP_BU0001A0042_04}']"
+az deployment group  create --resource-group ${RGNAME_FRONT_DOOR} --template-file "../../frontdoor-stamp.json"  --name "fd-001" --parameters backendNames="['${APPGW_PUBLIC_IP_BU0001A0042_03}','${APPGW_PUBLIC_IP_BU0001A0042_04}']"
+
+FRONTDOOR_FQDN=($(az deployment group show -g $RGNAME_FRONT_DOOR -n fd-001  --query properties.outputs.fqdn.value -o tsv))
 
 echo ""
 echo "# Creating AAD Groups and users for the created cluster"
@@ -286,20 +288,13 @@ k8sViewAadGroup_BU0001A0042_04=$(az ad group create --display-name ${k8sViewAadG
 #EXAMPLE of an User in View Group
 az ad group member add --group ${k8sViewAadGroup_BU0001A0042_04} --member-id $AKS_ENDUSR_OBJECTID
 
-
-rm appgw.crt appgw.key appgw.pfx
-
 cat << EOF
 
 NEXT STEPS
 ---- -----
 
-1) Map the Azure Application Gateway public ip address to the application domain names. To do that, please open your hosts file (C:\windows\system32\drivers\etc\hosts or /etc/hosts) and add the following record in local host file:
-    ${APPGW_PUBLIC_IP_BU0001A0042_03} ${APPGW_APP_URL}
-    ${APPGW_PUBLIC_IP_BU0001A0042_04} ${APPGW_APP_URL}
-
-2) In your browser navigate the site anyway (A warning will be present)
- https://${APPGW_APP_URL}
+1) In your browser navigate the site (front door endpoint)
+https://${FRONTDOOR_FQDN}
 
 # Clean up resources. Execute:
 

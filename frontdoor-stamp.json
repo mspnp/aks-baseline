@@ -35,7 +35,8 @@
                                         "httpsPort": 443,
                                         "priority": 1,
                                         "weight": 50,
-                                        "enabledState": "Enabled"
+                                        "enabledState": "Enabled",
+                                        "backendHostHeader": "[parameters('backendNames')[copyIndex('backends')]]"
                                     }
                                 }
                             ],
@@ -55,7 +56,7 @@
                         "properties": {
                             "intervalInSeconds": 30,
                             "path": "/favicon.ico",
-                            "protocol": "Http",
+                            "protocol": "Https",
                             "resourceState": "Enabled",
                             "enabledState": "Enabled",
                             "healthProbeMethod": "HEAD"
@@ -94,7 +95,6 @@
                                 }
                             ],
                             "acceptedProtocols": [
-                                "Http",
                                 "Https"
                             ],
                             "patternsToMatch": [
@@ -104,7 +104,7 @@
                             "resourceState": "Enabled",
                             "routeConfiguration": {
                                 "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
-                                "forwardingProtocol": "HttpOnly",
+                                "forwardingProtocol": "HttpsOnly",
                                 "backendPool": {
                                     "id": "[concat(resourceId('Microsoft.Network/frontdoors',  variables('frontDoorName')), concat('/backendPools/',  'MultiClusterBackendPool'))]"
                                 }
@@ -120,5 +120,11 @@
                 "friendlyName": "[variables('frontDoorName')]"
             }
         }
-    ]
+    ],
+    "outputs": {
+        "fqdn": {
+            "type": "string",
+            "value": "[concat(variables('frontDoorName'), '.azurefd.net')]"
+        }
+    }
 }
