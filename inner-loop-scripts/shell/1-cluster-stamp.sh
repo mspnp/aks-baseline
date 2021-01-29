@@ -31,7 +31,9 @@ echo ""
 echo "# Deploying AKS Cluster"
 echo ""
 
-# App Gateway Certificate. These files should be provided in advance
+# App Gateway Certificate. These files should be provided in advance. 
+# The App Gateway and Key Vault integration support only password-less certificates
+# Front Door does not support self sign certificates.
 APP_GATEWAY_LISTENER_CERTIFICATE3=$(cat ${CLUSTER_SUBDOMAIN1}.pfx | base64 | tr -d '\n')
 APP_GATEWAY_LISTENER_CERTIFICATE4=$(cat ${CLUSTER_SUBDOMAIN2}.pfx | base64 | tr -d '\n')
 
