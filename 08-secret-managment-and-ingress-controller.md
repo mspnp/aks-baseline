@@ -23,60 +23,60 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > Create the Traefik Azure Identity and the Azure Identity Binding to let Azure Active Directory Pod Identity to get tokens on behalf of the Traefik's User Assigned Identity and later on assign them to the Traefik's pod.
 
    ```bash
-   cat <<EOF | kubectl create --context $AKS_CLUSTER_NAME_BU0001A0042_03 -f -
+   cat <<EOF | kubectl create --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin -f -
    apiVersion: "aadpodidentity.k8s.io/v1"
    kind: AzureIdentity
    metadata:
-     name: podmi-ingress-controller-identity
-     namespace: a0042
+   name: podmi-ingress-controller-identity
+   namespace: a0042
    spec:
-     type: 0
-     resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_03
-     clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_03
+   type: 0
+   resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_03
+   clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_03
    ---
    apiVersion: aadpodidentity.k8s.io/v1
    kind: AzureIdentityBinding
    metadata:
-     name: podmi-ingress-controller-binding
-     namespace: a0042
+   name: podmi-ingress-controller-binding
+   namespace: a0042
    spec:
-     azureIdentity: podmi-ingress-controller-identity
-     selector: podmi-ingress-controller
+   azureIdentity: podmi-ingress-controller-identity
+   selector: podmi-ingress-controller
    EOF
    ```
 
 1. Create the Traefik's Secret Provider Class resource.
 
-   > The Ingress Controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
-   >
-   > Create a `SecretProviderClass` resource with with your Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
+> The Ingress Controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
+>
+> Create a `SecretProviderClass` resource with with your Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
 
-   ```bash
-   KEYVAULT_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
-   cat <<EOF | kubectl create --context $AKS_CLUSTER_NAME_BU0001A0042_03 -f -
-   apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
-   kind: SecretProviderClass
-   metadata:
-     name: aks-ingress-contoso-com-tls-secret-csi-akv
-     namespace: a0042
-   spec:
-     provider: azure
-     parameters:
-       usePodIdentity: "true"
-       keyvaultName: "${KEYVAULT_NAME_BU0001A0042_03}"
-       objects:  |
-         array:
-           - |
-             objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
-             objectAlias: tls.crt
-             objectType: cert
-           - |
-             objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
-             objectAlias: tls.key
-             objectType: secret
-       tenantId: $TENANTID_AZURERBAC
-   EOF
-   ```
+```bash
+KEYVAULT_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
+cat <<EOF | kubectl create --context $AKS_CLUSTER_NAME_BU0001A0042_03 -f -
+apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+kind: SecretProviderClass
+metadata:
+  name: aks-ingress-contoso-com-tls-secret-csi-akv
+  namespace: a0042
+spec:
+  provider: azure
+  parameters:
+    usePodIdentity: "true"
+    keyvaultName: $KEYVAULT_NAME_BU0001A0042_03
+    objects:  |
+      array:
+        - |
+          objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+          objectAlias: tls.crt
+          objectType: cert
+        - |
+          objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+          objectAlias: tls.key
+          objectType: secret
+    tenantId: $TENANTID_AZURERBAC
+EOF
+```
 
 1. Import the Traefik container image to your container registry.
 
@@ -116,11 +116,11 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    export TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04=$(az deployment group show --resource-group rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
    export TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show --resource-group rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
 
-   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04 -f -
+   cat <<EOF | kubectl create --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin -f -
    apiVersion: "aadpodidentity.k8s.io/v1"
    kind: AzureIdentity
    metadata:
-     name: aksic-to-keyvault-identity
+     name: podmi-ingress-controller-identity
      namespace: a0042
    spec:
      type: 0
@@ -130,14 +130,14 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    apiVersion: "aadpodidentity.k8s.io/v1"
    kind: AzureIdentityBinding
    metadata:
-     name: aksic-to-keyvault-identity-binding
+     name: podmi-ingress-controller-binding
      namespace: a0042
    spec:
-     azureIdentity: aksic-to-keyvault-identity
-     selector: traefik-ingress-controller
+     azureIdentity: podmi-ingress-controller-identity
+     selector: podmi-ingress-controller
    EOF
 
-   cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04 -f -
+   cat <<EOF | kubectl create --context $AKS_CLUSTER_NAME_BU0001A0042_04 -f -
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
    kind: SecretProviderClass
    metadata:
@@ -147,7 +147,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
      provider: azure
      parameters:
        usePodIdentity: "true"
-       keyvaultName: "${KEYVAULT_NAME_BU0001A0042_04}"
+       keyvaultName: $KEYVAULT_NAME_BU0001A0042_04
        objects:  |
          array:
            - |
@@ -158,10 +158,10 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
              objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
              objectAlias: tls.key
              objectType: secret
-       tenantId: "${TENANT_ID}"
+       tenantId: $TENANTID_AZURERBAC
    EOF
 
-   kubectl apply -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik-04.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik-04.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
    kubectl wait --namespace a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04
    ```
 

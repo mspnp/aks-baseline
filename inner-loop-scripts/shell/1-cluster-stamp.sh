@@ -49,7 +49,7 @@ AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64=$(cat traefik-ingress-internal-aks-ing
 # Note: By default, this deployment will allow unrestricted access to your cluster's API Server.
 #   You should limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, bastion subnet, build agents, or any other networks you'll administer the cluster from),
 #   and can do so by adding a `clusterAuthorizedIPRanges=['range1', 'range2', 'AzureFirewallIP/32']` parameter below.
-az deployment group create --resource-group "${RGNAMECLUSTER_BU0001A0042_03}" --template-file "../../cluster-stamp.json" --name "cluster-BU0001A0042_03" --parameters \
+az deployment group create -g "${RGNAMECLUSTER_BU0001A0042_03}" -f "../../cluster-stamp.json" -n "cluster-BU0001A0042_03" -p \
                location=$LOCATION \
                geoRedundancyLocation=$GEOREDUNDANCY_LOCATION \
                targetVnetResourceId=$TARGET_VNET_RESOURCE_ID_BU0001A0042_03 \
@@ -62,30 +62,30 @@ az deployment group create --resource-group "${RGNAMECLUSTER_BU0001A0042_03}" --
                subdomainName=${CLUSTER_SUBDOMAIN1}
 
 AKS_CLUSTER_NAME_BU0001A0042_03=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_03 -n cluster-BU0001A0042_03 --query properties.outputs.aksClusterName.value -o tsv)
-TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_03=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_03 -n cluster-BU0001A0042_03  --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
-TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_03=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_03 -n cluster-BU0001A0042_03  --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
+TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_03=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_03 -n cluster-BU0001A0042_03  --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
+TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_03=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_03 -n cluster-BU0001A0042_03  --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
 KEYVAULT_NAME_BU0001A0042_03=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_03 -n cluster-BU0001A0042_03  --query properties.outputs.keyVaultName.value -o tsv)
-APPGW_PUBLIC_IP_BU0001A0042_03=$(az deployment group show -g $RGNAMESPOKES -n  spoke-BU0001A0042-03 --query properties.outputs.appGwFqdn.value -o tsv)
+APPGW_FQDN_BU0001A0042_03=$(az deployment group show -g $RGNAMESPOKES -n  spoke-BU0001A0042-03 --query properties.outputs.appGwFqdn.value -o tsv)
 ACR_NAME_BU0001A0042_03=$(az deployment group show --resource-group $RGNAMECLUSTER_BU0001A0042_03 -n cluster-BU0001A0042_03 --query properties.outputs.containerRegistryName.value -o tsv)
 az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME_BU0001A0042_03
 
-az deployment group create --resource-group "${RGNAMECLUSTER_BU0001A0042_04}" --template-file "../../cluster-stamp.json" --name "cluster-BU0001A0042_04" --parameters \
+az deployment group create -g "${RGNAMECLUSTER_BU0001A0042_04}" -f "../../cluster-stamp.json" -n "cluster-BU0001A0042_04" -p \
                location=$LOCATION \
                geoRedundancyLocation=$GEOREDUNDANCY_LOCATION \
                targetVnetResourceId=$TARGET_VNET_RESOURCE_ID_BU0001A0042_04 \
-               k8sRbacAadProfileAdminGroupObjectID=$K8S_RBAC_AAD_ADMIN_GROUP_OBJECTID \
-               k8sRbacAadProfileTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID \
+               clusterAdminAadGroupObjectId=$K8S_RBAC_AAD_ADMIN_GROUP_OBJECTID \
+               k8sControlPlaneAuthorizationTenantId=$K8S_RBAC_AAD_PROFILE_TENANTID \
                appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE4 \
                aksIngressControllerCertificate=$AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 \
                appInstanceId="04" \
-               clusterInternalLoadBalancerIpAddress="10.244.4.4"\
+               clusterInternalLoadBalancerIpAddress="10.244.4.4" \
                subdomainName=${CLUSTER_SUBDOMAIN2}
 
 AKS_CLUSTER_NAME_BU0001A0042_04=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_04 -n cluster-BU0001A0042_04 --query properties.outputs.aksClusterName.value -o tsv)
-TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_04 -n cluster-BU0001A0042_04  --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
-TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_04 -n cluster-BU0001A0042_04  --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
+TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_04 -n cluster-BU0001A0042_04  --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
+TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_04 -n cluster-BU0001A0042_04  --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
 KEYVAULT_NAME_BU0001A0042_04=$(az deployment group show -g $RGNAMECLUSTER_BU0001A0042_04 -n cluster-BU0001A0042_04  --query properties.outputs.keyVaultName.value -o tsv)
-APPGW_PUBLIC_IP_BU0001A0042_04=$(az deployment group show -g $RGNAMESPOKES -n  spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
+APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g $RGNAMESPOKES -n  spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
 ACR_NAME_BU0001A0042_04=$(az deployment group show --resource-group $RGNAMECLUSTER_BU0001A0042_04 -n cluster-BU0001A0042_04 --query properties.outputs.containerRegistryName.value -o tsv)
 az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME_BU0001A0042_04
 
@@ -96,10 +96,6 @@ cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-int
 az keyvault certificate import --vault-name $KEYVAULT_NAME_BU0001A0042_03 -f traefik-ingress-internal-aks-ingress-contoso-com-tls.pem -n traefik-ingress-internal-aks-ingress-contoso-com-tls
 az keyvault certificate import --vault-name $KEYVAULT_NAME_BU0001A0042_04 -f traefik-ingress-internal-aks-ingress-contoso-com-tls.pem -n traefik-ingress-internal-aks-ingress-contoso-com-tls
 
-az aks get-credentials -n ${AKS_CLUSTER_NAME} -g ${RGNAMECLUSTER} --admin
-kubectl create namespace cluster-baseline-settings
-kubectl apply -f ../../cluster-manifests/cluster-baseline-settings/flux.yaml
-kubectl wait --namespace cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s
 az keyvault delete-policy --upn $(az account show --query user.name -o tsv) -n $KEYVAULT_NAME_BU0001A0042_03
 az keyvault delete-policy --upn $(az account show --query user.name -o tsv) -n $KEYVAULT_NAME_BU0001A0042_04
 
@@ -107,7 +103,7 @@ az keyvault delete-policy --upn $(az account show --query user.name -o tsv) -n $
 az aks get-credentials -n ${AKS_CLUSTER_NAME_BU0001A0042_03} -g ${RGNAMECLUSTER_BU0001A0042_03} --admin
 kubectl get constrainttemplate --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin
 kubectl create namespace cluster-baseline-settings --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin
-kubectl apply -f ../../cluster-baseline-settings/flux.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin
+kubectl create -f ../../cluster-manifests/cluster-baseline-settings/flux.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin
 kubectl wait --namespace cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin
 
 # Deploy application
@@ -118,28 +114,28 @@ echo $'Ensure Flux has created the following namespace and then press Ctrl-C'
 kubectl get ns a0042 -w  --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin
 
 
-cat <<EOF | kubectl apply --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin -f -
+cat <<EOF | kubectl create --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin -f -
 apiVersion: "aadpodidentity.k8s.io/v1"
 kind: AzureIdentity
 metadata:
-  name: aksic-to-keyvault-identity
+  name: podmi-ingress-controller-identity
   namespace: a0042
 spec:
   type: 0
   resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_03
   clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_03
 ---
-apiVersion: "aadpodidentity.k8s.io/v1"
+apiVersion: aadpodidentity.k8s.io/v1
 kind: AzureIdentityBinding
 metadata:
-  name: aksic-to-keyvault-identity-binding
+  name: podmi-ingress-controller-binding
   namespace: a0042
 spec:
-  azureIdentity: aksic-to-keyvault-identity
-  selector: traefik-ingress-controller
+  azureIdentity: podmi-ingress-controller-identity
+  selector: podmi-ingress-controller
 EOF
 
-cat <<EOF | kubectl apply --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin -f -
+cat <<EOF | kubectl create --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin -f -
 apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
 kind: SecretProviderClass
 metadata:
@@ -149,7 +145,7 @@ spec:
   provider: azure
   parameters:
     usePodIdentity: "true"
-    keyvaultName: "${KEYVAULT_NAME_BU0001A0042_03}"
+    keyvaultName: $KEYVAULT_NAME_BU0001A0042_03
     objects:  |
       array:
         - |
@@ -160,11 +156,11 @@ spec:
           objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
           objectAlias: tls.key
           objectType: secret
-    tenantId: "${TENANT_ID}"
+    tenantId: $TENANT_ID
 EOF
 
-kubectl apply -f ../../workload/traefik-03.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin
-kubectl apply -f ../../workload/aspnetapp.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin
+kubectl create -f ../../workload/traefik-03.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin
+kubectl create -f ../../workload/aspnetapp.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin
 
 echo 'the ASPNET Core webapp sample is all setup. Wait until is ready to process requests running'
 kubectl wait --namespace a0042 \
@@ -178,10 +174,10 @@ kubectl get svc -n traefik --watch  -n a0042 --context ${AKS_CLUSTER_NAME_BU0001
 
 #Cluster 04
 az aks get-credentials -n ${AKS_CLUSTER_NAME_BU0001A0042_04} -g ${RGNAMECLUSTER_BU0001A0042_04} --admin
-  kubectl get constrainttemplate --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
-  kubectl create namespace cluster-baseline-settings --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
-  kubectl apply -f ../../cluster-baseline-settings/flux.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
-  kubectl wait --namespace cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
+kubectl get constrainttemplate --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
+kubectl create namespace cluster-baseline-settings --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
+kubectl create -f ../../cluster-manifests/cluster-baseline-settings/flux.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
+kubectl wait --namespace cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
 
 # Deploy application
 
@@ -190,7 +186,7 @@ set +e
 echo $'Ensure Flux has created the following namespace and then press Ctrl-C'
 kubectl get ns a0042 -w --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
 
-cat <<EOF | kubectl apply --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin -f -
+cat <<EOF | kubectl create --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin -f -
 apiVersion: "aadpodidentity.k8s.io/v1"
 kind: AzureIdentity
 metadata:
@@ -211,7 +207,7 @@ spec:
   selector: podmi-ingress-controller
 EOF
 
-cat <<EOF | kubectl apply --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin -f -
+cat <<EOF | kubectl create --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin -f -
 apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
 kind: SecretProviderClass
 metadata:
@@ -221,7 +217,7 @@ spec:
   provider: azure
   parameters:
     usePodIdentity: "true"
-    keyvaultName: "${KEYVAULT_NAME_BU0001A0042_04}"
+    keyvaultName: $KEYVAULT_NAME_BU0001A0042_04
     objects:  |
       array:
         - |
@@ -232,11 +228,11 @@ spec:
           objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
           objectAlias: tls.key
           objectType: secret
-    tenantId: "${TENANT_ID}"
+    tenantId: $TENANT_ID
 EOF
 
-kubectl apply -f ../../workload/traefik-04.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
-kubectl apply -f ../../workload/aspnetapp.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
+kubectl create -f ../../workload/traefik-04.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
+kubectl create -f ../../workload/aspnetapp.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
 
 echo 'the ASPNET Core webapp sample is all setup. Wait until is ready to process requests running'
 kubectl wait --namespace a0042 \
@@ -252,7 +248,7 @@ echo ""
 echo "# Deploy Front Door"
 echo ""
 az group create --name ${RGNAME_FRONT_DOOR} --location ${LOCATION}
-az deployment group  create --resource-group ${RGNAME_FRONT_DOOR} --template-file "../../frontdoor-stamp.json"  --name "fd-001" --parameters backendNames="['${APPGW_PUBLIC_IP_BU0001A0042_03}','${APPGW_PUBLIC_IP_BU0001A0042_04}']"
+az deployment group  create --resource-group ${RGNAME_FRONT_DOOR} --template-file "../../frontdoor-stamp.json"  --name "fd-001" --parameters backendNames="['${APPGW_FQDN_BU0001A0042_03}','${APPGW_FQDN_BU0001A0042_04}']"
 
 FRONTDOOR_FQDN=($(az deployment group show -g $RGNAME_FRONT_DOOR -n fd-001  --query properties.outputs.fqdn.value -o tsv))
 

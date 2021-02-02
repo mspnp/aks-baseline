@@ -15,7 +15,7 @@
         "clusterInternalLoadBalancerIpAddress": {
             "type": "string",
             "metadata": {
-                "description": "The AKS cluster Iternal Load Balancer Ip Address"
+                "description": "The AKS cluster Internal Load Balancer Ip Address"
             }
         },
         "targetVnetResourceId": {
@@ -115,7 +115,7 @@
             "type": "string"
         },
         "subdomainName": {
-            "type": "String",
+            "type": "string",
             "metadata": {
                 "description": "The name used for the azure subdomain in order to create the dns entry for app gateway public ip"
             }
@@ -148,9 +148,7 @@
         "agwName": "[concat('apw-', variables('clusterName'))]",
         "apwResourceId": "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]",
 
-        "keyVaultName": "[concat( 'kv-', variables('clusterName'))]",
-
-        "fqdnAppGateway": "[concat( parameters('subdomainName'),'.', parameters('location'),'.cloudapp.azure.com')]"
+        "fqdnAppGateway": "[concat( parameters('subdomainName'),'.', parameters('location'),'.cloudapp.azure.com')]",
         "acrPrivateDnsZonesName": "privatelink.azurecr.io",
         "akvPrivateDnsZonesName": "privatelink.vaultcore.azure.net",
 
@@ -360,7 +358,7 @@
                 }
             ]
         },
-{
+        {
             "type": "Microsoft.Network/privateDnsZones",
             "apiVersion": "2020-06-01",
             "name": "[variables('acrPrivateDnsZonesName')]",
@@ -453,21 +451,6 @@
             ]
         },
         {
-            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-            "apiVersion": "2018-09-01",
-            "name": "aks-ingress.contoso.com/cluster-dns-link",
-            "location": "global",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', 'aks-ingress.contoso.com')]"
-            ],
-            "properties": {
-                "virtualNetwork": {
-                    "id": "[parameters('targetVnetResourceId')]"
-                },
-                "registrationEnabled": false
-            }
-        },
-        {
             "type": "Microsoft.Network/applicationGateways",
             "apiVersion": "2020-05-01",
             "name": "[variables('agwName')]",
@@ -522,7 +505,7 @@
                         "name": "apw-frontend-ip-configuration",
                         "properties": {
                             "PublicIPAddress": {
-                                "id": "[resourceId(subscription().subscriptionId,variables('vNetResourceGroup'),'Microsoft.Network/publicIpAddresses',concat('pip-agw-',variables('appId')))]"
+                                "id": "[resourceId(subscription().subscriptionId,variables('vNetResourceGroup'),'Microsoft.Network/publicIpAddresses',concat('pip-',variables('appId')))]"
                             }
                         }
                     }

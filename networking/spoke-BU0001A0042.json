@@ -85,12 +85,13 @@
         "hubLaWorkspaceResourceId": "[resourceId(variables('hubRgName'), 'Microsoft.OperationalInsights/workspaces', variables('hubLaWorkspaceName'))]",
         "toHubPeeringName": "[concat('spoke-to-', variables('hubNetworkName'))]",
 
-        "primaryClusterPipName": "[concat('pip-', variables('orgAppId'), '-00')]"
+        "primaryClusterPipName": "[concat('pip-', variables('appId'))]"
     },
     "resources": [
         {
             "type": "Microsoft.Network/routeTables",
             "apiVersion": "2020-07-01",
+            "name": "[variables('routeTableName')]",
             "location": "[parameters('location')]",
             "comments": "Next hop to regional hub Azure Firewall",
             "properties": {
@@ -406,54 +407,6 @@
             }
         },
         {
-            "type": "Microsoft.Network/privateDnsZones",
-            "apiVersion": "2020-06-01",
-            "name": "[variables('acrPrivateDnsZonesName')]",
-            "location": "global",
-            "properties": {
-            }
-        },
-        {
-            "type": "Microsoft.Network/privateDnsZones",
-            "apiVersion": "2020-06-01",
-            "name": "[variables('akvPrivateDnsZonesName')]",
-            "location": "global",
-            "properties": {
-            }
-        },
-        {
-            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-            "apiVersion": "2020-06-01",
-            "name": "[concat(variables('acrPrivateDnsZonesName'), '/', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))))]",
-            "location": "global",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
-            ],
-            "properties": {
-                "virtualNetwork": {
-                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
-                },
-                "registrationEnabled": false
-            }
-        },
-        {
-            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-            "apiVersion": "2020-06-01",
-            "name": "[concat(variables('akvPrivateDnsZonesName'), '/', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))))]",
-            "location": "global",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('akvPrivateDnsZonesName'))]"
-            ],
-            "properties": {
-                "virtualNetwork": {
-                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
-                },
-                "registrationEnabled": false
-            }
-        },
-        {
             "type": "Microsoft.Network/publicIpAddresses",
             "apiVersion": "2020-07-01",
             "name": "[variables('primaryClusterPipName')]",
@@ -484,7 +437,7 @@
         },
         "appGwFqdn": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', concat('pip-agw-', variables('appId')))).dnsSettings.fqdn]"
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('primaryClusterPipName'))).dnsSettings.fqdn]"
         }
     }
 }
