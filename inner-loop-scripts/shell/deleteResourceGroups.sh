@@ -76,3 +76,6 @@ az keyvault purge --name kv-${AKS_CLUSTER_NAME_BU0001A0042_03} --location ${LOCA
 
 echo deleting key vault soft delete
 az keyvault purge --name kv-${AKS_CLUSTER_NAME_BU0001A0042_04} --location ${LOCATION}
+
+#Remove the Azure Policy assignments scoped to the cluster's resource group. To identify those created by this implementation,
+# look for ones that are prefixed with [your-cluster-name] .

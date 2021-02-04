@@ -23,25 +23,25 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > Create the Traefik Azure Identity and the Azure Identity Binding to let Azure Active Directory Pod Identity to get tokens on behalf of the Traefik's User Assigned Identity and later on assign them to the Traefik's pod.
 
    ```bash
-   cat <<EOF | kubectl create --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin -f -
+   cat <<EOF | kubectl create --context $AKS_CLUSTER_NAME_BU0001A0042_03 -f -
    apiVersion: "aadpodidentity.k8s.io/v1"
    kind: AzureIdentity
    metadata:
-   name: podmi-ingress-controller-identity
-   namespace: a0042
+     name: podmi-ingress-controller-identity
+     namespace: a0042
    spec:
-   type: 0
-   resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_03
-   clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_03
+     type: 0
+     resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_03
+     clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_03
    ---
    apiVersion: aadpodidentity.k8s.io/v1
    kind: AzureIdentityBinding
    metadata:
-   name: podmi-ingress-controller-binding
-   namespace: a0042
+     name: podmi-ingress-controller-binding
+     namespace: a0042
    spec:
-   azureIdentity: podmi-ingress-controller-identity
-   selector: podmi-ingress-controller
+     azureIdentity: podmi-ingress-controller-identity
+     selector: podmi-ingress-controller
    EOF
    ```
 
@@ -52,7 +52,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 > Create a `SecretProviderClass` resource with with your Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
 
 ```bash
-KEYVAULT_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
+KEYVAULT_NAME_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp  --query properties.outputs.keyVaultName.value -o tsv)
 cat <<EOF | kubectl create --context $AKS_CLUSTER_NAME_BU0001A0042_03 -f -
 apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
 kind: SecretProviderClass
@@ -113,10 +113,10 @@ EOF
 1. Install the Traefik Ingress Controller in the second AKS Cluster
 
    ```bash
-   export TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04=$(az deployment group show --resource-group rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
-   export TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show --resource-group rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
-
-   cat <<EOF | kubectl create --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin -f -
+   export TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04=$(az deployment group show --resource-group rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
+   export TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show --resource-group rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
+   kubectl get ns a0042 -w --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   cat <<EOF | kubectl create --context $AKS_CLUSTER_NAME_BU0001A0042_04 -f -
    apiVersion: "aadpodidentity.k8s.io/v1"
    kind: AzureIdentity
    metadata:
@@ -136,6 +136,8 @@ EOF
      azureIdentity: podmi-ingress-controller-identity
      selector: podmi-ingress-controller
    EOF
+
+   export KEYVAULT_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp  --query properties.outputs.keyVaultName.value -o tsv)
 
    cat <<EOF | kubectl create --context $AKS_CLUSTER_NAME_BU0001A0042_04 -f -
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
@@ -160,6 +162,9 @@ EOF
              objectType: secret
        tenantId: $TENANTID_AZURERBAC
    EOF
+
+   ACR_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME_BU0001A0042_04
 
    kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik-04.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
    kubectl wait --namespace a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04
