@@ -1,13 +1,16 @@
-## Valid Certificate Generation for an Azure domain with your subdomain
+## Certificate Authority generation for an Azure domain with your subdomain
 
-This article allows you generate a valid Certificate Authority certificate for your subdomain inside Azure.  
+Many times we need a CA certificate, and this kind of certificates cost money and you need to own your domain.  
+In Azure there are services that do not support self-sign certificates, even though we are doing tests (Ex. Azure Front Door).  
+In order to do some test on Azure, we can create valid CA certificates for free.  
+This article allows you generate a CA certificate for your subdomain inside Azure.  
 For example
 
 ```bash
 mysubdomain.eastus.cloudapp.azure.com
 ```
 
-It is based on [Let's Encrypt](https://letsencrypt.org/)
+It is based on [Let's Encrypt](https://letsencrypt.org/). Let's Encrypt is a non-profit certificate authority run by Internet Security Research Group (ISRG) that provides X.509 certificates for Transport Layer Security (TLS) encryption at no charge
 
 ## Prerequisites
 
@@ -21,14 +24,16 @@ It is based on [Let's Encrypt](https://letsencrypt.org/)
 ## Steps
 
 - Log in in your account and select the subscription
+  > :book: If you have one subscription the selection is not be needed
 
 ```bash
-MAIN_SUBSCRIPTION=XXXX
+## Login into azure
 az login
-az account set -s $MAIN_SUBSCRIPTION
+## Choose your Azure subscription
+az account set -s XXXX
 ```
 
-- Create the Azure resources
+- :rocket: Create the Azure resources  
   In order to create a certificate we need to demonstrate domain control.
   We are going to use a Azure Application Gateway on top of Azure Blob Storage to do that.
 
@@ -43,14 +48,14 @@ DOMAIN_NAME=mysubdomain
 # Resource group creation
 az group create --name "${RGNAME}" --location "${LOCATION}"
 
-# Resource deployment. Public Ip (with DNS name), Virtal Network, Storage Account and Application Gateway
+# Resource deployment. Public Ip (with DNS name), Virtual Network, Storage Account and Application Gateway
 az deployment group create -g "${RGNAME}" --template-file "resources-stamp.json"  --name "cert-0001" --parameters location=$LOCATION subdomainName=$DOMAIN_NAME
 
 #Read the url generated. We will generate a certificate for this domain
 FQDN=$(az deployment group show -g $RGNAME -n cert-0001 --query properties.outputs.fqdn.value -o tsv)
 ```
 
-- Add a Azure Blob container and upload a file
+- :heavy_plus_sign: Add a Azure Blob container and upload a file
 
 ```bash
 # Create a Container on the Storage Account provided
@@ -69,7 +74,7 @@ az storage blob upload \
 
 ```
 
-- Checking it is working
+- :heavy_check_mark: Checking the if the resource created are working
 
 ```bash
 # We can access the file inside the blob
@@ -78,11 +83,11 @@ echo https://$DOMAIN_NAME.blob.core.windows.net/verificationdata/test.txt
 # The Azure Application Gateway is exposing the Azure Blob
 echo http://$FQDN/verificationdata/test.txt
 
-# The Azure Application Gateway  rewrite rule is working
+# The Azure Application Gateway rewrite rule is working
 echo http://$FQDN/.well-known/acme-challenge/test
 ```
 
-- Generate certificate base on [Cerbot](https://certbot.eff.org/)
+- :key: Generate certificate base on [Cerbot](https://certbot.eff.org/)
 
 Installing cerbot using linux could be as easy as
 
@@ -92,38 +97,42 @@ sudo apt-get install certbot
 
 You can check how to install in your platform in the [Cerbot](https://certbot.eff.org/) site.
 
-Please, Execute the following command with administration privilege
+Please, Execute a command like the following with administration privilege
 
 ```bash
-sudo certbot certonly --email your@mail.com -d $FQDN --agree-tos --manual
+sudo certbot certonly --email changeme@mail.com -d $FQDN --agree-tos --manual
 ```
 
 At this point you need to follow the Cerbot instructions
+![At this point you need to follow the Cerbot instructions](./cerbot.png)
 
-1. Create a file name with the name presenting by Cerbot during the execution, with txt extension, Ex: 4FCuByAUW3weHUCHHzZKEQLFUQTJIpsULlfHvBthUNo.txt
-1. Add inside the content presented by Cerbot
-1. Upload the file in any way (by command line or azure portal as you prefer) Ex:
+1. Create a file name with the name presenting by Cerbot during the execution, with txt extension,  
+   `Ex: -Nahn2wS1fLeqGwqjDBIWxSpL5U4mlb_oA50wsPeoqk.txt`
+2. Add inside the content presented by Cerbot,  
+   `Ex: -Nahn2wS1fLeqGwqjDBIWxSpL5U4mlb_oA50wsPeoqk.T_a4tluV9By4PqiMY4Xz5iLe5ty1whK_vNK21LY6ZTU`
+3. Upload the generated file inside the _verificationdata_ container in any way (by command line or azure portal as you prefer) Ex:
 
 ```bash
 az storage blob upload \
  --account-name $DOMAIN_NAME \
  --container-name verificationdata \
- --name 4FCuByAUW3weHUCHHzZKEQLFUQTJIpsULlfHvBthUNo.txt \
- --file ./4FCuByAUW3weHUCHHzZKEQLFUQTJIpsULlfHvBthUNo.txt \
+ --name -Nahn2wS1fLeqGwqjDBIWxSpL5U4mlb_oA50wsPeoqk.txt \
+ --file ./-Nahn2wS1fLeqGwqjDBIWxSpL5U4mlb_oA50wsPeoqk.txt \
  --auth-mode key
 ```
 
-1. Test the url presented by cerbot, EX:
+4. Test the url presented by cerbot, Ex:
 
 ```bash
-http://mysubdomain.eastus.cloudapp.azure.com/.well-known/acme-challenge/yuV9ui3A1LEdSMpMmxhkapiKRctuL-C0RUp444QjDfs
+http://mysubdomain.eastus.cloudapp.azure.com/.well-known/acme-challenge/-Nahn2wS1fLeqGwqjDBIWxSpL5U4mlb_oA50wsPeoqk
 ```
 
-1. If the test is working, please press Enter
-1. You should get a message about the cert was generated
+5. If the test is working, please press Enter
+6. You should get a message about the cert was generated
 
-- We need to generate the pfx  
-  Take the key files
+- :page_with_curl: We need to generate the pfx
+
+1. Take the key files
 
 ```bash
 mkdir files
@@ -133,7 +142,7 @@ sudo cp /etc/letsencrypt/live/$FQDN/chain.pem ./files
 cd files
 ```
 
-Generate pfx with or without password as you need
+2. Generate pfx with or without password as you need
 
 ```bash
 #Password-less
@@ -142,9 +151,10 @@ openssl pkcs12 -export -out $DOMAIN_NAME.pfx -inkey privkey.pem -in cert.pem -ce
 openssl pkcs12 -export -out $DOMAIN_NAME.pfx -inkey privkey.pem -in cert.pem -certfile chain.pem
 ```
 
-- You have your CA valid pfx certificate for your domain on the directory
+- :thumbsup: You have your CA valid pfx certificate for your domain on the directory  
+  You will able to find $DOMAIN_NAME.pfx file on the current folder
 
-### Delete Azure resources
+### :broom: Delete Azure resources
 
 ```bash
 az group delete -n $RGNAME --yes
