@@ -1,6 +1,15 @@
-# Generate Your Client-Facing and AKS Ingress Controller TLS Certificates
+# Generate your Client-Facing and AKS Ingress Controller TLS Certificates
 
-Now that you have the [prerequisites](./01-prerequisites.md) met, follow the steps below to create the TLS certificates that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS Ingress Controller. If you already have access to an appropriate certificates, or can procure them from your organization, consider doing so and skipping the certificate generation steps. The following will describe using a self-signed certs for instructive purposes only.
+Now that you have the [prerequisites](./01-prerequisites.md) met, follow the steps below to create the TLS certificates that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS Ingress Controller. If you already have access to an appropriate certificates, or can procure them from your organization, consider doing so and skipping the certificate generation steps. The following will describe using certs for instructive purposes only.
+
+## Expected results
+
+Following the steps below you will result the certificate needed for Azure Application Gateway and AKS Ingress Controller. All of then are needed base64.
+
+| Object                                | Purpose                                                                     |
+| ------------------------------------- | --------------------------------------------------------------------------- |
+| Azure Application Gateway Certificate | They are CA certificates for tls in the cluster entry point                 |
+| Aks ingress Controller                | It is self-sign test purpose cert for tls on the cluster ingress controller |
 
 ## Steps
 
@@ -8,18 +17,27 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow the ste
 
    > :book: Contoso Bicycle needs to procure a CA certificate for the web site. As this is going to be a user-facing site, they purchase an EV cert from their CA. This will serve in front of the Azure Application Gateway. They will also procure another one, a standard cert, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing.
 
-   :warning: Front Door does not support self-signed certificates.
+   :warning: Azure Front Door does not support self-signed certificates.
 
-   Create the certificate for Azure Application Gateway. A CA certificate is needed. You can use your company domain or try get a certificate for each domain using [Azure Subdomain Certificates](./certificate-generation/README.md).
-   It is expected two certificates, one per each Application Gateway. We called bicycle3.pfx and bicycle4.pfx, using bicycle3 and bicycle4 as Azure subdomains.
+   Create a CA certificate for each Azure Application Gateway. You can use your company domain or try get a certificate for each domain using [Azure Subdomain Certificates Generation](./certificate-generation/README.md).
+
+   :warning: We called bicycle3 and bicycle4 each subdomain, but the DNS values could be not available. In that case, you can change the following values.
+
+   ```bash
+   CLUSTER_SUBDOMAIN_03=bicycle3
+   CLUSTER_SUBDOMAIN_04=bicycle4
+   ```
+
+   The expected result are two files like 'bicycle3.pfx' and 'bicycle4.pfx'.  
+   Please, continue with the following step only after getting that certificates.
 
 1. Base64 encode the client-facing certificate
 
    :bulb: No matter if you used a certificate from your organization or you generated one from above, you'll need the certificate (as `.pfx`) to be base 64 encoded for proper storage in Key Vault later.
 
    ```bash
-   export APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE3=$(cat bicycle3.pfx | base64 | tr -d '\n')
-   export APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE4=$(cat bicycle4.pfx | base64 | tr -d '\n')
+   export APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE3=$(cat $CLUSTER_SUBDOMAIN_03.pfx | base64 | tr -d '\n')
+   export APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE4=$(cat $CLUSTER_SUBDOMAIN_04.pfx | base64 | tr -d '\n')
    ```
 
 1. Generate the wildcard certificate for the AKS Ingress Controller

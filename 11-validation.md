@@ -8,42 +8,30 @@ This section will help you to validate the workload is exposed correctly and res
 
 ### Steps
 
-1. Get Public IP of Application Gateway
+1. Get your Azure Front Door public DNS name
 
-   > :book: The app team conducts a final acceptance test to be sure that traffic is flowing end-to-end as expected, so they place a request against the Azure Application Gateway endpoint.
-
-   ```bash
-   # query the Azure Application Gateway Public Ip
-   export APPGW_PUBLIC_IP_BU0001A0042_03=$(az deployment group show --resource-group rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
-   export APPGW_PUBLIC_IP_BU0001A0042_04=$(az deployment group show --resource-group rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
-   ```
-
-1. Create two `A` Records for DNS
-
-   > :bulb: You can simulate this via a local hosts file modification. You're welcome to add a real DNS entries for your specific deployment's application domain name, if you have access to do so.
-
-   Map the Azure Application Gateway public IP addressess to the application domain name. To do that, please edit your hosts file (`C:\Windows\System32\drivers\etc\hosts` or `/etc/hosts`) and add the following records to the end:
+   > :book: The app team conducts a final acceptance test to be sure that traffic is flowing end-to-end as expected, so they place a request against the Azure Front Door endpoint.
 
    ```bash
-   ${APPGW_PUBLIC_IP_BU0001A0042_03} bicycle.contoso.com
-   ${APPGW_PUBLIC_IP_BU0001A0042_04} bicycle.contoso.com
+   # query the Azure Front Door FQDN
+   FRONTDOOR_FQDN=($(az deployment group show -g rg-global-front-door -n fd-001  --query properties.outputs.fqdn.value -o tsv))
    ```
 
-   > :warning: this multiple ip addressess to the same domain name mechanism might not work well in your system. If that is the case, you will need to alternate them manually to emulate this by commenting lines in and out.
+1. Browse to the site.
 
-1. Browse to the site (e.g. <https://bicycle.contoso.com>).
-
-   > :bulb: A TLS warning will be present due to using a self-signed certificate.
+   ```bash
+   echo $FRONTDOOR_FQDN
+   ```
 
 ## Validate Web Application Firewall functionality
 
 Your workload is placed behind a Web Application Firewall (WAF), which has rules designed to stop intentionally malicious activity. You can test this by triggering one of the built-in rules with a request that looks malcious.
 
-   > :bulb: This reference implementation enables the built-in OWASP 3.0 ruleset, in **Prevention** mode.
+> :bulb: This reference implementation enables the built-in OWASP 3.0 ruleset, in **Prevention** mode.
 
 ### Steps
 
-1. Browse to the site with the following appended to the URL: `?sql=DELETE%20FROM` (e.g. <https://bicycle.contoso.com/?sql=DELETE%20FROM>).
+1. Browse to the site with the following appended to the URL: `?sql=DELETE%20FROM` (e.g. <$FRONTDOOR_FQDN/?sql=DELETE%20FROM>).
 1. Observe that your request was blocked by Application Gateway's WAF rules and your workload never saw this potentially dangerous request.
 1. Blocked requests (along with other gateway data) will be visible in the attached Log Analytics workspace. Execute the following query to show WAF logs, for example.
 
@@ -71,16 +59,17 @@ You can also execute [queries](https://docs.microsoft.com/azure/azure-monitor/lo
 
 Azure Monitor is configured to [scrape Prometheus metrics](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-prometheus-integration) in your cluster. This reference implementation is configured to collect Prometheus metrics from two namespaces, as configured in [`container-azm-ms-agentconfig.yaml`](./cluster-baseline-settings/container-azm-ms-agentconfig.yaml). There are two pods configured to emit Prometheus metrics:
 
-* [Treafik](./workload/traefik.yaml) (in the `a0008` namespace)
-* [Kured](./cluster-baseline-settings/kured-1.4.0-dockerhub.yaml) (in the `cluster-baseline-settings` namespace)
+- [Treafik](./workload/traefik.yaml) (in the `a0008` namespace)
+- [Kured](./cluster-baseline-settings/kured-1.4.0-dockerhub.yaml) (in the `cluster-baseline-settings` namespace)
 
 ### Steps
 
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`).
 1. Select your Log Analytic Workspace resource.
 1. Click _Saved Searches_.
 
    :bulb: This reference implementation ships with some saved queries as an example of how you can write your own and manage them via ARM templates.
+
 1. Type _Prometheus_ in the filter.
 1. You are able to select and execute the saved query over the scraped metrics.
 
@@ -90,7 +79,7 @@ The example workload uses the standard dotnet logger interface, which are captur
 
 ### Steps
 
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`).
 1. Select your Log Analytic Workspace resource.
 1. Execute the following query
 
@@ -116,19 +105,19 @@ Azure will generate alerts on the health of your cluster and adjacent resources.
 
 An alert based on [Azure Monitor for containers information using a Kusto query](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts) was configured in this reference implementation.
 
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`).
 1. Select _Alerts_, then _Manage Rule Alerts_.
 1. There is an alert called "PodFailedScheduledQuery" that will be triggered based on the custom query response.
 
 An [Azure Advisor Alert](https://docs.microsoft.com/azure/advisor/advisor-overview) was configured as well in this reference implementation.
 
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`).
 1. Select _Alerts_, then _Manage Rule Alerts_.
 1. There is an alert called "AllAzureAdvisorAlert" that will be triggered based on new Azure Advisor alerts.
 
 A series of metric alerts were configured as well in this reference implementation.
 
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`).
 1. Select your cluster, then _Insights_.
 1. Select _Recommended alerts_ to see those enabled. (Feel free to enable/disable as you see fit.)
 
@@ -138,7 +127,7 @@ If you configured your third-party images to be pulled from your Azure Container
 
 ### Steps
 
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`) and then your Azure Container Registry instances (starts with `acraks`).
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`) and then your Azure Container Registry instances (starts with `acraks`).
 1. Select _Logs_.
 1. Execute the following query, for whatever time range is appropriate.
 
@@ -147,8 +136,8 @@ If you configured your third-party images to be pulled from your Azure Container
    | where OperationName == 'Pull'
    ```
 
-1. You should see logs for CSI, flux, kured, memcached, and traefik.  You'll see multiple for some as the image was pulled to multiple nodes to satisfy ReplicaSet/DaemonSet placement.
+1. You should see logs for CSI, flux, kured, memcached, and traefik. You'll see multiple for some as the image was pulled to multiple nodes to satisfy ReplicaSet/DaemonSet placement.
 
 ## Next step
 
-:arrow_forward: [Clean Up Azure Resources](./11-cleanup.md)
+:arrow_forward: [Clean Up Azure Resources](./12-cleanup.md)
