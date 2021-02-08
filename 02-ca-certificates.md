@@ -24,11 +24,11 @@ Following the steps below you will result the certificate needed for Azure Appli
    :warning: We called bicycle3 and bicycle4 each subdomain, but the DNS values could be not available. In that case, you can change the following values.
 
    ```bash
-   CLUSTER_SUBDOMAIN_03=bicycle3
-   CLUSTER_SUBDOMAIN_04=bicycle4
+   export CLUSTER_SUBDOMAIN_03=bicycle3
+   export CLUSTER_SUBDOMAIN_04=bicycle4
    ```
 
-   The expected result are two files like 'bicycle3.pfx' and 'bicycle4.pfx'.  
+   The expected result are two files like 'bicycle3.pfx' and 'bicycle4.pfx'.
    Please, continue with the following step only after getting that certificates.
 
 1. Base64 encode the client-facing certificate

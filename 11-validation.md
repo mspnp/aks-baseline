@@ -14,7 +14,7 @@ This section will help you to validate the workload is exposed correctly and res
 
    ```bash
    # query the Azure Front Door FQDN
-   FRONTDOOR_FQDN=($(az deployment group show -g rg-global-front-door -n fd-001  --query properties.outputs.fqdn.value -o tsv))
+   export FRONTDOOR_FQDN=($(az deployment group show -g rg-global-front-door -n fd-001  --query properties.outputs.fqdn.value -o tsv))
    ```
 
 1. Browse to the site.
