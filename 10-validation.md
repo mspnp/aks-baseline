@@ -14,26 +14,11 @@ This section will help you to validate the workload is exposed correctly and res
 
    ```bash
    # query the Azure Application Gateway Public Ip
-   export APPGW_PUBLIC_IP_BU0001A0042_03=$(az deployment group show --resource-group rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
-   export APPGW_PUBLIC_IP_BU0001A0042_04=$(az deployment group show --resource-group rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
+   export APPGW_FQDN_BU0001A0042_03=$(az deployment group show --resource-group rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.appGwFqdn.value -o tsv)
+   export APPGW_FQDN_BU0001A0042_04=$(az deployment group show --resource-group rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
    ```
 
-1. Create two `A` Records for DNS
-
-   > :bulb: You can simulate this via a local hosts file modification. You're welcome to add a real DNS entries for your specific deployment's application domain name, if you have access to do so.
-
-   Map the Azure Application Gateway public IP addressess to the application domain name. To do that, please edit your hosts file (`C:\Windows\System32\drivers\etc\hosts` or `/etc/hosts`) and add the following records to the end:
-
-   ```bash
-   ${APPGW_PUBLIC_IP_BU0001A0042_03} bicycle.contoso.com
-   ${APPGW_PUBLIC_IP_BU0001A0042_04} bicycle.contoso.com
-   ```
-
-   > :warning: this multiple ip addressess to the same domain name mechanism might not work well in your system. If that is the case, you will need to alternate them manually to emulate this by commenting lines in and out.
-
-1. Browse to the site (e.g. <https://bicycle.contoso.com>).
-
-   > :bulb: A TLS warning will be present due to using a self-signed certificate.
+1. Browse both sites (e.g. <https://bicycle3.eastus2.cloudapp.azure.com> and <bicycle4.eastus2.cloudapp.azure.com>).
 
 ## Validate Web Application Firewall functionality
 
