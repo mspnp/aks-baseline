@@ -8,7 +8,7 @@ LOCATION=$1
 RGNAMECLUSTER_BU0001A0042_03=$2
 RGNAMECLUSTER_BU0001A0042_04=$3
 RGNAMESPOKES=$4
-TENANT_ID=$5
+TENANTID_AZURERBAC=$5
 MAIN_SUBSCRIPTION=$6
 TARGET_VNET_RESOURCE_ID_BU0001A0042_03=$7
 TARGET_VNET_RESOURCE_ID_BU0001A0042_04=$8
@@ -156,7 +156,7 @@ spec:
           objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
           objectAlias: tls.key
           objectType: secret
-    tenantId: $TENANT_ID
+    tenantId: $TENANTID_AZURERBAC
 EOF
 
 kubectl create -f ../../workload/traefik-03.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_03}-admin
@@ -228,7 +228,7 @@ spec:
           objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
           objectAlias: tls.key
           objectType: secret
-    tenantId: $TENANT_ID
+    tenantId: $TENANTID_AZURERBAC
 EOF
 
 kubectl create -f ../../workload/traefik-04.yaml --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
@@ -257,7 +257,7 @@ echo "# Creating AAD Groups and users for the created cluster"
 echo ""
 
 # We are going to use a the new tenant which manage the cluster identity
-az login --allow-no-subscriptions -t $TENANT_ID
+az login --allow-no-subscriptions -t $K8S_RBAC_AAD_PROFILE_TENANTID
 
 #Creating AAD groups which will be associated to k8s out of the box cluster roles
 k8sClusterAdminAadGroupName_BU0001A0042_03="k8s-cluster-admin-clusterrole-${AKS_CLUSTER_NAME_BU0001A0042_03}"

@@ -15,6 +15,7 @@ After you are done exploring your deployed [AKS secure baseline cluster](./), yo
    az group delete -n rg-bu0001a0042-04
    az group delete -n rg-enterprise-networking-spokes
    az group delete -n rg-enterprise-networking-hubs
+   az group delete -n rg-global-front-door
    ```
 
 1. Purge Azure Key Vault
