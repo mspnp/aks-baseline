@@ -182,12 +182,12 @@
             "properties": {
                 "securityRules": [
                     {
-                        "name": "Allow443InBound",
+                        "name": "AllowOnlyFrontDoor",
                         "properties": {
-                            "description": "Allow ALL web traffic into 443. (If you wanted to allow-list specific IPs, this is where you'd list them.)",
+                            "description": "Allow only Front Door Access. (If you wanted to allow-list specific IPs, this is where you'd list them.)",
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
-                            "sourceAddressPrefix": "Internet",
+                            "sourceAddressPrefix": "AzureFrontDoor.Backend",
                             "destinationPortRange": "443",
                             "destinationAddressPrefix": "VirtualNetwork",
                             "access": "Allow",
