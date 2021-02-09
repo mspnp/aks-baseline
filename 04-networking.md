@@ -53,32 +53,34 @@ The following two resource groups will be created and populated with networking 
    az group create -n rg-enterprise-networking-spokes -l centralus
    ```
 
-1. Create the regional network hub.
+1. Create the two regional network hubs.
 
-   > :book: When the networking team created the regional hub for eastus2, it didn't have any spokes yet defined, yet the networking team always lays out a base hub following a standard pattern (defined in `hub-default.json`). A hub always contains an Azure Firewall (with some org-wide policies), Azure Bastion, a gateway subnet for VPN connectivity, and Azure Monitor for network observability. They follow Microsoft's recommended sizing for the subnets.
+   > :book: When the networking team created the regional hubs for eastus2 and westus2, they didn't have any spokes yet defined, yet the networking team always lays out the base hubs following a standard pattern (defined in `hub-default.json`). A hub always contains an Azure Firewall (with some org-wide policies), Azure Bastion, a gateway subnet for VPN connectivity, and Azure Monitor for network observability. They follow Microsoft's recommended sizing for the subnets.
    >
-   > The networking team has decided that `10.200.[0-9].0` will be where all regional hubs are homed on their organization's network space. The `eastus2` hub (created below) will be `10.200.0.0/24`.
+   > The networking team has decided that `10.200.[0-9].0` will be where all regional hubs are homed on their organization's network space. The `eastus2` and `westus2` hubs (created below) will be `10.200.3.0/24` and `10.200.4.0/24` respectively.
    >
    > Note: The subnets for Azure Bastion and on-prem connectivity are deployed in this reference architecture, but the resources are not deployed. Since this reference implementation is expected to be deployed isolated from existing infrastructure; these IP addresses should not conflict with any existing networking you have, even if those IP addresses overlap. If you need to connect the reference implementation to existing networks, you will need to adjust the IP space as per your requirements as to not conflict in the reference ARM templates.
 
    ```bash
    # [This takes about five minutes to run.]
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-default.json -p location=eastus2
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-default.json -n hub-eastus2 -p location=eastus2 hubVnetAddressSpace="10.200.3.0/24" azureFirewallSubnetAddressSpace="10.200.3.0/26" azureGatewaySubnetAddressSpace="10.200.3.64/27" azureBastionSubnetAddressSpace="10.200.3.96/27"
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-default.json -n hub-westus2 -p location=westus2 hubVnetAddressSpace="10.200.4.0/24" azureFirewallSubnetAddressSpace="10.200.4.0/26" azureGatewaySubnetAddressSpace="10.200.4.64/27" azureBastionSubnetAddressSpace="10.200.4.96/27"
    ```
 
-   The hub creation will emit the following:
+   The hub creations will emit the following:
 
    - `hubVnetId` - which you'll will query in future steps when creating connected regional spokes. E.g. `/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-hubs/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub`
 
-1. Create two spokes that will be home to the two AKS clusters for the app team working on the A0042 and its adjacent resources.
+1. Create two spokes that will be home to the AKS clusters for the app team working on the A0042 and its adjacent resources.
 
    > :book: The networking team receives a request from an app team in business unit (BU) 0001. This is for the creation of network spokes to house their new AKS-based application (Internally know as Application ID: A0042). The network team talks with the app team to understand their requirements and aligns those needs with Microsoft's best practices for a secure AKS cluster deployment. As part of the non-functional requirements, the app team mentions they need to run 2 separated infrastructure instances of the same application. This is because the app team wants to be ready in case AKS introduces _Preview Features_ that could be a breaking in upcoming major releases like happened with `containerd` as the new default runtime. In those situtations, the app team wants to do some A/B testing of A0042 without fully disrupting its live and stable AKS cluster. The networking team realizes they are going to need two different spokes to fullfil the app team's desire. They capture those specific requirements and deploy the spokes (`BU0001A0042-03` and `BU0001A0042-04`), aligning to those specs, and connecting it to the matching regional hub.
 
    ```bash
    # [This takes about ten minutes to run.]
-   RESOURCEID_VNET_HUB=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-default --query properties.outputs.hubVnetId.value -o tsv)
-   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-03 -p location=eastus2 hubVnetResourceId="${RESOURCEID_VNET_HUB}" appInstanceId="03" clusterVNetAddressPrefix="10.243.0.0/16" clusterNodesSubnetAddressPrefix="10.243.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.243.4.0/28" applicationGatewaySubnetAddressPrefix="10.243.4.16/28" subdomainName=${CLUSTER_SUBDOMAIN_03}
-   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-04 -p location=eastus2 hubVnetResourceId="${RESOURCEID_VNET_HUB}" appInstanceId="04" clusterVNetAddressPrefix="10.244.0.0/16" clusterNodesSubnetAddressPrefix="10.244.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.244.4.0/28" applicationGatewaySubnetAddressPrefix="10.244.4.16/28" subdomainName=${CLUSTER_SUBDOMAIN_04}
+   RESOURCEID_VNET_HUB_EASTUS2=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-eastus2 --query properties.outputs.hubVnetId.value -o tsv)
+   RESOURCEID_VNET_HUB_WESTUS2=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-westus2 --query properties.outputs.hubVnetId.value -o tsv)
+   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-03 -p location=eastus2 hubVnetResourceId="${RESOURCEID_VNET_HUB_EASTUS2}" appInstanceId="03" clusterVNetAddressPrefix="10.243.0.0/16" clusterNodesSubnetAddressPrefix="10.243.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.243.4.0/28" applicationGatewaySubnetAddressPrefix="10.243.4.16/28" subdomainName=${CLUSTER_SUBDOMAIN_03}
+   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-04 -p location=westus2 hubVnetResourceId="${RESOURCEID_VNET_HUB_WESTUS2}"  appInstanceId="04" clusterVNetAddressPrefix="10.244.0.0/16" clusterNodesSubnetAddressPrefix="10.244.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.244.4.0/28" applicationGatewaySubnetAddressPrefix="10.244.4.16/28" subdomainName=${CLUSTER_SUBDOMAIN_04}
    ```
 
    The spoke creation will emit the following:
@@ -95,7 +97,8 @@ The following two resource groups will be created and populated with networking 
     # [This takes about three minutes to run.]
    export RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
    export RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
-   az deployment group create --resource-group rg-enterprise-networking-hubs --template-file networking/hub-regionA.json --parameters location=eastus2 nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03}','${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04}']"
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-regionA.json -n hub-eastus2 -p location=eastus2 nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03}']" hubVnetAddressSpace="10.200.3.0/24" azureFirewallSubnetAddressSpace="10.200.3.0/26" azureGatewaySubnetAddressSpace="10.200.3.64/27" azureBastionSubnetAddressSpace="10.200.3.96/27"
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-regionA.json -n hub-westus2 -p location=westus2 nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04}']" hubVnetAddressSpace="10.200.4.0/24" azureFirewallSubnetAddressSpace="10.200.4.0/26" azureGatewaySubnetAddressSpace="10.200.4.64/27" azureBastionSubnetAddressSpace="10.200.4.96/27"
    ```
 
    > :book: At this point the networking team has delivered two spokes in which the BU 0001's app team can lay down their AKS clusters. The networking team provides the necessary information to the app teams for them to reference in their Infrastructure-as-Code artifacts.
