@@ -19,14 +19,14 @@ export APPGW_FQDN_BU0001A0042_04=$(az deployment group show --resource-group rg-
 1. Create resource group in order to deploy Azure Front Door
 
 ```bash
-az group create --name rg-global-front-door --location eastus2
+az group create --name rg-bu0001a0042-global --location centralus
 ```
 
 1. Deploy Azure Front Door
    > :book: Each client of our application around the world will be served for the closet AKS Cluster, and in case of some failure in one of the instance, the user will be serve for another.
 
 ```bash
-az deployment group create -g rg-global-front-door -f frontdoor-stamp.json -p backendNames="['${APPGW_FQDN_BU0001A0042_03}','${APPGW_FQDN_BU0001A0042_04}']"
+az deployment group create -g rg-bu0001a0042-global -f frontdoor-stamp.json -p backendNames="['${APPGW_FQDN_BU0001A0042_03}','${APPGW_FQDN_BU0001A0042_04}']"
 ```
 
 ### Next step
