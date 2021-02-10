@@ -2,7 +2,7 @@
 
 Many times we need a CA certificate, and this kind of certificates cost money and you need to own your domain.  
 In Azure there are services that do not support self-sign certificates, even though we are doing tests (Ex. Azure Front Door).  
-In order to do some test on Azure, we can create valid CA certificates for free.  
+In order to do some test on Azure, we can create a valid CA certificates for free.  
 This article allows you generate a CA certificate for your subdomain inside Azure.  
 For example
 
@@ -160,3 +160,26 @@ openssl pkcs12 -export -out $DOMAIN_NAME.pfx -inkey privkey.pem -in cert.pem -ce
 az group delete -n $RGNAME --yes
 
 ```
+
+### :book: Generate extra certificate
+
+If you need to generate other certificates in the same region, before deleting the resources, you could
+
+1. Set the new values in the variables, Ex.
+
+```bash
+FQDN=mysecondsubdomain.eastus.cloudapp.azure.com
+DOMAIN_NAME=mysecondsubdomain
+```
+
+2. In Azure Portal Change the name for the Public IP  
+   Public IP -> Configuration -> DNS name label  
+   Set the same value than $DOMAIN_NAME
+
+3. Go back to the root folder
+
+```bash
+cd ..
+```
+
+4. Start again on the step "Generate certificate base on [Cerbot](https://certbot.eff.org/)"

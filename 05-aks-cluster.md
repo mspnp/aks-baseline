@@ -30,8 +30,8 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 
    ```bash
    # [This takes about 30 minutes.]
-   az deployment group create -g rg-bu0001a0042-03 -f cluster-stamp.json -p location=eastus2 targetVnetResourceId=$RESOURCEID_VNET_BU0001A0042_03 clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE3} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} appInstanceId="03" clusterInternalLoadBalancerIpAddress="10.243.4.4" subdomainName=${CLUSTER_SUBDOMAIN_03}
-   az deployment group create -g rg-bu0001a0042-04 -f cluster-stamp.json -p location=westus2 targetVnetResourceId=$RESOURCEID_VNET_BU0001A0042_04 clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE4} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} appInstanceId="04" clusterInternalLoadBalancerIpAddress="10.244.4.4" subdomainName=${CLUSTER_SUBDOMAIN_04}
+   az deployment group create -g rg-bu0001a0042-03 -f cluster-stamp.json -p location=eastus2 targetVnetResourceId=$RESOURCEID_VNET_BU0001A0042_03 clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004203} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} appInstanceId="03" clusterInternalLoadBalancerIpAddress="10.243.4.4" subdomainName=${CLUSTER_SUBDOMAIN_03}
+   az deployment group create -g rg-bu0001a0042-04 -f cluster-stamp.json -p location=westus2 targetVnetResourceId=$RESOURCEID_VNET_BU0001A0042_04 clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004204} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} appInstanceId="04" clusterInternalLoadBalancerIpAddress="10.244.4.4" subdomainName=${CLUSTER_SUBDOMAIN_04}
    ```
 
    > Alteratively, you could have updated the [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) file and deployed as above, using `-p "@azuredeploy.parameters.prod.json"` instead of providing the individual key-value pairs.
@@ -69,12 +69,12 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 
       > :bulb:
       >
-      > - Use the env var value of `APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE3` and `APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE4`
+      > - Use the env var value of `APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004203` and `APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004204`
       > - Ideally fetching this secret from a platform-managed secret store such as [Azure KeyVault](https://github.com/marketplace/actions/azure-key-vault-get-secrets)
 
       ```bash
-      echo $APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE3
-      echo $APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE4
+      echo $APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004203
+      echo $APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004204
       ```
 
    1. Create `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64` secret in your GitHub repository. For more information, please take a look at [Creating encrypted secrets for a repository](https://docs.github.com/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository).

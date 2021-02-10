@@ -21,14 +21,14 @@ Following the steps below you will result the certificate needed for Azure Appli
 
    Create a CA certificate for each Azure Application Gateway. You can use your company domain or try get a certificate for each domain using [Azure Subdomain Certificates Generation](./certificate-generation/README.md).
 
-   :warning: We called bicycle3 and bicycle4 each subdomain, but the DNS values could be not available. In that case, you can change the following values.
+   :warning: We are waiting for two certificates in the following example (Please, pay attention the regions). We called bu0001a004203 (eastus2) and bu0001a004204 (westus2) each subdomain, but the DNS values could be not available. In that case, you can change the following values.
 
    ```bash
-   CLUSTER_SUBDOMAIN_03=bicycle3
-   CLUSTER_SUBDOMAIN_04=bicycle4
+   export CLUSTER_SUBDOMAIN_03=bu0001a004203
+   export CLUSTER_SUBDOMAIN_04=bu0001a004204
    ```
 
-   The expected result are two files like 'bicycle3.pfx' and 'bicycle4.pfx'.
+   The expected result are two files like 'bu0001a004203.pfx' and 'bu0001a004204.pfx'.
    Please, continue with the following step only after getting that certificates.
 
 1. Base64 encode the client-facing certificate
@@ -36,8 +36,8 @@ Following the steps below you will result the certificate needed for Azure Appli
    :bulb: No matter if you used a certificate from your organization or you generated one from above, you'll need the certificate (as `.pfx`) to be base 64 encoded for proper storage in Key Vault later.
 
    ```bash
-   APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE3=$(cat $CLUSTER_SUBDOMAIN_03.pfx | base64 | tr -d '\n')
-   APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE4=$(cat $CLUSTER_SUBDOMAIN_04.pfx | base64 | tr -d '\n')
+   export APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004203=$(cat $CLUSTER_SUBDOMAIN_03.pfx | base64 | tr -d '\n')
+   export APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004204=$(cat $CLUSTER_SUBDOMAIN_04.pfx | base64 | tr -d '\n')
    ```
 
 1. Generate the wildcard certificate for the AKS Ingress Controller
