@@ -77,5 +77,10 @@ az keyvault purge --name kv-${AKS_CLUSTER_NAME_BU0001A0042_03} --location ${LOCA
 echo deleting key vault soft delete
 az keyvault purge --name kv-${AKS_CLUSTER_NAME_BU0001A0042_04} --location ${LOCATION}
 
+echo deleting azure policy assignments
+for p in $(az policy assignment list --disable-scope-strict-match --query "[?resourceGroup=='${RGNAMECLUSTER_BU0001A0042_03}'].name" -o tsv); do az policy assignment delete --name ${p} --resource-group ${RGNAMECLUSTER_BU0001A0042_03}; done
+for p in $(az policy assignment list --disable-scope-strict-match --query "[?resourceGroup=='${RGNAMECLUSTER_BU0001A0042_04}'].name" -o tsv); do az policy assignment delete --name ${p} --resource-group ${RGNAMECLUSTER_BU0001A0042_04}; done
+
+
 #Remove the Azure Policy assignments scoped to the cluster's resource group. To identify those created by this implementation,
 # look for ones that are prefixed with [your-cluster-name] .
