@@ -21,14 +21,15 @@ Following the steps below you will result the certificate needed for Azure Appli
 
    Create a CA certificate for each Azure Application Gateway. You can use your company domain or try get a certificate for each domain using [Azure Subdomain Certificates Generation](./certificate-generation/README.md).
 
-   :warning: We are waiting for two certificates in the following example (Please, pay attention the regions). We called bu0001a004203 (eastus2) and bu0001a004204 (westus2) each subdomain, but the DNS values could be not available. In that case, you can change the following values.
+   :warning: We are waiting for two certificates in the following example (Please, pay attention the regions where the certs are needed). We called CLUSTER_SUBDOMAIN_03 and CLUSTER_SUBDOMAIN_04 each subdomain. You can change the name if you desire.
 
    ```bash
-   export CLUSTER_SUBDOMAIN_03=bu0001a004203
-   export CLUSTER_SUBDOMAIN_04=bu0001a004204
+   USER_NAME=$(az ad signed-in-user show --query 'mailNickname' -o tsv)
+   export CLUSTER_SUBDOMAIN_03=${USER_NAME//.}-region1
+   export CLUSTER_SUBDOMAIN_04=${USER_NAME//.}-region2
    ```
 
-   The expected result are two files like 'bu0001a004203.pfx' and 'bu0001a004204.pfx'.
+   The expected result are two files like '$CLUSTER_SUBDOMAIN_03.pfx' and '$CLUSTER_SUBDOMAIN_04.pfx'.
    Please, continue with the following step only after getting that certificates.
 
 1. Base64 encode the client-facing certificate

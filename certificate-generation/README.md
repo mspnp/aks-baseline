@@ -53,20 +53,23 @@ az deployment group create -g "${RGNAME}" --template-file "resources-stamp.json"
 
 #Read the url generated. We will generate a certificate for this domain
 FQDN=$(az deployment group show -g $RGNAME -n cert-0001 --query properties.outputs.fqdn.value -o tsv)
+
+# Getting the Storage account name
+STORAGE_ACCOUNT_NAME=$(az deployment group show -g $RGNAME -n cert-0001 --query properties.outputs.storageAccountName.value -o tsv)
 ```
 
 - :heavy_plus_sign: Add a Azure Blob container and upload a file
 
 ```bash
 # Create a Container on the Storage Account provided
-az storage container create --account-name $DOMAIN_NAME --name verificationdata --auth-mode login --public-access container
+az storage container create --account-name $STORAGE_ACCOUNT_NAME --name verificationdata --auth-mode login --public-access container
 
 # Create a Local File
 echo Microsoft>test.txt
 
 # Upload that file
 az storage blob upload \
- --account-name $DOMAIN_NAME \
+ --account-name $STORAGE_ACCOUNT_NAME \
  --container-name verificationdata \
  --name test.txt \
  --file ./test.txt \
@@ -78,7 +81,7 @@ az storage blob upload \
 
 ```bash
 # We can access the file inside the blob
-echo https://$DOMAIN_NAME.blob.core.windows.net/verificationdata/test.txt
+echo https://$STORAGE_ACCOUNT_NAME.blob.core.windows.net/verificationdata/test.txt
 
 # The Azure Application Gateway is exposing the Azure Blob
 echo http://$FQDN/verificationdata/test.txt
@@ -114,7 +117,7 @@ At this point you need to follow the Cerbot instructions
 
 ```bash
 az storage blob upload \
- --account-name $DOMAIN_NAME \
+ --account-name $STORAGE_ACCOUNT_NAME \
  --container-name verificationdata \
  --name -Nahn2wS1fLeqGwqjDBIWxSpL5U4mlb_oA50wsPeoqk.txt \
  --file ./-Nahn2wS1fLeqGwqjDBIWxSpL5U4mlb_oA50wsPeoqk.txt \
