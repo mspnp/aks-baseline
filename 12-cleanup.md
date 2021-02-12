@@ -27,7 +27,7 @@ After you are done exploring your deployed [AKS secure baseline cluster](./), yo
    az keyvault purge -n $KEYVAULT_NAME_BU0001A0042_04
    ```
 
-1. Delete your Policy Assignments
+1. [Remove the Azure Policy assignments](https://portal.azure.com/#blade/Microsoft_Azure_Policy/PolicyMenuBlade/Compliance) scoped to the cluster's resource group. To identify those created by this implementation, look for ones that are prefixed with `[your-cluster-name] `. Alternatively you could execute the following commmand:
 
    ```bash
    for p in $(az policy assignment list --disable-scope-strict-match --query "[?resourceGroup=='rg-bu0001a0042-03'].name" -o tsv); do az policy assignment delete --name ${p} --resource-group rg-bu0001a0042-03; done
