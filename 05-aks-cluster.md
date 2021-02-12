@@ -43,7 +43,7 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
       ```bash
       # Create an Azure Service Principal
       az ad sp create-for-rbac --name "github-workflow-aks-cluster" --sdk-auth --skip-assignment > sp.json
-      export APP_ID=$(grep -oP '(?<="clientId": ").*?[^\\](?=",)' sp.json)
+      APP_ID=$(grep -oP '(?<="clientId": ").*?[^\\](?=",)' sp.json)
 
       # Wait for propagation
       until az ad sp show --id ${APP_ID} &> /dev/null ; do echo "Waiting for Azure AD propagation" && sleep 5; done

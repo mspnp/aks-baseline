@@ -28,7 +28,7 @@ Following the steps below you will result the certificate needed for Azure Appli
    CLUSTER_SUBDOMAIN_04=bicycle4
    ```
 
-   The expected result are two files like 'bicycle3.pfx' and 'bicycle4.pfx'.  
+   The expected result are two files like 'bicycle3.pfx' and 'bicycle4.pfx'.
    Please, continue with the following step only after getting that certificates.
 
 1. Base64 encode the client-facing certificate
@@ -36,8 +36,8 @@ Following the steps below you will result the certificate needed for Azure Appli
    :bulb: No matter if you used a certificate from your organization or you generated one from above, you'll need the certificate (as `.pfx`) to be base 64 encoded for proper storage in Key Vault later.
 
    ```bash
-   export APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE3=$(cat $CLUSTER_SUBDOMAIN_03.pfx | base64 | tr -d '\n')
-   export APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE4=$(cat $CLUSTER_SUBDOMAIN_04.pfx | base64 | tr -d '\n')
+   APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE3=$(cat $CLUSTER_SUBDOMAIN_03.pfx | base64 | tr -d '\n')
+   APP_GATEWAY_LISTENER_CERTIFICATE_BICYCLE4=$(cat $CLUSTER_SUBDOMAIN_04.pfx | base64 | tr -d '\n')
    ```
 
 1. Generate the wildcard certificate for the AKS Ingress Controller
@@ -53,7 +53,7 @@ Following the steps below you will result the certificate needed for Azure Appli
    :bulb: No matter if you used a certificate from your organization or you generated one from above, you'll need the public certificate (as `.crt` or `.cer`) to be base 64 encoded for proper storage in Key Vault later.
 
    ```bash
-   export AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64=$(cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt | base64 | tr -d '\n')
+   AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64=$(cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt | base64 | tr -d '\n')
    ```
 
 ### Next step

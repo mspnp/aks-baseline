@@ -95,8 +95,8 @@ The following two resource groups will be created and populated with networking 
 
    ```bash
     # [This takes about three minutes to run.]
-   export RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
-   export RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
+   RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
+   RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
    az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-regionA.json -n hub-eastus2 -p location=eastus2 nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03}']" hubVnetAddressSpace="10.200.3.0/24" azureFirewallSubnetAddressSpace="10.200.3.0/26" azureGatewaySubnetAddressSpace="10.200.3.64/27" azureBastionSubnetAddressSpace="10.200.3.96/27"
    az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-regionA.json -n hub-westus2 -p location=westus2 nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04}']" hubVnetAddressSpace="10.200.4.0/24" azureFirewallSubnetAddressSpace="10.200.4.0/26" azureGatewaySubnetAddressSpace="10.200.4.64/27" azureBastionSubnetAddressSpace="10.200.4.96/27"
    ```
