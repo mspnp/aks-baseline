@@ -26,10 +26,9 @@
                 "name": "Standard"
             },
             "properties": {
-                "ipAddress": "52.190.27.192",
-                "publicIPAddressVersion": "IPv4",
                 "publicIPAllocationMethod": "Static",
                 "idleTimeoutInMinutes": 4,
+                "publicIPAddressVersion": "IPv4",
                 "dnsSettings": {
                     "domainNameLabel": "[parameters('subdomainName')]",
                     "fqdn":  "[concat(parameters('subdomainName'),'.',parameters('location'),'.cloudapp.azure.com')]"
