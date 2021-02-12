@@ -1,6 +1,6 @@
 # Azure Front Door
 
-Now that you have the your AKS clusters working, follow the steps below to create Azure Front Door.
+Now that you have a workload deployed, the [ASP.NET Core Docker sample web app](./10-workload.md), you can follow the steps below to create Azure Front Door.
 Azure Front Door always routes traffic to the fastest and available (healthy) backend. The Azure Application Gateway of each AKS Cluster will be each Azure Front Door backend.
 We will reach two goals:
 
@@ -32,4 +32,4 @@ We will reach two goals:
 
 ### Next step
 
-:arrow_forward: [End to End Validation](./11-validation.md)
+:arrow_forward: [End to End Validation](./12-validation.md)

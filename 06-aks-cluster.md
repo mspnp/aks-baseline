@@ -1,6 +1,6 @@
 # Deploy the AKS Cluster
 
-Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS clusters and its adjacent Azure resources.
+Now that the [cluster prequisites and shared Azure service instances are provisioned](./05-cluster-prerequisites.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS clusters and its adjacent Azure resources.
 
 ## Steps
 
@@ -134,4 +134,4 @@ This deployment creates an SLA-backed Azure Container Registry for your cluster'
 
 ### Next step
 
-:arrow_forward: [Place the cluster under GitOps management](./06-gitops.md)
+:arrow_forward: [Place the cluster under GitOps management](./07-gitops.md)

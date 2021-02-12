@@ -71,4 +71,4 @@ Following the steps below you will result the certificate needed for Azure Appli
 
 ### Next step
 
-:arrow_forward: [Deploy the AKS cluster](./05-aks-cluster.md)
+:arrow_forward: [Deploy the AKS cluster prerequisites](./05-cluster-prerequisites.md)

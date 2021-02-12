@@ -1,6 +1,6 @@
 # Place the Cluster Under GitOps Management
 
-Now that [the AKS cluster](./05-aks-cluster.md) has been deployed, the next step to configure a GitOps management solution on our cluster, Flux in this case.
+Now that [the AKS cluster](./06-aks-cluster.md) has been deployed, the next step to configure a GitOps management solution on our cluster, Flux in this case.
 
 ## Steps
 
@@ -107,4 +107,4 @@ Generally speaking, this will be the last time you should need to use `kubectl` 
 
 ### Next step
 
-:arrow_forward: [Prepare for the workload by installing its prerequisites](./07-workload-prerequisites.md)
+:arrow_forward: [Prepare for the workload by installing its prerequisites](./08-workload-prerequisites.md)
