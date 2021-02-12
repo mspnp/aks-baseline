@@ -56,19 +56,19 @@ A deployment of AKS-hosted workloads typically experiences a separation of dutie
 There are considerations that must be addressed before you start deploying your cluster. Do I have enough permissions in my subscription and AD tenant to do a deployment of this size? How much of this will be handled by my team directly vs having another team be responsible?
 
 - [ ] Begin by ensuring you [install and meet the prerequisites](./01-prerequisites.md)
-- [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./02-ca-certificates.md)
-- [ ] [Plan your Azure Active Directory integration](./03-aad.md)
+- [ ] [Plan your Azure Active Directory integration](./02-aad.md)
 
 ### 2. Build target network
 
 Microsoft recommends AKS be deploy into a carefully planned network; sized appropriately for your needs and with proper network observability. Organizations typically favor a traditional hub-spoke model, which is reflected in this implementation. While this is a standard hub-spoke model, there are fundamental sizing and portioning considerations included that should be understood.
 
-- [ ] [Build the hub-spoke network](./04-networking.md)
+- [ ] [Build the hub-spoke network](./03-networking.md)
 
 ### 3. Deploying the cluster
 
 This is the heart of the guidance in this reference implementation; paired with prior network topology guidance. Here you will deploy the Azure resources for your cluster and the adjacent services such as Azure Application Gateway WAF, Azure Monitor, Azure Container Registry, and Azure Key Vault. This is also where you put the cluster under GitOps orchestration.
 
+- [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./04-ca-certificates.md)
 - [ ] [Deploy the AKS cluster and supporting services](./05-aks-cluster.md)
 - [ ] [Place the cluster under GitOps management](./06-gitops.md)
 

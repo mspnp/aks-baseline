@@ -79,8 +79,8 @@ The following two resource groups will be created and populated with networking 
    # [This takes about ten minutes to run.]
    RESOURCEID_VNET_HUB_EASTUS2=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-eastus2 --query properties.outputs.hubVnetId.value -o tsv)
    RESOURCEID_VNET_HUB_WESTUS2=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-westus2 --query properties.outputs.hubVnetId.value -o tsv)
-   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-03 -p location=eastus2 hubVnetResourceId="${RESOURCEID_VNET_HUB_EASTUS2}" appInstanceId="03" clusterVNetAddressPrefix="10.243.0.0/16" clusterNodesSubnetAddressPrefix="10.243.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.243.4.0/28" applicationGatewaySubnetAddressPrefix="10.243.4.16/28" subdomainName=${CLUSTER_SUBDOMAIN_03}
-   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-04 -p location=westus2 hubVnetResourceId="${RESOURCEID_VNET_HUB_WESTUS2}"  appInstanceId="04" clusterVNetAddressPrefix="10.244.0.0/16" clusterNodesSubnetAddressPrefix="10.244.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.244.4.0/28" applicationGatewaySubnetAddressPrefix="10.244.4.16/28" subdomainName=${CLUSTER_SUBDOMAIN_04}
+   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-03 -p location=eastus2 hubVnetResourceId="${RESOURCEID_VNET_HUB_EASTUS2}" appInstanceId="03" clusterVNetAddressPrefix="10.243.0.0/16" clusterNodesSubnetAddressPrefix="10.243.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.243.4.0/28" applicationGatewaySubnetAddressPrefix="10.243.4.16/28"
+   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-04 -p location=westus2 hubVnetResourceId="${RESOURCEID_VNET_HUB_WESTUS2}"  appInstanceId="04" clusterVNetAddressPrefix="10.244.0.0/16" clusterNodesSubnetAddressPrefix="10.244.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.244.4.0/28" applicationGatewaySubnetAddressPrefix="10.244.4.16/28"
    ```
 
    The spoke creation will emit the following:
@@ -107,4 +107,4 @@ The following two resource groups will be created and populated with networking 
 
 ### Next step
 
-:arrow_forward: [Deploy the AKS cluster](./05-aks-cluster.md)
+:arrow_forward: [Generate your client-facing TLS certificate](./04-ca-certificates.md)

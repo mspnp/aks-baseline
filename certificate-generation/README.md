@@ -38,21 +38,24 @@ az account set -s XXXX
   We are going to use a Azure Application Gateway on top of Azure Blob Storage to do that.
 
 ```bash
-#Your resource group name
+# Your resource group name
 RGNAME=rg-certi-let-encrypt
-#Azure location of the domain
+# Azure location of the domain
 LOCATION=eastus
-#Your subdomain name
+# Your subdomain name
 DOMAIN_NAME=mysubdomain
+
+# Set your domain name
+FQDN=mysubdomain.eastus.cloudapp.azure.com
+
+# Optional, we can use an existent public ip with dns name
+# PUBLIC_IP_RESOURCE_ID=
 
 # Resource group creation
 az group create --name "${RGNAME}" --location "${LOCATION}"
 
 # Resource deployment. Public Ip (with DNS name), Virtual Network, Storage Account and Application Gateway
-az deployment group create -g "${RGNAME}" --template-file "resources-stamp.json"  --name "cert-0001" --parameters location=$LOCATION subdomainName=$DOMAIN_NAME
-
-#Read the url generated. We will generate a certificate for this domain
-FQDN=$(az deployment group show -g $RGNAME -n cert-0001 --query properties.outputs.fqdn.value -o tsv)
+az deployment group create -g "${RGNAME}" --template-file "resources-stamp.json"  --name "cert-0001" --parameters location=$LOCATION subdomainName=$DOMAIN_NAME #ipResourceId=$PUBLIC_IP_RESOURCE_ID
 
 # Getting the Storage account name
 STORAGE_ACCOUNT_NAME=$(az deployment group show -g $RGNAME -n cert-0001 --query properties.outputs.storageAccountName.value -o tsv)

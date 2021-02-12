@@ -13,16 +13,25 @@
             "metadata": {
                 "description": "Domain region"
             }
+        },
+        "ipResourceId":{
+            "type": "string",
+            "defaultValue": "newIp",
+            "metadata": {
+                "description": "ipResouceId"
+            }
         }
     },
     "variables": {
         "subdomain" : "[replace(parameters('subdomainName'),'.','')]",
-        "storageAccountName": "[replace(replace(variables('subdomain'), '_', ''),'-','')]"
+        "storageAccountName": "[replace(replace(variables('subdomain'), '_', ''),'-','')]",
+        "appGatewayPublicIp":"[if(equals(parameters('ipResourceId'),'newIp'), resourceId('Microsoft.Network/publicIpAddresses',variables('subdomain')), parameters('ipResourceId'))]"
     },
     "resources": [
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2020-05-01",
+            "condition" : "[equals(parameters('ipResourceId'),'newIp')]",
             "name": "[variables('subdomain')]",
             "location": "[parameters('location')]",
             "sku": {
@@ -142,7 +151,8 @@
             "name": "[variables('subdomain')]",
             "location":  "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('subdomain'),'default')]"
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('subdomain'),'default')]",
+                "[resourceId('Microsoft.Network/publicIpAddresses',variables('subdomain'))]"
             ],
             "properties": {
                 "sku": {
@@ -167,7 +177,7 @@
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses',variables('subdomain'))]"
+                                "id": "[variables('appGatewayPublicIp')]"
                             }
                         }
                     }
@@ -302,10 +312,6 @@
         "storageAccountName": {
             "type": "string",
             "value": "[variables('storageAccountName')]"
-        },
-        "fqdn": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('subdomain'))).dnsSettings.fqdn]"
         }
     }
 }

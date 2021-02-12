@@ -1,6 +1,6 @@
 # Generate your Client-Facing and AKS Ingress Controller TLS Certificates
 
-Now that you have the [prerequisites](./01-prerequisites.md) met, follow the steps below to create the TLS certificates that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS Ingress Controller. If you already have access to an appropriate certificates, or can procure them from your organization, consider doing so and skipping the certificate generation steps. The following will describe using certs for instructive purposes only.
+Now, follow the steps below to create the TLS certificates that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS Ingress Controller. If you already have access to an appropriate certificates, or can procure them from your organization, consider doing so and skipping the certificate generation steps. The following will describe using certs for instructive purposes only.
 
 ## Expected results
 
@@ -15,18 +15,30 @@ Following the steps below you will result the certificate needed for Azure Appli
 
 1. Generate a client-facing TLS certificate
 
-   > :book: Contoso Bicycle needs to procure a CA certificate for the web site. As this is going to be a user-facing site, they purchase an EV cert from their CA. This will serve in front of the Azure Application Gateway. They will also procure another one, a standard cert, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing.
+   > :book: The organization needs to procure a CA certificate for the web site. As this is going to be a user-facing site, they purchase an EV cert from their CA. This will serve in front of the Azure Application Gateway. They will also procure another one, a standard cert, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing.
 
    :warning: Azure Front Door does not support self-signed certificates.
 
-   Create a CA certificate for each Azure Application Gateway. You can use your company domain or try get a certificate for each domain using [Azure Subdomain Certificates Generation](./certificate-generation/README.md).
+   Create a CA certificate for each Azure Application Gateway. You can try get a certificate for each domain using [Azure Subdomain Certificates Generation](./certificate-generation/README.md).
 
-   :warning: We are waiting for two certificates in the following example (Please, pay attention the regions where the certs are needed). We called CLUSTER_SUBDOMAIN_03 and CLUSTER_SUBDOMAIN_04 each subdomain. You can change the name if you desire.
+   We are waiting for two certificates:
 
    ```bash
-   USER_NAME=$(az ad signed-in-user show --query 'mailNickname' -o tsv)
-   export CLUSTER_SUBDOMAIN_03=${USER_NAME//.}-region1
-   export CLUSTER_SUBDOMAIN_04=${USER_NAME//.}-region2
+   ## Get the FQDN which we need certificates for
+   APPGW_FQDN_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n  spoke-BU0001A0042-03 --query properties.outputs.appGwFqdn.value -o tsv)
+   APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n  spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
+
+   ## Get the Public Ip resource Id. They will be useful in order to generate the certificates base on them.
+   APPGW_IP_RESOURCE_ID_03=$(az deployment group show -g rg-enterprise-networking-spokes -n  spoke-BU0001A0042-03 --query properties.outputs.appGatewayPublicIp.value -o tsv)
+   APPGW_IP_RESOURCE_ID_04=$(az deployment group show -g rg-enterprise-networking-spokes -n  spoke-BU0001A0042-04 --query properties.outputs.appGatewayPublicIp.value -o tsv)
+
+   ## Get the subdomain names selected by the script
+   CLUSTER_SUBDOMAIN_03=$(az deployment group show -g rg-enterprise-networking-spokes -n  spoke-BU0001A0042-03 --query properties.outputs.subdomainName.value -o tsv)
+   CLUSTER_SUBDOMAIN_04=$(az deployment group show -g rg-enterprise-networking-spokes -n  spoke-BU0001A0042-04 --query properties.outputs.subdomainName.value -o tsv)
+
+   ##Show the certificates needed
+   echo $APPGW_FQDN_BU0001A0042_03
+   echo $APPGW_FQDN_BU0001A0042_04
    ```
 
    The expected result are two files like '$CLUSTER_SUBDOMAIN_03.pfx' and '$CLUSTER_SUBDOMAIN_04.pfx'.
@@ -59,4 +71,4 @@ Following the steps below you will result the certificate needed for Azure Appli
 
 ### Next step
 
-:arrow_forward: [Prep for Azure Active Directory integration](./03-aad.md)
+:arrow_forward: [Deploy the AKS cluster](./05-aks-cluster.md)

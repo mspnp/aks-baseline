@@ -106,12 +106,15 @@ az deployment group create -g "${RGNAMESPOKES}" -f "../../networking/spoke-BU000
           clusterVNetAddressPrefix="10.243.0.0/16" \
           clusterNodesSubnetAddressPrefix="10.243.0.0/22" \
           clusterIngressServicesSubnetAdressPrefix="10.243.4.0/28" \
-          applicationGatewaySubnetAddressPrefix="10.243.4.16/28" \
-          subdomainName=$CLUSTER_SUBDOMAIN1
+          applicationGatewaySubnetAddressPrefix="10.243.4.16/28" 
 
 RESOURCE_ID_VNET1=$(az deployment group show -g $RGNAMESPOKES -n spoke-BU0001A0042-03 --query properties.outputs.clusterVnetResourceId.value -o tsv)
 
 NODEPOOL_SUBNET_RESOURCE_IDS_SPOKE_BU0001A0042_03=$(az deployment group show -g $RGNAMESPOKES -n spoke-BU0001A0042-03 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
+
+SUBDOMAIN_BU0001A0042_03=$(az deployment group show -g $RGNAMESPOKES -n spoke-BU0001A0042-03 --query properties.outputs.subdomainName.value -o tsv)
+
+APPGW_FQDN_BU0001A0042_03=$(az deployment group show -g $RGNAMESPOKES -n  spoke-BU0001A0042-03 --query properties.outputs.appGwFqdn.value -o tsv)
 
 az deployment group  create -g "${RGNAMESPOKES}" -f "../../networking/spoke-BU0001A0042.json" -n "spoke-BU0001A0042-04" -p \
           location=$LOCATION \
@@ -120,12 +123,15 @@ az deployment group  create -g "${RGNAMESPOKES}" -f "../../networking/spoke-BU00
           clusterVNetAddressPrefix="10.244.0.0/16" \
           clusterNodesSubnetAddressPrefix="10.244.0.0/22" \
           clusterIngressServicesSubnetAdressPrefix="10.244.4.0/28" \
-          applicationGatewaySubnetAddressPrefix="10.244.4.16/28" \
-          subdomainName=$CLUSTER_SUBDOMAIN2
+          applicationGatewaySubnetAddressPrefix="10.244.4.16/28" 
 
 RESOURCE_ID_VNET2=$(az deployment group show -g $RGNAMESPOKES -n spoke-BU0001A0042-04 --query properties.outputs.clusterVnetResourceId.value -o tsv)
 
 NODEPOOL_SUBNET_RESOURCE_IDS_SPOKE_BU0001A0042_04=$(az deployment group show -g $RGNAMESPOKES -n spoke-BU0001A0042-04 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
+
+SUBDOMAIN_BU0001A0042_04=$(az deployment group show -g $RGNAMESPOKES -n spoke-BU0001A0042-04 --query properties.outputs.subdomainName.value -o tsv)
+
+APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g $RGNAMESPOKES -n  spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
 
 #Main Network Update. Third arm template execution and catching outputs. This might take about 3 minutes
 
@@ -144,8 +150,15 @@ cat << EOF
 
 NEXT STEPS
 ---- -----
+Generate certificate for:
 
-./1-cluster-stamp.sh $LOCATION $RGNAMECLUSTER1 $RGNAMECLUSTER2 $RGNAMESPOKES $TENANTID_AZURERBAC $MAIN_SUBSCRIPTION $RESOURCE_ID_VNET1 $RESOURCE_ID_VNET2 $AADOBJECTID_GROUP_CLUSTERADMIN $K8S_RBAC_AAD_PROFILE_TENANTID $AKS_ENDUSER_NAME $AKS_ENDUSER_PASSWORD $RGNAME_FRONT_DOOR $CLUSTER_SUBDOMAIN1 $CLUSTER_SUBDOMAIN2
+$APPGW_FQDN_BU0001A0042_03
+
+$APPGW_FQDN_BU0001A0042_04
+
+then execute:
+
+./1-cluster-stamp.sh $LOCATION $RGNAMECLUSTER1 $RGNAMECLUSTER2 $RGNAMESPOKES $TENANTID_AZURERBAC $MAIN_SUBSCRIPTION $RESOURCE_ID_VNET1 $RESOURCE_ID_VNET2 $AADOBJECTID_GROUP_CLUSTERADMIN $K8S_RBAC_AAD_PROFILE_TENANTID $AKS_ENDUSER_NAME $AKS_ENDUSER_PASSWORD $RGNAME_FRONT_DOOR $SUBDOMAIN_BU0001A0042_03 $SUBDOMAIN_BU0001A0042_04
 
 EOF
 
