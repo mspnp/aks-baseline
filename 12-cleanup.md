@@ -15,7 +15,7 @@ After you are done exploring your deployed [AKS secure baseline cluster](./), yo
    az group delete -n rg-bu0001a0042-04
    az group delete -n rg-enterprise-networking-spokes
    az group delete -n rg-enterprise-networking-hubs
-   az group delete -n rg-global-front-door
+   az group delete -n rg-bu0001a0042-global
    ```
 
 1. Purge Azure Key Vault
@@ -23,12 +23,18 @@ After you are done exploring your deployed [AKS secure baseline cluster](./), yo
    > Because this reference implementation enables soft delete on Key Vault, execute a purge so your next deployment of this implementation doesn't run into a naming conflict.
 
    ```bash
-   az keyvault purge -n $KEYVAULT_NAME
+   az keyvault purge -n $KEYVAULT_NAME_BU0001A0042_03
+   az keyvault purge -n $KEYVAULT_NAME_BU0001A0042_04
+   ```
+
+1. [Remove the Azure Policy assignments](https://portal.azure.com/#blade/Microsoft_Azure_Policy/PolicyMenuBlade/Compliance) scoped to the cluster's resource group. To identify those created by this implementation, look for ones that are prefixed with `[your-cluster-name] `. Alternatively you could execute the following commmand:
+
+   ```bash
+   for p in $(az policy assignment list --disable-scope-strict-match --query "[?resourceGroup=='rg-bu0001a0042-03'].name" -o tsv); do az policy assignment delete --name ${p} --resource-group rg-bu0001a0042-03; done
+   for p in $(az policy assignment list --disable-scope-strict-match --query "[?resourceGroup=='rg-bu0001a0042-04'].name" -o tsv); do az policy assignment delete --name ${p} --resource-group rg-bu0001a0042-04; done
    ```
 
 1. If any temporary changes were made to Azure AD or Azure RBAC permissions consider removing those as well.
-
-1. [Remove the Azure Policy assignments](https://portal.azure.com/#blade/Microsoft_Azure_Policy/PolicyMenuBlade/Compliance) scoped to the cluster's resource group. To identify those created by this implementation, look for ones that are prefixed with `[your-cluster-name] `.
 
 ### Next step
 

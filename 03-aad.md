@@ -35,8 +35,8 @@ Following the steps below you will result in an Azure AD configuration that will
    If you already have a security group that is appropriate for your cluster's admin service accounts, use that group and skip this step. If using your own group or your Azure AD administrator created one for you to use; you will need to update the group name throughout the reference implementation.
 
    ```bash
-   export AADOBJECTNAME_GROUP_CLUSTERADMIN=cluster-admins-bu0001a004200
-   export AADOBJECTID_GROUP_CLUSTERADMIN=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN --description "Principals in this group are cluster admins in the bu0001a004200 cluster." --query objectId -o tsv)
+   AADOBJECTNAME_GROUP_CLUSTERADMIN=cluster-admins-bu0001a004200
+   AADOBJECTID_GROUP_CLUSTERADMIN=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN --description "Principals in this group are cluster admins in the bu0001a004200 cluster." --query objectId -o tsv)
    ```
 
 1. Create a "break-glass" cluster administrator user for your AKS cluster.
@@ -44,9 +44,9 @@ Following the steps below you will result in an Azure AD configuration that will
    > :book: The organization knows the value of having a break-glass admin user for their critical infrastructure. The app team requests a cluster admin user and Azure AD Admin team proceeds with the creation of the user in Azure AD.
 
    ```bash
-   export TENANTDOMAIN_K8SRBAC=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
-   export AADOBJECTNAME_USER_CLUSTERADMIN=bu0001a004200-admin
-   export AADOBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${AADOBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${AADOBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-login --password ChangeMebu0001a0042AdminChangeMe --query objectId -o tsv)
+   TENANTDOMAIN_K8SRBAC=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
+   AADOBJECTNAME_USER_CLUSTERADMIN=bu0001a004200-admin
+   AADOBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${AADOBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${AADOBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-login --password ChangeMebu0001a0042AdminChangeMe --query objectId -o tsv)
    ```
 
 1. Add the cluster admin user(s) to the cluster admin security group.
