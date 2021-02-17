@@ -2,7 +2,7 @@
 
 Many times we need a CA certificate, and this kind of certificates cost money and you need to own your domain.  
 In Azure there are services that do not support self-sign certificates, even though we are doing tests (Ex. Azure Front Door).  
-In order to do some test on Azure, we can create valid CA certificates for free.  
+In order to do some test on Azure, we can create a valid CA certificates for free.  
 This article allows you generate a CA certificate for your subdomain inside Azure.  
 For example
 
@@ -38,35 +38,41 @@ az account set -s XXXX
   We are going to use a Azure Application Gateway on top of Azure Blob Storage to do that.
 
 ```bash
-#Your resource group name
+# Your resource group name
 RGNAME=rg-certi-let-encrypt
-#Azure location of the domain
+# Azure location of the domain
 LOCATION=eastus
-#Your subdomain name
+# Your subdomain name
 DOMAIN_NAME=mysubdomain
+
+# Set your domain name
+FQDN=mysubdomain.eastus.cloudapp.azure.com
+
+# Optional, we can use an existent public ip with dns name
+# PUBLIC_IP_RESOURCE_ID=
 
 # Resource group creation
 az group create --name "${RGNAME}" --location "${LOCATION}"
 
 # Resource deployment. Public Ip (with DNS name), Virtual Network, Storage Account and Application Gateway
-az deployment group create -g "${RGNAME}" --template-file "resources-stamp.json"  --name "cert-0001" --parameters location=$LOCATION subdomainName=$DOMAIN_NAME
+az deployment group create -g "${RGNAME}" --template-file "resources-stamp.json"  --name "cert-0001" --parameters location=$LOCATION subdomainName=$DOMAIN_NAME #ipResourceId=$PUBLIC_IP_RESOURCE_ID
 
-#Read the url generated. We will generate a certificate for this domain
-FQDN=$(az deployment group show -g $RGNAME -n cert-0001 --query properties.outputs.fqdn.value -o tsv)
+# Getting the Storage account name
+STORAGE_ACCOUNT_NAME=$(az deployment group show -g $RGNAME -n cert-0001 --query properties.outputs.storageAccountName.value -o tsv)
 ```
 
 - :heavy_plus_sign: Add a Azure Blob container and upload a file
 
 ```bash
 # Create a Container on the Storage Account provided
-az storage container create --account-name $DOMAIN_NAME --name verificationdata --auth-mode login --public-access container
+az storage container create --account-name $STORAGE_ACCOUNT_NAME --name verificationdata --auth-mode login --public-access container
 
 # Create a Local File
 echo Microsoft>test.txt
 
 # Upload that file
 az storage blob upload \
- --account-name $DOMAIN_NAME \
+ --account-name $STORAGE_ACCOUNT_NAME \
  --container-name verificationdata \
  --name test.txt \
  --file ./test.txt \
@@ -78,7 +84,7 @@ az storage blob upload \
 
 ```bash
 # We can access the file inside the blob
-echo https://$DOMAIN_NAME.blob.core.windows.net/verificationdata/test.txt
+echo https://$STORAGE_ACCOUNT_NAME.blob.core.windows.net/verificationdata/test.txt
 
 # The Azure Application Gateway is exposing the Azure Blob
 echo http://$FQDN/verificationdata/test.txt
@@ -114,7 +120,7 @@ At this point you need to follow the Cerbot instructions
 
 ```bash
 az storage blob upload \
- --account-name $DOMAIN_NAME \
+ --account-name $STORAGE_ACCOUNT_NAME \
  --container-name verificationdata \
  --name -Nahn2wS1fLeqGwqjDBIWxSpL5U4mlb_oA50wsPeoqk.txt \
  --file ./-Nahn2wS1fLeqGwqjDBIWxSpL5U4mlb_oA50wsPeoqk.txt \
@@ -160,3 +166,26 @@ openssl pkcs12 -export -out $DOMAIN_NAME.pfx -inkey privkey.pem -in cert.pem -ce
 az group delete -n $RGNAME --yes
 
 ```
+
+### :book: Generate extra certificate
+
+If you need to generate other certificates in the same region, before deleting the resources, you could
+
+1. Set the new values in the variables, Ex.
+
+```bash
+FQDN=mysecondsubdomain.eastus.cloudapp.azure.com
+DOMAIN_NAME=mysecondsubdomain
+```
+
+2. In Azure Portal Change the name for the Public IP  
+   Public IP -> Configuration -> DNS name label  
+   Set the same value than $DOMAIN_NAME
+
+3. Go back to the root folder
+
+```bash
+cd ..
+```
+
+4. Start again on the step "Generate certificate base on [Cerbot](https://certbot.eff.org/)"

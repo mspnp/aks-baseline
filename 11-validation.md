@@ -23,6 +23,8 @@ This section will help you to validate the workload is exposed correctly and res
    echo $FRONTDOOR_FQDN
    ```
 
+   > :warning: A new Front Door creation or any updates to an existing Front Door takes about 3 to 5 minutes for global deployment. That means in about 3 to 5 minutes, your Front Door configuration will be deployed across all of our POPs globally
+
 ## Validate Web Application Firewall functionality
 
 Your workload is placed behind a Web Application Firewall (WAF), which has rules designed to stop intentionally malicious activity. You can test this by triggering one of the built-in rules with a request that looks malcious.

@@ -64,12 +64,6 @@
             "metadata": {
                 "description": "The spokes's regional affinity, must be the same as the hub's location. All resources tied to this spoke will also be homed in this region. The network team maintains this approved regional list which is a subset of zones with Availability Zone support."
             }
-        },
-        "subdomainName": {
-            "type": "String",
-            "metadata": {
-                "description": "The name used for the azure subdomain in order to create the dns entry for app gateway public ip"
-            }
         }
     },
     "variables": {
@@ -85,7 +79,8 @@
         "hubLaWorkspaceResourceId": "[resourceId(variables('hubRgName'), 'Microsoft.OperationalInsights/workspaces', variables('hubLaWorkspaceName'))]",
         "toHubPeeringName": "[concat('spoke-to-', variables('hubNetworkName'))]",
 
-        "primaryClusterPipName": "[concat('pip-', variables('appId'))]"
+        "primaryClusterPipName": "[concat('pip-', variables('appId'))]",
+        "subdomainName": "[concat('region', uniqueString(resourceId(variables('hubRgName'), 'Microsoft.Network/publicIpAddresses', variables('primaryClusterPipName'))) )]"
     },
     "resources": [
         {
@@ -420,8 +415,8 @@
                 "idleTimeoutInMinutes": 4,
                 "publicIPAddressVersion": "IPv4",
                 "dnsSettings": {
-                    "domainNameLabel": "[parameters('subdomainName')]",
-                    "fqdn":  "[concat(parameters('subdomainName'),'.',parameters('location'),'.cloudapp.azure.com')]"
+                    "domainNameLabel": "[variables('subdomainName')]",
+                    "fqdn":  "[concat(variables('subdomainName'),'.',parameters('location'),'.cloudapp.azure.com')]"
                 }
             }
         }
@@ -438,6 +433,14 @@
         "appGwFqdn": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('primaryClusterPipName'))).dnsSettings.fqdn]"
+        },
+        "subdomainName": {
+            "type": "string",
+            "value": "[variables('subdomainName')]"
+        },
+        "appGatewayPublicIp": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/publicIPAddresses', variables('primaryClusterPipName'))]"
         }
     }
 }

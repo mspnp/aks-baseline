@@ -6,11 +6,11 @@ In the prior step, you [generated the user-facing TLS certificate](./02-ca-certi
 
 Following the steps below you will result in an Azure AD configuration that will be used for Kubernetes control plane (Cluster API) authorization.
 
-| Object                         | Purpose                                                 |
-|--------------------------------|---------------------------------------------------------|
-| A Cluster Admin Security Group | Will be mapped to `cluster-admin` Kubernetes role.      |
-| A Cluster Admin User           | Represents at least one break-glass cluster admin user. |
-| Cluster Admin Group Membership | Association between the Cluster Admin User(s) and the Cluster Admin Security Group. |
+| Object                         | Purpose                                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| A Cluster Admin Security Group | Will be mapped to `cluster-admin` Kubernetes role.                                                                       |
+| A Cluster Admin User           | Represents at least one break-glass cluster admin user.                                                                  |
+| Cluster Admin Group Membership | Association between the Cluster Admin User(s) and the Cluster Admin Security Group.                                      |
 | _Additional Security Groups_   | _Optional._ A security group (and its memberships) for the other built-in and custom Kubernetes roles you plan on using. |
 
 ## Steps
@@ -69,4 +69,4 @@ Following the steps below you will result in an Azure AD configuration that will
 
 ### Next step
 
-:arrow_forward: [Deploy the hub-spoke network topology](./04-networking.md)
+:arrow_forward: [Deploy the hub-spoke network topology](./03-networking.md)
