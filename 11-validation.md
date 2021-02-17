@@ -14,7 +14,7 @@ This section will help you to validate the workload is exposed correctly and res
 
    ```bash
    # query the Azure Front Door FQDN
-   FRONTDOOR_FQDN=$(az deployment group show -g rg-bu0001a0042-global -n frontdoor-stamp --query properties.outputs.fqdn.value -o tsv)
+   FRONTDOOR_FQDN=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.fqdn.value -o tsv)
    ```
 
 1. Browse to the site.
@@ -142,4 +142,4 @@ If you configured your third-party images to be pulled from your Azure Container
 
 ## Next step
 
-:arrow_forward: [Clean Up Azure Resources](./13-cleanup.md)
+:arrow_forward: [Clean Up Azure Resources](./12-cleanup.md)

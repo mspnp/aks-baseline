@@ -40,4 +40,4 @@ The cluster now has an [Traefik configured with a TLS certificate](./09-secret-m
 
 ### Next step
 
-:arrow_forward: [Front Door](./11-frontdoor.md)
+:arrow_forward: [End to End Validation](./11-validation.md)
