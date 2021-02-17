@@ -1,0 +1,229 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "0.0.0.5",
+    "parameters": {
+        "location": {
+            "defaultValue": "eastus2",
+            "type": "string",
+            "allowedValues": [
+                "australiaeast",
+                "canadacentral",
+                "centralus",
+                "eastus",
+                "eastus2",
+                "westus2",
+                "francecentral",
+                "germanywestcentral",
+                "northeurope",
+                "southafricanorth",
+                "southcentralus",
+                "uksouth",
+                "westeurope",
+                "japaneast",
+                "southeastasia"
+            ],
+            "metadata": {
+                "description": "AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region. This needs to be the same region as the vnet provided in these parameters."
+            }
+        },
+        "geoRedundancyLocation": {
+            "defaultValue": "centralus",
+            "type": "string",
+            "allowedValues": [
+                "australiasoutheast",
+                "canadaeast",
+                "eastus2",
+                "westus",
+                "centralus",
+                "westcentralus",
+                "francesouth",
+                "germanynorth",
+                "westeurope",
+                "ukwest",
+                "northeurope",
+                "japanwest",
+                "southafricawest",
+                "northcentralus",
+                "eastasia",
+                "eastus",
+                "westus2",
+                "francecentral",
+                "uksouth",
+                "japaneast",
+                "southeastasia"
+            ],
+            "metadata": {
+                "description": "For Azure resources that support native geo-redunancy, provide the location the redundant service will have its secondary. Should be different than the location parameter and ideally should be a paired region - https://docs.microsoft.com/azure/best-practices-availability-paired-regions. This region does not need to support availability zones."
+            }
+        }
+    },
+    "variables": {
+        "subRgUniqueString": "[uniqueString('aks',subscription().subscriptionId, resourceGroup().id)]",
+
+        "logAnalyticsWorkspaceName": "[concat('la-', variables('subRgUniqueString'))]",
+        "defaultAcrName": "[concat('acraks', variables('subRgUniqueString'))]",
+
+        "acrPrivateDnsZonesName": "privatelink.azurecr.io"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2020-06-01",
+            "name": "[variables('acrPrivateDnsZonesName')]",
+            "location": "global",
+            "comments": "Enabling Azure Container Registry Private Link on vnet.",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2020-08-01",
+            "name": "[variables('logAnalyticsWorkspaceName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "sku": {
+                    "name": "PerGB2018"
+                },
+                "retentionInDays": 30
+            },
+            "resources": [
+                {
+                    "type": "savedSearches",
+                    "apiVersion": "2020-08-01",
+                    "name": "AllPrometheus",
+                    "dependsOn": [
+                        "[concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
+                    ],
+                    "properties": {
+                        "eTag": "*",
+                        "category": "Prometheus",
+                        "displayName": "All collected Prometheus information",
+                        "query": "InsightsMetrics | where Namespace == \"prometheus\"",
+                        "version": 1
+                    }
+                },
+                {
+                    "type": "savedSearches",
+                    "apiVersion": "2020-08-01",
+                    "name": "ForbiddenReponsesOnIngress",
+                    "dependsOn": [
+                        "[concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
+                    ],
+                    "properties": {
+                        "eTag": "*",
+                        "category": "Prometheus",
+                        "displayName": "Increase number of forbidden response on the Ingress Controller",
+                        "query": "let value = toscalar(InsightsMetrics | where Namespace == \"prometheus\" and Name == \"traefik_entrypoint_requests_total\" | where parse_json(Tags).code == 403 | summarize Value = avg(Val) by bin(TimeGenerated, 5m) | summarize min = min(Value)); InsightsMetrics | where Namespace == \"prometheus\" and Name == \"traefik_entrypoint_requests_total\" | where parse_json(Tags).code == 403 | summarize AggregatedValue = avg(Val)-value by bin(TimeGenerated, 5m) | order by TimeGenerated | render barchart",
+                        "version": 1
+                    }
+                },
+                {
+                    "type": "savedSearches",
+                    "apiVersion": "2020-08-01",
+                    "name": "NodeRebootRequested",
+                    "dependsOn": [
+                        "[concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
+                    ],
+                    "properties": {
+                        "eTag": "*",
+                        "category": "Prometheus",
+                        "displayName": "Nodes reboot required by kured",
+                        "query": "InsightsMetrics | where Namespace == \"prometheus\" and Name == \"kured_reboot_required\" | where Val > 0",
+                        "version": 1
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.ContainerRegistry/registries",
+            "apiVersion": "2020-11-01-preview",
+            "name": "[variables('defaultAcrName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Premium"
+            },
+            "properties": {
+                "adminUserEnabled": false,
+                "networkRuleSet": {
+                    "defaultAction": "Deny",
+                    "virtualNetworkRules": [],
+                    "ipRules": []
+                },
+                "policies": {
+                    "quarantinePolicy": {
+                        "status": "disabled"
+                    },
+                    "trustPolicy": {
+                        "type": "Notary",
+                        "status": "disabled"
+                    },
+                    "retentionPolicy": {
+                        "days": 15,
+                        "status": "enabled"
+                    }
+                },
+                "publicNetworkAccess": "Disabled",
+                "encryption": {
+                    "status": "disabled"
+                },
+                "dataEndpointEnabled": true,
+                "networkRuleBypassOptions": "AzureServices",
+                "zoneRedundancy": "Disabled"
+            },
+            "resources": [
+                {
+                    "type": "replications",
+                    "apiVersion": "2019-05-01",
+                    "name": "[parameters('geoRedundancyLocation')]",
+                    "location": "[parameters('geoRedundancyLocation')]",
+                    "dependsOn": [
+                        "[variables('defaultAcrName')]"
+                    ],
+                    "properties": {}
+                },
+                {
+                    "type": "providers/diagnosticSettings",
+                    "apiVersion": "2017-05-01-preview",
+                    "name": "Microsoft.Insights/default",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
+                        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+                    ],
+                    "properties": {
+                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+                        "metrics": [
+                            {
+                                "timeGrain": "PT1M",
+                                "category": "AllMetrics",
+                                "enabled": true
+                            }
+                        ],
+                        "logs": [
+                            {
+                                "category": "ContainerRegistryRepositoryEvents",
+                                "enabled": true
+                            },
+                            {
+                                "category": "ContainerRegistryLoginEvents",
+                                "enabled": true
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "outputs": {
+        "logAnalyticsWorkspaceName": {
+            "type": "string",
+            "value": "[variables('logAnalyticsWorkspaceName')]"
+        },
+        "containerRegistryName": {
+            "type": "string",
+            "value": "[variables('defaultAcrName')]"
+        },
+        "acrPrivateDnsZonesName": {
+            "type": "string",
+            "value": "[variables('acrPrivateDnsZonesName')]"
+        }
+    }
+}
