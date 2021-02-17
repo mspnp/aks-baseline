@@ -134,6 +134,60 @@
             ]
         },
         {
+            "type": "Microsoft.OperationsManagement/solutions",
+            "apiVersion": "2015-11-01-preview",
+            "name": "[concat('ContainerInsights(', variables('logAnalyticsWorkspaceName'),')')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+            ],
+            "properties": {
+                "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+            },
+            "plan": {
+                "name": "[concat('ContainerInsights(', variables('logAnalyticsWorkspaceName'),')')]",
+                "product": "OMSGallery/ContainerInsights",
+                "promotionCode": "",
+                "publisher": "Microsoft"
+            }
+        },
+        {
+            "type": "Microsoft.OperationsManagement/solutions",
+            "apiVersion": "2015-11-01-preview",
+            "name": "[concat('AzureAppGatewayAnalytics(', variables('logAnalyticsWorkspaceName'),')')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+            ],
+            "properties": {
+                "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+            },
+            "plan": {
+                "name": "[concat('AzureAppGatewayAnalytics(', variables('logAnalyticsWorkspaceName'),')')]",
+                "product": "OMSGallery/AzureAppGatewayAnalytics",
+                "promotionCode": "",
+                "publisher": "Microsoft"
+            }
+        },
+        {
+            "type": "Microsoft.OperationsManagement/solutions",
+            "apiVersion": "2015-11-01-preview",
+            "name": "[concat('KeyVaultAnalytics(', variables('logAnalyticsWorkspaceName'),')')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+            ],
+            "properties": {
+                "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+            },
+            "plan": {
+                "name": "[concat('KeyVaultAnalytics(', variables('logAnalyticsWorkspaceName'),')')]",
+                "product": "OMSGallery/KeyVaultAnalytics",
+                "promotionCode": "",
+                "publisher": "Microsoft"
+            }
+        },
+        {
             "type": "Microsoft.ContainerRegistry/registries",
             "apiVersion": "2020-11-01-preview",
             "name": "[variables('defaultAcrName')]",
@@ -213,17 +267,17 @@
         }
     ],
     "outputs": {
-        "logAnalyticsWorkspaceName": {
+        "logAnalyticsWorkspaceId": {
             "type": "string",
-            "value": "[variables('logAnalyticsWorkspaceName')]"
+            "value": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
         },
-        "containerRegistryName": {
+        "containerRegistryId": {
             "type": "string",
-            "value": "[variables('defaultAcrName')]"
+            "value": "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]"
         },
-        "acrPrivateDnsZonesName": {
+        "acrPrivateDnsZonesId": {
             "type": "string",
-            "value": "[variables('acrPrivateDnsZonesName')]"
+            "value": "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
         }
     }
 }
