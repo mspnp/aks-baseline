@@ -20,7 +20,7 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
    ```bash
    # [This takes less than one minute.]
    az group create --name rg-bu0001a0042-03 --location eastus2
-   az group create --name rg-bu0001a0042-04 --location westus2
+   az group create --name rg-bu0001a0042-04 --location centralus
    ```
 
 1. Get the corresponding AKS cluster spoke VNet resource IDs for the app team working on the application A0042.
