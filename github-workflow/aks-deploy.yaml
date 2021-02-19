@@ -40,7 +40,7 @@ on:
 env:
   RESOURCE_GROUP_LOCATION: '<resource-group-location>'                              # The location where the resource group is going to be created
   RESOURCE_GROUP: '<resource-group-name>'                                           # The name for the AKS cluster resource group
-  AKS_LOCATION: '<resource-group-localtion>'                                        # The location where the AKS cluster is going to be deployed
+  AKS_LOCATION: '<resource-group-location>'                                        # The location where the AKS cluster is going to be deployed
   GEO_REDUNDANCY_LOCATION: '<geo-redundancy-location>'                              # The location for Azure resources that support native geo-redunancy. Should be different than the location parameter and ideally should be a paired region - https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions. This region does not need to support availability zones.
   TARGET_VNET_RESOURCE_ID: '<cluster-spoke-vnet-resource-id>'                       # The regional network spoke VNet Resource ID that the cluster will be joined to
   K8S_RBAC_AAD_PROFILE_TENANTID: '<tenant-id-with-user-admin-permissions>'          # The tenant to integrate AKS-managed Azure AD
