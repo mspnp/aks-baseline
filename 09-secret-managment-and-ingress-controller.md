@@ -47,36 +47,36 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
 1. Create the Traefik's Secret Provider Class resource.
 
-> The Ingress Controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
->
-> Create a `SecretProviderClass` resource with with your Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
+   > The Ingress Controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
+   >
+   > Create a `SecretProviderClass` resource with with your Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
 
-```bash
-KEYVAULT_NAME_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp  --query properties.outputs.keyVaultName.value -o tsv)
-cat <<EOF | kubectl create --context $AKS_CLUSTER_NAME_BU0001A0042_03 -f -
-apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
-kind: SecretProviderClass
-metadata:
-  name: aks-ingress-contoso-com-tls-secret-csi-akv
-  namespace: a0042
-spec:
-  provider: azure
-  parameters:
-    usePodIdentity: "true"
-    keyvaultName: $KEYVAULT_NAME_BU0001A0042_03
-    objects:  |
-      array:
-        - |
-          objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
-          objectAlias: tls.crt
-          objectType: cert
-        - |
-          objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
-          objectAlias: tls.key
-          objectType: secret
-    tenantId: $TENANTID_AZURERBAC
-EOF
-```
+   ```bash
+   KEYVAULT_NAME_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp  --query properties.outputs.keyVaultName.value -o tsv)
+   cat <<EOF | kubectl create --context $AKS_CLUSTER_NAME_BU0001A0042_03 -f -
+   apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+   kind: SecretProviderClass
+   metadata:
+     name: aks-ingress-contoso-com-tls-secret-csi-akv
+     namespace: a0042
+   spec:
+     provider: azure
+     parameters:
+       usePodIdentity: "true"
+       keyvaultName: $KEYVAULT_NAME_BU0001A0042_03
+       objects:  |
+         array:
+           - |
+             objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+             objectAlias: tls.crt
+             objectType: cert
+           - |
+             objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+             objectAlias: tls.key
+             objectType: secret
+       tenantId: $TENANTID_AZURERBAC
+   EOF
+   ```
 
 1. Import the Traefik container image to your container registry.
 
@@ -84,10 +84,10 @@ EOF
 
    ```bash
    # Get your ACR cluster name
-   ACR_NAME_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   ACR_NAME_BU0001A0042=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
 
    # Import ingress controller image hosted in public container registries
-   az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME_BU0001A0042_03
+   az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME_BU0001A0042
    ```
 
 1. Install the Traefik Ingress Controller.
@@ -162,9 +162,6 @@ EOF
              objectType: secret
        tenantId: $TENANTID_AZURERBAC
    EOF
-
-   ACR_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
-   az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME_BU0001A0042_04
 
    kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik-04.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
    kubectl wait --namespace a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04

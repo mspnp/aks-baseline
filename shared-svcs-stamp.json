@@ -275,6 +275,10 @@
             "type": "string",
             "value": "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]"
         },
+        "containerRegistryName": {
+            "type": "string",
+            "value": "[variables('defaultAcrName')]"
+        },
         "acrPrivateDnsZonesId": {
             "type": "string",
             "value": "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
