@@ -2,6 +2,16 @@
 
 In the prior step, you [generated the user-facing TLS certificate](./04-ca-certificates.md); now follow the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS cluster prerequisites and shared Azure service instances.
 
+## Expected results
+
+Following the steps below will result in the provisioning of the shared Azure resources needed for an AKS multi cluster solution.
+
+| Object                                | Purpose                                                                                                |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------|
+| Azure Container Registry              | A single Azure Container Registry instance for those  container images shared across multiple clusters |
+| Azure Private Dns Zone                | The Private Dns Zone for the Azure Container Registry. Later cluster can link their vNets to it        |
+| Azure Log Analytics Workspace         | A Centralized Log Analytics workspace where all the logs are collected                                 |
+
 ## Steps
 
 1. Create the shared services resource group for your AKS clusters.
