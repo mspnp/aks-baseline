@@ -1,6 +1,6 @@
 # Deploy the AKS cluster prerequisites and shared services
 
-Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS cluster prerequisites and shared Azure service instances.
+In the prior step, you [generated the user-facing TLS certificate](./04-ca-certificates.md); now follow the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS cluster prerequisites and shared Azure service instances.
 
 ## Steps
 
