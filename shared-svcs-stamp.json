@@ -266,81 +266,80 @@
                             }
                         ]
                     }
-                },
-
-                {
-                    "name": "PodFailedScheduledQuery",
-                    "type": "microsoft.insights/scheduledqueryrules",
-                    "location": "global",
-                    "apiVersion": "2021-02-01-preview",
-                    "tags": {},
-                    "properties": {
-                        "description": "Example from: https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts",
-                        "severity": 3,
-                        "enabled": true,
-                        "evaluationFrequency": "PT5M",
-                        "scopes": [
-                            "[subscription().id]"
-                        ],
-                        "windowSize": "PT5M",
-                        "overrideQueryTimeRange": "P2D",
-                        "criteria": {
-                            "allOf": [
-                                {
-                                    "query": "let trendBinSize = 1m;\r\nKubePodInventory\r\n| distinct ClusterName, TimeGenerated, _ResourceId\r\n| summarize ClusterSnapshotCount = count() by bin(TimeGenerated, trendBinSize), ClusterName, _ResourceId\r\n| join hint.strategy=broadcast (\r\nKubePodInventory\r\n| distinct ClusterName, Computer, PodUid, TimeGenerated, PodStatus\r\n| summarize TotalCount = count(),\r\nPendingCount = sumif(1, PodStatus =~ \"Pending\"),\r\nRunningCount = sumif(1, PodStatus =~ \"Running\"),\r\nSucceededCount = sumif(1, PodStatus =~ \"Succeeded\"),\r\nFailedCount = sumif(1, PodStatus =~ \"Failed\")\r\nby ClusterName, bin(TimeGenerated, trendBinSize)\r\n)\r\non ClusterName, TimeGenerated\r\n| extend UnknownCount = TotalCount - PendingCount - RunningCount - SucceededCount - FailedCount\r\n| project TimeGenerated,\r\nClusterName,\r\n_ResourceId,\r\nTotalCount = todouble(TotalCount) / ClusterSnapshotCount,\r\nPendingCount = todouble(PendingCount) / ClusterSnapshotCount,\r\nRunningCount = todouble(RunningCount) / ClusterSnapshotCount,\r\nSucceededCount = todouble(SucceededCount) / ClusterSnapshotCount,\r\nFailedCount = todouble(FailedCount) / ClusterSnapshotCount,\r\nUnknownCount = todouble(UnknownCount) / ClusterSnapshotCount",
-                                    "timeAggregation": "Average",
-                                    "metricMeasureColumn": "FailedCount",
-                                    "dimensions": [
-                                        {
-                                            "name": "ClusterName",
-                                            "operator": "Include",
-                                            "values": [
-                                                "*"
-                                            ]
-                                        }
-                                    ],
-                                    "resourceIdColumn": "_ResourceId",
-                                    "operator": "GreaterThan",
-                                    "threshold": 3,
-                                    "failingPeriods": {
-                                        "numberOfEvaluationPeriods": 1,
-                                        "minFailingPeriodsToAlert": 1
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "type": "microsoft.insights/activityLogAlerts",
-                    "apiVersion": "2017-04-01",
-                    "name": "AllAzureAdvisorAlert",
-                    "location": "Global",
-                    "properties": {
-                        "scopes": [
-                            "[subscription().id]"
-                        ],
-                        "condition": {
-                            "allOf": [
-                                {
-                                    "field": "category",
-                                    "equals": "Recommendation"
-                                },
-                                {
-                                    "field": "operationName",
-                                    "equals": "Microsoft.Advisor/recommendations/available/action"
-                                }
-                            ]
-                        },
-                        "actions": {
-                            "actionGroups": [
-                            ]
-                        },
-                        "enabled": true,
-                        "description": "All azure advisor alerts"
-                    }
                 }
             ]
+        },
+        {
+            "name": "PodFailedScheduledQuery",
+            "type": "microsoft.insights/scheduledqueryrules",
+            "location": "global",
+            "apiVersion": "2021-02-01-preview",
+            "tags": {},
+            "properties": {
+                "description": "Example from: https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts",
+                "severity": 3,
+                "enabled": true,
+                "evaluationFrequency": "PT5M",
+                "scopes": [
+                    "[subscription().id]"
+                ],
+                "windowSize": "PT5M",
+                "overrideQueryTimeRange": "P2D",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "query": "let trendBinSize = 1m;\r\nKubePodInventory\r\n| distinct ClusterName, TimeGenerated, _ResourceId\r\n| summarize ClusterSnapshotCount = count() by bin(TimeGenerated, trendBinSize), ClusterName, _ResourceId\r\n| join hint.strategy=broadcast (\r\nKubePodInventory\r\n| distinct ClusterName, Computer, PodUid, TimeGenerated, PodStatus\r\n| summarize TotalCount = count(),\r\nPendingCount = sumif(1, PodStatus =~ \"Pending\"),\r\nRunningCount = sumif(1, PodStatus =~ \"Running\"),\r\nSucceededCount = sumif(1, PodStatus =~ \"Succeeded\"),\r\nFailedCount = sumif(1, PodStatus =~ \"Failed\")\r\nby ClusterName, bin(TimeGenerated, trendBinSize)\r\n)\r\non ClusterName, TimeGenerated\r\n| extend UnknownCount = TotalCount - PendingCount - RunningCount - SucceededCount - FailedCount\r\n| project TimeGenerated,\r\nClusterName,\r\n_ResourceId,\r\nTotalCount = todouble(TotalCount) / ClusterSnapshotCount,\r\nPendingCount = todouble(PendingCount) / ClusterSnapshotCount,\r\nRunningCount = todouble(RunningCount) / ClusterSnapshotCount,\r\nSucceededCount = todouble(SucceededCount) / ClusterSnapshotCount,\r\nFailedCount = todouble(FailedCount) / ClusterSnapshotCount,\r\nUnknownCount = todouble(UnknownCount) / ClusterSnapshotCount",
+                            "timeAggregation": "Average",
+                            "metricMeasureColumn": "FailedCount",
+                            "dimensions": [
+                                {
+                                    "name": "ClusterName",
+                                    "operator": "Include",
+                                    "values": [
+                                        "*"
+                                    ]
+                                }
+                            ],
+                            "resourceIdColumn": "_ResourceId",
+                            "operator": "GreaterThan",
+                            "threshold": 3,
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": 1,
+                                "minFailingPeriodsToAlert": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "microsoft.insights/activityLogAlerts",
+            "apiVersion": "2017-04-01",
+            "name": "AllAzureAdvisorAlert",
+            "location": "Global",
+            "properties": {
+                "scopes": [
+                    "[subscription().id]"
+                ],
+                "condition": {
+                    "allOf": [
+                        {
+                            "field": "category",
+                            "equals": "Recommendation"
+                        },
+                        {
+                            "field": "operationName",
+                            "equals": "Microsoft.Advisor/recommendations/available/action"
+                        }
+                    ]
+                },
+                "actions": {
+                    "actionGroups": [
+                    ]
+                },
+                "enabled": true,
+                "description": "All azure advisor alerts"
+            }
         }
     ],
     "outputs": {
