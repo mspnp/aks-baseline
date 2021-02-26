@@ -29,7 +29,7 @@ This section will help you to validate the workload is exposed correctly and res
 
 ## Validate Web Application Firewall functionality
 
-Your workload is placed behind a Web Application Firewall (WAF), which has rules designed to stop intentionally malicious activity. You can test this by triggering one of the built-in rules with a request that looks malcious.
+Your workload is placed behind a Web Application Firewall (WAF), which has rules designed to stop intentionally malicious activity. You can test this by triggering one of the built-in rules with a request that looks malicious.
 
    > :bulb: This reference implementation enables the built-in OWASP 3.0 ruleset, in **Prevention** mode.
 
