@@ -1,6 +1,6 @@
 # Generate your Client-Facing and AKS Ingress Controller TLS Certificates
 
-Now, follow the steps below to create the TLS certificates that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS Ingress Controller. If you already have access to an appropriate certificates, or can procure them from your organization, consider doing so and skipping the certificate generation steps. The following will describe using certs for instructive purposes only.
+Now that the [hub-spoke network is provisioned](./03-networking.md), you can follow the steps below to create the TLS certificates for each region that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS Ingress Controller. If you already have access to an appropriate certificates, or can procure them from your organization, consider doing so and skipping the certificate generation steps. The following will describe using certs for instructive purposes only.
 
 ## Expected results
 
@@ -71,4 +71,4 @@ Following the steps below you will result the certificate needed for Azure Appli
 
 ### Next step
 
-:arrow_forward: [Deploy the AKS cluster](./05-aks-cluster.md)
+:arrow_forward: [Deploy the AKS cluster prerequisites](./05-cluster-prerequisites.md)

@@ -2,6 +2,24 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "0.0.0.5",
     "parameters": {
+        "logAnalyticsWorkspaceId": {
+            "type": "string",
+            "metadata": {
+                "description": "The shared Log Analytics workspace Id"
+            }
+        },
+        "containerRegistryId": {
+            "type": "string",
+            "metadata": {
+                "description": "The shared Azure Container Registry Id"
+            }
+        },
+        "acrPrivateDnsZonesId": {
+            "type": "string",
+            "metadata": {
+                "description": "The shared Azure Container Registry Private Endopoint Id"
+            }
+        },
         "appInstanceId": {
             "type": "string",
             "allowedValues": [
@@ -136,9 +154,9 @@
 
         "nodeResourceGroupName": "[concat('rg-', variables('clusterName'), '-nodepools')]",
         "clusterName": "[concat('aks-', variables('subRgUniqueString'))]",
-        "logAnalyticsWorkspaceName": "[concat('la-', variables('clusterName'))]",
-        "containerInsightsSolutionName": "[concat('ContainerInsights(', variables('logAnalyticsWorkspaceName'),')')]",
-        "defaultAcrName": "[concat('acraks', variables('subRgUniqueString'))]",
+
+        "containerRegistryResourceGroup": "[split(parameters('containerRegistryId'),'/')[4]]",
+        "containerRegistryName": "[split(parameters('containerRegistryId'),'/')[8]]",
 
         "vNetResourceGroup": "[split(parameters('targetVnetResourceId'),'/')[4]]",
         "vnetName": "[split(parameters('targetVnetResourceId'),'/')[8]]",
@@ -149,7 +167,6 @@
         "apwResourceId": "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]",
 
         "fqdnAppGateway": "[concat( parameters('subdomainName'),'.', parameters('location'),'.cloudapp.azure.com')]",
-        "acrPrivateDnsZonesName": "privatelink.azurecr.io",
         "akvPrivateDnsZonesName": "privatelink.vaultcore.azure.net",
 
         "clusterControlPlaneIdentityName": "[concat('mi-', variables('clusterName'), '-controlplane')]",
@@ -275,11 +292,10 @@
                     "type": "providers/diagnosticSettings",
                     "apiVersion": "2017-05-01-preview",
                     "dependsOn": [
-                        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
-                        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
                     ],
                     "properties": {
-                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+                        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
                         "logs": [
                             {
                                 "category": "AuditEvent",
@@ -354,32 +370,6 @@
                                 }
                             }
                         ]
-                    }
-                }
-            ]
-        },
-        {
-            "type": "Microsoft.Network/privateDnsZones",
-            "apiVersion": "2020-06-01",
-            "name": "[variables('acrPrivateDnsZonesName')]",
-            "location": "global",
-            "comments": "Enabling Azure Container Registry Private Link on vnet.",
-            "properties": {},
-            "resources": [
-                {
-                    "type": "virtualNetworkLinks",
-                    "apiVersion": "2020-06-01",
-                    "name": "[concat('to_', variables('vnetName'))]",
-                    "location": "global",
-                    "comments": "Enabling cluster vnet private zone DNS lookup - used by cluster vnet for direct DNS queries (ones not proxied via the hub).",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
-                    ],
-                    "properties": {
-                        "virtualNetwork": {
-                            "id": "[parameters('targetVnetResourceId')]"
-                        },
-                        "registrationEnabled": false
                     }
                 }
             ]
@@ -630,11 +620,10 @@
                     "apiVersion": "2017-05-01-preview",
                     "name": "/Microsoft.Insights/default",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]",
-                        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+                        "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]"
                     ],
                     "properties": {
-                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+                        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
                         "logs": [
                             {
                                 "category": "ApplicationGatewayAccessLog",
@@ -652,6 +641,35 @@
                     }
                 }
             ]
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "EnsureSpokeVnetIsLinkedToPrivateDnsZone",
+            "apiVersion": "2020-06-01",
+            "dependsOn": [],
+            "resourceGroup": "[variables('containerRegistryResourceGroup')]",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+                            "apiVersion": "2020-06-01",
+                            "name": "[concat('privatelink.azurecr.io/to_', variables('vnetName'))]",
+                            "location": "global",
+                            "comments": "Enabling cluster vnet private zone DNS lookup - used by cluster vnet for direct DNS queries (ones not proxied via the hub).",
+                            "properties": {
+                                "virtualNetwork": {
+                                    "id": "[parameters('targetVnetResourceId')]"
+                                },
+                                "registrationEnabled": false
+                            }
+                        }
+                    ]
+                }
+            }
         },
         {
             "type": "Microsoft.Resources/deployments",
@@ -725,283 +743,41 @@
             }
         },
         {
-            "type": "Microsoft.OperationalInsights/workspaces",
-            "apiVersion": "2020-08-01",
-            "name": "[variables('logAnalyticsWorkspaceName')]",
-            "location": "[parameters('location')]",
-            "properties": {
-                "sku": {
-                    "name": "PerGB2018"
-                },
-                "retentionInDays": 30
-            },
-            "resources": [
-                {
-                    "type": "savedSearches",
-                    "apiVersion": "2020-08-01",
-                    "name": "AllPrometheus",
-                    "dependsOn": [
-                        "[concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
-                    ],
-                    "properties": {
-                        "eTag": "*",
-                        "category": "Prometheus",
-                        "displayName": "All collected Prometheus information",
-                        "query": "InsightsMetrics | where Namespace == \"prometheus\"",
-                        "version": 1
-                    }
-                },
-                {
-                    "type": "savedSearches",
-                    "apiVersion": "2020-08-01",
-                    "name": "ForbiddenReponsesOnIngress",
-                    "dependsOn": [
-                        "[concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
-                    ],
-                    "properties": {
-                        "eTag": "*",
-                        "category": "Prometheus",
-                        "displayName": "Increase number of forbidden response on the Ingress Controller",
-                        "query": "let value = toscalar(InsightsMetrics | where Namespace == \"prometheus\" and Name == \"traefik_entrypoint_requests_total\" | where parse_json(Tags).code == 403 | summarize Value = avg(Val) by bin(TimeGenerated, 5m) | summarize min = min(Value)); InsightsMetrics | where Namespace == \"prometheus\" and Name == \"traefik_entrypoint_requests_total\" | where parse_json(Tags).code == 403 | summarize AggregatedValue = avg(Val)-value by bin(TimeGenerated, 5m) | order by TimeGenerated | render barchart",
-                        "version": 1
-                    }
-                },
-                {
-                    "type": "savedSearches",
-                    "apiVersion": "2020-08-01",
-                    "name": "NodeRebootRequested",
-                    "dependsOn": [
-                        "[concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
-                    ],
-                    "properties": {
-                        "eTag": "*",
-                        "category": "Prometheus",
-                        "displayName": "Nodes reboot required by kured",
-                        "query": "InsightsMetrics | where Namespace == \"prometheus\" and Name == \"kured_reboot_required\" | where Val > 0",
-                        "version": 1
-                    }
-                }
-            ]
-        },
-        {
-            "name": "PodFailedScheduledQuery",
-            "type": "Microsoft.Insights/scheduledQueryRules",
-            "apiVersion": "2018-04-16",
-            "location": "[parameters('location')]",
+            "type": "Microsoft.Resources/deployments",
+            "name": "EnsureClusterIdentityHasRbacToPullAcr",
+            "apiVersion": "2020-06-01",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions', variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))]"
             ],
+            "resourceGroup": "[variables('containerRegistryResourceGroup')]",
             "properties": {
-                "description": "Alert on pod Failed phase.",
-                "enabled": "true",
-                "source": {
-                    "query": "[concat('//https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts \r\n let endDateTime = now(); let startDateTime = ago(1h); let trendBinSize = 1m; let clusterName = \"',variables('clusterName'),'\"; KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | where ClusterName == clusterName | distinct ClusterName, TimeGenerated | summarize ClusterSnapshotCount = count() by bin(TimeGenerated, trendBinSize), ClusterName | join hint.strategy=broadcast ( KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | distinct ClusterName, Computer, PodUid, TimeGenerated, PodStatus | summarize TotalCount = count(), PendingCount = sumif(1, PodStatus =~ \"Pending\"), RunningCount = sumif(1, PodStatus =~ \"Running\"), SucceededCount = sumif(1, PodStatus =~ \"Succeeded\"), FailedCount = sumif(1, PodStatus =~ \"Failed\") by ClusterName, bin(TimeGenerated, trendBinSize) ) on ClusterName, TimeGenerated | extend UnknownCount = TotalCount - PendingCount - RunningCount - SucceededCount - FailedCount | project TimeGenerated, TotalCount = todouble(TotalCount) / ClusterSnapshotCount, PendingCount = todouble(PendingCount) / ClusterSnapshotCount, RunningCount = todouble(RunningCount) / ClusterSnapshotCount, SucceededCount = todouble(SucceededCount) / ClusterSnapshotCount, FailedCount = todouble(FailedCount) / ClusterSnapshotCount, UnknownCount = todouble(UnknownCount) / ClusterSnapshotCount| summarize AggregatedValue = avg(FailedCount) by bin(TimeGenerated, trendBinSize)')]",
-                    "dataSourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
-                    "queryType": "ResultCount"
-                },
-                "schedule": {
-                    "frequencyInMinutes": 5,
-                    "timeWindowInMinutes": 10
-                },
-                "action": {
-                    "odata.type": "Microsoft.WindowsAzure.Management.Monitoring.Alerts.Models.Microsoft.AppInsights.Nexus.DataContracts.Resources.ScheduledQueryRules.AlertingAction",
-                    "severity": 3,
-                    "trigger": {
-                        "thresholdOperator": "GreaterThan",
-                        "threshold": 3,
-                        "metricTrigger": {
-                            "thresholdOperator": "GreaterThan",
-                            "threshold": 2,
-                            "metricTriggerType": "Consecutive"
-                        }
-                    }
-                }
-            }
-        },
-        {
-            "type": "microsoft.insights/activityLogAlerts",
-            "apiVersion": "2017-04-01",
-            "name": "AllAzureAdvisorAlert",
-            "location": "Global",
-            "properties": {
-                "scopes": [
-                    "[resourceGroup().id]"
-                ],
-                "condition": {
-                    "allOf": [
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
                         {
-                            "field": "category",
-                            "equals": "Recommendation"
-                        },
-                        {
-                            "field": "operationName",
-                            "equals": "Microsoft.Advisor/recommendations/available/action"
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "apiVersion": "2020-04-01-preview",
+                            "name": "[guid(variables('containerRegistryName'), variables('acrPullRole'), variables('clusterControlPlaneIdentityName'))]",
+                            "scope": "[concat('Microsoft.ContainerRegistry/registries/', variables('containerRegistryName'))]",
+                            "properties": {
+                                "roleDefinitionId": "[variables('acrPullRole')]",
+                                "description": "Allows cluster identity to pull container images from this container registry.",
+                                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))).principalId]",
+                                "principalType": "ServicePrincipal"
+                            }
                         }
                     ]
-                },
-                "actions": {
-                    "actionGroups": [
-                    ]
-                },
-                "enabled": true,
-                "description": "All azure advisor alerts"
-            }
-        },
-        {
-            "type": "Microsoft.OperationsManagement/solutions",
-            "apiVersion": "2015-11-01-preview",
-            "name": "[variables('containerInsightsSolutionName')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
-            ],
-            "properties": {
-                "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
-            },
-            "plan": {
-                "name": "[variables('containerInsightsSolutionName')]",
-                "product": "OMSGallery/ContainerInsights",
-                "promotionCode": "",
-                "publisher": "Microsoft"
-            }
-        },
-        {
-            "type": "Microsoft.OperationsManagement/solutions",
-            "apiVersion": "2015-11-01-preview",
-            "name": "[concat('AzureAppGatewayAnalytics(', variables('logAnalyticsWorkspaceName'),')')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
-            ],
-            "properties": {
-                "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
-            },
-            "plan": {
-                "name": "[concat('AzureAppGatewayAnalytics(', variables('logAnalyticsWorkspaceName'),')')]",
-                "product": "OMSGallery/AzureAppGatewayAnalytics",
-                "promotionCode": "",
-                "publisher": "Microsoft"
-            }
-        },
-        {
-            "type": "Microsoft.OperationsManagement/solutions",
-            "apiVersion": "2015-11-01-preview",
-            "name": "[concat('KeyVaultAnalytics(', variables('logAnalyticsWorkspaceName'),')')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
-            ],
-            "properties": {
-                "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
-            },
-            "plan": {
-                "name": "[concat('KeyVaultAnalytics(', variables('logAnalyticsWorkspaceName'),')')]",
-                "product": "OMSGallery/KeyVaultAnalytics",
-                "promotionCode": "",
-                "publisher": "Microsoft"
-            }
-        },
-        {
-            "type": "Microsoft.ContainerRegistry/registries",
-            "apiVersion": "2020-11-01-preview",
-            "name": "[variables('defaultAcrName')]",
-            "location": "[parameters('location')]",
-            "sku": {
-                "name": "Premium"
-            },
-            "properties": {
-                "adminUserEnabled": false,
-                "networkRuleSet": {
-                    "defaultAction": "Deny",
-                    "virtualNetworkRules": [],
-                    "ipRules": []
-                },
-                "policies": {
-                    "quarantinePolicy": {
-                        "status": "disabled"
-                    },
-                    "trustPolicy": {
-                        "type": "Notary",
-                        "status": "disabled"
-                    },
-                    "retentionPolicy": {
-                        "days": 15,
-                        "status": "enabled"
-                    }
-                },
-                "publicNetworkAccess": "Disabled",
-                "encryption": {
-                    "status": "disabled"
-                },
-                "dataEndpointEnabled": true,
-                "networkRuleBypassOptions": "AzureServices",
-                "zoneRedundancy": "Disabled" // This Preview feature only supports three regions at this time, and eastus2's paired region (centralus), does not support this. So disabling for now.
-            },
-            "resources": [
-                {
-                    "name": "[concat('Microsoft.Authorization/', guid(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), variables('acrPullRole')))]",
-                    "type": "providers/roleAssignments",
-                    "apiVersion": "2020-04-01-preview",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
-                        "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
-                    ],
-                    "properties": {
-                        "roleDefinitionId": "[variables('acrPullRole')]",
-                        "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-12-01').identityProfile.kubeletidentity.objectId]",
-                        "principalType": "ServicePrincipal"
-                    }
-                },
-                {
-                    "type": "replications",
-                    "apiVersion": "2019-05-01",
-                    "name": "[parameters('geoRedundancyLocation')]",
-                    "location": "[parameters('geoRedundancyLocation')]",
-                    "dependsOn": [
-                        "[variables('defaultAcrName')]"
-                    ],
-                    "properties": {}
-                },
-                {
-                    "type": "providers/diagnosticSettings",
-                    "apiVersion": "2017-05-01-preview",
-                    "name": "Microsoft.Insights/default",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
-                        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
-                    ],
-                    "properties": {
-                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
-                        "metrics": [
-                            {
-                                "timeGrain": "PT1M",
-                                "category": "AllMetrics",
-                                "enabled": true
-                            }
-                        ],
-                        "logs": [
-                            {
-                                "category": "ContainerRegistryRepositoryEvents",
-                                "enabled": true
-                            },
-                            {
-                                "category": "ContainerRegistryLoginEvents",
-                                "enabled": true
-                            }
-                        ]
-                    }
                 }
-            ]
+            }
         },
         {
             "type": "Microsoft.Network/privateEndpoints",
             "apiVersion": "2020-05-01",
             "name": "nodepool-to-acr",
             "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.ContainerRegistry/registries/replications', variables('defaultAcrName'), parameters('geoRedundancyLocation'))]"
-            ],
+            "dependsOn": [],
             "properties": {
                 "subnet": {
                     "id": "[variables('vnetNodePoolSubnetResourceId')]"
@@ -1010,7 +786,7 @@
                     {
                         "name": "nodepools",
                         "properties": {
-                            "privateLinkServiceId": "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
+                            "privateLinkServiceId": "[parameters('containerRegistryId')]",
                             "groupIds": [
                                 "registry"
                             ]
@@ -1025,15 +801,14 @@
                     "name": "default",
                     "location": "[parameters('location')]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateEndpoints', 'nodepool-to-acr')]",
-                        "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
+                        "[resourceId('Microsoft.Network/privateEndpoints', 'nodepool-to-acr')]"
                     ],
                     "properties": {
                         "privateDnsZoneConfigs": [
                             {
                                 "name": "privatelink-azurecr-io",
                                 "properties": {
-                                    "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
+                                    "privateDnsZoneId": "[parameters('acrPrivateDnsZonesId')]"
                                 }
                             }
                         ]
@@ -1047,7 +822,6 @@
             "name": "[variables('clusterName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationsManagement/solutions', variables('containerInsightsSolutionName'))]",
                 "[resourceId(variables('vNetResourceGroup'), 'Microsoft.Resources/deployments', 'EnsureClusterIdentityHasRbacToSelfManagedResources')]",
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameAKSLinuxRestrictive'))]",
@@ -1126,7 +900,7 @@
                     "omsagent": {
                         "enabled": true,
                         "config": {
-                            "logAnalyticsWorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+                            "logAnalyticsWorkspaceResourceId": "[parameters('logAnalyticsWorkspaceId')]"
                         }
                     },
                     "aciConnectorLinux": {
@@ -1184,7 +958,7 @@
                     "authorizedIPRanges": "[parameters('clusterAuthorizedIPRanges')]",
                     "enablePrivateCluster": false
                 },
-                "podIdentityProfile": { 
+                "podIdentityProfile": {
                     "enabled": false, /* This feature is currently in preview and will eventually replace the aad-pod-identity configuration set up by hand in this reference implementation */
                     "userAssignedIdentities": [],
                     "userAssignedIdentityExceptions": []
@@ -1216,11 +990,10 @@
                     "apiVersion": "2017-05-01-preview",
                     "name": "Microsoft.Insights/default",
                     "dependsOn": [
-                        "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+                        "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
                     ],
                     "properties": {
-                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+                        "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
                         "logs": [
                             {
                                 "category": "cluster-autoscaler",
@@ -1249,8 +1022,7 @@
             "apiVersion": "2018-03-01",
             "name": "[concat('Node CPU utilization high for ', variables('clusterName'), ' CI-1')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
                 "actions": [],
@@ -1295,8 +1067,7 @@
             "apiVersion": "2018-03-01",
             "name": "[concat('Node working set memory utilization high for ', variables('clusterName'), ' CI-2')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
                 "actions": [],
@@ -1341,8 +1112,7 @@
             "apiVersion": "2018-03-01",
             "name": "[concat('Jobs completed more than 6 hours ago for ', variables('clusterName'), ' CI-11')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
                 "actions": [],
@@ -1394,8 +1164,7 @@
             "apiVersion": "2018-03-01",
             "name": "[concat('Container CPU usage high for ', variables('clusterName'), ' CI-9')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
                 "actions": [],
@@ -1447,8 +1216,7 @@
             "apiVersion": "2018-03-01",
             "name": "[concat('Container working set memory usage high for ', variables('clusterName'), ' CI-10')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
                 "actions": [],
@@ -1500,8 +1268,7 @@
             "apiVersion": "2018-03-01",
             "name": "[concat('Pods in failed state for ', variables('clusterName'), ' CI-4')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
                 "actions": [],
@@ -1546,8 +1313,7 @@
             "apiVersion": "2018-03-01",
             "name": "[concat('Disk usage high for ', variables('clusterName'), ' CI-5')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
                 "actions": [],
@@ -1599,8 +1365,7 @@
             "apiVersion": "2018-03-01",
             "name": "[concat('Nodes in not ready status for ', variables('clusterName'), ' CI-3')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
                 "actions": [],
@@ -1645,8 +1410,7 @@
             "apiVersion": "2018-03-01",
             "name": "[concat('Containers getting OOM killed for ', variables('clusterName'), ' CI-6')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
                 "actions": [],
@@ -1698,8 +1462,7 @@
             "apiVersion": "2018-03-01",
             "name": "[concat('Persistent volume usage high for ', variables('clusterName'), ' CI-18')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
                 "actions": [],
@@ -1751,8 +1514,7 @@
             "apiVersion": "2018-03-01",
             "name": "[concat('Pods not in ready state for ', variables('clusterName'), ' CI-8')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
                 "actions": [],
@@ -1804,8 +1566,7 @@
             "apiVersion": "2018-03-01",
             "name": "[concat('Restarting container count for ', variables('clusterName'), ' CI-7')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
                 "actions": [],
@@ -1991,7 +1752,7 @@
                 "policyDefinitionId": "[variables('policyResourceIdEnforceImageSource')]",
                 "parameters": {
                     "allowedContainerImagesRegex": {
-                        "value": "[concat(variables('defaultAcrName'),'.azurecr.io/.+$|mcr.microsoft.com/.+$|docker.io/fluxcd/flux.+$|docker.io/weaveworks/kured.+$|docker.io/library/.+$')]"
+                        "value": "[concat(variables('containerRegistryName'),'.azurecr.io/.+$|mcr.microsoft.com/.+$|docker.io/fluxcd/flux.+$|docker.io/weaveworks/kured.+$|docker.io/library/.+$')]"
                     },
                     "excludedNamespaces": {
                         "value": [
@@ -2027,10 +1788,6 @@
         "keyVaultName": {
             "type": "string",
             "value": "[variables('keyVaultName')]"
-        },
-        "containerRegistryName": {
-            "type": "string",
-            "value": "[variables('defaultAcrName')]"
         }
     }
 }

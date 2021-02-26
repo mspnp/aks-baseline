@@ -1,9 +1,16 @@
 # Deploy the AKS Cluster
 
-Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS clusters and its adjacent Azure resources.
+Now that the [cluster prequisites and shared Azure service instances are provisioned](./05-cluster-prerequisites.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS clusters and its adjacent Azure resources.
 
 ## Steps
 
+1. Obtain shared services resource details
+
+   ```bash
+   LOGANALYTICSWORKSPACEID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.logAnalyticsWorkspaceId.value -o tsv)
+   CONTAINERREGISTRYID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryId.value -o tsv)
+   ACRPRIVATEDNSZONESID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.acrPrivateDnsZonesId.value -o tsv)
+   ```
 1. Create the first AKS cluster resource group.
 
    > :book: The app team working on behalf of business unit 0001 (BU001) is looking to create the two AKS cluster for the app instances they are creating (Application ID: 0042 | Instance IDs: 03 and 04). They have worked with the organization's networking team and have been provisioned the spoke networks in which to lay their clusters and network-aware external resources into (such as Application Gateway). They took that information and added it to their [`cluster-stamp.json`](./cluster-stamp.json) and [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) files.
@@ -13,7 +20,7 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
    ```bash
    # [This takes less than one minute.]
    az group create --name rg-bu0001a0042-03 --location eastus2
-   az group create --name rg-bu0001a0042-04 --location westus2
+   az group create --name rg-bu0001a0042-04 --location centralus
    ```
 
 1. Get the corresponding AKS cluster spoke VNet resource IDs for the app team working on the application A0042.
@@ -30,8 +37,8 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 
    ```bash
    # [This takes about 30 minutes.]
-   az deployment group create -g rg-bu0001a0042-03 -f cluster-stamp.json -p location=eastus2 targetVnetResourceId=$RESOURCEID_VNET_BU0001A0042_03 clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004203} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} appInstanceId="03" clusterInternalLoadBalancerIpAddress="10.243.4.4" subdomainName=${CLUSTER_SUBDOMAIN_03}
-   az deployment group create -g rg-bu0001a0042-04 -f cluster-stamp.json -p location=westus2 targetVnetResourceId=$RESOURCEID_VNET_BU0001A0042_04 clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004204} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} appInstanceId="04" clusterInternalLoadBalancerIpAddress="10.244.4.4" subdomainName=${CLUSTER_SUBDOMAIN_04}
+   az deployment group create -g rg-bu0001a0042-03 -f cluster-stamp.json -p targetVnetResourceId=$RESOURCEID_VNET_BU0001A0042_03 clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004203} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} appInstanceId="03" clusterInternalLoadBalancerIpAddress="10.243.4.4" subdomainName=${CLUSTER_SUBDOMAIN_03} logAnalyticsWorkspaceId=${LOGANALYTICSWORKSPACEID} containerRegistryId=${CONTAINERREGISTRYID} acrPrivateDnsZonesId=${ACRPRIVATEDNSZONESID} location=eastus2
+   az deployment group create -g rg-bu0001a0042-04 -f cluster-stamp.json -p targetVnetResourceId=$RESOURCEID_VNET_BU0001A0042_04 clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004204} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} appInstanceId="04" clusterInternalLoadBalancerIpAddress="10.244.4.4" subdomainName=${CLUSTER_SUBDOMAIN_04} logAnalyticsWorkspaceId=${LOGANALYTICSWORKSPACEID} containerRegistryId=${CONTAINERREGISTRYID} acrPrivateDnsZonesId=${ACRPRIVATEDNSZONESID} location=centralus
    ```
 
    > Alteratively, you could have updated the [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) file and deployed as above, using `-p "@azuredeploy.parameters.prod.json"` instead of providing the individual key-value pairs.
@@ -134,4 +141,4 @@ This deployment creates an SLA-backed Azure Container Registry for your cluster'
 
 ### Next step
 
-:arrow_forward: [Place the cluster under GitOps management](./06-gitops.md)
+:arrow_forward: [Place the cluster under GitOps management](./07-gitops.md)

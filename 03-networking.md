@@ -1,6 +1,6 @@
 # Deploy the Hub-Spoke Network Topology
 
-The prerequisites for the [AKS secure baseline cluster](./) are now completed with [Azure AD group and user work](./03-aad.md) performed in the prior steps. Now we will start with our first Azure resource deployment, the network resources.
+The prerequisites for the [AKS secure baseline cluster](./) are now completed with [Azure AD group and user work](./02-aad.md) performed in the prior steps. Now we will start with our first Azure resource deployment, the network resources.
 
 ## Subscription and resource group topology
 
@@ -63,8 +63,8 @@ The following two resource groups will be created and populated with networking 
 
    ```bash
    # [This takes about five minutes to run.]
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-default.json -n hub-eastus2 -p location=eastus2 hubVnetAddressSpace="10.200.3.0/24" azureFirewallSubnetAddressSpace="10.200.3.0/26" azureGatewaySubnetAddressSpace="10.200.3.64/27" azureBastionSubnetAddressSpace="10.200.3.96/27"
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-default.json -n hub-westus2 -p location=westus2 hubVnetAddressSpace="10.200.4.0/24" azureFirewallSubnetAddressSpace="10.200.4.0/26" azureGatewaySubnetAddressSpace="10.200.4.64/27" azureBastionSubnetAddressSpace="10.200.4.96/27"
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-default.json -n hub-region1 -p hubVnetAddressSpace="10.200.3.0/24" azureFirewallSubnetAddressSpace="10.200.3.0/26" azureGatewaySubnetAddressSpace="10.200.3.64/27" azureBastionSubnetAddressSpace="10.200.3.96/27" location=eastus2
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-default.json -n hub-region2 -p hubVnetAddressSpace="10.200.4.0/24" azureFirewallSubnetAddressSpace="10.200.4.0/26" azureGatewaySubnetAddressSpace="10.200.4.64/27" azureBastionSubnetAddressSpace="10.200.4.96/27" location=centralus
    ```
 
    The hub creations will emit the following:
@@ -77,10 +77,10 @@ The following two resource groups will be created and populated with networking 
 
    ```bash
    # [This takes about ten minutes to run.]
-   RESOURCEID_VNET_HUB_EASTUS2=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-eastus2 --query properties.outputs.hubVnetId.value -o tsv)
-   RESOURCEID_VNET_HUB_WESTUS2=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-westus2 --query properties.outputs.hubVnetId.value -o tsv)
-   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-03 -p location=eastus2 hubVnetResourceId="${RESOURCEID_VNET_HUB_EASTUS2}" appInstanceId="03" clusterVNetAddressPrefix="10.243.0.0/16" clusterNodesSubnetAddressPrefix="10.243.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.243.4.0/28" applicationGatewaySubnetAddressPrefix="10.243.4.16/28"
-   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-04 -p location=westus2 hubVnetResourceId="${RESOURCEID_VNET_HUB_WESTUS2}"  appInstanceId="04" clusterVNetAddressPrefix="10.244.0.0/16" clusterNodesSubnetAddressPrefix="10.244.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.244.4.0/28" applicationGatewaySubnetAddressPrefix="10.244.4.16/28"
+   RESOURCEID_VNET_HUB_REGION1=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-region1 --query properties.outputs.hubVnetId.value -o tsv)
+   RESOURCEID_VNET_HUB_REGION2=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-region2 --query properties.outputs.hubVnetId.value -o tsv)
+   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-03 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGION1}" appInstanceId="03" clusterVNetAddressPrefix="10.243.0.0/16" clusterNodesSubnetAddressPrefix="10.243.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.243.4.0/28" applicationGatewaySubnetAddressPrefix="10.243.4.16/28" subdomainName=${CLUSTER_SUBDOMAIN_03} location=eastus2
+   az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0042.json -n spoke-BU0001A0042-04 -p hubVnetResourceId="${RESOURCEID_VNET_HUB_REGION2}" appInstanceId="04" clusterVNetAddressPrefix="10.244.0.0/16" clusterNodesSubnetAddressPrefix="10.244.0.0/22" clusterIngressServicesSubnetAdressPrefix="10.244.4.0/28" applicationGatewaySubnetAddressPrefix="10.244.4.16/28" subdomainName=${CLUSTER_SUBDOMAIN_04} location=centralus
    ```
 
    The spoke creation will emit the following:
@@ -97,8 +97,8 @@ The following two resource groups will be created and populated with networking 
     # [This takes about three minutes to run.]
    RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
    RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04=$(az deployment group show -g  rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.nodepoolSubnetResourceIds.value -o tsv)
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-regionA.json -n hub-eastus2 -p location=eastus2 nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03}']" hubVnetAddressSpace="10.200.3.0/24" azureFirewallSubnetAddressSpace="10.200.3.0/26" azureGatewaySubnetAddressSpace="10.200.3.64/27" azureBastionSubnetAddressSpace="10.200.3.96/27"
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-regionA.json -n hub-westus2 -p location=westus2 nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04}']" hubVnetAddressSpace="10.200.4.0/24" azureFirewallSubnetAddressSpace="10.200.4.0/26" azureGatewaySubnetAddressSpace="10.200.4.64/27" azureBastionSubnetAddressSpace="10.200.4.96/27"
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-regionA.json -n hub-region1 -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_03}']" hubVnetAddressSpace="10.200.3.0/24" azureFirewallSubnetAddressSpace="10.200.3.0/26" azureGatewaySubnetAddressSpace="10.200.3.64/27" azureBastionSubnetAddressSpace="10.200.3.96/27" location=eastus2
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-regionA.json -n hub-region2 -p nodepoolSubnetResourceIds="['${RESOURCEID_SUBNET_NODEPOOLS_BU0001A0042_04}']" hubVnetAddressSpace="10.200.4.0/24" azureFirewallSubnetAddressSpace="10.200.4.0/26" azureGatewaySubnetAddressSpace="10.200.4.64/27" azureBastionSubnetAddressSpace="10.200.4.96/27" location=centralus
    ```
 
    > :book: At this point the networking team has delivered two spokes in which the BU 0001's app team can lay down their AKS clusters. The networking team provides the necessary information to the app teams for them to reference in their Infrastructure-as-Code artifacts.

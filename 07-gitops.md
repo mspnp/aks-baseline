@@ -1,6 +1,6 @@
 # Place the Cluster Under GitOps Management
 
-Now that [the AKS cluster](./05-aks-cluster.md) has been deployed, the next step to configure a GitOps management solution on our cluster, Flux in this case.
+Now that [the AKS cluster](./06-aks-cluster.md) has been deployed, the next step to configure a GitOps management solution on our cluster, Flux in this case.
 
 ## Steps
 
@@ -11,6 +11,20 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 - CSI driver and Azure KeyVault CSI Provider
 - the workload's namespace named `a0042`
 
+1. Import cluster management images to your container registry.
+
+   > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for a system that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
+
+   ```bash
+   # Get your ACR cluster name
+   ACR_NAME_BU0001A0042=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+
+   # Import cluster management images hosted in public container registries
+   az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME_BU0001A0042
+   az acr import --source docker.io/fluxcd/flux:1.19.0 -n $ACR_NAME_BU0001A0042
+   az acr import --source docker.io/weaveworks/kured:1.4.0 -n $ACR_NAME_BU0001A0042
+   ```
+
 1. Install `kubectl` 1.20 or newer. (`kubctl` supports +/-1 Kubernetes version.)
 
    ```bash
@@ -18,10 +32,11 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    kubectl version --client
    ```
 
-1. Get the cluster name.
+1. Get the cluster names for regions 1 and 2.
 
    ```bash
    AKS_CLUSTER_NAME_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
+   AKS_CLUSTER_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
    ```
 
 1. Get AKS `kubectl` credentials.
@@ -30,6 +45,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    ```bash
    az aks get-credentials -g rg-bu0001a0042-03 -n $AKS_CLUSTER_NAME_BU0001A0042_03
+   az aks get-credentials -g rg-bu0001a0042-04 -n $AKS_CLUSTER_NAME_BU0001A0042_04
    ```
 
    :warning: At this point two important steps are happening:
@@ -38,24 +54,10 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    - To _actually_ use the cluster you will need to authenticate. For that, run any `kubectl` commands which at this stage will prompt you to authenticate against Azure Active Directory. For example, run the following command:
 
    ```bash
-   kubectl get nodes
+   kubectl get nodes --context $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
    Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes please refer to [the related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).
-
-1. Import cluster management images to your container registry.
-
-   > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for a system that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
-
-   ```bash
-   # Get your ACR cluster name
-   ACR_NAME_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
-
-   # Import cluster management images hosted in public container registries
-   az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME_BU0001A0042_03
-   az acr import --source docker.io/fluxcd/flux:1.19.0 -n $ACR_NAME_BU0001A0042_03
-   az acr import --source docker.io/weaveworks/kured:1.4.0 -n $ACR_NAME_BU0001A0042_03
-   ```
 
 1. Create the cluster baseline settings namespace.
 
@@ -65,7 +67,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    # and ensure they are assigned to the Azure AD Group you designated for cluster admins.
    kubectl auth can-i create namespace -A
 
-   kubectl create namespace cluster-baseline-settings
+   kubectl create namespace cluster-baseline-settings --context $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
 1. Deploy Flux.
@@ -79,32 +81,26 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    :warning: Deploying the flux configuration using the `flux.yaml` file unmodified from this repo will be deploying your cluster to take dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure _all_ image references you bring to your cluster are from _your_ container registry (as imported in the prior step) or another that you feel confident relying on.
 
    ```bash
-   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/cluster-manifests/cluster-baseline-settings/flux.yaml
+   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/cluster-manifests/cluster-baseline-settings/flux.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
 1. Wait for Flux to be ready before proceeding.
 
    ```bash
-   kubectl wait -n cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s
+   kubectl wait -n cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
 1. Deploy the gitops solution in the second cluster (BU0001A0042-04)
 
    ```bash
-   ACR_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
-   az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME_BU0001A0042_04
-   az acr import --source docker.io/fluxcd/flux:1.19.0 -n $ACR_NAME_BU0001A0042_04
-   az acr import --source docker.io/weaveworks/kured:1.4.0 -n $ACR_NAME_BU0001A0042_04
-   export AKS_CLUSTER_NAME_BU0001A0042_04=$(az deployment group show --resource-group rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
-   az aks get-credentials -g rg-bu0001a0042-04 -n $AKS_CLUSTER_NAME_BU0001A0042_04
-   kubectl get nodes
-   kubectl create namespace cluster-baseline-settings
-   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/cluster-manifests/cluster-baseline-settings/flux.yaml
-   kubectl wait --namespace cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s
+   kubectl get nodes --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl create namespace cluster-baseline-settings --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/cluster-manifests/cluster-baseline-settings/flux.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl wait --namespace cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04
    ```
 
 Generally speaking, this will be the last time you should need to use `kubectl` for day-to-day configuration operations on this cluster (outside of break-fix situations). Between ARM for Azure Resource definitions and the application of manifests via Flux, all normal configuration activities can be performed without the need to use `kubectl`. You will however see us use it for the upcoming workload deployment. This is because the SDLC component of workloads are not in scope for this reference implementation, as this is focused the infrastructure and baseline configuration.
 
 ### Next step
 
-:arrow_forward: [Prepare for the workload by installing its prerequisites](./07-workload-prerequisites.md)
+:arrow_forward: [Prepare for the workload by installing its prerequisites](./08-workload-prerequisites.md)
