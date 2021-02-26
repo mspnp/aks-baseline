@@ -20,7 +20,9 @@
                 "uksouth",
                 "westeurope",
                 "japaneast",
-                "southeastasia"
+                "southeastasia",
+                "brazilsouth",
+                "southcentralus"
             ],
             "metadata": {
                 "description": "The centralized Azure Log Analytics region. This needs to be passed as parameter since the alerts must be created in the same location as the workspace."
