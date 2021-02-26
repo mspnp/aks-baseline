@@ -266,6 +266,35 @@
                             }
                         ]
                     }
+                },
+                {
+                    "type": "microsoft.insights/activityLogAlerts",
+                    "apiVersion": "2017-04-01",
+                    "name": "AllAzureAdvisorAlert",
+                    "location": "Global",
+                    "properties": {
+                        "scopes": [
+                            "[subscription().id]"
+                        ],
+                        "condition": {
+                            "allOf": [
+                                {
+                                    "field": "category",
+                                    "equals": "Recommendation"
+                                },
+                                {
+                                    "field": "operationName",
+                                    "equals": "Microsoft.Advisor/recommendations/available/action"
+                                }
+                            ]
+                        },
+                        "actions": {
+                            "actionGroups": [
+                            ]
+                        },
+                        "enabled": true,
+                        "description": "All azure advisor alerts"
+                    }
                 }
             ]
         }
