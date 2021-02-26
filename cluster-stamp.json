@@ -317,7 +317,6 @@
                     "name": "Microsoft.Insights/default",
                     "type": "providers/diagnosticSettings",
                     "apiVersion": "2017-05-01-preview",
-                    "location": "[parameters('logAnalyticsWorkspaceLocation')]",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
                     ],
@@ -646,7 +645,6 @@
                     "type": "providers/diagnosticSettings",
                     "apiVersion": "2017-05-01-preview",
                     "name": "/Microsoft.Insights/default",
-                    "location": "[parameters('logAnalyticsWorkspaceLocation')]",
                     "dependsOn": [
                         "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]"
                     ],
@@ -1079,7 +1077,6 @@
                     "type": "/providers/diagnosticSettings",
                     "apiVersion": "2017-05-01-preview",
                     "name": "Microsoft.Insights/default",
-                    "location": "[parameters('logAnalyticsWorkspaceLocation')]",
                     "dependsOn": [
                         "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
                     ],
