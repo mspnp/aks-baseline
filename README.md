@@ -83,23 +83,17 @@ Without a workload deployed to the cluster it will be hard to see how these deci
 - [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./09-secret-managment-and-ingress-controller.md)
 - [ ] [Deploy the workload](./10-workload.md)
 
-### 5. Deploy Global Load Balancer
-
-This deploy a level 7 global load balancer which offer proximity and high availability
-
-- [ ] [Deploy Azure Front Door](./11-frontdoor.md)
-
-### 6. :checkered_flag: Validation
+### 5. :checkered_flag: Validation
 
 Now that the cluster and the sample workload is deployed; it's time to look at how the cluster is functioning.
 
-- [ ] [Perform end-to-end deployment validation](./12-validation.md)
+- [ ] [Perform end-to-end deployment validation](./11-validation.md)
 
 ## :broom: Clean up resources
 
 Most of the Azure resources deployed in the prior steps will incur ongoing charges unless removed.
 
-- [ ] [Cleanup all resources](./13-cleanup.md)
+- [ ] [Cleanup all resources](./12-cleanup.md)
 
 ## Inner-loop development scripts
 

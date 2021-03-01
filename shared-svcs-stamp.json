@@ -2,6 +2,12 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "0.0.0.5",
     "parameters": {
+        "fontDoorBackend": { 
+            "type": "array",
+            "metadata": {
+                "description": "List of backend apps domain name or public ips which will be part of the backend pool"
+            }
+         },
         "location": {
             "defaultValue": "eastus2",
             "type": "string",
@@ -67,7 +73,10 @@
         "logAnalyticsWorkspaceName": "[concat('la-', variables('subRgUniqueString'))]",
         "defaultAcrName": "[concat('acraks', variables('subRgUniqueString'))]",
 
-        "acrPrivateDnsZonesName": "privatelink.azurecr.io"
+        "acrPrivateDnsZonesName": "privatelink.azurecr.io",
+
+        "frontDoorName": "[concat('bicycle', variables('subRgUniqueString'))]",
+        "frontDoorPolicyName": "[concat('policyfd', variables('subRgUniqueString'))]"
     },
     "resources": [
         {
@@ -340,6 +349,144 @@
                 "enabled": true,
                 "description": "All azure advisor alerts"
             }
+        },
+        {
+            "type": "Microsoft.Network/frontdoorwebapplicationfirewallpolicies",
+            "apiVersion": "2020-04-01",
+            "name":  "[variables('frontDoorPolicyName')]",
+            "location": "Global",
+            "properties": {
+                "policySettings": {
+                    "enabledState": "Enabled",
+                    "mode": "Prevention",
+                    "customBlockResponseStatusCode": 403
+                },
+                "customRules": {
+                    "rules": []
+                },
+                "managedRules": {
+                    "managedRuleSets": [
+                        {
+                            "ruleSetType": "DefaultRuleSet",
+                            "ruleSetVersion": "1.0",
+                            "ruleGroupOverrides": [],
+                            "exclusions": []
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/frontdoors",
+            "apiVersion": "2020-05-01",
+            "name": "[variables('frontDoorName')]",
+            "location": "Global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/frontdoorwebapplicationfirewallpolicies', variables('frontDoorPolicyName'))]"
+            ],
+            "properties": {
+                "resourceState": "Enabled",
+                "backendPools": [
+                    {
+                        "name": "MultiClusterBackendPool",
+                        "properties": {
+                            "copy": [
+                               {
+                                    "name": "backends",
+                                    "count": "[length(parameters('fontDoorBackend'))]",
+                                    "input": {
+                                        "address": "[parameters('fontDoorBackend')[copyIndex('backends')]]",
+                                        "httpPort": 80,
+                                        "httpsPort": 443,
+                                        "priority": 1,
+                                        "weight": 50,
+                                        "enabledState": "Enabled",
+                                        "backendHostHeader": "[parameters('fontDoorBackend')[copyIndex('backends')]]"
+                                    }
+                                }
+                            ],
+                            "healthProbeSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/frontdoors', variables('frontDoorName')), '/HealthProbeSettings/healthProbeSettings')]"
+                            },
+                            "loadBalancingSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/frontdoors', variables('frontDoorName')), '/LoadBalancingSettings/loadBalancingSettings')]"
+                            },
+                            "resourceState": "Enabled"
+                        }
+                    }
+                ],
+                "healthProbeSettings": [
+                    {
+                        "name": "healthProbeSettings",
+                        "properties": {
+                            "intervalInSeconds": 30,
+                            "path": "/favicon.ico",
+                            "protocol": "Https",
+                            "resourceState": "Enabled",
+                            "enabledState": "Enabled",
+                            "healthProbeMethod": "HEAD"
+                        }
+                    }
+                ],
+                "frontendEndpoints": [
+                    {
+                        "name": "MultiClusterFrontendEndpoint",
+                        "properties": {
+                            "hostName": "[concat(variables('frontDoorName'), '.azurefd.net')]",
+                            "sessionAffinityEnabledState": "Disabled",
+                            "sessionAffinityTtlSeconds": 0,
+                            "webApplicationFirewallPolicyLink": {
+                                "id": "[resourceId('Microsoft.Network/frontdoorwebapplicationfirewallpolicies', variables('frontDoorPolicyName'))]"
+                            },
+                            "resourceState": "Enabled"
+                        }
+                    }
+                ],
+                "loadBalancingSettings": [
+                    {
+                        "name": "loadBalancingSettings",
+                        "properties": {
+                            "additionalLatencyMilliseconds": 0,
+                            "sampleSize": 4,
+                            "successfulSamplesRequired": 2,
+                            "resourceState": "Enabled"
+                        }
+                    }
+                ],
+                "routingRules": [
+                    {
+                        "name": "MultiClusterRule",
+                        "properties": {
+                            "frontendEndpoints": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors',  variables('frontDoorName')), concat('/FrontendEndpoints/',  'MultiClusterFrontendEndpoint'))]"
+                                }
+                            ],
+                            "acceptedProtocols": [
+                                "Https"
+                            ],
+                            "patternsToMatch": [
+                                "/*"
+                            ],
+                            "enabledState": "Enabled",
+                            "resourceState": "Enabled",
+                            "routeConfiguration": {
+                                "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
+                                "forwardingProtocol": "HttpsOnly",
+                                "backendPool": {
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors',  variables('frontDoorName')), concat('/backendPools/',  'MultiClusterBackendPool'))]"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "backendPoolsSettings": {
+                    "enforceCertificateNameCheck": "Enabled",
+                    "sendRecvTimeoutSeconds": 30
+                },
+                "enabledState": "Enabled",
+                "friendlyName": "[variables('frontDoorName')]"
+            }
         }
     ],
     "outputs": {
@@ -358,6 +505,10 @@
         "acrPrivateDnsZonesId": {
             "type": "string",
             "value": "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
+        },
+        "fqdn": {
+            "type": "string",
+            "value": "[concat(variables('frontDoorName'), '.azurefd.net')]"
         }
     }
 }

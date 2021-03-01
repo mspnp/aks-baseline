@@ -4,15 +4,16 @@ set -e
 
 # This script might take about 30 minutes
 # Please check the variables
-RGLOCATION=$1
-RGNAMEHUB=$2
-RGNAMESPOKES=$3
-RGNAMECLUSTER_BU0001A0042_03=$4
-RGNAMECLUSTER_BU0001A0042_04=$5
-AKS_CLUSTER_NAME_BU0001A0042_03=$6
-AKS_CLUSTER_NAME_BU0001A0042_04=$7
-MAIN_SUBSCRIPTION=$8
-RGNAME_FRONT_DOOR=$9
+RGLOCATION1=$1
+RGLOCATION2=$2
+RGNAMEHUB=$3
+RGNAMESPOKES=$4
+RGNAMECLUSTER_BU0001A0042_03=$5
+RGNAMECLUSTER_BU0001A0042_04=$6
+AKS_CLUSTER_NAME_BU0001A0042_03=$7
+AKS_CLUSTER_NAME_BU0001A0042_04=$8
+MAIN_SUBSCRIPTION=$9
+RGNAME_FRONT_DOOR=$10
 
 __usage="
     [-c RGNAMECLUSTER_BU0001A0042_03]
@@ -21,6 +22,7 @@ __usage="
     [-k AKS_CLUSTER_NAME_BU0001A0042_03]
     [-z AKS_CLUSTER_NAME_BU0001A0042_04]
     [-l LOCATION]
+    [-w LOCATION]
     [-p RGNAMESPOKES]
     [-s MAIN_SUBSCRIPTION]
     [-f RGNAME_FRONT_DOOR]
@@ -32,12 +34,13 @@ usage() {
     exit 1
 }
 
-while getopts "c:d:h:l:p:k:z:s:f:" opt; do
+while getopts "c:d:h:l:p:k:z:s:f:w:" opt; do
     case $opt in
     c)  RGNAMECLUSTER_BU0001A0042_03="${OPTARG}";;
     d)  RGNAMECLUSTER_BU0001A0042_04="${OPTARG}";;
     h)  RGNAMEHUB="${OPTARG}";;
-    l)  LOCATION="${OPTARG}";;
+    l)  RGLOCATION1="${OPTARG}";;
+    w)  RGLOCATION2="${OPTARG}";;
     p)  RGNAMESPOKES="${OPTARG}";;
     k)  AKS_CLUSTER_NAME_BU0001A0042_03="${OPTARG}";;
     z)  AKS_CLUSTER_NAME_BU0001A0042_04="${OPTARG}";;
@@ -72,15 +75,11 @@ echo deleting $RGNAMEHUB
 az group delete -n $RGNAMEHUB --yes
 
 echo deleting key vault soft delete
-az keyvault purge --name kv-${AKS_CLUSTER_NAME_BU0001A0042_03} --location ${LOCATION}
+az keyvault purge --name kv-${AKS_CLUSTER_NAME_BU0001A0042_03} --location ${RGLOCATION1}
 
 echo deleting key vault soft delete
-az keyvault purge --name kv-${AKS_CLUSTER_NAME_BU0001A0042_04} --location ${LOCATION}
+az keyvault purge --name kv-${AKS_CLUSTER_NAME_BU0001A0042_04} --location ${RGLOCATION2}
 
 echo deleting azure policy assignments
 for p in $(az policy assignment list --disable-scope-strict-match --query "[?resourceGroup=='${RGNAMECLUSTER_BU0001A0042_03}'].name" -o tsv); do az policy assignment delete --name ${p} --resource-group ${RGNAMECLUSTER_BU0001A0042_03}; done
 for p in $(az policy assignment list --disable-scope-strict-match --query "[?resourceGroup=='${RGNAMECLUSTER_BU0001A0042_04}'].name" -o tsv); do az policy assignment delete --name ${p} --resource-group ${RGNAMECLUSTER_BU0001A0042_04}; done
-
-
-#Remove the Azure Policy assignments scoped to the cluster's resource group. To identify those created by this implementation,
-# look for ones that are prefixed with [your-cluster-name] .
