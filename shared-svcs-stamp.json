@@ -75,7 +75,7 @@
 
         "acrPrivateDnsZonesName": "privatelink.azurecr.io",
 
-        "frontDoorName": "[concat('multicluster-fd-', variables('subRgUniqueString'))]",
+        "frontDoorName": "[concat('bicycle', variables('subRgUniqueString'))]",
         "frontDoorPolicyName": "[concat('policyfd', variables('subRgUniqueString'))]"
     },
     "resources": [
