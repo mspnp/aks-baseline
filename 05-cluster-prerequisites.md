@@ -49,7 +49,7 @@ Following the steps below will result in the provisioning of the shared Azure re
   >
   > The app team is instructed to build the smallest container images they can. This is something they could achieve by following the [builder pattern](https://docs.docker.com/develop/develop-images/multistage-build/#before-multi-stage-builds) or the [mutli-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds). Both approaches will produce final smaller container images that are meant to be for runtime-only. This will be beneficial in many ways but mainly in the speed of replication as well as in the transfer costs. A key feature as part of ACR's geo-replication is that it will only replicate unique layers, also further reducing data transfer across regions.
   >
-  > In case of a region is down, the app team is now covered by the Azure Traffic Manager that comes on the scene to help deriving traffic to the registry located in the region that is closest to their multiple clusters in terms of network latency.
+  > In case of a region is down, the app team is now covered by the Azure Traffic Manager in the background that comes on the scene to help deriving traffic to the registry located in the region that is closest to their multiple clusters in terms of network latency.
   >
   > After this initial design decision at the ACR level, the app team can also consider analyzing how they could tactically expand into [Availability Zones](https://docs.microsoft.com/azure/container-registry/zone-redundancy) as a way of being even more resilient.
   >
