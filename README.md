@@ -1,6 +1,6 @@
 # Azure Kubernetes Service (AKS) Baseline Cluster
 
-This reference implementation is a simplified version of the _recommended_ starting (baseline) infrastructure architecture_ for a general purpose [AKS cluster](https://azure.microsoft.com/services/kubernetes-service) defined in the [Base Repository](https://github.com/mspnp/aks-secure-baseline) . 
+This reference implementation is a simplified version of the _recommended_ starting (baseline) infrastructure architecture for a general purpose [AKS cluster](https://azure.microsoft.com/services/kubernetes-service) defined in this [Base Repository](https://github.com/mspnp/aks-secure-baseline). 
 
 This implementation and document is meant to guide an interdisciplinary team or multiple distinct teams like networking, security and development through the process of getting this secure baseline infrastructure deployed and understanding the components of it.
 
