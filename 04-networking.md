@@ -14,11 +14,11 @@ The following resource group will be created and populated with networking resou
 
 | Name                            | Purpose                                   |
 |---------------------------------|-------------------------------------------|
-| rg-enterprise-networking-spokes | Contains all of your organization's regional spokes and related networking resources
+| rg-enterprise-networking        | Contains all of your organization's regional spokes and related networking resources
 
 ### Resources
 
-* Network Spoke for the Cluster
+* VNET for the Cluster
 * Network Security Groups for all subnets that support them
 
 ## Steps
@@ -37,7 +37,7 @@ The following resource group will be created and populated with networking resou
 
    ```bash
    # [This takes less than one minute to run.]
-   az group create -n rg-enterprise-networking-spokes -l centralus
+   az group create -n rg-enterprise-networking -l centralus
    ```
 
 1. Create the vnet that will be home to the AKS cluster and its adjacent resources.
