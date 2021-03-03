@@ -32,7 +32,7 @@
     "variables": {
         "clusterVNetName": "[concat('vnet-', parameters('namePrefix'))]",
         "primaryClusterPipName": "[concat('pip-', parameters('namePrefix'))]",
-        "LaName": "[concat('la-', parameters('location'), '-', uniqueString(resourceId('Microsoft.Network/virtualNetworks', parameters('namePrefix'))))]"
+        "LaName": "[concat('la-', parameters('location'), '-', parameters('namePrefix'), '-', uniqueString(resourceId('Microsoft.Network/virtualNetworks', parameters('namePrefix'))))]"
     },
     "resources": [
         {
