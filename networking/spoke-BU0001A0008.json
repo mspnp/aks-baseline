@@ -30,9 +30,8 @@
         }
     },
     "variables": {
-        "orgAppId": "[parameters('namePrefix')]",
-        "clusterVNetName": "[concat('vnet-', variables('orgAppId'))]",
-        "primaryClusterPipName": "[concat('pip-', variables('orgAppId'))]",
+        "clusterVNetName": "[concat('vnet-', parameters('namePrefix'))]",
+        "primaryClusterPipName": "[concat('pip-', parameters('namePrefix'))]",
         "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
         "hubLaName": "[concat('la-hub-', parameters('location'), '-', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))))]"
     },
