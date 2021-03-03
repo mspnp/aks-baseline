@@ -5,9 +5,6 @@
     "location": {
       "value": "eastus2"
     },
-    "geoRedundancyLocation": {
-      "value": "centralus"
-    },
     "targetVnetResourceId": {
       "value": "/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00"
     },
@@ -25,6 +22,21 @@
     },
     "clusterAuthorizedIPRanges": {
       "value": "[array of IP ranges, like ['168.196.25.0/24','73.140.245.0/28', AzureFirewallIP/32] ]"
+    },
+    "logAnalyticsWorkspaceId": {
+      "value": "<log-analytics-workspace-id>"
+    },
+    "containerRegistryId": {
+      "value": "<container-registry-id>"
+    },
+    "acrPrivateDnsZonesId": {
+      "value": "<acrPrivateDns-zones-id>"
+    }, 
+    "appInstanceId": {
+      "value": "<app-instance-id>"
+    },
+    "subdomainName": {
+      "value": "<subdomain-name>"
     }
   }
 }
