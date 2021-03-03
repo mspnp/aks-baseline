@@ -27,10 +27,9 @@
         }
     },
     "variables": {
-        "orgAppId": "BU0001A0008",
-        "clusterVNetName": "[concat('vnet-spoke-', variables('orgAppId'), '-00')]",
-
-        "primaryClusterPipName": "[concat('pip-', variables('orgAppId'), '-00')]",
+        "orgAppId": "tobii",
+        "clusterVNetName": "[concat('vnet-', variables('orgAppId'))]",
+        "primaryClusterPipName": "[concat('pip-', variables('orgAppId'))]",
         "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
         "hubLaName": "[concat('la-hub-', parameters('location'), '-', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))))]"
     },
