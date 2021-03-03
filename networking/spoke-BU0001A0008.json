@@ -65,10 +65,11 @@
                     "apiVersion": "2017-05-01-preview",
                     "name": "Microsoft.Insights/toHub",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-nodepools'))]"
+                        "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-nodepools'))]",
+                        "[resourceId('Microsoft.OperationalInsights/workspaces',variables('hubLaName'))]"
                     ],
                     "properties": {
-                        "workspaceId": "[variables('hubLaWorkspaceResourceId')]",
+                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces',variables('hubLaName'))]",
                         "logs": [
                             {
                                 "category": "NetworkSecurityGroupEvent",
@@ -98,10 +99,11 @@
                     "type": "providers/diagnosticSettings",
                     "apiVersion": "2017-05-01-preview",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-aksilbs'))]"
+                        "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-aksilbs'))]",
+                        "[resourceId('Microsoft.OperationalInsights/workspaces',variables('hubLaName'))]"
                     ],
                     "properties": {
-                        "workspaceId": "[variables('hubLaWorkspaceResourceId')]",
+                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces',variables('hubLaName'))]",
                         "logs": [
                             {
                                 "category": "NetworkSecurityGroupEvent",
@@ -200,10 +202,11 @@
                     "type": "providers/diagnosticSettings",
                     "apiVersion": "2017-05-01-preview",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-appgw'))]"
+                        "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-appgw'))]",
+                        "[resourceId('Microsoft.OperationalInsights/workspaces',variables('hubLaName'))]"
                     ],
                     "properties": {
-                        "workspaceId": "[variables('hubLaWorkspaceResourceId')]",
+                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces',variables('hubLaName'))]",
                         "logs": [
                             {
                                 "category": "NetworkSecurityGroupEvent",
@@ -277,10 +280,11 @@
                     "apiVersion": "2017-05-01-preview",
                     "name": "Microsoft.Insights/toHub",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
+                        "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]",
+                        "[resourceId('Microsoft.OperationalInsights/workspaces',variables('hubLaName'))]"
                     ],
                     "properties": {
-                        "workspaceId": "[variables('hubLaWorkspaceResourceId')]",
+                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces',variables('hubLaName'))]",
                         "metrics": [
                             {
                                 "category": "AllMetrics",
