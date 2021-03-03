@@ -2,12 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "hubVnetResourceId": {
-            "type": "string",
-            "metadata": {
-                "description": "The regional hub network to which this regional spoke will peer to."
-            }
-        },
         "location": {
             "type": "string",
             "allowedValues": [
@@ -36,35 +30,24 @@
         "orgAppId": "BU0001A0008",
         "clusterVNetName": "[concat('vnet-spoke-', variables('orgAppId'), '-00')]",
 
-        "routeTableName": "[concat('route-to-', parameters('location'), '-hub-fw')]",
-        "hubRgName": "[split(parameters('hubVnetResourceId'),'/')[4]]",
-        "hubNetworkName": "[split(parameters('hubVnetResourceId'),'/')[8]]",
-
-        "hubFwResourceId": "[resourceId(variables('hubRgName'), 'Microsoft.Network/azureFirewalls', concat('fw-', parameters('location')))]",
-        "hubLaWorkspaceName": "[concat('la-hub-', parameters('location'), '-', uniqueString(parameters('hubVnetResourceId')))]",
-        "hubLaWorkspaceResourceId": "[resourceId(variables('hubRgName'), 'Microsoft.OperationalInsights/workspaces', variables('hubLaWorkspaceName'))]",
-        "toHubPeeringName": "[concat('spoke-to-', variables('hubNetworkName'))]",
-
-        "primaryClusterPipName": "[concat('pip-', variables('orgAppId'), '-00')]"
+        "primaryClusterPipName": "[concat('pip-', variables('orgAppId'), '-00')]",
+        "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
+        "hubLaName": "[concat('la-hub-', parameters('location'), '-', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))))]"
     },
     "resources": [
         {
-            "type": "Microsoft.Network/routeTables",
-            "apiVersion": "2020-05-01",
-            "name": "[variables('routeTableName')]",
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2020-08-01",
+            "name": "[variables('hubLaName')]",
             "location": "[parameters('location')]",
-            "comments": "Next hop to regional hub Azure Firewall",
+            "comments": "This Log Analytics workspace stores logs from the regional hub network, its spokes, and bastion.",
             "properties": {
-                "routes": [
-                    {
-                        "name": "r-nexthop-to-fw",
-                        "properties": {
-                            "nextHopType": "VirtualAppliance",
-                            "addressPrefix": "0.0.0.0/0",
-                            "nextHopIpAddress": "[reference(variables('hubFwResourceId'), '2020-05-01').ipConfigurations[0].properties.privateIpAddress]"
-                        }
-                    }
-                ]
+                "sku": {
+                    "name": "PerGB2018"
+                },
+                "retentionInDays": 30,
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled"
             }
         },
         {
@@ -242,7 +225,6 @@
             "location": "[parameters('location')]",
             "comments": "65,536 (-reserved) IPs available to the workload, split across two subnets for AKS and one for App Gateway.",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-appgw'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-nodepools'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-aksilbs'))]"
@@ -258,9 +240,6 @@
                         "name": "snet-clusternodes",
                         "properties": {
                             "addressPrefix": "10.240.0.0/22",
-                            "routeTable": {
-                                "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
-                            },
                             "networkSecurityGroup": {
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-nodepools'))]"
                             },
@@ -272,9 +251,6 @@
                         "name": "snet-clusteringressservices",
                         "properties": {
                             "addressPrefix": "10.240.4.0/28",
-                            "routeTable": {
-                                "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
-                            },
                             "networkSecurityGroup": {
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-', variables('clusterVNetName'), '-aksilbs'))]"
                             },
@@ -297,24 +273,6 @@
             },
             "resources": [
                 {
-                    "type": "virtualNetworkPeerings",
-                    "apiVersion": "2020-05-01",
-                    "name": "[variables('toHubPeeringName')]",
-                    "comments": "Peer to regional hub.",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
-                    ],
-                    "properties": {
-                        "remoteVirtualNetwork": {
-                            "id": "[parameters('hubVnetResourceId')]"
-                        },
-                        "allowForwardedTraffic": false,
-                        "allowVirtualNetworkAccess": true,
-                        "allowGatewayTransit": false,
-                        "useRemoteGateways": false
-                    }
-                },
-                {
                     "type": "providers/diagnosticSettings",
                     "apiVersion": "2017-05-01-preview",
                     "name": "Microsoft.Insights/toHub",
@@ -332,39 +290,6 @@
                     }
                 }
             ]
-        },
-        {
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-06-01",
-            "name": "[concat('CreateHubTo', variables('clusterVNetName'), 'Peer')]",
-            "resourceGroup": "[variables('hubRgName')]",
-            "comments": "Sub incremental deployment to perform hub-to-spoke peering",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/virtualNetworkPeerings', variables('clusterVNetName'), variables('toHubPeeringName'))]"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "template": {
-                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                    "contentVersion": "1.0.0.0",
-                    "resources": [
-                        {
-                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
-                            "apiVersion": "2020-05-01",
-                            "name": "[concat(variables('hubNetworkName'), '/hub-to-', variables('clusterVNetName'))]",
-                            "properties": {
-                                "remoteVirtualNetwork": {
-                                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
-                                },
-                                "allowForwardedTraffic": false,
-                                "allowGatewayTransit": false,
-                                "allowVirtualNetworkAccess": true,
-                                "useRemoteGateways": false
-                            }
-                        }
-                    ]
-                }
-            }
         },
         {
             "type": "Microsoft.Network/publicIpAddresses",
