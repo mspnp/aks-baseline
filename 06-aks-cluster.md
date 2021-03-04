@@ -119,11 +119,7 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         > :book: The DevOps team wants to automate their infrastructure deployments. In this case, they decided to use GitHub Actions. They are going to create a workflow for every AKS cluster instance they have to take care of.
 
         ```bash
-        git add .github/workflows/aks-deploy.yaml
-        git add  azuredeploy.parameters.region1.json
-        git add  azuredeploy.parameters.region2.json
-        git commit -m "setup GitHub CD workflow"
-        git push origin main
+        git add -u && git commit -m "setup GitHub CD workflow" && git push origin main
         ```
 
         > :bulb: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, please take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/configuring-and-managing-workflows/sharing-workflow-templates-within-your-organization).
