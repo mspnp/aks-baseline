@@ -1,17 +1,19 @@
-# This workflow will deploy our cluster stamp, without the workload.
+# This workflow will deploy two clusters, one in each region, without the workload.
 #
 # Follow the next steps to use this workflow:
 #
 # 1. Ensure you have followed the prior sections before deploying this AKS cluster. This way, you will be capable of setting:
-#    - the secrets values as detailed in the next step.
+#    - the secrets values
+#        - AZURE_CREDENTIALS                         The Azure Service Principal that will deploy the AKS cluster in your Azure subscription. For more information please take a look at https://github.com/Azure/login#configure-deployment-credentials
+#        - APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64   The certificate data for app gateway TLS termination. It is base64. Ideally fetch this secret from a platform-managed secret store such as Azure KeyVault: https://github.com/marketplace/actions/azure-key-vault-get-secrets
+#        - APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64   The certificate data for app gateway TLS termination. It is base64. Ideally fetch this secret from a platform-managed secret store such as Azure KeyVault: https://github.com/marketplace/actions/azure-key-vault-get-secrets
+#        - AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 The base 64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate.
 #    - the cluster parameter 
+#        -  azuredeploy.parameters.region1.json
+#        -  azuredeploy.parameters.region2.json
 #
-# 2. Create the following secrets in your GitHub repository:
-#    - AZURE_CREDENTIALS                         The Azure Service Principal that will deploy the AKS cluster in your Azure subscription. For more information please take a look at https://github.com/Azure/login#configure-deployment-credentials
-#    - APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64   The certificate data for app gateway TLS termination. It is base64. Ideally fetch this secret from a platform-managed secret store such as Azure KeyVault: https://github.com/marketplace/actions/azure-key-vault-get-secrets
-#    - APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64   The certificate data for app gateway TLS termination. It is base64. Ideally fetch this secret from a platform-managed secret store such as Azure KeyVault: https://github.com/marketplace/actions/azure-key-vault-get-secrets
-#    - AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 The base 64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate.
-
+# Take into account the DEPLOY_REGION1 and DEPLOY_REGION2 env variables. If we want to add a new region, the ideal situation is not deploy the already working clusters. Adding a value different of true will skip the specific region steps.
+# Changing the cluster stamp file is expected to be applied on all the regions 
 name: Deploy AKS Secure Baseline clusters stamp and Flux in different regions 
 
 on:
@@ -37,7 +39,8 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # Deploy the cluster (REGION1) into your environment, assuming all prerequisites are up and running.
+    # -----------------------REGION1------------------------------------------------
+    # Deploy the cluster into your environment, assuming all prerequisites are up and running.
     - name: Azure CLI - Deploy AKS cluster - Region 1
       id: aks-cluster-region1
       if: success() && env.DEPLOY_REGION1 == 'true'
@@ -47,12 +50,11 @@ jobs:
          az group create --name far-rg-bu0001a0042-03 --location eastus2
          az deployment group create --resource-group far-rg-bu0001a0042-03 \
             --template-file "cluster-stamp.json" \
-            --name "region1" \
-            --parameters @azuredeploy.parameters.region1.json \
+             --parameters @azuredeploy.parameters.region1.json \
               appGatewayListenerCertificate=${{ secrets.APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64 }} \
               aksIngressControllerCertificate=${{ secrets.AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 }}
 
-          echo "::set-output name=name::$(az deployment group show --resource-group far-rg-bu0001a0042-03 -n region1 --query properties.outputs.aksClusterName.value -o tsv)"
+          echo "::set-output name=name::$(az deployment group show --resource-group far-rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
         azcliversion: 2.17.1
 
     # Set the AKS cluster context - Region 1
@@ -74,7 +76,8 @@ jobs:
           cluster-manifests/cluster-baseline-settings/ns-cluster-baseline-settings.yaml
           cluster-manifests/cluster-baseline-settings/flux.yaml
 
-    # Deploy the cluster (REGION2) into your environment, assuming all prerequisites are up and running.
+    # -----------------------REGION2------------------------------------------------
+    # Deploy the cluster into your environment, assuming all prerequisites are up and running.
     - name: Azure CLI - Deploy AKS cluster - Region 2
       id: aks-cluster-region2
       uses: Azure/cli@v1.0.0
@@ -84,12 +87,11 @@ jobs:
          az group create --name far-rg-bu0001a0042-04 --location centralus
          az deployment group create --resource-group far-rg-bu0001a0042-04 \
             --template-file "cluster-stamp.json" \
-            --name "region2" \
             --parameters @azuredeploy.parameters.region2.json \
               appGatewayListenerCertificate=${{ secrets.APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64 }} \
               aksIngressControllerCertificate=${{ secrets.AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 }}
 
-          echo "::set-output name=name::$(az deployment group show --resource-group far-rg-bu0001a0042-04 -n region2 --query properties.outputs.aksClusterName.value -o tsv)"
+          echo "::set-output name=name::$(az deployment group show --resource-group far-rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
         azcliversion: 2.17.1
 
     # Set the AKS cluster context - Region 2

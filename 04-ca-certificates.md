@@ -49,8 +49,8 @@ Following the steps below you will result the certificate needed for Azure Appli
    :bulb: No matter if you used a certificate from your organization or you generated one from above, you'll need the certificate (as `.pfx`) to be base 64 encoded for proper storage in Key Vault later.
 
    ```bash
-   export APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64=$(cat $CLUSTER_SUBDOMAIN_03.pfx | base64 | tr -d '\n')
-   export APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64=$(cat $CLUSTER_SUBDOMAIN_04.pfx | base64 | tr -d '\n')
+   APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64=$(cat $CLUSTER_SUBDOMAIN_03.pfx | base64 | tr -d '\n')
+   APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64=$(cat $CLUSTER_SUBDOMAIN_04.pfx | base64 | tr -d '\n')
    ```
 
 1. Generate the wildcard certificate for the AKS Ingress Controller

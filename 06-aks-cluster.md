@@ -84,14 +84,10 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
 
         ```bash
         #Region1
-        cat ./azuredeploy.parameters.region.json | \
-        sed "s#<resource-location>#eastus2#g" | \
-        sed "s#<geo-redundancy-location>#centralus#g" | \
+        cat ./azuredeploy.parameters.eastus2.json | \
         sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_03}#g" | \
         sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" | \
         sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" | \
-        sed "s#<cluster-internal-load-balancer-ip-address>#10.243.4.4#g" | \
-        sed "s#<app-instance-id>#03#g" | \
         sed "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" | \
         sed "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" | \
         sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g" | \
@@ -99,14 +95,10 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         > azuredeploy.parameters.region1.json
 
         #Region2
-        cat ./azuredeploy.parameters.region.json | \
-        sed "s#<resource-location>#centralus#g" | \
-        sed "s#<geo-redundancy-location>#centralus#g" | \
+        cat ./azuredeploy.parameters.centralus.json | \
         sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04}#g" | \
         sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" | \
         sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" | \
-        sed "s#<cluster-internal-load-balancer-ip-address>#10.244.4.4#g" | \
-        sed "s#<app-instance-id>#04#g" | \
         sed "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" | \
         sed "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" | \
         sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g" | \
@@ -119,7 +111,7 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         > :book: The DevOps team wants to automate their infrastructure deployments. In this case, they decided to use GitHub Actions. They are going to create a workflow for every AKS cluster instance they have to take care of.
 
         ```bash
-        git add -u && git commit -m "setup GitHub CD workflow" && git push origin main
+        git add -A && git commit -m "setup GitHub CD workflow" && git push origin main
         ```
 
         > :bulb: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, please take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/configuring-and-managing-workflows/sharing-workflow-templates-within-your-organization).
@@ -127,6 +119,8 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
     1.  The workflow start when a push on main is detected. Go to the Action tab in order to see the execution.
 
         > :book: The DevOps team monitors this Workflow execution instance. In this instance it will impact a critical piece of infrastructure as well as the management. This flow works for both new or an existing AKS cluster.
+
+        > :warning: You can continue only after the GitHub Workflow completes successfully
 
 ## Container registry note
 
@@ -136,4 +130,4 @@ This deployment creates an SLA-backed Azure Container Registry for your cluster'
 
 ### Next step
 
-:arrow_forward: [Place the cluster under GitOps management](./07-gitops.md)
+:arrow_forward: [Prepare for the workload by installing its prerequisites](./07-workload-prerequisites.md)

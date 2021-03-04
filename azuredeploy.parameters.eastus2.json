@@ -3,13 +3,13 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "location": {
-        "value": "<resource-location>"
+        "value": "eastus2"
       },
       "targetVnetResourceId": {
         "value": "<cluster-spoke-vnet-resource-id>"
       },
       "appInstanceId": {
-        "value": "<app-instance-id>"
+        "value": "03"
       },
       "clusterAdminAadGroupObjectId": {
         "value": "<azure-ad-aks-admin-group-object-id>"
@@ -18,7 +18,7 @@
         "value": "<tenant-id-with-user-admin-permissions>"
       },
       "clusterInternalLoadBalancerIpAddress": {
-        "value": "<cluster-internal-load-balancer-ip-address>"
+        "value": "10.243.4.4"
       },
       "logAnalyticsWorkspaceId": {
         "value": "<log-analytics-workspace-id>"

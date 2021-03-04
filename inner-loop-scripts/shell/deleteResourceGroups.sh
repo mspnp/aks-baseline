@@ -56,8 +56,8 @@ if [ $OPTIND = 1 ]; then
     exit 0
 fi
 
-az login
-az account set -s $MAIN_SUBSCRIPTION
+#az login
+#az account set -s $MAIN_SUBSCRIPTION
 
 echo deleting $RGNAME_FRONT_DOOR
 az group delete -n $RGNAME_FRONT_DOOR --yes
