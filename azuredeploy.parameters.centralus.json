@@ -28,9 +28,6 @@
       },
       "acrPrivateDnsZonesId": {
         "value": "<acrPrivateDns-zones-id>"
-      },
-      "subdomainName": {
-        "value": "<subdomain-name>"
       }
     }
   }

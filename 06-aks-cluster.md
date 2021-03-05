@@ -91,7 +91,6 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         sed "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" | \
         sed "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" | \
         sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g" | \
-        sed "s#<subdomain-name>#${CLUSTER_SUBDOMAIN_03}#g" \
         > azuredeploy.parameters.region1.json
 
         #Region2
@@ -102,7 +101,6 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         sed "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" | \
         sed "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" | \
         sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g" | \
-        sed "s#<subdomain-name>#${CLUSTER_SUBDOMAIN_04}#g" \
         > azuredeploy.parameters.region2.json
         ```
 
