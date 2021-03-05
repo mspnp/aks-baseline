@@ -118,7 +118,9 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
 
     1.  The workflow start when a push on main is detected. Go to the Action tab in order to see the execution.
 
-        > :book: The DevOps team monitors this Workflow execution instance. In this instance it will impact a critical piece of infrastructure as well as the management. This flow works for both new or an existing AKS cluster.
+        > :book: The DevOps team monitors this Workflow execution instance. In this instance it will impact a critical piece of infrastructure as well as the management. This flow works for both new or an existing AKS cluster. The workflow deploy the cluster and basic Kubernetes elements.
+
+        > :book: GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically apply to their cluster as changes occur. This reference implementation is focused on the baseline cluster, so Flux is managing cluster-level concerns. This is distinct from workload-level concerns, which would be possible as well to manage via Flux, and would typically be done by additional Flux operators in the cluster. The namespace cluster-baseline-settings will be used to provide a logical division of the cluster bootstrap configuration from workload configuration. Examples of manifests that are applied: Cluster Role Bindings for the AKS-managed Azure AD integration, AAD Pod Identity, CSI driver and Azure KeyVault CSI Provider
 
         > :warning: You can continue only after the GitHub Workflow completes successfully
 
