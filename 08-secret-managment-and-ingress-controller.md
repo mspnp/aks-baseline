@@ -99,7 +99,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    :warning: Deploying the traefik `traefik.yaml` file unmodified from this repo will be deploying your workload to take dependencies on a public container registry. This is generally okay for learning/testing, but not suitable for production. Before going to production, ensure _all_ image references are from _your_ container registry or another that you feel confident relying on.
 
    ```bash
-   kubectl create -f https://raw.githubusercontent.com/<your user>/aks-secure-baseline/main/workload/traefik-03.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_03
+   kubectl create -f $RAW_GITHUB_CONTENT_FORK/workload/traefik-03.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
 1. Wait for Traefik to be ready.
@@ -163,7 +163,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
        tenantId: $TENANTID_AZURERBAC
    EOF
 
-   kubectl create -f https://raw.githubusercontent.com/<your user>/aks-secure-baseline/main/workload/traefik-04.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl create -f $RAW_GITHUB_CONTENT_FORK/workload/traefik-04.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
    kubectl wait --namespace a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04
    ```
 

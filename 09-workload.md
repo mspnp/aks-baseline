@@ -11,7 +11,7 @@ The cluster now has an [Traefik configured with a TLS certificate](./09-secret-m
    > The workload definition demonstrates the inclusion of a Pod Disruption Budget rule, ingress configuration, and pod (anti-)affinity rules for your reference.
 
    ```bash
-   kubectl create -f https://raw.githubusercontent.com/<your user>/aks-secure-baseline/main/workload/aspnetapp.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_03
+   kubectl create -f $RAW_GITHUB_CONTENT_FORK/workload/aspnetapp.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
 1. Wait until is ready to process requests running
@@ -33,7 +33,7 @@ The cluster now has an [Traefik configured with a TLS certificate](./09-secret-m
 1. Deploy the same workload as another instance in the second AKS cluster
 
    ```bash
-   kubectl create -f https://raw.githubusercontent.com/<your user>/aks-secure-baseline/main/workload/aspnetapp.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
+   kubectl create -f $RAW_GITHUB_CONTENT_FORK/workload/aspnetapp.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
    kubectl wait -n a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=aspnetapp --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04
    kubectl get ingress aspnetapp-ingress -n a0042 --context $AKS_CLUSTER_NAME_BU0001A0042_04
    ```
