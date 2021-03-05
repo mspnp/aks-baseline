@@ -1,0 +1,34 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "location": {
+        "value": "eastus2"
+      },
+      "targetVnetResourceId": {
+        "value": "<cluster-spoke-vnet-resource-id>"
+      },
+      "appInstanceId": {
+        "value": "03"
+      },
+      "clusterAdminAadGroupObjectId": {
+        "value": "<azure-ad-aks-admin-group-object-id>"
+      },
+      "k8sControlPlaneAuthorizationTenantId": {
+        "value": "<tenant-id-with-user-admin-permissions>"
+      },
+      "clusterInternalLoadBalancerIpAddress": {
+        "value": "10.243.4.4"
+      },
+      "logAnalyticsWorkspaceId": {
+        "value": "<log-analytics-workspace-id>"
+      },
+      "containerRegistryId": {
+        "value": "<container-registry-id>"
+      },
+      "acrPrivateDnsZonesId": {
+        "value": "<acrPrivateDns-zones-id>"
+      }
+    }
+  }
+  

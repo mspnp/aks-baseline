@@ -98,45 +98,9 @@
                 "description": "AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region. This needs to be the same region as the vnet provided in these parameters."
             }
         },
-        "geoRedundancyLocation": {
-            "defaultValue": "centralus",
-            "type": "string",
-            "allowedValues": [
-                "australiasoutheast",
-                "canadaeast",
-                "eastus2",
-                "westus",
-                "centralus",
-                "westcentralus",
-                "francesouth",
-                "germanynorth",
-                "westeurope",
-                "ukwest",
-                "northeurope",
-                "japanwest",
-                "southafricawest",
-                "northcentralus",
-                "eastasia",
-                "eastus",
-                "westus2",
-                "francecentral",
-                "uksouth",
-                "japaneast",
-                "southeastasia"
-            ],
-            "metadata": {
-                "description": "For Azure resources that support native geo-redunancy, provide the location the redundant service will have its secondary. Should be different than the location parameter and ideally should be a paired region - https://docs.microsoft.com/azure/best-practices-availability-paired-regions. This region does not need to support availability zones."
-            }
-        },
         "kubernetesVersion": {
             "defaultValue": "1.19.6",
             "type": "string"
-        },
-        "subdomainName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name used for the azure subdomain in order to create the dns entry for app gateway public ip"
-            }
         }
     },
     "variables": {
@@ -166,7 +130,6 @@
         "agwName": "[concat('apw-', variables('clusterName'))]",
         "apwResourceId": "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]",
 
-        "fqdnAppGateway": "[concat( parameters('subdomainName'),'.', parameters('location'),'.cloudapp.azure.com')]",
         "akvPrivateDnsZonesName": "privatelink.vaultcore.azure.net",
 
         "clusterControlPlaneIdentityName": "[concat('mi-', variables('clusterName'), '-controlplane')]",
@@ -589,7 +552,7 @@
                             "sslCertificate": {
                                 "id": "[concat(variables('apwResourceId'), '/sslCertificates/', variables('agwName'), '-ssl-certificate')]"
                             },
-                            "hostName": "[concat(variables('fqdnAppGateway'))]",
+                            "hostName": "[concat(reference(resourceId(subscription().subscriptionId,variables('vNetResourceGroup'),'Microsoft.Network/publicIpAddresses',concat('pip-',variables('appId'))),'2020-07-01','Full').properties.dnsSettings.domainNameLabel,'.', parameters('location'),'.cloudapp.azure.com')]",
                             "hostNames": [
                             ],
                             "requireServerNameIndication": true

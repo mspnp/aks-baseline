@@ -4,134 +4,123 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
 
 ## Steps
 
-1. Obtain shared services resource details
+1.  Obtain shared services resource details
 
-   ```bash
-   LOGANALYTICSWORKSPACEID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.logAnalyticsWorkspaceId.value -o tsv)
-   CONTAINERREGISTRYID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryId.value -o tsv)
-   ACRPRIVATEDNSZONESID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.acrPrivateDnsZonesId.value -o tsv)
-   ```
-1. Create the first AKS cluster resource group.
+    ```bash
+    LOGANALYTICSWORKSPACEID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.logAnalyticsWorkspaceId.value -o tsv)
+    CONTAINERREGISTRYID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryId.value -o tsv)
+    ACRPRIVATEDNSZONESID=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.acrPrivateDnsZonesId.value -o tsv)
+    ```
 
-   > :book: The app team working on behalf of business unit 0001 (BU001) is looking to create the two AKS cluster for the app instances they are creating (Application ID: 0042 | Instance IDs: 03 and 04). They have worked with the organization's networking team and have been provisioned the spoke networks in which to lay their clusters and network-aware external resources into (such as Application Gateway). They took that information and added it to their [`cluster-stamp.json`](./cluster-stamp.json) and [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) files.
-   >
-   > They create these resource groups to be the parent group for the application instances with separted infrastructure resources.
+1.  Get the corresponding AKS cluster spoke VNet resource IDs for the app team working on the application A0042.
 
-   ```bash
-   # [This takes less than one minute.]
-   az group create --name rg-bu0001a0042-03 --location eastus2
-   az group create --name rg-bu0001a0042-04 --location centralus
-   ```
+    > :book: The app team will be deploying to a spoke VNet, that was already provisioned by the network team.
 
-1. Get the corresponding AKS cluster spoke VNet resource IDs for the app team working on the application A0042.
+    ```bash
+    RESOURCEID_VNET_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+    RESOURCEID_VNET_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+    ```
 
-   > :book: The app team will be deploying to a spoke VNet, that was already provisioned by the network team.
+    **Automated deploy using GitHub Actions (fork is required)**
 
-   ```bash
-   RESOURCEID_VNET_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.clusterVnetResourceId.value -o tsv)
-   RESOURCEID_VNET_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.clusterVnetResourceId.value -o tsv)
-   ```
+    1.  Create the Azure Credentials for the GitHub CD workflow.
 
-1. Deploy the two AKS clusters.
-   :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server. You can limit access to the API Server to a set of well-known IP addresses (i.,e. a jump box subnet (connected to by Azure Bastion), build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options.
+        ```bash
+        # Create an Azure Service Principal
+        az ad sp create-for-rbac --name "github-workflow-aks-cluster" --sdk-auth --skip-assignment > sp.json
+        APP_ID=$(grep -oP '(?<="clientId": ").*?[^\\](?=",)' sp.json)
 
-   ```bash
-   # [This takes about 30 minutes.]
-   az deployment group create -g rg-bu0001a0042-03 -f cluster-stamp.json -p targetVnetResourceId=$RESOURCEID_VNET_BU0001A0042_03 clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004203} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} appInstanceId="03" clusterInternalLoadBalancerIpAddress="10.243.4.4" subdomainName=${CLUSTER_SUBDOMAIN_03} logAnalyticsWorkspaceId=${LOGANALYTICSWORKSPACEID} containerRegistryId=${CONTAINERREGISTRYID} acrPrivateDnsZonesId=${ACRPRIVATEDNSZONESID} location=eastus2
-   az deployment group create -g rg-bu0001a0042-04 -f cluster-stamp.json -p targetVnetResourceId=$RESOURCEID_VNET_BU0001A0042_04 clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004204} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} appInstanceId="04" clusterInternalLoadBalancerIpAddress="10.244.4.4" subdomainName=${CLUSTER_SUBDOMAIN_04} logAnalyticsWorkspaceId=${LOGANALYTICSWORKSPACEID} containerRegistryId=${CONTAINERREGISTRYID} acrPrivateDnsZonesId=${ACRPRIVATEDNSZONESID} location=centralus
-   ```
+        # Wait for propagation
+        until az ad sp show --id ${APP_ID} &> /dev/null ; do echo "Waiting for Azure AD propagation" && sleep 5; done
 
-   > Alteratively, you could have updated the [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) file and deployed as above, using `-p "@azuredeploy.parameters.prod.json"` instead of providing the individual key-value pairs.
+        # Assign built-in Contributor RBAC role for creating resource groups and performing deployments at subscription level
+        az role assignment create --assignee $APP_ID --role 'Contributor'
 
-   **Option 2 - Automated deploy using GitHub Actions (fork is required)**
+        # Assign built-in User Access Administrator RBAC role since granting RBAC access to other resources during the cluster creation will be required at subscription level (e.g. AKS-managed Internal Load Balancer, ACR, Managed Identities, etc.)
+        az role assignment create --assignee $APP_ID --role 'User Access Administrator'
+        ```
 
-   1. Create the Azure Credentials for the GitHub CD workflow.
+    1.  Create `AZURE_CREDENTIALS` secret in your GitHub repository. For more
+        information, please take a look at [Creating encrypted secrets for a repository](https://docs.github.com/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository).
 
-      ```bash
-      # Create an Azure Service Principal
-      az ad sp create-for-rbac --name "github-workflow-aks-cluster" --sdk-auth --skip-assignment > sp.json
-      APP_ID=$(grep -oP '(?<="clientId": ").*?[^\\](?=",)' sp.json)
+        > :bulb: Use the content from the `sp.json` file.
 
-      # Wait for propagation
-      until az ad sp show --id ${APP_ID} &> /dev/null ; do echo "Waiting for Azure AD propagation" && sleep 5; done
+        ```bash
+        cat sp.json
+        ```
 
-      # Assign built-in Contributor RBAC role for creating resource groups and performing deployments at subscription level
-      az role assignment create --assignee $APP_ID --role 'Contributor'
+    1.  Create `APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64` and `APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64` secret in your GitHub repository. For more
+        information, please take a look at [Creating encrypted secrets for a repository](https://docs.github.com/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository).
 
-      # Assign built-in User Access Administrator RBAC role since granting RBAC access to other resources during the cluster creation will be required at subscription level (e.g. AKS-managed Internal Load Balancer, ACR, Managed Identities, etc.)
-      az role assignment create --assignee $APP_ID --role 'User Access Administrator'
-      ```
+        > :bulb:
+        >
+        > - Use the env var value of `APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64` and `APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64`
+        > - Ideally fetching this secret from a platform-managed secret store such as [Azure KeyVault](https://github.com/marketplace/actions/azure-key-vault-get-secrets)
 
-   1. Create `AZURE_CREDENTIALS` secret in your GitHub repository. For more
-      information, please take a look at [Creating encrypted secrets for a repository](https://docs.github.com/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository).
+        ```bash
+        echo $APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64
+        echo $APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64
+        ```
 
-      > :bulb: Use the content from the `sp.json` file.
+    1.  Create `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64` secret in your GitHub repository. For more information, please take a look at [Creating encrypted secrets for a repository](https://docs.github.com/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository).
 
-      ```bash
-      cat sp.json
-      ```
+        > :bulb:
+        >
+        > - Use the env var value of `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64`
+        > - Ideally fetching this secret from a platform-managed secret store such as [Azure Key Vault](https://github.com/marketplace/actions/azure-key-vault-get-secrets)
 
-   1. Create `APP_GATEWAY_LISTENER_CERTIFICATE_BASE64` secret in your GitHub repository. For more
-      information, please take a look at [Creating encrypted secrets for a repository](https://docs.github.com/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository).
+        ```bash
+        echo $AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64
+        ```
 
-      > :bulb:
-      >
-      > - Use the env var value of `APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004203` and `APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004204`
-      > - Ideally fetching this secret from a platform-managed secret store such as [Azure KeyVault](https://github.com/marketplace/actions/azure-key-vault-get-secrets)
+    1.  Copy the GitHub workflow file into the expected directory
 
-      ```bash
-      echo $APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004203
-      echo $APP_GATEWAY_LISTENER_CERTIFICATE_BU0001A004204
-      ```
+        ```bash
+        mkdir -p .github/workflows
+        cat github-workflow/aks-deploy.yaml > .github/workflows/aks-deploy.yaml
+        ```
 
-   1. Create `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64` secret in your GitHub repository. For more information, please take a look at [Creating encrypted secrets for a repository](https://docs.github.com/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository).
+    1.  Generate cluster parameter file per region
 
-      > :bulb:
-      >
-      > - Use the env var value of `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64`
-      > - Ideally fetching this secret from a platform-managed secret store such as [Azure Key Vault](https://github.com/marketplace/actions/azure-key-vault-get-secrets)
+        ```bash
+        #Region1
+        cat ./azuredeploy.parameters.eastus2.json | \
+        sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_03}#g" | \
+        sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" | \
+        sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" | \
+        sed "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" | \
+        sed "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" | \
+        sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g" | \
+        > azuredeploy.parameters.region1.json
 
-      ```bash
-      echo $AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64
-      ```
+        #Region2
+        cat ./azuredeploy.parameters.centralus.json | \
+        sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04}#g" | \
+        sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" | \
+        sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" | \
+        sed "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" | \
+        sed "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" | \
+        sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g" | \
+        > azuredeploy.parameters.region2.json
+        ```
 
-   1. Copy the GitHub workflow file into the expected directory and update the placeholders in it.
+    1.  Push the changes to your forked repo.
 
-      ```bash
-      mkdir -p .github/workflows
-      cat github-workflow/aks-deploy.yaml | \
-          sed "s#<resource-group-location>#eastus2#g" | \
-          sed "s#<resource-group-name>#rg-bu0001a0008#g" | \
-          sed "s#<geo-redundancy-location>#centralus#g" | \
-          sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_CLUSTERSPOKE}#g" | \
-          sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" | \
-          sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" \
-          > .github/workflows/aks-deploy.yaml
-      ```
+        > :book: The DevOps team wants to automate their infrastructure deployments. In this case, they decided to use GitHub Actions. They are going to create a workflow for every AKS cluster instance they have to take care of.
 
-   1. Push the changes to your forked repo.
+        ```bash
+        git add -A && git commit -m "setup GitHub CD workflow" && git push origin main
+        ```
 
-      > :book: The DevOps team wants to automate their infrastructure deployments. In this case, they decided to use GitHub Actions. They are going to create a workflow for every AKS cluster instance they have to take care of.
+        > :bulb: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, please take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/configuring-and-managing-workflows/sharing-workflow-templates-within-your-organization).
 
-      ```bash
-      git add .github/workflows/aks-deploy.yaml && git commit -m "setup GitHub CD workflow"
-      git push origin HEAD:kick-off-workflow
-      ```
+    1.  The workflow start when a push on main is detected. Go to the Action tab in order to see the execution.
 
-      > :bulb: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, please take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/configuring-and-managing-workflows/sharing-workflow-templates-within-your-organization).
+        > :book: The DevOps team monitors this Workflow execution instance. In this instance it will impact a critical piece of infrastructure as well as the management. This flow works for both new or an existing AKS cluster. The workflow deploy the cluster and basic Kubernetes elements.
 
-   1. Navigate to your GitHub forked repository and open a PR against `main` using the recently pushed changes to the remote branch `kick-off-workflow`.
+        > :book: GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically apply to their cluster as changes occur. This reference implementation is focused on the baseline cluster, so Flux is managing cluster-level concerns. This is distinct from workload-level concerns, which would be possible as well to manage via Flux, and would typically be done by additional Flux operators in the cluster. The namespace cluster-baseline-settings will be used to provide a logical division of the cluster bootstrap configuration from workload configuration. Examples of manifests that are applied: Cluster Role Bindings for the AKS-managed Azure AD integration, AAD Pod Identity, CSI driver and Azure KeyVault CSI Provider
 
-      > :book: The DevOps team configured the GitHub Workflow to preview the changes that will happen when a PR is opened. This will allow them to evaluate the changes before they get deployed. After the PR reviewers see how resources will change if the AKS cluster ARM template gets deployed, it is possible to merge or discard the pull request. If the decision is made to merge, it will trigger a push event that will kick off the actual deployment process that consists of:
-      >
-      > - AKS cluster creation
-      > - Flux deployment
-
-   1. Once the GitHub Workflow validation finished successfully, please proceed by merging this PR into `main`.
-
-      > :book: The DevOps team monitors this Workflow execution instance. In this instance it will impact a critical piece of infrastructure as well as the management. This flow works for both new or an existing AKS cluster.
-
-   1. :fast_forward: The cluster is placed under GitOps managed as part of these GitHub Workflow steps. Therefore, you should proceed straight to [Workflow Prerequisites](./07-workload-prerequisites.md).
+        > :warning: You can continue only after the GitHub Workflow completes successfully
 
 ## Container registry note
 
@@ -141,4 +130,4 @@ This deployment creates an SLA-backed Azure Container Registry for your cluster'
 
 ### Next step
 
-:arrow_forward: [Place the cluster under GitOps management](./07-gitops.md)
+:arrow_forward: [Prepare for the workload by installing its prerequisites](./07-workload-prerequisites.md)

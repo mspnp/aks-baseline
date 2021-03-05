@@ -99,7 +99,6 @@ This is the heart of the guidance in this reference implementation; paired with 
 - [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./04-ca-certificates.md)
 - [ ] [Deploy the shared services for your clusters](./05-cluster-prerequisites.md)
 - [ ] [Deploy the AKS cluster and supporting services](./06-aks-cluster.md)
-- [ ] [Place the cluster under GitOps management](./07-gitops.md)
 
 We perform the prior steps manually here for you to understand the involved components, but we advocate for an automated DevOps process. Therefore, incorporate the prior steps into your CI/CD pipeline, as you would any infrastructure as code (IaC). We have included [a starter GitHub workflow](./github-workflow/aks-deploy.yaml) that demonstrates this.
 
@@ -107,21 +106,21 @@ We perform the prior steps manually here for you to understand the involved comp
 
 Without a workload deployed to the cluster it will be hard to see how these decisions come together to work as a reliable application platform for your business. The deployment of this workload would typically follow a CI/CD pattern and may involve even more advanced deployment strategies (blue/green, etc). The following steps represent a manual deployment, suitable for illustration purposes of this infrastructure.
 
-- [ ] Just like the cluster, there are [workload prerequisites to address](./08-workload-prerequisites.md)
-- [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./09-secret-managment-and-ingress-controller.md)
-- [ ] [Deploy the workload](./10-workload.md)
+- [ ] Just like the cluster, there are [workload prerequisites to address](./07-workload-prerequisites.md)
+- [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./08-secret-managment-and-ingress-controller.md)
+- [ ] [Deploy the workload](./09-workload.md)
 
 ### 5. :checkered_flag: Validation
 
 Now that the cluster and the sample workload is deployed; it's time to look at how the cluster is functioning.
 
-- [ ] [Perform end-to-end deployment validation](./11-validation.md)
+- [ ] [Perform end-to-end deployment validation](./10-validation.md)
 
 ## :broom: Clean up resources
 
 Most of the Azure resources deployed in the prior steps will incur ongoing charges unless removed.
 
-- [ ] [Cleanup all resources](./12-cleanup.md)
+- [ ] [Cleanup all resources](./11-cleanup.md)
 
 ## Inner-loop development scripts
 

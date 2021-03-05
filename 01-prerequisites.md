@@ -22,12 +22,14 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 
    [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
-1. Clone/download this repo locally, or even better fork this repository.
+1. Fork the repository first, and clone it
 
-   > :twisted_rightwards_arrows: If you have forked this reference implementation repo, you'll be able to customize some of the files and commands for a more personalized and production-like experience; ensure references to this git repository mentioned throughout the walkthrough are updated to use your own fork.
+   > :twisted_rightwards_arrows: ensure references to this git repository mentioned throughout the walkthrough are updated to use your own fork.
 
    ```bash
-   git clone https://github.com/mspnp/aks-secure-baseline.git
+   GITHUB_USER_NAME=<your username>
+   RAW_GITHUB_CONTENT_FORK=https://raw.githubusercontent.com/${GITHUB_USER_NAME}/aks-secure-baseline/main
+   git clone https://github.com/$GITHUB_USER_NAME/aks-secure-baseline.git
    cd aks-secure-baseline
    ```
 

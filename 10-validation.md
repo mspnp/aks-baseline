@@ -142,4 +142,4 @@ If you configured your third-party images to be pulled from your Azure Container
 
 ## Next step
 
-:arrow_forward: [Clean Up Azure Resources](./12-cleanup.md)
+:arrow_forward: [Clean Up Azure Resources](./11-cleanup.md)
