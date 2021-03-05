@@ -16,7 +16,7 @@ This architectural decision will have multiple implications for the Contoso Bicy
 
 The business unit (BU0001) approves the creation of a second cluster that could help balance the traffic but mainly to serve as a hot backup; they are a bit worried about the required engineering effort though. The same application (Application Id: a0042) is about to span into multiple clusters, so there is a desire to find a good mechanism for its configuration management. With that in mind, the app team is looking at what _federation_ approaches they could follow to run different instances of the exact same app in different clusters.
 
-They know that at this point things must be kept simply, in fact they could run these two application instances (Applications Ids: `a0042-03` and `a0042-04`) from the two  regional clusters with just a bunch of useful scripts. But they want to be sure that the selected approach is not going to be adding impediments that could prevent from scaling out their fleet of clusters down to road if there was a requirment to scale up the amount application instances.
+They know that at this point things must be kept simply, in fact they could run these two application instances (Applications Ids: `a0042-03` and `a0042-04`) from the two regional clusters with just a bunch of useful scripts. But they want to be sure that the selected approach is not going to be adding impediments that could prevent from scaling out their fleet of clusters down to road if there was a requirment to scale up the amount application instances.
 
 Depending on how federation is implemented it could open a door in which a single command execution has an instant ripple effect into all your clusters. While running clusters separately like silos could keep you safe from the same, but the cost could be really high to scale the number of clusters in the future.
 
@@ -100,7 +100,7 @@ This is the heart of the guidance in this reference implementation; paired with 
 - [ ] [Deploy the shared services for your clusters](./05-cluster-prerequisites.md)
 - [ ] [Deploy the AKS cluster and supporting services](./06-aks-cluster.md)
 
-We perform the prior steps manually here for you to understand the involved components, but we advocate for an automated DevOps process. Therefore, incorporate the prior steps into your CI/CD pipeline, as you would any infrastructure as code (IaC). We have included [a starter GitHub workflow](./github-workflow/aks-deploy.yaml) that demonstrates this.
+We advocate for an automated DevOps process. We have included [a starter GitHub workflow](./github-workflow/aks-deploy.yaml) that demonstrates this.
 
 ### 4. Deploy your workload
 
