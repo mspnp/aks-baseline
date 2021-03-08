@@ -40,12 +40,6 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         az role assignment create --assignee $APP_ID --role 'User Access Administrator'
         ```
 
-    1.  Login GitHub Cli
-
-        ```bash
-        gh auth login -s "repo,admin:org"
-        ```
-
     1.  Create `AZURE_CREDENTIALS` secret in your GitHub repository.
 
         > :bulb: Use the content from the `sp.json` file.

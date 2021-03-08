@@ -22,22 +22,26 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 
    [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
-1. Fork the repository first, and clone it
+1. Ensure [GitHub CLI installed](https://github.com/cli/cli) in order to populate secrets before execute GitHub Workflow on your fork
 
-   > :twisted_rightwards_arrows: ensure references to this git repository mentioned throughout the walkthrough are updated to use your own fork.
+1. Login GitHub Cli
 
    ```bash
+   gh auth login -s "repo,admin:org"
+   ```
+
+1. Fork the repository first, and clone it
+
+   ```bash
+   gh repo fork mspnp/aks-secure-baseline --clone=true --remote=true
+   cd aks-secure-baseline
    GITHUB_USER_NAME=<your username>
    RAW_GITHUB_CONTENT_FORK=https://raw.githubusercontent.com/${GITHUB_USER_NAME}/aks-secure-baseline/main
-   git clone https://github.com/$GITHUB_USER_NAME/aks-secure-baseline.git
-   cd aks-secure-baseline
    ```
 
    > :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://docs.microsoft.com/windows/wsl/about#what-is-wsl-2) to run Bash.
 
 1. Ensure [OpenSSL is installed](https://github.com/openssl/openssl#download) in order to generate self-signed certs used in this implementation.
-
-1. Ensure [GitHub CLI installed](https://github.com/cli/cli) in order to populate secrets before execute GitHub Workflow on your fork
 
 ### Next step
 
