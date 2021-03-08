@@ -39,6 +39,17 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    - name: ACR Images
+      id: acr-images
+      uses: Azure/cli@v1.0.0
+      with:
+        inlineScript: |
+          ACR_NAME_BU0001A0042=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+          az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME_BU0001A0042 --force
+          az acr import --source docker.io/fluxcd/flux:1.19.0 -n $ACR_NAME_BU0001A0042 --force
+          az acr import --source docker.io/weaveworks/kured:1.4.0 -n $ACR_NAME_BU0001A0042 --force
+
+        azcliversion: 2.17.1
     # -----------------------REGION1------------------------------------------------
     # Deploy the cluster into your environment, assuming all prerequisites are up and running.
     - name: Azure CLI - Deploy AKS cluster - Region 1
@@ -47,14 +58,14 @@ jobs:
       uses: Azure/cli@v1.0.0
       with:
         inlineScript: |
-         az group create --name far-rg-bu0001a0042-03 --location eastus2
-         az deployment group create --resource-group far-rg-bu0001a0042-03 \
+         az group create --name rg-bu0001a0042-03 --location eastus2
+         az deployment group create --resource-group rg-bu0001a0042-03 \
             --template-file "cluster-stamp.json" \
              --parameters @azuredeploy.parameters.region1.json \
               appGatewayListenerCertificate=${{ secrets.APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64 }} \
               aksIngressControllerCertificate=${{ secrets.AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 }}
-
-          echo "::set-output name=name::$(az deployment group show --resource-group far-rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
+     
+          echo "::set-output name=name::$(az deployment group show --resource-group rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
         azcliversion: 2.17.1
 
     # Set the AKS cluster context - Region 1
@@ -64,7 +75,7 @@ jobs:
       with:
         creds: '${{ secrets.AZURE_CREDENTIALS }}'
         cluster-name: ${{ steps.aks-cluster-region1.outputs.name }}
-        resource-group: far-rg-bu0001a0042-03
+        resource-group: rg-bu0001a0042-03
 
     # Create the cluster-baseline-settings namespace and deploy Flux into it - Region 1
     - name: Create the cluster-baseline-settings namespace and deploy Flux - Region 1
@@ -84,14 +95,14 @@ jobs:
       if: success() && env.DEPLOY_REGION2 == 'true'
       with:
         inlineScript: |
-         az group create --name far-rg-bu0001a0042-04 --location centralus
-         az deployment group create --resource-group far-rg-bu0001a0042-04 \
+         az group create --name rg-bu0001a0042-04 --location centralus
+         az deployment group create --resource-group rg-bu0001a0042-04 \
             --template-file "cluster-stamp.json" \
             --parameters @azuredeploy.parameters.region2.json \
               appGatewayListenerCertificate=${{ secrets.APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64 }} \
               aksIngressControllerCertificate=${{ secrets.AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 }}
 
-          echo "::set-output name=name::$(az deployment group show --resource-group far-rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
+          echo "::set-output name=name::$(az deployment group show --resource-group rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
         azcliversion: 2.17.1
 
     # Set the AKS cluster context - Region 2
@@ -101,7 +112,7 @@ jobs:
       with:
         creds: '${{ secrets.AZURE_CREDENTIALS }}'
         cluster-name: ${{ steps.aks-cluster-region2.outputs.name }}
-        resource-group: far-rg-bu0001a0042-04
+        resource-group: rg-bu0001a0042-04
 
     # Create the cluster-baseline-settings namespace and deploy Flux into it - Region 2
     - name: Create the cluster-baseline-settings namespace and deploy Flux - Region 2

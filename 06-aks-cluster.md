@@ -45,8 +45,7 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         > :bulb: Use the content from the `sp.json` file.
 
         ```bash
-        AZURE_CREDENTIALS=$(cat sp.json)
-        gh secret set AZURE_CREDENTIALS  -b"${AZURE_CREDENTIALS}" -repo="$GITHUB_USER_NAME/aks-secure-baseline"
+        gh secret set AZURE_CREDENTIALS  -b"$(cat sp.json)" -repo="$GITHUB_USER_NAME/aks-secure-baseline"
         ```
 
     1.  Create `APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64` and `APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64` secret in your GitHub repository.
@@ -79,7 +78,7 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" | \
         sed "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" | \
         sed "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" | \
-        sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g" | \
+        sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g"  \
         > azuredeploy.parameters.region1.json
 
         #Region2
@@ -89,7 +88,7 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" | \
         sed "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" | \
         sed "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" | \
-        sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g" | \
+        sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g"  \
         > azuredeploy.parameters.region2.json
         ```
 
@@ -113,9 +112,16 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
 
         ```bash
         # Region 1 - Wait until updated with provisioningState at 'Succeeded'.
-        az deployment group wait -n cluster-stamp -g far-rg-bu0001a0042-03 --updated
+        az deployment group wait -n cluster-stamp -g rg-bu0001a0042-03 --updated
         # Region 2- Wait until updated with provisioningState at 'Succeeded'.
-        az deployment group wait -n cluster-stamp -g far-rg-bu0001a0042-04 --updated
+        az deployment group wait -n cluster-stamp -g rg-bu0001a0042-04 --updated
+        ```
+
+    1.  Get the cluster names for regions 1 and 2.
+
+        ```bash
+        AKS_CLUSTER_NAME_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
+        AKS_CLUSTER_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
         ```
 
     1.  Get AKS `kubectl` credentials.
@@ -134,6 +140,7 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
 
         ```bash
         kubectl get nodes --context $AKS_CLUSTER_NAME_BU0001A0042_03
+        kubectl get nodes --context $AKS_CLUSTER_NAME_BU0001A0042_04
         ```
 
         Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes please refer to [the related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).

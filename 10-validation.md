@@ -20,7 +20,7 @@ This section will help you to validate the workload is exposed correctly and res
 1. Browse to the site.
 
    ```bash
-   echo $FRONTDOOR_FQDN
+   echo https://$FRONTDOOR_FQDN
    ```
 
    > :warning: A new Front Door creation or any updates to an existing Front Door takes about 3 to 5 minutes for global deployment. That means in about 3 to 5 minutes, your Front Door configuration will be deployed across all of our POPs globally
