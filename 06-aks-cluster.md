@@ -40,37 +40,32 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         az role assignment create --assignee $APP_ID --role 'User Access Administrator'
         ```
 
-    1.  Create `AZURE_CREDENTIALS` secret in your GitHub repository. For more
-        information, please take a look at [Creating encrypted secrets for a repository](https://docs.github.com/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository).
+    1.  Login GitHub Cli
+
+        ```bash
+        gh auth login -s "repo,admin:org"
+        ```
+
+    1.  Create `AZURE_CREDENTIALS` secret in your GitHub repository.
 
         > :bulb: Use the content from the `sp.json` file.
 
         ```bash
-        cat sp.json
+        AZURE_CREDENTIALS=$(cat sp.json)
+        gh secret set AZURE_CREDENTIALS  -b"${AZURE_CREDENTIALS}" -repo="$GITHUB_USER_NAME/aks-secure-baseline"
         ```
 
-    1.  Create `APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64` and `APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64` secret in your GitHub repository. For more
-        information, please take a look at [Creating encrypted secrets for a repository](https://docs.github.com/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository).
-
-        > :bulb:
-        >
-        > - Use the env var value of `APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64` and `APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64`
-        > - Ideally fetching this secret from a platform-managed secret store such as [Azure KeyVault](https://github.com/marketplace/actions/azure-key-vault-get-secrets)
+    1.  Create `APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64` and `APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64` secret in your GitHub repository.
 
         ```bash
-        echo $APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64
-        echo $APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64
+        gh secret set APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64  -b"${APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64}" -repo="$GITHUB_USER_NAME/aks-secure-baseline"
+        gh secret set APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64  -b"${APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64}" -repo="$GITHUB_USER_NAME/aks-secure-baseline"
         ```
 
-    1.  Create `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64` secret in your GitHub repository. For more information, please take a look at [Creating encrypted secrets for a repository](https://docs.github.com/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository).
-
-        > :bulb:
-        >
-        > - Use the env var value of `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64`
-        > - Ideally fetching this secret from a platform-managed secret store such as [Azure Key Vault](https://github.com/marketplace/actions/azure-key-vault-get-secrets)
+    1.  Create `AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64` secret in your GitHub repository.
 
         ```bash
-        echo $AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64
+        gh secret set AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64  -b"${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64}" -repo="$GITHUB_USER_NAME/aks-secure-baseline"
         ```
 
     1.  Copy the GitHub workflow file into the expected directory

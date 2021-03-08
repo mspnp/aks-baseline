@@ -37,6 +37,8 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 
 1. Ensure [OpenSSL is installed](https://github.com/openssl/openssl#download) in order to generate self-signed certs used in this implementation.
 
+1. Ensure [GitHub CLI installed](https://github.com/cli/cli) in order to populate secrets before execute GitHub Workflow on your fork
+
 ### Next step
 
 :arrow_forward: [Prep for Azure Active Directory integration](./02-aad.md)
