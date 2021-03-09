@@ -36,8 +36,7 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
    gh repo fork mspnp/aks-secure-baseline --clone=true --remote=false
    cd aks-secure-baseline
    git remote remove upstream
-   GITHUB_USER_NAME=$(echo $(gh auth status 2>&1) | sed 's/.*as \(.*\)(.*/\1/')
-   RAW_GITHUB_CONTENT_FORK=https://raw.githubusercontent.com/${GITHUB_USER_NAME}/aks-secure-baseline/main
+   RAW_GITHUB_CONTENT_FORK=https://raw.githubusercontent.com/$(echo $(gh auth status 2>&1) | sed 's/.*as \(.*\)(.*/\1/')/aks-secure-baseline/main
    ```
 
    > :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://docs.microsoft.com/windows/wsl/about#what-is-wsl-2) to run Bash.
