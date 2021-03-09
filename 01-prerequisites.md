@@ -22,15 +22,21 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 
    [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
-1. Fork the repository first, and clone it
+1. Install [GitHub CLI](https://github.com/cli/cli/#installation)
 
-   > :twisted_rightwards_arrows: ensure references to this git repository mentioned throughout the walkthrough are updated to use your own fork.
+1. Login GitHub Cli
 
    ```bash
-   GITHUB_USER_NAME=<your username>
-   RAW_GITHUB_CONTENT_FORK=https://raw.githubusercontent.com/${GITHUB_USER_NAME}/aks-secure-baseline/main
-   git clone https://github.com/$GITHUB_USER_NAME/aks-secure-baseline.git
+   gh auth login -s "repo,admin:org"
+   ```
+
+1. Fork the repository first, and clone it
+
+   ```bash
+   gh repo fork mspnp/aks-secure-baseline --clone=true --remote=false
    cd aks-secure-baseline
+   git remote remove upstream
+   RAW_GITHUB_CONTENT_FORK=https://raw.githubusercontent.com/$(echo $(gh auth status 2>&1) | sed 's/.*as \(.*\)(.*/\1/')/aks-secure-baseline/main
    ```
 
    > :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://docs.microsoft.com/windows/wsl/about#what-is-wsl-2) to run Bash.
