@@ -74,27 +74,26 @@ Now `East US 2` region is back after a ~12 minutes outage. Every 30 seconds, Azu
 
 > Note: from the Inbound Multi Cluster Traffic Flow Count and Azure AppFw Health Dashboaard Metrics: :large_blue_circle: East US 2 :red_circle: Central US
 
-## Validate Workload Logs
+## Validate Centralized Azure Log Analitycs workspace logs
 
-The example workload uses the standard dotnet logger interface, which are captured in `ContainerLogs` in Azure Monitor. You could also include additional logging and telemetry frameworks in your workload, such as Application Insights. Here are the steps to view the built-in application logs.
+See the centralized logs associated to each cluster, which are captured in `ContainerLogs` in Azure Monitor. In the case of your workload, you could also include additional logging and telemetry frameworks, such as Application Insights. Here are the steps to view the built-in application logs.
 
 ### Steps
 
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`).
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-shared`).
 1. Select your Log Analytic Workspace resource.
-1. Execute the following query
+1. Navigate under General and click Logs. Then execute the following query
 
    ```
    let podInventory = KubePodInventory
-   | where ContainerName endswith "aspnetcore-webapp-sample"
-   | distinct ContainerID, ContainerName
+   | distinct ContainerID, ContainerName, ClusterId, ClusterName
    | project-rename Name=ContainerName;
    ContainerLog
    | project-away Name
    | join kind=inner
        podInventory
    on ContainerID
-   | project TimeGenerated, LogEntry, Computer, Name, ContainerID
+   | project TimeGenerated, LogEntry, Computer, Name=strcat(ClusterName, "/", Name), ContainerID
    | order by TimeGenerated desc
    ```
 
