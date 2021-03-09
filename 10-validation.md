@@ -24,21 +24,21 @@ This section will help you to validate the workload is exposed correctly and res
    FRONTDOOR_FQDN=$(az deployment group show -g rg-bu0001a0042-shared -n shared-svcs-stamp --query properties.outputs.fqdn.value -o tsv)
    ```
 
-1. Add some load to the web application to test it consistently respond `HTTP 200`, even though it is wrestling beahind the scenes with two different region outage incidents.
+1. Add some load to the web application to test that it consistently responds `HTTP 200`; even while the system is experiencing (simulated) regional outages.
 
-   > :book: the app team configured Azure Front Door backend pool to balance the traffic equally between the two regions. It will do a round robing between them as long as the roundtrip lantency from their clients POP(s), and the two regions are the same. Otherwise, the client traffic is going to flow to a single direction which is the closest region based on the sampled latency.
+   > :book: The app team configured Azure Front Door backend pool to balance the traffic equally between the two regions. It will do a round robing between them as long as the roundtrip latency from their clients POP(s), and the two regions are the same. Otherwise, the client traffic is going to flow to a single destination which is the closest region based on the sampled latency.
 
    ```bash
    for i in {1..200}; do curl -I $FRONTDOOR_FQDN && sleep 10; done
    ```
 
-   > :warning: the above script is meant to send `1` http request every 10 seconds to your infrastructure. The total number of http requests being sent are `200`.
+   > :eyes: The above script will send one HTTP request every ten seconds to your infrastructure. The total number of HTTP requests being sent are 200.
 
-1. Open another terminal to `Stop`/`Start` the Azure App Gw instances as a way to simulate total outages in both regions at different points in time as well as their recovery. Observe how your application is still responsive at any moment.
+1. Open another terminal to `Stop`/`Start` the Azure Application Gateway instances as a way to simulate total outages in both regions at different points in time as well as their recovery. Observe how your application is still responsive at any moment.
 
-   > :book: the app team wants to run some simulations for `East US 2` and `Central US` region outages. They want to ensure both regions can failover each other under such demanding circumstances.
+   > :book: The app team wants to run some simulations for `East US 2` and `Central US` region outages. They want to ensure both regions can failover to each other under such demanding circumstances.
 
-   > :eyes: After sending to execute the following bash command, you could inmediately return to your previous terminal and observe that the web application is responding with `HTTP 200` even during the autages.
+   > :eyes: After executing the command below, you should immediately return to your previous terminal and observe that the web application is responding with `HTTP 200` even during the outages.
 
    ```bash
    # [This whole execution takes about 40 minutes.]
@@ -50,16 +50,16 @@ This section will help you to validate the workload is exposed correctly and res
 
 ## Azure Monitor Dashboard
 
-Thanks to Azure Monitor for Containers, and several metrics exposed in this Multi Cluster solution by the rest of the involved Azure resources, you could deeply observe your infrastructure. Therefore, the recommendation is to create an easy to access Dashboard on top of the underlaying data. This should enable an organization SRE team to take a quick glance to make sure everything is healthy, and if you find something is degraded, you can quicly navigate to inspect as well as get more insights from the resources. The idea to create a clean, organized and accessible view of your infrastructure as shown below.
+Thanks to Azure Monitor for Containers, and several metrics exposed in this Multi Cluster solution by the rest of the involved Azure resources, you could deeply observe your infrastructure. Therefore, the recommendation is to create an easy to access Dashboard on top of the underlaying data. This should enable an organization's SRE team to take a quick glance to make sure everything is healthy, and if you find something is degraded, you can quickly navigate to inspect as well as get more insights from the resources. The idea to create a clean, organized and accessible view of your infrastructure as shown below.
 
-:warning: The following Dashboard is intentionally not shipped as part of this reference implementation but we encourage you to create your own as you see fit.
+The following dashboard is not shipped as part of this reference implementation but we encourage you to create your own as you see fit, based on the metrics that matter to your system.
 
 ### First incident 4:44PM UTC time, `East US 2` is in trouble
 
-Traffic is being handled by `East US 2` as this closest region to the client sending http requests. As detailed above, Azure Front Door routes all the traffic to the fastest backend measured by their latency.  It is around 4:44PM when the region outage is about to happen. Please take a look at how the `East US 2` Azure Application Gateway healthyness drops to `27%` as well as its compute units really close to `0`. It is about to go for a complete shutdown. The worst case scenario just ocurred, so it is time for `Central US` to come into rescue, it is expected to lose just a few packages before it starts responding. This was a transparent experience for your clients, and the traffic keeps flowing without inconveniences.
+Traffic is being handled by `East US 2` as this closest region to the client sending HTTP requests. As detailed above, Azure Front Door routes all the traffic to the fastest backend measured by their latency. It is around 4:44PM when the region outage is about to happen. Please take a look at how the `East US 2` Azure Application Gateway healthiness drops to `27%` as well as its compute units really close to `0`. It is about to go for a complete shutdown. The worst case scenario just occurred, so it is time for `Central US` to come into rescue. It is expected to lose just a few packets before it starts responding. This was a transparent experience for your clients, and the traffic keeps flowing without inconveniences.
 
 
-> :warning: Depending on your actual location traffic might flow different for you. But having two incidents ensure you test at least one failover.
+> :warning: Depending on your actual location traffic might flow different for you. But having two simulated incidents ensures that you experience at least one failover.
 
 ![Azure Monitor Dashboard that helps to observe the `East US 2` region outage simulation and how the traffic flowed from `East US 2` to `Central US`](images/azure-monitor-dashboard-1st-failover.png)
 
@@ -67,7 +67,7 @@ Traffic is being handled by `East US 2` as this closest region to the client sen
 
 ### Second incident 4:56PM UTC time, `East US 2` resumed its operations but `Central US` is about to go down as well
 
-Now `East US 2` region is back after the outage. Every 30 seconds, Azure Front Door sample the rountrip latencies against its backend pools using the configured health probe, and once again determines `East US 2` is the best candidate as this normalized its operations. Traffic starts flowing at 4:56PM the other way around from `Central US` to `East US 2`, and now everything is back to normal. At the same time, you can observe an new outage, same symptom as before but it is now in `Central US` where its compute units are close to `0` and healthyness is about to drop to `0%` a few seconds after. It does not represent a threat since just a moment ago traffic had already flowed to `East US 2`. Around 5:15PM all regions are operative, and the clients never suffered the consequences of these multiple total region outages.
+Now `East US 2` region is back after the outage. Every 30 seconds, Azure Front Door samples the roundtrip latencies against its backend pools using the configured health probe, and once again determines `East US 2` is the best candidate as this normalized its operations. Traffic starts flowing at 4:56PM the other way around from `Central US` to `East US 2`, and now everything is back to normal. At the same time, you can observe a new outage, same symptom as before, but it is now in `Central US` where its compute units are close to `0` and healthiness is about to drop to `0%` a few seconds after. It does not represent a threat since just a moment ago traffic had already flowed to `East US 2`. Around 5:15PM all regions are operative, and the clients never suffered the consequences of these multiple total region outages.
 
 ![Azure Monitor Dashboard that helps to observe the `Central US` stops serving in favor of `East US 2` region as this is back from first incident. It displays the traffic flowing now the other way around from `Central US` to `East US 2`](images/azure-monitor-dashboard-back-to-normal.png)
 
