@@ -22,7 +22,7 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 
    [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
-1. Ensure [GitHub CLI installed](https://github.com/cli/cli)
+1. Install [GitHub CLI](https://github.com/cli/cli/#installation)
 
 1. Login GitHub Cli
 
@@ -36,7 +36,7 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
    gh repo fork mspnp/aks-secure-baseline --clone=true --remote=false
    cd aks-secure-baseline
    git remote remove upstream
-   GITHUB_USER_NAME=<your username>
+   GITHUB_USER_NAME=$(echo $(gh auth status 2>&1) | sed 's/.*as \(.*\)(.*/\1/')
    RAW_GITHUB_CONTENT_FORK=https://raw.githubusercontent.com/${GITHUB_USER_NAME}/aks-secure-baseline/main
    ```
 
