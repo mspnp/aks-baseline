@@ -97,30 +97,6 @@ See the centralized logs associated to each cluster, which are captured in `Cont
    | order by TimeGenerated desc
    ```
 
-## Validate Azure Alerts
-
-Azure will generate alerts on the health of your cluster and adjacent resources. This reference implementation sets up multiple alerts that you can subscribe to.
-
-### Steps
-
-An alert based on [Azure Monitor for containers information using a Kusto query](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts) was configured in this reference implementation.
-
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`).
-1. Select _Alerts_, then _Manage Rule Alerts_.
-1. There is an alert called "PodFailedScheduledQuery" that will be triggered based on the custom query response.
-
-An [Azure Advisor Alert](https://docs.microsoft.com/azure/advisor/advisor-overview) was configured as well in this reference implementation.
-
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`).
-1. Select _Alerts_, then _Manage Rule Alerts_.
-1. There is an alert called "AllAzureAdvisorAlert" that will be triggered based on new Azure Advisor alerts.
-
-A series of metric alerts were configured as well in this reference implementation.
-
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`).
-1. Select your cluster, then _Insights_.
-1. Select _Recommended alerts_ to see those enabled. (Feel free to enable/disable as you see fit.)
-
 ## Next step
 
 :arrow_forward: [Clean Up Azure Resources](./11-cleanup.md)
