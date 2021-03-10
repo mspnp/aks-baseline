@@ -19,8 +19,6 @@ Following the steps below you will result the certificate needed for Azure Appli
 
    :warning: Azure Front Door does not support self-signed certificates.
 
-   Create a CA certificate for each Azure Application Gateway. You can try get a certificate for each domain using [Azure Subdomain Certificates Generation](./certificate-generation/README.md).
-
    We are waiting for two certificates:
 
    ```bash
@@ -35,10 +33,11 @@ Following the steps below you will result the certificate needed for Azure Appli
    ## Get the subdomain names selected by the script
    CLUSTER_SUBDOMAIN_03=$(az deployment group show -g rg-enterprise-networking-spokes -n  spoke-BU0001A0042-03 --query properties.outputs.subdomainName.value -o tsv)
    CLUSTER_SUBDOMAIN_04=$(az deployment group show -g rg-enterprise-networking-spokes -n  spoke-BU0001A0042-04 --query properties.outputs.subdomainName.value -o tsv)
+   ```
 
-   ##Show the certificates needed
-   echo $APPGW_FQDN_BU0001A0042_03
-   echo $APPGW_FQDN_BU0001A0042_04
+   ```bash
+   ./certificate-generation/generate-cert.sh eastus2 $CLUSTER_SUBDOMAIN_03 $APPGW_FQDN_BU0001A0042_03 $APPGW_IP_RESOURCE_ID_03
+   ./certificate-generation/generate-cert.sh centralus $CLUSTER_SUBDOMAIN_04 $APPGW_FQDN_BU0001A0042_04 $APPGW_IP_RESOURCE_ID_04
    ```
 
    The expected result are two files like '$CLUSTER_SUBDOMAIN_03.pfx' and '$CLUSTER_SUBDOMAIN_04.pfx'.
@@ -59,6 +58,7 @@ Following the steps below you will result the certificate needed for Azure Appli
 
    ```bash
    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out traefik-ingress-internal-aks-ingress-contoso-com-tls.crt -keyout traefik-ingress-internal-aks-ingress-contoso-com-tls.key -subj "/CN=*.aks-ingress.contoso.com/O=Contoso Aks Ingress"
+   cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-internal-aks-ingress-contoso-com-tls.key > traefik-ingress-internal-aks-ingress-contoso-com-tls.pem
    ```
 
 1. Base64 encode the AKS Ingress Controller certificate
