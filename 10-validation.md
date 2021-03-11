@@ -74,53 +74,28 @@ Now `East US 2` region is back after a ~12 minutes outage. Every 30 seconds, Azu
 
 > Note: from the Inbound Multi Cluster Traffic Flow Count and Azure AppFw Health Dashboaard Metrics: :large_blue_circle: East US 2 :red_circle: Central US
 
-## Validate Workload Logs
+## Validate Centralized Azure Log Analitycs workspace logs
 
-The example workload uses the standard dotnet logger interface, which are captured in `ContainerLogs` in Azure Monitor. You could also include additional logging and telemetry frameworks in your workload, such as Application Insights. Here are the steps to view the built-in application logs.
+See the centralized logs associated to each cluster, which are captured in `ContainerLogs` in Azure Monitor. In the case of your workload, you could also include additional logging and telemetry frameworks, such as Application Insights. Here are the steps to view the built-in application logs.
 
 ### Steps
 
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`).
+1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-shared`).
 1. Select your Log Analytic Workspace resource.
-1. Execute the following query
+1. Navigate under General and click Logs. Then execute the following query
 
    ```
    let podInventory = KubePodInventory
-   | where ContainerName endswith "aspnetcore-webapp-sample"
-   | distinct ContainerID, ContainerName
+   | distinct ContainerID, ContainerName, ClusterId, ClusterName
    | project-rename Name=ContainerName;
    ContainerLog
    | project-away Name
    | join kind=inner
        podInventory
    on ContainerID
-   | project TimeGenerated, LogEntry, Computer, Name, ContainerID
+   | project TimeGenerated, LogEntry, Computer, Name=strcat(ClusterName, "/", Name), ContainerID
    | order by TimeGenerated desc
    ```
-
-## Validate Azure Alerts
-
-Azure will generate alerts on the health of your cluster and adjacent resources. This reference implementation sets up multiple alerts that you can subscribe to.
-
-### Steps
-
-An alert based on [Azure Monitor for containers information using a Kusto query](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts) was configured in this reference implementation.
-
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`).
-1. Select _Alerts_, then _Manage Rule Alerts_.
-1. There is an alert called "PodFailedScheduledQuery" that will be triggered based on the custom query response.
-
-An [Azure Advisor Alert](https://docs.microsoft.com/azure/advisor/advisor-overview) was configured as well in this reference implementation.
-
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`).
-1. Select _Alerts_, then _Manage Rule Alerts_.
-1. There is an alert called "AllAzureAdvisorAlert" that will be triggered based on new Azure Advisor alerts.
-
-A series of metric alerts were configured as well in this reference implementation.
-
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0042-03` or `rg-bu0001a0042-04`).
-1. Select your cluster, then _Insights_.
-1. Select _Recommended alerts_ to see those enabled. (Feel free to enable/disable as you see fit.)
 
 ## Next step
 
