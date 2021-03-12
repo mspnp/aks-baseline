@@ -92,6 +92,14 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         > azuredeploy.parameters.region2.json
         ```
 
+    1.  Customize flux to watch your own repo.
+
+        ```bash
+        sed -i -e 's/<user-name>/${GITHUB_USER_NAME}/' cluster-manifests/cluster-baseline-settings/flux.yaml
+        ```
+
+        > :bulb: You want to modify your GitOps manifest file to point your forked repo. Later on you can push changes to your very own repo and they will be reflected in the state of you cluster.
+
     1.  Push the changes to your forked repo.
 
         > :book: The DevOps team wants to automate their infrastructure deployments. In this case, they decided to use GitHub Actions. They are going to create a workflow for every AKS cluster instance they have to take care of.
