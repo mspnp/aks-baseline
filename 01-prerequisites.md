@@ -33,7 +33,7 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 1. Fork the repository first, and clone it
 
    ```bash
-   gh repo fork mspnp/aks-secure-baseline --clone=true --remote=false
+   gh repo fork mspnp/aks-baseline-multi-region --clone=true --remote=false
    cd aks-secure-baseline
    git remote remove upstream
    ```
