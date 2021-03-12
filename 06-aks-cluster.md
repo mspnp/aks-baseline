@@ -21,7 +21,9 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
     RESOURCEID_VNET_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.clusterVnetResourceId.value -o tsv)
     ```
 
-    **Automated deploy using GitHub Actions (fork is required)**
+    **Automated the multi region deployments using GitHub Actions**
+
+    > :book: The app team wants to automate their infrastructure deployments. In this case, they decided to use GitHub Actions. They are going to create a workflow grouping all AKS clusters in different regions that are serving the same application.
 
     1.  Create the Azure Credentials for the GitHub CD workflow.
 
@@ -71,7 +73,7 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
     1.  Generate cluster parameter file per region
 
         ```bash
-        #Region1
+        # Region 1
         cat ./azuredeploy.parameters.eastus2.json | \
         sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_03}#g" | \
         sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" | \
@@ -81,7 +83,7 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g"  \
         > azuredeploy.parameters.region1.json
 
-        #Region2
+        # Region 2
         cat ./azuredeploy.parameters.centralus.json | \
         sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04}#g" | \
         sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" | \
@@ -92,29 +94,25 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         > azuredeploy.parameters.region2.json
         ```
 
-    1.  Customize flux to watch your own repo.
+    1.  Customize Flux to watch your own repo.
+
+        > :book: GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically applied to their clusters as changes occur. This reference implementation is for a multi cluster infrastructure, so Flux is going to use Kustomizer to deploy regions differenly by using a set of base manifest and patcing them when needed.
 
         ```bash
-        sed -i -e 's/<user-name>/${GITHUB_USER_NAME}/' cluster-manifests/cluster-baseline-settings/flux.yaml
+        sed -i -e 's/<user-name>/${GITHUB_USER_NAME}/' cluster-manifests/base/cluster-baseline-settings/flux.yaml
         ```
 
-        > :bulb: You want to modify your GitOps manifest file to point your forked repo. Later on you can push changes to your very own repo and they will be reflected in the state of you cluster.
+        > :bulb: You want to modify your GitOps manifest file to point your forked repo. Later on you can push changes to your very own repo, and they will be reflected in the state of you cluster.
 
-    1.  Push the changes to your forked repo.
+    1.  The workflow start when a push on the `main` branch is detected. Therefore, push the changes to your forked repo.
 
-        > :book: The DevOps team wants to automate their infrastructure deployments. In this case, they decided to use GitHub Actions. They are going to create a workflow for every AKS cluster instance they have to take care of.
+        > :book: The app team monitors the workflow execution as this impacting a critical piece of infrastructure. This flow works for both new or an existing AKS clusters. The workflow deploy the multiple clusters in different regions, and configure the desired state for them.
 
         ```bash
         git add -A && git commit -m "setup GitHub CD workflow" && git push origin main
         ```
 
         > :bulb: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, please take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/configuring-and-managing-workflows/sharing-workflow-templates-within-your-organization).
-
-    1.  The workflow start when a push on main is detected. Go to the Action tab in order to see the execution.
-
-        > :book: The DevOps team monitors this Workflow execution instance. In this instance it will impact a critical piece of infrastructure as well as the management. This flow works for both new or an existing AKS cluster. The workflow deploy the cluster and basic Kubernetes elements.
-
-        > :book: GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically apply to their cluster as changes occur. This reference implementation is focused on the baseline cluster, so Flux is managing cluster-level concerns. This is distinct from workload-level concerns, which would be possible as well to manage via Flux, and would typically be done by additional Flux operators in the cluster. The namespace cluster-baseline-settings will be used to provide a logical division of the cluster bootstrap configuration from workload configuration. Examples of manifests that are applied: Cluster Role Bindings for the AKS-managed Azure AD integration, AAD Pod Identity, CSI driver and Azure KeyVault CSI Provider
 
     1.  You can continue only after the GitHub Workflow completes successfully
 
@@ -150,11 +148,17 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
 
         Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes please refer to [the related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).
 
-## Container registry note
+    1.  Ensure Flux in region 1 and 2 has created the workload namespaces.
 
-:warning: To aid in ease of deployment of this cluster and your experimentation with workloads, Azure Policy and Azure Firewall are currently configured to allow your cluster to pull images from _public container registries_ such as Docker Hub. For a production system, you'll want to update Azure Policy parameter named `allowedContainerImagesRegex` in your `cluster-stamp.json` file to only list those container registries that you are willing to take a dependency on and what namespaces those policies apply to, and make Azure Firewall allowances for the same. This will protect your cluster from unapproved registries being used, which may prevent issues while trying to pull images from a registry which doesn't provide SLA guarantees for your deployment.
+        :bulb: Please notice that both namespaces are Kustomization overlays, and as such they were customized to be decorated with the region number
 
-This deployment creates an SLA-backed Azure Container Registry for your cluster's needs. Your organization may have a central container registry for you to use, or your registry may be tied specifically to your application's infrastructure (as demonstrated in this implementation). **Only use container registries that satisfy the security and availability needs of your application.**
+        ```bash
+        # press Ctrl-C once you receive a successful response
+        kubectl get ns a0042 -o yaml -w --context $AKS_CLUSTER_NAME_BU0001A0042_03
+
+        # press Ctrl-C once you receive a successful response
+        kubectl get ns a0042 -o yaml -w --context $AKS_CLUSTER_NAME_BU0001A0042_04
+        ```
 
 ### Next step
 

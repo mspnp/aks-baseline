@@ -11,13 +11,6 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_03=$(az deployment group show -g rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
    ```
 
-1. Ensure Flux has created the following namespace.
-
-   ```bash
-   # press Ctrl-C once you receive a successful response
-   kubectl get ns a0042 -w --context $AKS_CLUSTER_NAME_BU0001A0042_03
-   ```
-
 1. Create Traefik's Azure Managed Identity binding.
 
    > Create the Traefik Azure Identity and the Azure Identity Binding to let Azure Active Directory Pod Identity to get tokens on behalf of the Traefik's User Assigned Identity and later on assign them to the Traefik's pod.
@@ -115,7 +108,6 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    ```bash
    TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
    TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
-   kubectl get ns a0042 -w --context $AKS_CLUSTER_NAME_BU0001A0042_04
    cat <<EOF | kubectl create --context $AKS_CLUSTER_NAME_BU0001A0042_04 -f -
    apiVersion: "aadpodidentity.k8s.io/v1"
    kind: AzureIdentity
