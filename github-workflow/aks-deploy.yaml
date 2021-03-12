@@ -8,13 +8,13 @@
 #        - APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64   The certificate data for app gateway TLS termination. It is base64. Ideally fetch this secret from a platform-managed secret store such as Azure KeyVault: https://github.com/marketplace/actions/azure-key-vault-get-secrets
 #        - APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64   The certificate data for app gateway TLS termination. It is base64. Ideally fetch this secret from a platform-managed secret store such as Azure KeyVault: https://github.com/marketplace/actions/azure-key-vault-get-secrets
 #        - AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 The base 64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate.
-#    - the cluster parameter 
+#    - the cluster parameter
 #        -  azuredeploy.parameters.region1.json
 #        -  azuredeploy.parameters.region2.json
 #
 # Take into account the DEPLOY_REGION1 and DEPLOY_REGION2 env variables. If we want to add a new region, the ideal situation is not deploy the already working clusters. Adding a value different of true will skip the specific region steps.
-# Changing the cluster stamp file is expected to be applied on all the regions 
-name: Deploy AKS Secure Baseline clusters stamp and Flux in different regions 
+# Changing the cluster stamp file is expected to be applied on all the regions
+name: Deploy AKS Secure Baseline clusters stamp and Flux in different regions
 
 on:
   push:
@@ -64,7 +64,7 @@ jobs:
              --parameters @azuredeploy.parameters.region1.json \
               appGatewayListenerCertificate=${{ secrets.APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64 }} \
               aksIngressControllerCertificate=${{ secrets.AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 }}
-     
+
           echo "::set-output name=name::$(az deployment group show --resource-group rg-bu0001a0042-03 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
         azcliversion: 2.17.1
 
@@ -84,7 +84,7 @@ jobs:
       with:
         namespace: 'cluster-baseline-settings'
         manifests: |
-          cluster-manifests/cluster-baseline-settings/ns-cluster-baseline-settings.yaml
+          cluster-manifests/base/cluster-baseline-settings/ns-cluster-baseline-settings.yaml
           cluster-manifests/cluster-baseline-settings/flux.yaml
 
     # -----------------------REGION2------------------------------------------------
@@ -121,5 +121,5 @@ jobs:
       with:
         namespace: 'cluster-baseline-settings'
         manifests: |
-          cluster-manifests/cluster-baseline-settings/ns-cluster-baseline-settings.yaml
+          cluster-manifests/base/cluster-baseline-settings/ns-cluster-baseline-settings.yaml
           cluster-manifests/cluster-baseline-settings/flux.yaml
