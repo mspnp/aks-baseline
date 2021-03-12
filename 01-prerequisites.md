@@ -34,7 +34,7 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 
    ```bash
    gh repo fork mspnp/aks-baseline-multi-region --clone=true --remote=false
-   cd aks-secure-baseline
+   cd aks-baseline-multi-region
    git remote remove upstream
    ```
 

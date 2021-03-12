@@ -1,4 +1,4 @@
-# Azure Kubernetes Service (AKS) Multi Cluster
+# Azure Kubernetes Service (AKS) for Multi-Region Deployment
 
 This reference implementation will go over some design decisions from the baseline to detail them as a well as incorporate some new _recommended infrastructure options_ for a Multi Cluster architecture. In this oportunity, this implementation and document are meant to guide the multiple distinct teams introduced in the [AKS Baseline](https://github.com/mspnp/aks-secure-baseline) through the process of expanding from a single cluster to multiple clusters solution with a foundamental driver in mind which is **High Availability**.
 
