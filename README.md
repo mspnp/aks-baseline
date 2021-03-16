@@ -122,9 +122,22 @@ Most of the Azure resources deployed in the prior steps will incur ongoing charg
 
 - [ ] [Cleanup all resources](./11-cleanup.md)
 
-## Inner-loop development scripts
+## Cost Considerations
 
-We have provided some sample deployment scripts that you could adapt for your own purposes while doing a POC/spike on this. Those scripts are found in the [inner-loop-scripts directory](./inner-loop-scripts). They include some additional considerations and may include some additional narrative as well. Consider checking them out. They consolidate most of the walk-through performed above into combined execution steps.
+The main cost on the current Reference Implementation is related to (in order):
+
+1. Azure Firewall dedicated to control outbound traffic ~35%
+1. Node Pool Virtual Machines used inside the cluster ~30%
+1. AppGateway which control the ingress traffic to the private vnet ~15%
+1. LogAnalitycs ~10%
+
+Azure Firewall can be a shared resource, and maybe your company already has one and you can reuse. It is not recommended, but if you want to reduce cost, you can delete the Azure Firewall and take the risk.
+
+The Virtual Machines on the AKS Cluster are needed. The Cluster can be shared by several applications. Anyway, you can analyze the size and the amount of nodes. The Reference Implementation has the minimum recommended nodes for production environments, but in a multi-cluster environment when you have at least two clusters, based on your traffic analysis, failover strategy and autoscaling configuration, you choose different numbers.
+
+Keep an eye on LogAnalitycs as time goes by and manage the information which is collected. The main cost is related to data ingestion into the Log Analytics workspace, you can fine tune that.
+
+There is WAF protection enabled on Application Gateway and Azure Front Door. The WAF rules on Azure Front Door have extra cost, you can disable these rules. The consequence is that not valid traffic will arrive at Application Gateway using resources instead of being eliminated as soon as possible.
 
 ## Preview features
 
