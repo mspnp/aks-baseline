@@ -1,3 +1,5 @@
+#!/bin/bash
+
 STORAGE_ACCOUNT_NAME=$1
 STORAGE_CONNECTION_STRING=$2
 
@@ -7,8 +9,8 @@ az storage blob upload \
  --connection-string $STORAGE_CONNECTION_STRING \
  --account-name $STORAGE_ACCOUNT_NAME \
  --container-name verificationdata \
- --name $CERTBOT_TOKEN.txt \
- --file ./$CERTBOT_TOKEN.txt \
+ --name ${CERTBOT_TOKEN}.txt \
+ --file ./${CERTBOT_TOKEN}.txt \
  --auth-mode key
 
-rm $CERTBOT_TOKEN.txt
+rm ${CERTBOT_TOKEN}.txt
