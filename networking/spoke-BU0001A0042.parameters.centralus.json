@@ -1,0 +1,24 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "centralus"
+        },
+        "appInstanceId": {
+            "value": "04"
+        },
+        "clusterVNetAddressPrefix": {
+            "value": "10.244.0.0/16"
+        },
+        "clusterNodesSubnetAddressPrefix": {
+            "value": "10.244.0.0/22"
+        },
+        "clusterIngressServicesSubnetAdressPrefix": {
+            "value": "10.244.4.0/28"
+        },
+        "applicationGatewaySubnetAddressPrefix": {
+            "value": "10.244.4.16/28"
+        }
+    }
+}

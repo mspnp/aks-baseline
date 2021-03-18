@@ -1,0 +1,24 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "eastus2"
+        },
+        "appInstanceId": {
+            "value": "03"
+        },
+        "clusterVNetAddressPrefix": {
+            "value": "10.243.0.0/16"
+        },
+        "clusterNodesSubnetAddressPrefix": {
+            "value": "10.243.0.0/22"
+        },
+        "clusterIngressServicesSubnetAdressPrefix": {
+            "value": "10.243.4.0/28"
+        },
+        "applicationGatewaySubnetAddressPrefix": {
+            "value": "10.243.4.16/28"
+        }
+    }
+}

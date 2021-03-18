@@ -74,24 +74,20 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
 
         ```bash
         # Region 1
-        cat ./azuredeploy.parameters.eastus2.json | \
-        sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_03}#g" | \
-        sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" | \
-        sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" | \
-        sed "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" | \
-        sed "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" | \
-        sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g"  \
-        > azuredeploy.parameters.region1.json
+        sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_03}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g" ./azuredeploy.parameters.eastus2.json
 
         # Region 2
-        cat ./azuredeploy.parameters.centralus.json | \
-        sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04}#g" | \
-        sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" | \
-        sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" | \
-        sed "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" | \
-        sed "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" | \
-        sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g"  \
-        > azuredeploy.parameters.region2.json
+        sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g" ./azuredeploy.parameters.centralus.json
         ```
 
     1.  Customize Flux to watch your own repo.
