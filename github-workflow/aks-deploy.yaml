@@ -62,7 +62,7 @@ jobs:
          az group create --name rg-bu0001a0042-03 --location eastus2
          az deployment group create --resource-group rg-bu0001a0042-03 \
             --template-file "cluster-stamp.json" \
-             --parameters @azuredeploy.parameters.region1.json \
+             --parameters @azuredeploy.parameters.eastus2.json \
               appGatewayListenerCertificate=${{ secrets.APP_GATEWAY_LISTENER_REGION1_CERTIFICATE_BASE64 }} \
               aksIngressControllerCertificate=${{ secrets.AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 }}
 
@@ -110,7 +110,7 @@ jobs:
          az group create --name rg-bu0001a0042-04 --location centralus
          az deployment group create --resource-group rg-bu0001a0042-04 \
             --template-file "cluster-stamp.json" \
-            --parameters @azuredeploy.parameters.region2.json \
+            --parameters @azuredeploy.parameters.centralus.json \
               appGatewayListenerCertificate=${{ secrets.APP_GATEWAY_LISTENER_REGION2_CERTIFICATE_BASE64 }} \
               aksIngressControllerCertificate=${{ secrets.AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 }}
 
