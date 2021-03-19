@@ -48,6 +48,7 @@ jobs:
           az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME_BU0001A0042 --force
           az acr import --source docker.io/fluxcd/flux:1.19.0 -n $ACR_NAME_BU0001A0042 --force
           az acr import --source docker.io/weaveworks/kured:1.4.0 -n $ACR_NAME_BU0001A0042 --force
+          az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME_BU0001A0042 --force
 
         azcliversion: 2.17.1
 
