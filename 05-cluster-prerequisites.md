@@ -26,13 +26,6 @@ Following the steps below will result in the provisioning of the shared Azure re
    az group create --name rg-bu0001a0042-shared --location centralus
    ```
 
-1. Read the FQDN values will have each Azure Application Gateway, the public ip DNS name already deployed
-
-   ```bash
-   APPGW_FQDN_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.appGwFqdn.value -o tsv)
-   APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
-   ```
-
 1. Deploy the AKS cluster prerequisites and shared services.
 
 > :book: The app team is about to provision three shared Azure resources. One is a non-regional and two regional, but more importantly they are deployed independently from their AKS Clusters:
