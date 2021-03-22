@@ -102,7 +102,7 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         sed -i -e 's/<user-name>/${GITHUB_USER_NAME}/' cluster-manifests/base/cluster-baseline-settings/flux.yaml
         ```
 
-        > :bulb: You want to modify your GitOps manifest file to point your forked repo. Later on you can push changes to your very own repo, and they will be reflected in the state of you cluster.
+        > :bulb: You want to modify your GitOps manifest file to point to your forked repo. Later on you can push changes to your repo, and they will be reflected in the state of your cluster.
 
     1.  The workflow is triggered when a push on the `main` branch is detected. Therefore, push the changes to your forked repo.
 
