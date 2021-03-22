@@ -85,7 +85,7 @@ jobs:
         namespace: 'cluster-baseline-settings'
         manifests: |
           cluster-manifests/base/cluster-baseline-settings/ns-cluster-baseline-settings.yaml
-          cluster-manifests/cluster-baseline-settings/flux.yaml
+          cluster-manifests/base/cluster-manifests/cluster-baseline-settings/flux.yaml
 
     # -----------------------REGION2------------------------------------------------
     # Deploy the cluster into your environment, assuming all prerequisites are up and running.
@@ -122,4 +122,4 @@ jobs:
         namespace: 'cluster-baseline-settings'
         manifests: |
           cluster-manifests/base/cluster-baseline-settings/ns-cluster-baseline-settings.yaml
-          cluster-manifests/cluster-baseline-settings/flux.yaml
+          cluster-manifests/base/cluster-manifests/cluster-baseline-settings/flux.yaml
