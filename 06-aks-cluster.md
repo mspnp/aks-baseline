@@ -21,7 +21,7 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
     RESOURCEID_VNET_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.clusterVnetResourceId.value -o tsv)
     ```
 
-    **Automated the multi region deployments using GitHub Actions**
+    **Automate the multi-region deployments using GitHub Actions**
 
     > :book: The app team wants to automate their infrastructure deployments. In this case, they decided to use GitHub Actions. They are going to create a workflow grouping all AKS clusters in different regions that are serving the same application.
 
@@ -104,9 +104,9 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
 
         > :bulb: You want to modify your GitOps manifest file to point your forked repo. Later on you can push changes to your very own repo, and they will be reflected in the state of you cluster.
 
-    1.  The workflow start when a push on the `main` branch is detected. Therefore, push the changes to your forked repo.
+    1.  The workflow is triggered when a push on the `main` branch is detected. Therefore, push the changes to your forked repo.
 
-        > :book: The app team monitors the workflow execution as this impacting a critical piece of infrastructure. This flow works for both new or an existing AKS clusters. The workflow deploy the multiple clusters in different regions, and configure the desired state for them.
+        > :book: The app team monitors the workflow execution as this is impacting a critical piece of infrastructure. This flow works for both new or existing AKS clusters. The workflow deploys the multiple clusters in different regions, and configures the desired state for them.
 
         ```bash
         git add -A && git commit -m "setup GitHub CD workflow" && git push origin main
@@ -150,7 +150,7 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
 
     1.  Ensure Flux in region 1 and 2 has created the workload namespaces.
 
-        :bulb: Please notice that both namespaces are Kustomization overlays, and as such they were customized to be decorated with the region number
+        :bulb: Please notice that both namespaces are Kustomization overlays, and as such they were customized to be annotated with the region number.
 
         ```bash
         # press Ctrl-C once you receive a successful response
