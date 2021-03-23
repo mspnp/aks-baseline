@@ -50,6 +50,7 @@ jobs:
           az acr import --source docker.io/weaveworks/kured:1.4.0 -n $ACR_NAME_BU0001A0042 --force
 
         azcliversion: 2.17.1
+
     # -----------------------REGION1------------------------------------------------
     # Deploy the cluster into your environment, assuming all prerequisites are up and running.
     - name: Azure CLI - Deploy AKS cluster - Region 1
@@ -77,15 +78,24 @@ jobs:
         cluster-name: ${{ steps.aks-cluster-region1.outputs.name }}
         resource-group: rg-bu0001a0042-03
 
+    # Bake using Kubernetes Kustomize - Region 1
+    - name: Bake manifest - Region 1
+      id: aks-kustomize-region1
+      if: success() && env.DEPLOY_REGION1 == 'true'
+      uses: azure/k8s-bake@v1
+      with:
+        renderEngine: 'kustomize'
+        kustomizationPath: 'cluster-manifests/base/cluster-manifests/region1'
+        kubectl-version: 'latest'
+
     # Create the cluster-baseline-settings namespace and deploy Flux into it - Region 1
     - name: Create the cluster-baseline-settings namespace and deploy Flux - Region 1
-      uses: Azure/k8s-deploy@v1
+      id: aks-deploy-region1
       if: success() && env.DEPLOY_REGION1 == 'true'
+      uses: Azure/k8s-deploy@v1
       with:
-        namespace: 'cluster-baseline-settings'
-        manifests: |
-          cluster-manifests/base/cluster-baseline-settings/ns.yaml
-          cluster-manifests/base/cluster-manifests/cluster-baseline-settings/flux.yaml
+        manifests: ${{ steps.aks-kustomize-region1.outputs.manifestsBundle }}
+
     # -----------------------REGION2------------------------------------------------
     # Deploy the cluster into your environment, assuming all prerequisites are up and running.
     - name: Azure CLI - Deploy AKS cluster - Region 2
@@ -113,12 +123,20 @@ jobs:
         cluster-name: ${{ steps.aks-cluster-region2.outputs.name }}
         resource-group: rg-bu0001a0042-04
 
-    # Create the cluster-baseline-settings namespace and deploy Flux into it - Region 2
-    - name: Create the cluster-baseline-settings namespace and deploy Flux - Region 2
-      uses: Azure/k8s-deploy@v1
+    # Bake using Kubernetes Kustomize - Region 2
+    - name: Bake manifest - Region 2
+      id: aks-kustomize-region2
+      uses: azure/k8s-bake@v1
       if: success() && env.DEPLOY_REGION2 == 'true'
       with:
-        namespace: 'cluster-baseline-settings'
-        manifests: |
-          cluster-manifests/base/cluster-baseline-settings/ns.yaml
-          cluster-manifests/base/cluster-manifests/cluster-baseline-settings/flux.yaml
+        renderEngine: 'kustomize'
+        kustomizationPath: 'cluster-manifests/base/cluster-manifests/region2'
+        kubectl-version: 'latest'
+
+    # Create the cluster-baseline-settings namespace and deploy Flux into it - Region 2
+    - name: Create the cluster-baseline-settings namespace and deploy Flux - Region 2
+      id: aks-deploy-region2
+      if: success() && env.DEPLOY_REGION2 == 'true'
+      uses: Azure/k8s-deploy@v1
+      with:
+        manifests: ${{ steps.aks-kustomize-region2.outputs.manifestsBundle }}
