@@ -85,7 +85,7 @@ jobs:
       uses: azure/k8s-bake@v1
       with:
         renderEngine: 'kustomize'
-        kustomizationPath: 'cluster-manifests/base/cluster-manifests/region1'
+        kustomizationPath: 'cluster-manifests/region1/bootstrapping'
         kubectl-version: 'latest'
 
     # Create the cluster-baseline-settings namespace and deploy Flux into it - Region 1
@@ -94,7 +94,10 @@ jobs:
       if: success() && env.DEPLOY_REGION1 == 'true'
       uses: Azure/k8s-deploy@v1
       with:
-        manifests: ${{ steps.aks-kustomize-region1.outputs.manifestsBundle }}
+        namespace: 'cluster-baseline-settings'
+        manifests: |
+          cluster-manifests/base/cluster-baseline-settings/ns.yaml
+          ${{ steps.aks-kustomize-region1.outputs.manifestsBundle }}
 
     # -----------------------REGION2------------------------------------------------
     # Deploy the cluster into your environment, assuming all prerequisites are up and running.
@@ -130,7 +133,7 @@ jobs:
       if: success() && env.DEPLOY_REGION2 == 'true'
       with:
         renderEngine: 'kustomize'
-        kustomizationPath: 'cluster-manifests/base/cluster-manifests/region2'
+        kustomizationPath: 'cluster-manifests/region2/bootstrapping'
         kubectl-version: 'latest'
 
     # Create the cluster-baseline-settings namespace and deploy Flux into it - Region 2
@@ -139,4 +142,7 @@ jobs:
       if: success() && env.DEPLOY_REGION2 == 'true'
       uses: Azure/k8s-deploy@v1
       with:
-        manifests: ${{ steps.aks-kustomize-region2.outputs.manifestsBundle }}
+        namespace: 'cluster-baseline-settings'
+        manifests: |
+          cluster-manifests/base/cluster-baseline-settings/ns.yaml
+          ${{ steps.aks-kustomize-region2.outputs.manifestsBundle }}
