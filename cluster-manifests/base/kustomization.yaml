@@ -4,3 +4,4 @@ bases:
 - ./kube-system/
 - ./cluster-baseline-settings/
 - ./a0042/
+- ./traefik-crds.yaml
