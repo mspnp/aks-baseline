@@ -119,6 +119,6 @@ spec:
   # it is possible to opt for certificate management strategy with dedicated
   # certificates for each TLS SNI route.
   # In this Rereference Implementation for the sake of simplicity we use a
-  # wildcard default certificate added at Ingress Controller configuration level which is *.example.com
+  # wildcard default certificate added at Ingress Controller configuration level which is *.aks-ingress.contoso.com
   # tls:
   # secretName: <bu0001a0042-00-example-com-tls-secret>
