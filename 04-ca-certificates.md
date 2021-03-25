@@ -9,7 +9,7 @@ Following the steps below you will result the certificates needed for Azure Appl
 | Object                                     | Purpose                                                                                                                                          |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Two Azure Application Gateway Certificates | They are TLS certificates emmited by Let's Encrypt for the Public Ip FQDNs and served by the Azure Application Gateway instances in each region  |
-| An AKS ingress Controller                  | It is self-sign test purpose wildcard cert for tls on the cluster ingress controller                                                             |
+| An AKS ingress Controller Certificate     | It is a self-signed wildcard cert for TLS on the cluster ingress controller.                                                            |
 
 ## Steps
 
@@ -47,7 +47,7 @@ Following the steps below you will result the certificates needed for Azure Appl
 
 1. Generate the wildcard certificate for the AKS Ingress Controller
 
-   > :book: Contoso Bicycle will also procure another TLS certificate, a standard cert, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing. Finally the app team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller. As this is not an internet-facing endpoint using a wildcard certificate is a valid option.
+   > :book: Contoso Bicycle will also procure another TLS certificate, a standard cert, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing. Finally the app team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller. As this is not an internet-facing endpoint; using a wildcard certificate is a valid option.
 
    ```bash
    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out traefik-ingress-internal-aks-ingress-contoso-com-tls.crt -keyout traefik-ingress-internal-aks-ingress-contoso-com-tls.key -subj "/CN=*.aks-ingress.contoso.com/O=Contoso Aks Ingress"

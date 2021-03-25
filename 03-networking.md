@@ -20,8 +20,8 @@ The following two resource groups will be created and populated with networking 
 ### Resources
 
 - Regional Azure Firewall in each Hub Virtual Network
-- Two Network Spoke for the Cluster
-- Network Peering from the Spokes to their corresponding regional Hubs
+- One Network Spoke per Cluster
+- Network Peering from the Spokes to their corresponding regional Hub
 - Force Tunnel UDR for Cluster Subnets to their Hubs
 - Network Security Groups for all subnets that support them
 
@@ -35,7 +35,7 @@ The following two resource groups will be created and populated with networking 
    az login -t $TENANTID_AZURERBAC
    ```
 
-1. Create the networking hub spoke resource groups.
+1. Create the networking hub-spoke resource groups.
 
    > :book: The networking team has all their regional networking hubs and spokes in the following centrally-managed Azure Resource Groups
 
@@ -48,7 +48,7 @@ The following two resource groups will be created and populated with networking 
 
 1. Create two hubs, and two spokes that will be home to the AKS clusters and its adjacent resources and then enroll the spokes into the hubs.
 
-   > :book: The networking had created two generic hubs awaiting for customers to join. They receive a request from an app team in business unit (BU) 0001. This is for the creation of network spokes to house their new AKS-based application (Internally know as Application ID: A0042). The network team talks with the app team to understand their requirements and aligns those needs with Microsoft's best practices for a secure AKS cluster deployment. As part of the non-functional requirements, the app team mentions they need to run 2 separated infrastructure instances of the same application from two different regions, so they can increase the availability. The networking team realizes they are going to need two different spokes to fullfil the app team's desire. They capture those specific requirements and deploy the spokes (`BU0001A0042-03` and `BU0001A0042-04`), aligning to those specs, and connecting it to the corresponding regional hub.
+   > :book: The networking team had created two generic hubs awaiting for customers to join. They receive a request from an app team in business unit (BU) 0001. This is for the creation of network spokes to house their new AKS-based application (Internally know as Application ID: A0042). The network team talks with the app team to understand their requirements and aligns those needs with Microsoft's best practices for a secure AKS cluster deployment. As part of the non-functional requirements, the app team mentions they need to run two separate infrastructure instances of the same application from two different regions, so they can increase the availability. The networking team realizes they are going to need two different spokes to fulfil the app team's requirements. They capture those specific requirements and deploy the spokes (`BU0001A0042-03` and `BU0001A0042-04`), aligning to those specs, and connecting it to the corresponding regional hub.
    >
    > The networking team has decided that `10.200.[0-9].0` will be where all regional hubs are homed on their organization's network space. The `eastus2` and `westus2` hubs (created below) will be `10.200.3.0/24` and `10.200.4.0/24` respectively.
    >

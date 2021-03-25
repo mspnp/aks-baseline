@@ -16,7 +16,7 @@ Following the steps below you will result in an Azure AD configuration that will
 
 > :book: The Contoso Bicycle Azure AD team requires all admin access to AKS clusters be security-group based. This applies to the two AKS clusters that are being created for Application ID a0042 under the BU001 business unit. Kubernetes RBAC will be AAD-backed and access granted based on a user's identity or directory group membership.
 
-1. Create a single "break-glass" cluster administrator user for your AKS cluster, and add to both cluster admin security groups being created that are going to map to the [Kubernetes Cluster Admin](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) role `cluster-admin`
+1. Create a single "break-glass" cluster administrator user for your AKS clusters, and add to both cluster admin security groups being created that are going to map to the [Kubernetes Cluster Admin](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) role `cluster-admin`.
 
    :book: The app team requested a single admin user that needs to have access in both clusters. The Azure AD Admin team create two different groups, one per cluster to home the new admin.
 
@@ -37,7 +37,7 @@ Following the steps below you will result in an Azure AD configuration that will
    az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204 --member-id $AADOBJECTID_USER_CLUSTERADMIN
    ```
 
-   :bulb: For a better security seggregation your organzation might require to create multiple admins, this reference implementation create a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role bindings in Kubernetes. For more information, please refer to our [AKS Baseline](https://github.com/mspnp/aks-secure-baseline).
+   :bulb: For a better security segregation your organization might require to create multiple admins. This reference implementation creates a single one for the sake of simplicity. The group object ID will be used later while creating the different clusters. This way, once the clusters gets deployed the new group will get the proper Cluster Role bindings in Kubernetes. For more information, please refer to our [AKS Baseline](https://github.com/mspnp/aks-secure-baseline).
 
 ### Next step
 
