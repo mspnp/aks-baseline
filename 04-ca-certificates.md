@@ -27,6 +27,7 @@ Following the steps below you will result the certificates needed for Azure Appl
    APPGW_IP_RESOURCE_ID_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.appGatewayPublicIp.value -o tsv)
 
    # call the Let's Encrypt certificate generation script for both PIP FQDNs
+   # [Generate the following certificates takes about ten minutes to run.]
    sudo chmod +x ./certs/letsencrypt-pip-cert-generation.sh
    sudo chmod +x ./certs/autogenerator.sh
    ./certs/letsencrypt-pip-cert-generation.sh $APPGW_SUBDOMAIN_BU0001A0042_03 $APPGW_FQDN_BU0001A0042_03 $APPGW_IP_RESOURCE_ID_03 eastus2
