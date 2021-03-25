@@ -16,6 +16,8 @@ Following the steps below will result in the provisioning of the AKS multi clust
 
 > :book: The app team wants to invest in the automation of their multi region infrastructure deployments and initial setup of the AKS cluster desired state. Today the app team will own just two clusters but in the future they could be many more. In this case, they decided to use GitHub Actions. They are going to create a workflow grouping all AKS clusters in different regions that are serving the same application. They know that every change in their cluster stamp or workflow will impact most probably all clusters. But there are some special cases like adding a new cluster to their fleet. For those cases, they are tagging the pipeline execution to exclude and remain them untouched from that particular execution.
 
+> :bulb: Another interesting use case that this architecture could help with is when AKS introduces _Preview Features_ in the same or different regions. They could in some case be a breaking in an upcoming major releases like happened with `containerd` as the new default runtime. In those situtations, you might want to do some A/B testing without fully disrupting your live and stable AKS cluster.
+
 1.  Obtain shared services resource details
 
     ```bash
