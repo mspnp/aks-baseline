@@ -1,0 +1,22 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "eastus2"
+        },
+        "hubVnetAddressSpace": {
+            "value": "10.200.3.0/24"
+        },
+        "azureFirewallSubnetAddressSpace": {
+            "value": "10.200.3.0/26"
+        },
+        "azureGatewaySubnetAddressSpace": {
+            "value": "10.200.3.64/27"
+        },
+        "azureBastionSubnetAddressSpace": {
+            "value": "10.200.3.96/27"
+        }
+    }
+}
+

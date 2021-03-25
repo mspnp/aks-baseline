@@ -2,7 +2,21 @@
 
 Now that the [cluster prequisites and shared Azure service instances are provisioned](./05-cluster-prerequisites.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS clusters and its adjacent Azure resources.
 
+## Expected results
+
+Following the steps below will result in the provisioning of the AKS multi cluster solution.
+
+| Object                        | Purpose                                                                                                                                                                                                                                                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| GitHub Workflow               | A GitHub Workflow that deploys the multi cluster infrastructure in two different regions                                                 |
+| Two Azure Application Gateway | One Azure Application Gateway in East US 2 and another one from its paired region Central US                                             |
+| Two configured AKS Clusters   | Two AKS Clusters in the same detailed regions and configured with their initial desired state. It is Flux, Azure Pod Identity, and more. |
+
 ## Steps
+
+> :book: The app team wants to invest in the automation of their multi region infrastructure deployments and initial setup of the AKS cluster desired state. Today the app team will own just two clusters but in the future they could be many more. In this case, they decided to use GitHub Actions. They are going to create a workflow grouping all AKS clusters in different regions that are serving the same application. They know that every change in their cluster stamp or workflow will impact most probably all clusters. But there are some special cases like adding a new cluster to their fleet. For those cases, they are tagging the pipeline execution to exclude and remain them untouched from that particular execution.
+
+> :bulb: Another interesting use case that this architecture could help with is when AKS introduces _Preview Features_ in the same or different regions. They could in some case be a breaking in an upcoming major releases like happened with `containerd` as the new default runtime. In those situtations, you might want to do some A/B testing without fully disrupting your live and stable AKS cluster.
 
 1.  Obtain shared services resource details
 
@@ -20,10 +34,6 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
     RESOURCEID_VNET_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.clusterVnetResourceId.value -o tsv)
     RESOURCEID_VNET_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.clusterVnetResourceId.value -o tsv)
     ```
-
-    **Automate the multi-region deployments using GitHub Actions**
-
-    > :book: The app team wants to automate their infrastructure deployments. In this case, they decided to use GitHub Actions. They are going to create a workflow grouping all AKS clusters in different regions that are serving the same application.
 
     1.  Create the Azure Credentials for the GitHub CD workflow.
 
@@ -74,29 +84,25 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
 
         ```bash
         # Region 1
-        cat ./azuredeploy.parameters.eastus2.json | \
-        sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_03}#g" | \
-        sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" | \
-        sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" | \
-        sed "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" | \
-        sed "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" | \
-        sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g"  \
-        > azuredeploy.parameters.region1.json
+        sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_03}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004203}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" ./azuredeploy.parameters.eastus2.json && \
+        sed -i "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g" ./azuredeploy.parameters.eastus2.json
 
         # Region 2
-        cat ./azuredeploy.parameters.centralus.json | \
-        sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04}#g" | \
-        sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" | \
-        sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" | \
-        sed "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" | \
-        sed "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" | \
-        sed "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g"  \
-        > azuredeploy.parameters.region2.json
+        sed -i "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_BU0001A0042_04}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_BU0001A004204}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<log-analytics-workspace-id>#${LOGANALYTICSWORKSPACEID}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<container-registry-id>#${CONTAINERREGISTRYID}#g" ./azuredeploy.parameters.centralus.json && \
+        sed -i "s#<acrPrivateDns-zones-id>#${ACRPRIVATEDNSZONESID}#g" ./azuredeploy.parameters.centralus.json
         ```
 
     1.  Customize Flux to watch your own repo.
 
-        > :book: GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically applied to their clusters as changes occur. This reference implementation is for a multi cluster infrastructure, so Flux is going to use Kustomizer to deploy regions differenly by using a set of base manifest and patcing them when needed.
+        > :book: GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically applied to their clusters as changes occur. This reference implementation is for a multi cluster infrastructure, so Flux is going to use Kustomization to deploy regions differenly by using a set of base manifest and patching them when needed.
 
         ```bash
         sed -i -e 's/<user-name>/${GITHUB_USER_NAME}/' cluster-manifests/base/cluster-baseline-settings/flux-system/flux.yaml
@@ -109,7 +115,7 @@ Now that the [cluster prequisites and shared Azure service instances are provisi
         > :book: The app team monitors the workflow execution as this is impacting a critical piece of infrastructure. This flow works for both new or existing AKS clusters. The workflow deploys the multiple clusters in different regions, and configures the desired state for them.
 
         ```bash
-        git add -A && git commit -m "setup GitHub CD workflow" && git push origin main
+        git add -u && git add .github/workflows/aks-deploy.yaml && git commit -m "setup GitHub CD workflow" && git push origin main
         ```
 
         > :bulb: You might want to convert this GitHub workflow into a template since your organization or team might need to handle multiple AKS clusters. For more information, please take a look at [Sharing Workflow Templates within your organization](https://docs.github.com/actions/configuring-and-managing-workflows/sharing-workflow-templates-within-your-organization).

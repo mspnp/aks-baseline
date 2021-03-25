@@ -1,0 +1,22 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "centralus"
+        },
+        "hubVnetAddressSpace": {
+            "value": "10.200.4.0/24"
+        },
+        "azureFirewallSubnetAddressSpace": {
+            "value": "10.200.4.0/26"
+        },
+        "azureGatewaySubnetAddressSpace": {
+            "value": "10.200.4.64/27"
+        },
+        "azureBastionSubnetAddressSpace": {
+            "value": "10.200.4.96/27"
+        }
+    }
+}
+

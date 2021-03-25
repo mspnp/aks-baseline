@@ -105,7 +105,7 @@ spec:
           initialDelaySeconds: 5
           timeoutSeconds: 5
         args:
-        - --git-url=https://github.com/<user-name>/aks-secure-baseline.git
+        - --git-url=https://github.com/<user-name>/aks-baseline-multi-region.git
         - --git-branch=main
         - --git-path=cluster-manifests
         # this configuration prevents flux from syncing changes from your cluster to the git repo. If two way sync is required, please take a look at  https://docs.fluxcd.io/en/1.19.0/tutorials/get-started/#giving-write-access

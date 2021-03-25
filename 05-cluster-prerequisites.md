@@ -26,13 +26,6 @@ Following the steps below will result in the provisioning of the shared Azure re
    az group create --name rg-bu0001a0042-shared --location centralus
    ```
 
-1. Read the FQDN values will have each Azure Application Gateway, the public ip DNS name already deployed
-
-   ```bash
-   APPGW_FQDN_BU0001A0042_03=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.appGwFqdn.value -o tsv)
-   APPGW_FQDN_BU0001A0042_04=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
-   ```
-
 1. Deploy the AKS cluster prerequisites and shared services.
 
 > :book: The app team is about to provision three shared Azure resources. One is a non-regional and two regional, but more importantly they are deployed independently from their AKS Clusters:
@@ -69,10 +62,10 @@ Following the steps below will result in the provisioning of the shared Azure re
 >
 > **Azure Front Door**
 >
-> :book: TODO
+> :book: The app team is about to deploy Azure Application instances in every region ahead of their corresponding cluster. It represents a new challenge for them as they need to globally manage the traffic from their clients, and route to the different regions with high availability in mind. They plan to have both regions initially active, and respond from the one which is closest to the client sending the HTTP requests. Therefore, it results in an active/active High Availability strategy, but they need to failover to a single region in case of a region outage. As a consequence of this last requirement, the load balancing can not be a simple round robin over the closest regions, but it also needs to be aware of the health of their backends, and derive the traffic accordingly. Two well known Azure services can perform Multi-Geo Redundancy and Closest Region Routing, they are: Azure Front Door and Azure Traffic Manager. To make final decision between these two, the Contoso organization is also seeing added benefits in Azure Traffic Manager like better performance at the TLS negotiation, rate limiting capability and IP ACL-ing.
 
 ```bash
-az deployment group create -g rg-bu0001a0042-shared -f shared-svcs-stamp.json -p location=eastus2  fontDoorBackend="['${APPGW_FQDN_BU0001A0042_03}','${APPGW_FQDN_BU0001A0042_04}']"
+az deployment group create -g rg-bu0001a0042-shared -f shared-svcs-stamp.json -p location=eastus2 fontDoorBackend="['${APPGW_FQDN_BU0001A0042_03}','${APPGW_FQDN_BU0001A0042_04}']"
 ```
 
 ### Next step
