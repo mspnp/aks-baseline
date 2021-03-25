@@ -46,7 +46,7 @@ The following two resource groups will be created and populated with networking 
 
    :bulb: The groups' default location does not matter, as it's not tied to the resource locations. (Please note that typically these resource groups would have already existed.)
 
-1. Create two hubs, and two spokes that will be home to the AKS clusters and its adjacent resources and .
+1. Create two hubs, and two spokes that will be home to the AKS clusters and its adjacent resources and then enroll the spokes into the hubs.
 
    > :book: The networking had created two generic hubs awaiting for customers to join. They receive a request from an app team in business unit (BU) 0001. This is for the creation of network spokes to house their new AKS-based application (Internally know as Application ID: A0042). The network team talks with the app team to understand their requirements and aligns those needs with Microsoft's best practices for a secure AKS cluster deployment. As part of the non-functional requirements, the app team mentions they need to run 2 separated infrastructure instances of the same application from two different regions, so they can increase the availability. The networking team realizes they are going to need two different spokes to fullfil the app team's desire. They capture those specific requirements and deploy the spokes (`BU0001A0042-03` and `BU0001A0042-04`), aligning to those specs, and connecting it to the corresponding regional hub.
    >
