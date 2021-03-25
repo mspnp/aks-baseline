@@ -1,6 +1,6 @@
 # Prerequisites
 
-This is the starting point for the instructions on deploying the [AKS Secure Baseline reference implementation](./README.md). There is required access and tooling you'll need in order to accomplish this. Follow the instructions below and on the subsequent pages so that you can get your environment ready to proceed with the AKS cluster creation.
+This is the starting point for the instructions on deploying the [AKS baseline multi cluster reference implementation](/README.md). There is required access and tooling you'll need in order to accomplish this. Follow the instructions below and on the subsequent pages so that you can get your environment ready to proceed with the AKS clusters creation.
 
 ## Steps
 

@@ -1,6 +1,6 @@
 # End-to-End Multi Cluster Validation
 
-Now that you have a workload deployed, the [ASP.NET Core Docker sample web app](./09-workload.md), you can start validating and exploring this reference implementation of the [AKS multi cluster](./). In addition to the workload, there are some observability validation you can perform as well.
+Now that you have a workload deployed, the [ASP.NET Core Docker sample web app](./09-workload.md) in multiple regions, you can start validating and exploring this reference implementation of the [AKS baseline multi cluster](/README.md). In addition to the workload, there are some observability validation you can perform as well.
 
 ## Validate the Region Failover
 

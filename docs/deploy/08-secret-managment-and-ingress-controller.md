@@ -1,6 +1,6 @@
 # Configure AKS Ingress Controller with Azure Key Vault integration
 
-Previously you have configured [workload prerequisites](./08-workload-prerequisites.md). These steps configure Traefik, the AKS ingress solution used in this reference implementation, so that it can securely expose the web app to your Application Gateway.
+Previously you have configured [workload prerequisites](./07-workload-prerequisites.md). These steps configure Traefik, the AKS ingress solution used in this reference implementation, so that it can securely expose the web app to your Application Gateway.
 
 ## Steps
 
@@ -91,9 +91,10 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    kubectl wait -n a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_03
    ```
 
-1. Install the Traefik Ingress Controller in the second AKS Cluster
+1. Contextualize the steps above for your second AKS Cluster to install the Traefik Ingress Controller
 
    ```bash
+   # Create Traefik's Azure Managed Identity binding.
    TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
    TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
    cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04 -f -
@@ -117,8 +118,8 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
      selector: podmi-ingress-controller
    EOF
 
+   # Create the Traefik's Secret Provider Class resource.
    KEYVAULT_NAME_BU0001A0042_04=$(az deployment group show -g rg-bu0001a0042-04 -n cluster-stamp  --query properties.outputs.keyVaultName.value -o tsv)
-
    cat <<EOF | kubectl apply --context $AKS_CLUSTER_NAME_BU0001A0042_04 -f -
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
    kind: SecretProviderClass
@@ -143,7 +144,10 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
        tenantId: $TENANTID_AZURERBAC
    EOF
 
+   # Install the Traefik Ingress Controller in the second region
    kubectl apply -f ./workload/traefik-region2.yaml --context $AKS_CLUSTER_NAME_BU0001A0042_04
+
+   # Wait for Traefik to be ready.
    kubectl wait --namespace a0042 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s --context $AKS_CLUSTER_NAME_BU0001A0042_04
    ```
 

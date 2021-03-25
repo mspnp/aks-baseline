@@ -1,6 +1,6 @@
 # Prep for Azure Active Directory Integration
 
-In the prior step, you [generated the user-facing TLS certificate](./02-ca-certificates.md); now we'll prepare Azure AD for Kubernetes role-based access control (RBAC). This will ensure you have an Azure AD security group(s) and user(s) assigned for group-based Kubernetes control plane access.
+Now that you have the [prerequisites](./01-prerequisites.md) met, follow the steps below to prepare Azure AD for Kubernetes role-based access control (RBAC). This will ensure you have an Azure AD security group(s) and user(s) assigned for group-based Kubernetes control plane access.
 
 ## Expected results
 

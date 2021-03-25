@@ -1,6 +1,6 @@
 # Deploy the AKS cluster prerequisites and shared services
 
-In the prior step, you [generated the user-facing TLS certificate](./04-ca-certificates.md); now follow the next step in the [AKS secure Baseline reference implementation](./) is deploying the shared service instances.
+In the prior step, you [generated the user-facing TLS certificate](./04-ca-certificates.md); now follow the next step in the [AKS baseline multi cluster reference implementation](/README.md) is deploying the shared service instances.
 
 ## Expected results
 
@@ -70,4 +70,4 @@ az deployment group create -g rg-bu0001a0042-shared -f shared-svcs-stamp.json -p
 
 ### Next step
 
-:arrow_forward: [Deploy the AKS cluster](./06-aks-cluster.md)
+:arrow_forward: [Deploy the AKS clusters](./06-aks-cluster.md)

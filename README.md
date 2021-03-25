@@ -34,7 +34,7 @@ The new selected location is `Central US` which is the Azure paired region for `
 
 All in all, the team resolution is to have CI/CD pipelines, traffic management, and centralized GitOps as well as centralize the git repos containing the workload manifests, and a single declarative stamp for the cluster creation with different parameter files per region.
 
-![The federation diagram depicting the proposed cluster fleet topology running different instances of the same application from them.](images/aks-cluster-mgmnt-n-federation.png)
+![The federation diagram depicting the proposed cluster fleet topology running different instances of the same application from them.](./docs/deploy/images/aks-cluster-mgmnt-n-federation.png)
 
 > :bulb: Multi Cluster and Federation's repos could be a monorepo or multiple repos as displayed from the digram above. In this reference implementation, the workload manifests, and ARM templates are shipped together from a single repo.
 
@@ -81,17 +81,17 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 ## Deploy the reference implementation
 
-- [ ] Begin by ensuring you [install and meet the prerequisites](./01-prerequisites.md)
-- [ ] [Plan your Azure Active Directory integration](./02-aad.md)
-- [ ] [Build the hub-spoke network](./03-networking.md)
-- [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./04-ca-certificates.md)
-- [ ] [Deploy the shared services for your clusters](./05-cluster-prerequisites.md)
-- [ ] [Deploy the AKS cluster and supporting services](./06-aks-cluster.md)
-- [ ] Just like the cluster, there are [workload prerequisites to address](./07-workload-prerequisites.md)
-- [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./08-secret-managment-and-ingress-controller.md)
-- [ ] [Deploy the workload](./09-workload.md)
-- [ ] [Perform end-to-end deployment validation](./10-validation.md)
-- [ ] [Cleanup all resources](./11-cleanup.md)
+- [ ] Begin by ensuring you [install and meet the prerequisites](./docs/deploy/01-prerequisites.md)
+- [ ] [Plan your Azure Active Directory integration](./docs/deploy/02-aad.md)
+- [ ] [Build the hub-spoke network](./docs/deploy/03-networking.md)
+- [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./docs/deploy/04-ca-certificates.md)
+- [ ] [Deploy the shared services for your clusters](./docs/deploy/05-cluster-prerequisites.md)
+- [ ] [Deploy the AKS cluster and supporting services](./docs/deploy/06-aks-cluster.md)
+- [ ] Just like the cluster, there are [workload prerequisites to address](./docs/deploy/07-workload-prerequisites.md)
+- [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./docs/deploy/08-secret-managment-and-ingress-controller.md)
+- [ ] [Deploy the workload](./docs/deploy/09-workload.md)
+- [ ] [Perform end-to-end deployment validation](./docs/deploy/10-validation.md)
+- [ ] [Cleanup all resources](./docs/deploy/11-cleanup.md)
 
 ## Cost Considerations
 

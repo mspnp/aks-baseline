@@ -1,6 +1,6 @@
 # Clean up
 
-After you are done exploring your deployed [AKS secure baseline cluster](./), you'll want to delete the created Azure resources to prevent undesired costs from accruing. Follow these steps to delete all resources created as part of this reference implementation.
+After you are done exploring your deployed [AKS baseline multi cluster](/README.md), you'll want to delete the created Azure resources to prevent undesired costs from accruing. Follow these steps to delete all resources created as part of this reference implementation.
 
 ## Steps
 

@@ -1,6 +1,6 @@
 # Deploy the Hub-Spoke Network Topology
 
-The prerequisites for the [AKS secure baseline cluster](./) are now completed with [Azure AD group and user work](./02-aad.md) performed in the prior steps. Now we will start with our first Azure resource deployment, the network resources.
+In the prior step, you've set up an Azure AD tenant to fullfil your [cluster's control plane (Kubernetes Cluster API) authorization](./02-aad.md) needs for this reference implementation deployment. Now we will start with our first Azure resource deployment, the network resources.
 
 ## Subscription and resource group topology
 
@@ -76,7 +76,7 @@ The following two resource groups will be created and populated with networking 
 
 > :book: The networking team is now dealing with multiple clusters in different regions. Understanding how the traffic flows at layers 4 and 7 through their deployed networking topology is now more critical than ever. That's why the team is evaluating different tooling that could provide monitoring over their networks.  One of the Azure Monitor products at subscription level is Network Watcher that offers two really interesting features such as NSG Flow Logs and with that [Traffic Analytics](https://docs.microsoft.com/azure/network-watcher/traffic-analytics). The latter can bring some light over the table when it is about analyzing traffic like from where it is being originated, how it is flowing thought the different regions, or how much is benign vs malicious together with many more details at the security and performance level. [With no upfront cost and no termination fees](https://azure.microsoft.com/pricing/details/network-watcher/) the business unit (BU0001) would be charged for collection and processing logs per GB at 10-min or 60-min intervals.
 
-![Traffic Analytics Geo Map View of the AKS Multi Cluster reference implementation under load. Traffic is coming from a single Azure Front Door POP and is distrubuted to both regions after the first failover is complete](images/traffic-analytics-geo-map.gif)
+![Traffic Analytics Geo Map View of the AKS Multi Cluster reference implementation under load. Traffic is coming from a single Azure Front Door POP and is distrubuted to both regions after the first failover is complete](./images/traffic-analytics-geo-map.gif)
 
 > :bulb: The [AKS Baseline](https://github.com/mspnp/aks-secure-baseline) has already covered the how(s) and why(s) of the current [network topology segmentation](https://github.com/mspnp/aks-secure-baseline/blob/main/networking/topology.md). But something that is worth to remember while preparing for a high availability architecture is that the network needs to be right sized to absorb a sudden increase in traffic that might request twice the number of IPs when scheduling more _Pods_ to failover a region.
 
