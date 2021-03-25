@@ -38,8 +38,6 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
    az login --allow-no-subscriptions -t <Replace-With-ClusterApi-AzureAD-TenantId>
    ```
 
-   :bulb: The general recommedation here is to use two different tenants for RBAC at the Azure subcription and AKS cluster levels. For more information, please refer to our [AKS Baseline](https://github.com/mspnp/aks-secure-baseline).
-
 1. Validate that the new saved tenant id is correct one for Kubernetes Cluster API authorization
 
    ```bash
