@@ -6,19 +6,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: aspnetapp-deployment
+  name: aspnetapp-canary-deployment
   namespace: a0042
   labels:
-    app.kubernetes.io/name: aspnetapp
+    app.kubernetes.io/name: aspnetapp-canary
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app.kubernetes.io/name: aspnetapp
+      app.kubernetes.io/name: aspnetapp-canary
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: aspnetapp
+        app.kubernetes.io/name: aspnetapp-canary
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -46,8 +46,8 @@ spec:
                   - traefik-ingress-ilb
               topologyKey: "kubernetes.io/hostname"
       containers:
-      - name: aspnetcore-webapp-sample
-        image: mcr.microsoft.com/dotnet/core/samples:aspnetapp
+      - name: aspnet-webapp-sample
+        image: mcr.microsoft.com/dotnet/samples:aspnetapp
         imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: false
@@ -77,16 +77,16 @@ spec:
   minAvailable: 75%
   selector:
     matchLabels:
-      app.kubernetes.io/name: aspnetapp
+      app.kubernetes.io/name: aspnetapp-canary
 ---
 kind: Service
 apiVersion: v1
 metadata:
-  name: aspnetapp
+  name: aspnetapp-canary
   namespace: a0042
 spec:
   selector:
-    app.kubernetes.io/name: aspnetapp
+    app.kubernetes.io/name: aspnetapp-canary
   ports:
   - name: http
     port: 80
@@ -98,9 +98,6 @@ metadata:
   name: aspnetapp-ingress
   namespace: a0042
   annotations:
-    # defines controller implementing this ingress resource: https://docs.microsoft.com/en-us/azure/dev-spaces/how-to/ingress-https-traefik
-    # ingress.class annotation is being deprecated in Kubernetes 1.18: https://kubernetes.io/docs/concepts/services-networking/ingress/#deprecated-annotation
-    # For backwards compatibility, when this annotation is set, precedence is given over the new field ingressClassName under spec.
     kubernetes.io/ingress.class: traefik-internal-crd
 spec:
   entryPoints:
@@ -109,16 +106,25 @@ spec:
   - match: Host(`bu0001a0042.aks-ingress.contoso.com`)
     kind: Rule
     services:
-    - name: aspnetapp
-      port: 80
+    - name: aspnetapp-wrr
       namespace: a0042
-      kind: Service
+      kind: TraefikService
     middlewares:
       - name: app-gateway-snet@file
       - name: gzip-compress@file
-  # it is possible to opt for certificate management strategy with dedicated
-  # certificates for each TLS SNI route.
-  # In this Rereference Implementation for the sake of simplicity we use a
-  # wildcard default certificate added at Ingress Controller configuration level which is *.aks-ingress.contoso.com
-  # tls:
-  # secretName: <bu0001a0042-00-example-com-tls-secret>
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: TraefikService
+metadata:
+  name: aspnetapp-wrr
+  namespace: a0042
+spec:
+  weighted:
+    services:
+      - name: aspnetapp
+        port: 80
+        weight: 3
+      - name: aspnetapp-canary
+        port: 80
+        weight: 1
+---

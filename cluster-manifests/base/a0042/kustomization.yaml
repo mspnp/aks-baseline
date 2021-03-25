@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
 - ns.yaml
 - ingress-network-policy.yaml
+- traefik-namespaced-rbac.yaml
