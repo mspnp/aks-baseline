@@ -1,6 +1,6 @@
 # Deploy the AKS cluster prerequisites and shared services
 
-In the prior step, you [generated the user-facing TLS certificate](./04-ca-certificates.md); now follow the next step in the [AKS baseline multi cluster reference implementation](/README.md) is deploying the shared service instances.
+In the prior step, you [generated the user-facing TLS certificate](./04-ca-certificates.md); now follows the next step in the [AKS baseline multi cluster reference implementation](/README.md) which is deploying the shared service instances.
 
 ## Expected results
 
