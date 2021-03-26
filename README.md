@@ -1,6 +1,6 @@
 # Azure Kubernetes Service (AKS) for Multi-Region Deployment
 
-This reference implementation will go over some design decisions from the baseline to detail them as a well as incorporate some new _recommended infrastructure options_ for a Multi Cluster architecture. In this oportunity, this implementation and document are meant to guide the multiple distinct teams introduced in the [AKS Baseline](https://github.com/mspnp/aks-secure-baseline) through the process of expanding from a single cluster to a multiple clusters solution with a foundamental driver in mind which is **High Availability**.
+This reference implementation will go over some design decisions from the baseline to detail them as a well as incorporate some new _recommended infrastructure options_ for a Multi Cluster architecture. In this opportunity, this implementation and document are meant to guide the multiple distinct teams introduced in the [AKS Baseline](https://github.com/mspnp/aks-secure-baseline) through the process of expanding from a single cluster to a multi-cluster solution with a fundamental driver in mind which is **High Availability**.
 
 Throughout the reference implementation, you will see reference to _Contoso Bicycle_. They are a fictional, small, and fast-growing startup that provides online web services to its clientele on the east coast of the United States. This narrative provides grounding for some implementation details, naming conventions, etc. You should adapt as you see fit.
 
@@ -12,7 +12,7 @@ The Contoso Bicycle app team that owns the `a0042` workload app is planning to d
 
 AKS Baseline clusters are meant to be available from different _Zones_ within the same region. But now they realize that if `East US 2` went fully down, zone coverage is not sufficient. Even though the SLA(s) are acceptable for their business continuity plan, they are starting to think what their options are, and how their stateless application (Application ID: a0042) could increase its availability in case of a complete regional outage. They started conversations with the business unit (BU0001) to increment the number of clusters by one. In other words, they are proposing to move to a multi-cluster infrastructure solution in which multiple instances of the same application could live.
 
-This architectural decision will have multiple implications for the Contoso Bicycle organization. It is not just about following the baseline twice chaning the region to get a tween infrastructure. They also need to look for how they can efficiently share Azure resources as well as detect those that need to be added; how they are going to deploy more than one cluster as well as operate them; decide to which specific regions they deploy; and many more considerations striving for high availability.
+This architectural decision will have multiple implications for the Contoso Bicycle organization. It is not just about following the baseline twice chaining the region to get a twin infrastructure. They also need to look for how they can efficiently share Azure resources as well as detect those that need to be added; how they are going to deploy more than one cluster as well as operate them; decide to which specific regions they deploy to; and many more considerations striving for high availability.
 
 ## Azure Architecture Center guidance
 
