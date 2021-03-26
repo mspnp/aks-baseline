@@ -80,6 +80,7 @@ jobs:
         resource-group: rg-bu0001a0042-03
 
     # Bake using Kubernetes Kustomize - Region 1
+    # NOTE: you could consider using fluxctl action instead. That could help on deploying Flux from a single step instead of baking and then deploying as demonstrated in here.
     - name: Bake manifest - Region 1
       id: aks-kustomize-region1
       if: success() && env.DEPLOY_REGION1 == 'true'
@@ -128,6 +129,7 @@ jobs:
         resource-group: rg-bu0001a0042-04
 
     # Bake using Kubernetes Kustomize - Region 2
+    # NOTE: you could consider using fluxctl action instead. That could help on deploying Flux from a single step instead of baking and then deploying as demonstrated in here.
     - name: Bake manifest - Region 2
       id: aks-kustomize-region2
       uses: azure/k8s-bake@v1

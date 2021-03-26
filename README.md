@@ -1,6 +1,6 @@
 # Azure Kubernetes Service (AKS) for Multi-Region Deployment
 
-This reference implementation will go over some design decisions from the baseline to detail them as a well as incorporate some new _recommended infrastructure options_ for a Multi Cluster architecture. In this oportunity, this implementation and document are meant to guide the multiple distinct teams introduced in the [AKS Baseline](https://github.com/mspnp/aks-secure-baseline) through the process of expanding from a single cluster to multiple clusters solution with a foundamental driver in mind which is **High Availability**.
+This reference implementation will go over some design decisions from the baseline to detail them as a well as incorporate some new _recommended infrastructure options_ for a Multi Cluster architecture. In this oportunity, this implementation and document are meant to guide the multiple distinct teams introduced in the [AKS Baseline](https://github.com/mspnp/aks-secure-baseline) through the process of expanding from a single cluster to a multiple clusters solution with a foundamental driver in mind which is **High Availability**.
 
 Throughout the reference implementation, you will see reference to _Contoso Bicycle_. They are a fictional, small, and fast-growing startup that provides online web services to its clientele on the east coast of the United States. This narrative provides grounding for some implementation details, naming conventions, etc. You should adapt as you see fit.
 
@@ -8,35 +8,11 @@ Throughout the reference implementation, you will see reference to _Contoso Bicy
 |:------------------------------|
 | **If you haven't familiarized yourself with the general-purpose [AKS baseline cluster](https://github.com/mspnp/aks-secure-baseline) architecture, you should start there before continuing here.** The architecture rationalized and constructed that implementation is the direct foundation of this body of work. This reference implementation avoids rearticulating points that are already addressed in the AKS baseline cluster. |
 
-### Intro
+The Contoso Bicycle app team that owns the `a0042` workload app is planning to deploy an AKS cluster strategically located in the `East US 2` region as this is where most of their customer base can be found. They will operate this single AKS cluster [following Microsoft's recommended baseline architecture](https://github.com/mspnp/aks-secure-baseline).
 
-The app team works on a cluster strategically located in the `East US 2` region as this is where most of their customer base can be found. They have been operating this single AKS cluster for a quite some time [following Microsoft's recommended baseline architecture](https://github.com/mspnp/aks-secure-baseline).
+AKS Baseline clusters are meant to be available from different _Zones_ within the same region. But now they realize that if `East US 2` went fully down, zone coverage is not sufficient. Even though the SLA(s) are acceptable for their business continuity plan, they are starting to think what their options are, and how their stateless application (Application ID: a0042) could increase its availability in case of a complete regional outage. They started conversations with the business unit (BU0001) to increment the number of clusters by one. In other words, they are proposing to move to a multi-cluster infrastructure solution in which multiple instances of the same application could live.
 
-The baseline cluster was already available from different _Zones_ within the same region, but now they realize that if `East US 2` went fully down, zone coverage is not sufficient. Even though the SLA(s) are acceptable for their business continuity plan, they are starting to think what their options are, and how their stateless application (Application ID: a0042) could increase its availability in case of a complete regional outage. They started conversations with the business unit (BU0001) to increment the number of clusters by one. In other words, they are proposing to move to a multi-cluster infrastructure solution in which multiple instances of the same application could live.
-
-This architectural decision will have multiple implications for the Contoso Bicycle organization. It is not just about repeating everything they have done before but instead planning how to efficiently share Azure resources as well as detect those that need to be added; how they are going to deploy more than one cluster as well as operate them; decide to which specific regions they deploy; and many more considerations striving for high availability.
-
-### Federation
-
-The business unit (BU0001) approves the creation of a second cluster that could help balance the traffic but mainly to serve as a hot backup; they are a bit worried about the required engineering effort though. The same application (Application Id: a0042) is about to span into multiple clusters, so there is a desire to find a good mechanism for its configuration management. With that in mind, the app team is looking at what _federation_ approaches they could follow to run different instances of the exact same app in different clusters.
-
-They know that at this point things must be kept simply, in fact they could run these two application instances (Applications Ids: `a0042-03` and `a0042-04`) from the two regional clusters with just a bunch of useful scripts. But they want to be sure that the selected approach is not going to be adding impediments that could prevent from scaling out their fleet of clusters down to road if there was a requirment to scale up the amount application instances.
-
-Depending on how federation is implemented it could open a door in which a single command execution has an instant ripple effect into all your clusters. While running clusters separately like silos could keep you safe from the same, but the cost could be really high to scale the number of clusters in the future.
-
-They know that there is specialized tooling out there that helps manage a centralized control plane to push the workload(s) behavior top to bottom reacting to special events like a regional outage but they want to proceed with caution in this area for now.
-
-Given that this reference implementation provides a middle ground solution in which an organization could build the basis for the future without this being a weight on their shoulders for just two clusters. Therefore, the recommendation is to manage the workload manifests separately per instance from a central _federation_ git repository in combination with a CI/CD pipeline. The latter is not implemented as part of this reference implementation.
-
-### Multi cluster management in multiple regions
-
-The new selected location is `Central US` which is the Azure paired region for `East US 2`. Now the networking team in conjunction with the app team are closely working together to understand what is the best way for laying down the new cluster.
-
-All in all, the team resolution is to have CI/CD pipelines, traffic management, and centralized GitOps as well as centralize the git repos containing the workload manifests, and a single declarative stamp for the cluster creation with different parameter files per region.
-
-![The federation diagram depicting the proposed cluster fleet topology running different instances of the same application from them.](./docs/deploy/images/aks-cluster-mgmnt-n-federation.png)
-
-> :bulb: Multi Cluster and Federation's repos could be a monorepo or multiple repos as displayed from the digram above. In this reference implementation, the workload manifests, and ARM templates are shipped together from a single repo.
+This architectural decision will have multiple implications for the Contoso Bicycle organization. It is not just about following the baseline twice chaning the region to get a tween infrastructure. They also need to look for how they can efficiently share Azure resources as well as detect those that need to be added; how they are going to deploy more than one cluster as well as operate them; decide to which specific regions they deploy; and many more considerations striving for high availability.
 
 ## Azure Architecture Center guidance
 
@@ -51,9 +27,7 @@ This project has a companion set of articles that describe challenges, design pa
 
 The implementation presented here, like in the baseline, is the _minimum recommended starting (baseline) for a multiple AKS cluster solution_. This implementation integrates with Azure services that will deliver geo-replication, a centralized observability approach, a network topology that is going go with multi-regional growth, and an added benefit of additional traffic balancing as well.
 
-The material here will try to be focused exclusively on the multi-regional growth. We strongly encourage you to allocate time to go over [the AKS Baseline](https://github.com/mspnp/aks-secure-baseline) first, and later follow all the instructions provided in here. We do NOT provide any "one click" deployment here. However, once you've understood the components involved and identified the shared responsibilities between your team and your great organization, it is encouraged that you build suitable, auditable deployment processes around your final infrastructure.
-
-Finally, this implementation uses the [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/master/samples/aspnetapp) as an example workload. This workload is purposefully uninteresting, as it is here exclusively to help you experience the baseline infrastructure.
+Finally, this implementation uses the [ASP.NET Docker samples](https://github.com/dotnet/dotnet-docker/tree/master/samples/aspnetapp) as an example workload. This workload is purposefully uninteresting, as it is here exclusively to help you experience the baseline infrastructure.
 
 ### Core architecture components
 
@@ -75,9 +49,9 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 - [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
 
 | :construction: | Diagram below does _NOT accurately reflect this architecture_. **Update Pending.** |
- |----------------|:--------------------------|
+|----------------|:--------------------------|
 
-![Network diagram depicting a hub-spoke network with two peered VNets, each with three subnets and main Azure resources.](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)
+![The federation diagram depicting the proposed cluster fleet topology running different instances of the same application from them.](./docs/deploy/images/aks-cluster-mgmnt-n-federation.png)
 
 ## Deploy the reference implementation
 
@@ -86,7 +60,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 - [ ] [Build the hub-spoke network](./docs/deploy/03-networking.md)
 - [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./docs/deploy/04-ca-certificates.md)
 - [ ] [Deploy the shared services for your clusters](./docs/deploy/05-cluster-prerequisites.md)
-- [ ] [Deploy the AKS cluster and supporting services](./docs/deploy/06-aks-cluster.md)
+- [ ] [Deploy the two AKS clusters and supporting services](./docs/deploy/06-aks-cluster.md)
 - [ ] Just like the cluster, there are [workload prerequisites to address](./docs/deploy/07-workload-prerequisites.md)
 - [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./docs/deploy/08-secret-managment-and-ingress-controller.md)
 - [ ] [Deploy the workload](./docs/deploy/09-workload.md)
