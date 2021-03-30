@@ -28,8 +28,10 @@ rules:
       - watch
   - apiGroups:
       - extensions
+      - networking.k8s.io
     resources:
       - ingresses
+      - ingressclasses
     verbs:
       - get
       - list
@@ -43,19 +45,20 @@ rules:
   - apiGroups:
       - traefik.containo.us
     resources:
+      - middlewares
       - ingressroutes
+      - traefikservices
       - ingressroutetcps
       - ingressrouteudps
-      - middlewares
       - tlsoptions
       - tlsstores
-      - traefikservices
+      - serverstransports
     verbs:
       - get
       - list
       - watch
 ---
-kind: RoleBinding
+kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: traefik-watch-workloads
@@ -221,10 +224,10 @@ spec:
         # PRODUCTION READINESS CHANGE REQUIRED
         # This image should be sourced from a non-public container registry, such as the
         # one deployed along side of this reference implementation.
-        # az acr import --source docker.io/library/traefik:2.2.1 -n <your-acr-instance-name>
+        # az acr import --source docker.io/library/traefik:v2.4.8 -n <your-acr-instance-name>
         # and then set this to
-        # image: <your-acr-instance-name>.azurecr.io/library/traefik:2.2.1
-      - image: docker.io/library/traefik:2.2.1
+        # image: <your-acr-instance-name>.azurecr.io/library/traefik:v2.4.8
+      - image: docker.io/library/traefik:v2.4.8
         name: traefik-ingress-controller
         resources:
           requests:
