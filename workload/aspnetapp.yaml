@@ -51,7 +51,7 @@ spec:
         imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
+          readOnlyRootFilesystem: false
           capabilities:
             drop:
               - all
@@ -65,9 +65,6 @@ spec:
         env:
         - name: ASPNETCORE_URLS
           value: "http://*:8080"
-        - name: COMPlus_EnableDiagnostics
-          # https://github.com/dotnet/dotnet-docker/issues/940
-          value: "0"
       nodeSelector:
        agentpool: npuser01
 ---

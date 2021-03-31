@@ -51,4 +51,7 @@ echo deleting $RGNAMEHUB
 az group delete -n $RGNAMEHUB --yes
 
 echo deleting key vault soft delete
-az keyvault purge --name kv-${AKS_CLUSTER_NAME} --location ${RGLOCATION}
+az keyvault purge --name kv-${AKS_CLUSTER_NAME} --location ${LOCATION}
+
+echo deleting azure policy assignments
+for p in $(az policy assignment list --disable-scope-strict-match --query "[?resourceGroup=='${RGNAMECLUSTER}'].name" -o tsv); do az policy assignment delete --name ${p} --resource-group ${RGNAMECLUSTER}; done

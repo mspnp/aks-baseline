@@ -72,31 +72,13 @@ kubectl create namespace cluster-baseline-settings
 kubectl apply -f ../../cluster-manifests/cluster-baseline-settings/flux.yaml
 kubectl wait --namespace cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s
 
+ACR_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.containerRegistryName.value -o tsv)
+# Import ingress controller image hosted in public container registries
+az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME
+
 echo ""
 echo "# Creating AAD Groups and users for the created cluster"
 echo ""
-
-# We are going to use a the new tenant which manage the cluster identity
-az login --allow-no-subscriptions -t $TENANT_ID
-
-#Creating AAD groups which will be associated to k8s out of the box cluster roles
-k8sClusterAdminAadGroupName="k8s-cluster-admin-clusterrole-${AKS_CLUSTER_NAME}"
-k8sClusterAdminAadGroup=$(az ad group create --display-name ${k8sClusterAdminAadGroupName} --mail-nickname ${k8sClusterAdminAadGroupName} --query objectId -o tsv)
-k8sAdminAadGroupName="k8s-admin-clusterrole-${AKS_CLUSTER_NAME}"
-k8sAdminAadGroup=$(az ad group create --display-name ${k8sAdminAadGroupName} --mail-nickname ${k8sAdminAadGroupName} --query objectId -o tsv)
-k8sEditAadGroupName="k8s-edit-clusterrole-${AKS_CLUSTER_NAME}"
-k8sEditAadGroup=$(az ad group create --display-name ${k8sEditAadGroupName} --mail-nickname ${k8sEditAadGroupName} --query objectId -o tsv)
-k8sViewAadGroupName="k8s-view-clusterrole-${AKS_CLUSTER_NAME}"
-k8sViewAadGroup=$(az ad group create --display-name ${k8sViewAadGroupName} --mail-nickname ${k8sViewAadGroupName} --query objectId -o tsv)
-
-#EXAMPLE of an User in View Group
-AKS_ENDUSR_OBJECTID=$(az ad user create --display-name $AKS_ENDUSER_NAME --user-principal-name $AKS_ENDUSER_NAME --force-change-password-next-login --password $AKS_ENDUSER_PASSWORD --query objectId -o tsv)
-az ad group member add --group k8s-view-clusterrole --member-id $AKS_ENDUSR_OBJECTID
-
-# Deploy application
-
-az login
-az account set -s  $MAIN_SUBSCRIPTION
 
 # unset errexit as per https://github.com/mspnp/aks-secure-baseline/issues/69
 set +e
