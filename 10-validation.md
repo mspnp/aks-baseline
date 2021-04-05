@@ -31,7 +31,7 @@ This section will help you to validate the workload is exposed correctly and res
 
 Your workload is placed behind a Web Application Firewall (WAF), which has rules designed to stop intentionally malicious activity. You can test this by triggering one of the built-in rules with a request that looks malicious.
 
-   > :bulb: This reference implementation enables the built-in OWASP 3.0 ruleset, in **Prevention** mode.
+> :bulb: This reference implementation enables the built-in OWASP 3.0 ruleset, in **Prevention** mode.
 
 ### Steps
 
@@ -63,8 +63,8 @@ You can also execute [queries](https://docs.microsoft.com/azure/azure-monitor/lo
 
 Azure Monitor is configured to [scrape Prometheus metrics](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-prometheus-integration) in your cluster. This reference implementation is configured to collect Prometheus metrics from two namespaces, as configured in [`container-azm-ms-agentconfig.yaml`](./cluster-baseline-settings/container-azm-ms-agentconfig.yaml). There are two pods configured to emit Prometheus metrics:
 
-* [Treafik](./workload/traefik.yaml) (in the `a0008` namespace)
-* [Kured](./cluster-baseline-settings/kured-1.4.0-dockerhub.yaml) (in the `cluster-baseline-settings` namespace)
+- [Traefik](./workload/traefik.yaml) (in the `a0008` namespace)
+- [Kured](./cluster-baseline-settings/kured-1.4.0-dockerhub.yaml) (in the `cluster-baseline-settings` namespace)
 
 ### Steps
 
@@ -73,6 +73,7 @@ Azure Monitor is configured to [scrape Prometheus metrics](https://docs.microsof
 1. Click _Saved Searches_.
 
    :bulb: This reference implementation ships with some saved queries as an example of how you can write your own and manage them via ARM templates.
+
 1. Type _Prometheus_ in the filter.
 1. You are able to select and execute the saved query over the scraped metrics.
 
@@ -139,7 +140,7 @@ If you configured your third-party images to be pulled from your Azure Container
    | where OperationName == 'Pull'
    ```
 
-1. You should see logs for CSI, flux, kured, memcached, and traefik.  You'll see multiple for some as the image was pulled to multiple nodes to satisfy ReplicaSet/DaemonSet placement.
+1. You should see logs for CSI, flux, kured, memcached, and traefik. You'll see multiple for some as the image was pulled to multiple nodes to satisfy ReplicaSet/DaemonSet placement.
 
 ## Next step
 
