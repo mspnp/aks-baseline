@@ -74,7 +74,7 @@ kubectl wait --namespace cluster-baseline-settings --for=condition=ready pod --s
 
 ACR_NAME=$(az deployment group show -g $RGNAMECLUSTER -n cluster-0001 --query properties.outputs.containerRegistryName.value -o tsv)
 # Import ingress controller image hosted in public container registries
-az acr import --source docker.io/library/traefik:2.2.1 -n $ACR_NAME
+az acr import --source docker.io/library/traefik:v2.4.8 -n $ACR_NAME
 
 echo ""
 echo "# Creating AAD Groups and users for the created cluster"
