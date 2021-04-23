@@ -415,7 +415,7 @@
                     "name": "[concat(variables('hubFwName'), '/DefaultDnatRuleCollectionGroup')]",
                     "location": "[parameters('location')]",
                     "dependsOn": [
-                        "[variables('hubFwName')]"
+                        "[concat('Microsoft.Network/firewallPolicies/', variables('hubFwName'))]"
                     ],
                     "properties": {
                         "priority": 100,
@@ -428,7 +428,7 @@
                     "name": "[concat(variables('hubFwName'), '/DefaultApplicationRuleCollectionGroup')]",
                     "location":"[parameters('location')]",
                     "dependsOn": [
-                        "[variables('hubFwName')]",
+                        "[concat('Microsoft.Network/firewallPolicies/', variables('hubFwName'))]",
                         "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', variables('hubFwName'), 'DefaultDnatRuleCollectionGroup')]"
                     ],
                     "properties": {
@@ -716,7 +716,7 @@
                     "name": "[concat(variables('hubFwName'), '/DefaultNetworkRuleCollectionGroup')]",
                     "location": "[parameters('location')]",
                     "dependsOn": [
-                        "[variables('hubFwName')]",
+                        "[concat('Microsoft.Network/firewallPolicies/', variables('hubFwName'))]",
                         "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', variables('hubFwName'), 'DefaultApplicationRuleCollectionGroup')]"
                     ],
                     "properties": {
