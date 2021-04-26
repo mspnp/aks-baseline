@@ -70,6 +70,7 @@
             "[concat(variables('baseFwPipName'), '-02')]"
         ],
         "hubFwName": "[concat('fw-', parameters('location'))]",
+        "fwPoliciesBaseName": "[concat('fw-policies-base')]",
         "fwPoliciesName": "[concat('fw-policies-', parameters('location'))]",
         "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
         "bastionNetworkNsgName": "[concat('nsg-', parameters('location'), '-bastion')]",
@@ -367,9 +368,80 @@
         {
             "type": "Microsoft.Network/firewallPolicies",
             "apiVersion": "2020-11-01",
-            "name": "[variables('fwPoliciesName')]",
+            "name": "[variables('fwPoliciesBaseName')]",
             "location": "[parameters('location')]",
             "properties": {
+                "sku": {
+                    "tier": "Standard"
+                },
+                "threatIntelMode": "Deny",
+                "threatIntelWhitelist": {
+                    "ipAddresses": []
+                },
+                "dnsSettings": {
+                    "servers": [],
+                    "enableProxy": true
+                }
+            },
+            "resources": [
+                {
+                    "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
+                    "apiVersion": "2020-11-01",
+                    "name": "[concat(variables('fwPoliciesBaseName'), '/DefaultNetworkRuleCollectionGroup')]",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[variables('fwPoliciesBaseName')]"
+                    ],
+                    "properties": {
+                        "priority": 200,
+                        "ruleCollections": [
+                            {
+                                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                                "action": {
+                                    "type": "Allow"
+                                },
+                                "rules": [
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "DNS",
+                                        "ipProtocols": [
+                                            "UDP"
+                                        ],
+                                        "sourceAddresses": [
+                                            "*"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "destinationAddresses": [
+                                            "*"
+                                        ],
+                                        "destinationIpGroups": [],
+                                        "destinationFqdns": [],
+                                        "destinationPorts": [
+                                            "53"
+                                        ]
+                                    }
+                                ],
+                                "name": "org-wide-allowed",
+                                "priority": 100
+                            }
+                        ]
+                    }
+                }
+          ]
+        },
+        {
+            "type": "Microsoft.Network/firewallPolicies",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('fwPoliciesName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/firewallPolicies', variables('fwPoliciesBaseName'))]",
+                "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', variables('fwPoliciesBaseName'), 'DefaultNetworkRuleCollectionGroup')]"
+            ],
+            "properties": {
+                "basePolicy": {
+                    "id":  "[resourceId('Microsoft.Network/firewallPolicies', variables('fwPoliciesBaseName'))]"
+                },
                 "sku": {
                     "tier": "Standard"
                 },
@@ -421,37 +493,7 @@
                     ],
                     "properties": {
                         "priority": 200,
-                        "ruleCollections": [
-                            {
-                                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
-                                "action": {
-                                    "type": "Allow"
-                                },
-                                "rules": [
-                                    {
-                                        "ruleType": "NetworkRule",
-                                        "name": "DNS",
-                                        "ipProtocols": [
-                                            "UDP"
-                                        ],
-                                        "sourceAddresses": [
-                                            "*"
-                                        ],
-                                        "sourceIpGroups": [],
-                                        "destinationAddresses": [
-                                            "*"
-                                        ],
-                                        "destinationIpGroups": [],
-                                        "destinationFqdns": [],
-                                        "destinationPorts": [
-                                            "53"
-                                        ]
-                                    }
-                                ],
-                                "name": "org-wide-allowed",
-                                "priority": 100
-                            }
-                        ]
+                        "ruleCollections": []
                     }
                 }
           ]
