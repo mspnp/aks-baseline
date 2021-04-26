@@ -78,6 +78,8 @@
             "[concat(variables('baseFwPipName'), '-02')]"
         ],
         "hubFwName": "[concat('fw-', parameters('location'))]",
+        "fwPoliciesBaseName": "fw-policies-base",
+        "fwPoliciesName": "[concat('fw-policies-', parameters('location'))]",
         "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
         "bastionNetworkNsgName": "[concat('nsg-', parameters('location'), '-bastion')]",
         "hubLaName": "[concat('la-hub-', parameters('location'), '-', uniqueString(resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))))]"
@@ -388,8 +390,504 @@
             }
         },
         {
+            "type": "Microsoft.Network/firewallPolicies",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('fwPoliciesBaseName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "sku": {
+                    "tier": "Standard"
+                },
+                "threatIntelMode": "Deny",
+                "threatIntelWhitelist": {
+                    "ipAddresses": []
+                },
+                "dnsSettings": {
+                    "servers": [],
+                    "enableProxy": true
+                }
+            },
+            "resources": [
+                {
+                    "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
+                    "apiVersion": "2020-11-01",
+                    "name": "[concat(variables('fwPoliciesBaseName'), '/DefaultNetworkRuleCollectionGroup')]",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[variables('fwPoliciesBaseName')]"
+                    ],
+                    "properties": {
+                        "priority": 200,
+                        "ruleCollections": [
+                            {
+                                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                                "action": {
+                                    "type": "Allow"
+                                },
+                                "rules": [
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "DNS",
+                                        "ipProtocols": [
+                                            "UDP"
+                                        ],
+                                        "sourceAddresses": [
+                                            "*"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "destinationAddresses": [
+                                            "*"
+                                        ],
+                                        "destinationIpGroups": [],
+                                        "destinationFqdns": [],
+                                        "destinationPorts": [
+                                            "53"
+                                        ]
+                                    }
+                                ],
+                                "name": "org-wide-allowed",
+                                "priority": 100
+                            }
+                        ]
+                    }
+                }
+          ]
+        },
+        {
+            "type": "Microsoft.Network/firewallPolicies",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('fwPoliciesName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/firewallPolicies', variables('fwPoliciesBaseName'))]",
+                "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', variables('fwPoliciesBaseName'), 'DefaultNetworkRuleCollectionGroup')]"
+            ],
+            "properties": {
+                "basePolicy": {
+                    "id":  "[resourceId('Microsoft.Network/firewallPolicies', variables('fwPoliciesBaseName'))]"
+                },
+                "sku": {
+                    "tier": "Standard"
+                },
+                "threatIntelMode": "Deny",
+                "threatIntelWhitelist": {
+                    "ipAddresses": []
+                },
+                "dnsSettings": {
+                    "servers": [],
+                    "enableProxy": true
+                }
+            },
+            "resources": [
+                {
+                    "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
+                    "apiVersion": "2020-11-01",
+                    "name": "[concat(variables('fwPoliciesName'), '/DefaultDnatRuleCollectionGroup')]",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[variables('fwPoliciesName')]"
+                    ],
+                    "properties": {
+                        "priority": 100,
+                        "ruleCollections": []
+                    }
+                },
+                {
+                    "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
+                    "apiVersion": "2020-11-01",
+                    "name": "[concat(variables('fwPoliciesName'), '/DefaultApplicationRuleCollectionGroup')]",
+                    "location":"[parameters('location')]",
+                    "dependsOn": [
+                        "[ variables('fwPoliciesName')]",
+                        "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', variables('fwPoliciesName'), 'DefaultDnatRuleCollectionGroup')]",
+                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                    ],
+                    "properties": {
+                        "priority": 300,
+                        "ruleCollections": [
+                            {
+                                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                                "action": {
+                                    "type": "Allow"
+                                },
+                                "rules": [
+                                    {
+                                        "ruleType": "ApplicationRule",
+                                        "name": "nodes-to-api-server",
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "fqdnTags": [],
+                                        "webCategories": [],
+                                        "targetFqdns": [
+                                            "*.hcp.eastus2.azmk8s.io"
+                                        ],
+                                        "targetUrls": [],
+                                        "terminateTLS": false,
+                                        "sourceAddresses": [],
+                                        "destinationAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "ApplicationRule",
+                                        "name": "microsoft-container-registry",
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "fqdnTags": [],
+                                        "webCategories": [],
+                                        "targetFqdns": [
+                                            "mcr.microsoft.com",
+                                            "*.data.mcr.microsoft.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "terminateTLS": false,
+                                        "sourceAddresses": [],
+                                        "destinationAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "ApplicationRule",
+                                        "name": "management-plane",
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "fqdnTags": [
+                                            "AzureKubernetesService"
+                                        ],
+                                        "webCategories": [],
+                                        "targetFqdns": [],
+                                        "targetUrls": [],
+                                        "terminateTLS": false,
+                                        "sourceAddresses": [],
+                                        "destinationAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "ApplicationRule",
+                                        "name": "aad-auth",
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "fqdnTags": [],
+                                        "webCategories": [],
+                                        "targetFqdns": [
+                                            "login.microsoftonline.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "terminateTLS": false,
+                                        "sourceAddresses": [],
+                                        "destinationAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "ApplicationRule",
+                                        "name": "apt-get",
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "fqdnTags": [],
+                                        "webCategories": [],
+                                        "targetFqdns": [
+                                            "packages.microsoft.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "terminateTLS": false,
+                                        "sourceAddresses": [],
+                                        "destinationAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "ApplicationRule",
+                                        "name": "cluster-binaries",
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "fqdnTags": [],
+                                        "webCategories": [],
+                                        "targetFqdns": [
+                                            "acs-mirror.azureedge.net"
+                                        ],
+                                        "targetUrls": [],
+                                        "terminateTLS": false,
+                                        "sourceAddresses": [],
+                                        "destinationAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "ApplicationRule",
+                                        "name": "ubuntu-security-patches",
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Http",
+                                                "port": 80
+                                            }
+                                        ],
+                                        "fqdnTags": [],
+                                        "webCategories": [],
+                                        "targetFqdns": [
+                                            "security.ubuntu.com",
+                                            "azure.archive.ubuntu.com",
+                                            "changelogs.ubuntu.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "terminateTLS": false,
+                                        "sourceAddresses": [],
+                                        "destinationAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "ApplicationRule",
+                                        "name": "azure-monitor-addon",
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "fqdnTags": [],
+                                        "webCategories": [],
+                                        "targetFqdns": [
+                                            "*.ods.opinsights.azure.com",
+                                            "*.oms.opinsights.azure.com",
+                                            "eastus2.monitoring.azure.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "terminateTLS": false,
+                                        "sourceAddresses": [],
+                                        "destinationAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "ApplicationRule",
+                                        "name": "azure-policy-addon",
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "fqdnTags": [],
+                                        "webCategories": [],
+                                        "targetFqdns": [
+                                            "data.policy.core.windows.net",
+                                            "store.policy.core.windows.net"
+                                        ],
+                                        "targetUrls": [],
+                                        "terminateTLS": false,
+                                        "sourceAddresses": [],
+                                        "destinationAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ]
+                                    }
+                                ],
+                                "name": "AKS-Global-Requirements",
+                                "priority": 200
+                            },
+                            {
+                                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                                "action": {
+                                    "type": "Allow"
+                                },
+                                "rules": [
+                                    {
+                                        "ruleType": "ApplicationRule",
+                                        "name": "flux-to-github",
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "fqdnTags": [],
+                                        "webCategories": [],
+                                        "targetFqdns": [
+                                            "github.com",
+                                            "api.github.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "terminateTLS": false,
+                                        "sourceAddresses": [],
+                                        "destinationAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "ApplicationRule",
+                                        "name": "pull-flux-images",
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "fqdnTags": [],
+                                        "webCategories": [],
+                                        "targetFqdns": [
+                                            "*.docker.com",
+                                            "*.docker.io",
+                                            "docker.io",
+                                            "ghcr.io",
+                                            "github-production-container-registry.s3.amazonaws.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "terminateTLS": false,
+                                        "sourceAddresses": [],
+                                        "destinationAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ]
+                                    }
+                                ],
+                                "name": "Flux-Requirements",
+                                "priority": 300
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
+                    "apiVersion": "2020-11-01",
+                    "name": "[concat(variables('fwPoliciesName'), '/DefaultNetworkRuleCollectionGroup')]",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[variables('fwPoliciesName')]",
+                        "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', variables('fwPoliciesName'), 'DefaultApplicationRuleCollectionGroup')]", 
+                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                    ],
+                    "properties": {
+                        "priority": 200,
+                        "ruleCollections": [
+                            {
+                                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                                "action": {
+                                    "type": "Allow"
+                                },
+                                "rules": [
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "ntp",
+                                        "ipProtocols": [
+                                            "UDP"
+                                        ],
+                                        "sourceAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ],
+                                        "destinationAddresses": [
+                                            "*"
+                                        ],
+                                        "destinationIpGroups": [],
+                                        "destinationFqdns": [],
+                                        "destinationPorts": [
+                                            "123"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "tunnelfront-pod-tcp",
+                                        "ipProtocols": [
+                                            "TCP"
+                                        ],
+                                        "sourceAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ],
+                                        "destinationAddresses": [
+                                            "AzureCloud.eastus2"
+                                        ],
+                                        "destinationIpGroups": [],
+                                        "destinationFqdns": [],
+                                        "destinationPorts": [
+                                            "9000"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "tunnelfront-pod-udp",
+                                        "ipProtocols": [
+                                            "UDP"
+                                        ],
+                                        "sourceAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ],
+                                        "destinationAddresses": [
+                                            "AzureCloud.eastus2"
+                                        ],
+                                        "destinationIpGroups": [],
+                                        "destinationFqdns": [],
+                                        "destinationPorts": [
+                                            "1194"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "pod-to-api-server",
+                                        "ipProtocols": [
+                                            "TCP"
+                                        ],
+                                        "sourceAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ],
+                                        "destinationAddresses": [
+                                            "AzureCloud.eastus2"
+                                        ],
+                                        "destinationIpGroups": [],
+                                        "destinationFqdns": [],
+                                        "destinationPorts": [
+                                            "443"
+                                        ]
+                                    }
+                                ],
+                                "name": "AKS-Global-Requirements",
+                                "priority": 200
+                            }
+                        ]
+                    }
+                }
+          ]
+        },
+        {
             "type": "Microsoft.Network/azureFirewalls",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2020-11-01",
             "name": "[variables('hubFwName')]",
             "location": "[parameters('location')]",
             "comments": "This is the regional Azure Firewall that all regional spoke networks can egress through.",
@@ -401,12 +899,10 @@
             "dependsOn": [
                 "create-fw-pips",
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]",
-                "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                "[resourceId('Microsoft.Network/firewallPolicies', variables('fwPoliciesName'))]"
             ],
             "properties": {
-                "additionalProperties": {
-                    "Network.DNS.EnableProxy": "true"
-                },
+                "additionalProperties": {},
                 "sku": {
                     "name": "AZFW_VNet",
                     "tier": "Standard"
@@ -442,321 +938,11 @@
                     }
                 ],
                 "natRuleCollections": [],
-                "networkRuleCollections": [
-                    {
-                        "name": "org-wide-allowed",
-                        "properties": {
-                            "action": {
-                                "type": "Allow"
-                            },
-                            "priority": 100,
-                            "rules": [
-                                {
-                                    "name": "DNS",
-                                    "description": "Consider restricting this to only DNS servers you expect to be used by spokes of this hub.",
-                                    "sourceAddresses": [
-                                        "*"
-                                    ],
-                                    "protocols": [
-                                        "UDP"
-                                    ],
-                                    "destinationPorts": [
-                                        "53"
-                                    ],
-                                    "destinationAddresses": [
-                                        "*"
-                                    ]
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "name": "AKS-Global-Requirements",
-                        "properties": {
-                            "action": {
-                                "type": "Allow"
-                            },
-                            "priority": 200,
-                            "rules": [
-                                {
-                                    "name": "ntp",
-                                    "description": "Network Time Protocol (NTP) time synchronization for nodepool nodes. These use ubuntu's NTP pools.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        "UDP"
-                                    ],
-                                    "destinationPorts": [
-                                        "123"
-                                    ],
-                                    "destinationAddresses": [
-                                        "*"
-                                    ]
-                                },
-                                {
-                                    "name": "tunnelfront-pod-tcp",
-                                    "description": "Tunnelfront pod to communicate with the tunnel end on the API server. Technically only needed to our API servers instead of AzureCloud.EastUS2. Restrict this to your clusters' Cluster API Public IP; done this way for easy of demonstration. Not needed for private clusters.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        "TCP"
-                                    ],
-                                    "destinationPorts": [
-                                        "9000"
-                                    ],
-                                    "destinationAddresses": [
-                                        "[concat('AzureCloud.', parameters('location'))]"
-                                    ]
-                                },
-                                {
-                                    "name": "tunnelfront-pod-udp",
-                                    "description": "Tunnelfront pod to communicate with the tunnel end on the API server. Technically only needed to our API servers instead of AzureCloud.EastUS2. Restrict this to your clusters' Cluster API Public IP; done this way for easy of demonstration. Not needed for private clusters.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        "UDP"
-                                    ],
-                                    "destinationPorts": [
-                                        "1194"
-                                    ],
-                                    "destinationAddresses": [
-                                        "[concat('AzureCloud.', parameters('location'))]"
-                                    ]
-                                },
-                                {
-                                    "name": "pod-to-api-server",
-                                    "description": "Allows pods to communicate to the Cluster API server (e.g. Flux). Technically only needed to our API servers instead of AzureCloud.EastUS2. Restrict this to your clusters' Cluster API Public IP; done this way for ease of demonstration. Not needed for private clusters.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        "TCP"
-                                    ],
-                                    "destinationPorts": [
-                                        "443"
-                                    ],
-                                    "destinationAddresses": [
-                                        "[concat('AzureCloud.', parameters('location'))]"
-                                    ]
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "applicationRuleCollections": [
-                    {
-                        "name": "AKS-Global-Requirements",
-                        "properties": {
-                            "action": {
-                                "type": "Allow"
-                            },
-                            "priority": 200,
-                            "rules": [
-                                {
-                                    "name": "nodes-to-api-server",
-                                    "description": "This address is required for Node <-> API server communication.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        {
-                                            "protocolType": "Https",
-                                            "port": 443
-                                        }
-                                    ],
-                                    "targetFqdns": [
-                                        "[concat('*.hcp.', parameters('location'), '.azmk8s.io')]"
-                                    ]
-                                },
-                                {
-                                    "name": "microsoft-container-registry",
-                                    "description": "Required to access images in Microsoft Container Registry (MCR). This registry contains first-party images (E.g., coreDNS, etc.). These images are required for the correct creation and functioning of the cluster, including scale and upgrade operations.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        {
-                                            "protocolType": "Https",
-                                            "port": 443
-                                        }
-                                    ],
-                                    "targetFqdns": [
-                                        "mcr.microsoft.com",
-                                        "*.data.mcr.microsoft.com"
-                                    ]
-                                },
-                                {
-                                    "name": "management-plane",
-                                    "description": "This address is required for Kubernetes GET/PUT operations.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        {
-                                            "protocolType": "Https",
-                                            "port": 443
-                                        }
-                                    ],
-                                    "fqdnTags": [
-                                        "AzureKubernetesService"
-                                    ]
-                                },
-                                {
-                                    "name": "aad-auth",
-                                    "description": "This address is required for Azure Active Directory authentication.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        {
-                                            "protocolType": "Https",
-                                            "port": 443
-                                        }
-                                    ],
-                                    "targetFqdns": [
-                                        "login.microsoftonline.com"
-                                    ]
-                                },
-                                {
-                                    "name": "apt-get",
-                                    "description": "This address is the Microsoft packages repository used for cached apt-get operations. Example packages include Moby, PowerShell, and Azure CLI.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        {
-                                            "protocolType": "Https",
-                                            "port": 443
-                                        }
-                                    ],
-                                    "targetFqdns": [
-                                        "packages.microsoft.com"
-                                    ]
-                                },
-                                {
-                                    "name": "cluster-binaries",
-                                    "description": "This address is for the repository required to download and install required binaries like kubenet and Azure CNI.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        {
-                                            "protocolType": "Https",
-                                            "port": 443
-                                        }
-                                    ],
-                                    "targetFqdns": [
-                                        "acs-mirror.azureedge.net"
-                                    ]
-                                },
-                                {
-                                    "name": "ubuntu-security-patches",
-                                    "description": "This address lets the Linux cluster nodes download the required security patches and updates per https://docs.microsoft.com/azure/aks/limit-egress-traffic#optional-recommended-fqdn--application-rules-for-aks-clusters.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        {
-                                            "protocolType": "Http",
-                                            "port": 80
-                                        }
-                                    ],
-                                    "targetFqdns": [
-                                        "security.ubuntu.com",
-                                        "azure.archive.ubuntu.com",
-                                        "changelogs.ubuntu.com"
-                                    ]
-                                },
-                                {
-                                    "name": "azure-monitor-addon",
-                                    "description": "All required for Azure Monitor for containers per https://docs.microsoft.com/azure/aks/limit-egress-traffic#azure-monitor-for-containers - Optionally you can restrict the ods and oms wildcards to JUST your clusters' log analytics instances.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        {
-                                            "protocolType": "Https",
-                                            "port": 443
-                                        }
-                                    ],
-                                    "targetFqdns": [
-                                        "*.ods.opinsights.azure.com",
-                                        "*.oms.opinsights.azure.com",
-                                        "[concat(parameters('location'), '.monitoring.azure.com')]"
-                                    ]
-                                },
-                                {
-                                    "name": "azure-policy-addon",
-                                    "description": "All required for Azure Policy per https://docs.microsoft.com/azure/aks/limit-egress-traffic#azure-policy",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        {
-                                            "protocolType": "Https",
-                                            "port": 443
-                                        }
-                                    ],
-                                    "targetFqdns": [
-                                        "data.policy.core.windows.net",
-                                        "store.policy.core.windows.net"
-                                    ]
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "name": "Flux-Requirements",
-                        "properties": {
-                            "action": {
-                                "type": "Allow"
-                            },
-                            "priority": 300,
-                            "rules": [
-                                {
-                                    "name": "flux-to-github",
-                                    "description": "This address is required for Flux <-> Github repository with the desired cluster baseline configuration.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        {
-                                            "protocolType": "Https",
-                                            "port": 443
-                                        }
-                                    ],
-                                    "targetFqdns": [
-                                        "github.com",
-                                        "api.github.com"
-                                    ]
-                                },
-                                {
-                                    "name": "pull-flux-images",
-                                    "description": "Allows pulling images from public container registries. Not necessary when using your private ACR instance via Private Link for images you've push or imported. Included here only for those that did not fork the repo.",
-                                    "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                    ],
-                                    "protocols": [
-                                        {
-                                            "protocolType": "Https",
-                                            "port": 443
-                                        }
-                                    ],
-                                    "targetFqdns": [
-                                        "*.docker.com",
-                                        "*.docker.io",
-                                        "docker.io",
-                                        "ghcr.io",
-                                        "github-production-container-registry.s3.amazonaws.com"
-                                    ]
-                                }
-                            ]
-                        }
-                    }
-                ]
+                "networkRuleCollections": [],
+                "applicationRuleCollections": [],
+                "firewallPolicy": {
+                    "id": "[resourceId('Microsoft.Network/firewallPolicies', variables('fwPoliciesName'))]"
+                }
             },
             "resources": [
                 {
