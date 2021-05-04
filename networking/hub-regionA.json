@@ -899,7 +899,7 @@
             "dependsOn": [
                 "create-fw-pips",
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('hubVnetName'))]",
-                "[resourceId('Microsoft.Network/firewallPolicies', variables('fwPoliciesName'))]"
+                "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups', variables('fwPoliciesName'), 'DefaultNetworkRuleCollectionGroup')]"
             ],
             "properties": {
                 "additionalProperties": {},
