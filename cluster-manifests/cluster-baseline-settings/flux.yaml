@@ -105,9 +105,9 @@ spec:
           initialDelaySeconds: 5
           timeoutSeconds: 5
         args:
-        - --git-url=https://github.com/mspnp/aks-secure-baseline.git
+        - --git-url=https://github.com/retaildevcrews/gitops.git
         - --git-branch=main
-        - --git-path=cluster-manifests
+        - --git-path=cluster-manifests,deploy/pre-central ## UPDATE THIS TO POINT TO YOUR APP DIRECTORY IN THE GITOPS REPO
         # this configuration prevents flux from syncing changes from your cluster to the git repo. If two way sync is required, please take a look at  https://docs.fluxcd.io/en/1.19.0/tutorials/get-started/#giving-write-access
         - --git-readonly
         - --sync-state=secret
