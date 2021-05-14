@@ -70,7 +70,7 @@
             "[concat(variables('baseFwPipName'), '-02')]"
         ],
         "hubFwName": "[concat('fw-', parameters('location'))]",
-        "fwPoliciesBaseName": "fw-policies-base",
+        "fwPoliciesBaseName": "[concat('fw-policies-base-', parameters('location'))]", 
         "fwPoliciesName": "[concat('fw-policies-', parameters('location'))]",
         "hubVNetName": "[concat('vnet-', parameters('location'), '-hub')]",
         "bastionNetworkNsgName": "[concat('nsg-', parameters('location'), '-bastion')]",
