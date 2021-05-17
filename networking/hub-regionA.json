@@ -821,44 +821,6 @@
                                     },
                                     {
                                         "ruleType": "NetworkRule",
-                                        "name": "tunnelfront-pod-tcp",
-                                        "ipProtocols": [
-                                            "TCP"
-                                        ],
-                                        "sourceAddresses": [],
-                                        "sourceIpGroups": [
-                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                        ],
-                                        "destinationAddresses": [
-                                            "AzureCloud.eastus2"
-                                        ],
-                                        "destinationIpGroups": [],
-                                        "destinationFqdns": [],
-                                        "destinationPorts": [
-                                            "9000"
-                                        ]
-                                    },
-                                    {
-                                        "ruleType": "NetworkRule",
-                                        "name": "tunnelfront-pod-udp",
-                                        "ipProtocols": [
-                                            "UDP"
-                                        ],
-                                        "sourceAddresses": [],
-                                        "sourceIpGroups": [
-                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                        ],
-                                        "destinationAddresses": [
-                                            "AzureCloud.eastus2"
-                                        ],
-                                        "destinationIpGroups": [],
-                                        "destinationFqdns": [],
-                                        "destinationPorts": [
-                                            "1194"
-                                        ]
-                                    },
-                                    {
-                                        "ruleType": "NetworkRule",
                                         "name": "pod-to-api-server",
                                         "ipProtocols": [
                                             "TCP"
@@ -868,7 +830,7 @@
                                             "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                         ],
                                         "destinationAddresses": [
-                                            "AzureCloud.eastus2"
+                                            "[concat('AzureCloud.', parameters('location'))]"
                                         ],
                                         "destinationIpGroups": [],
                                         "destinationFqdns": [],

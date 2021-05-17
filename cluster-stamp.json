@@ -763,7 +763,8 @@
             "apiVersion": "2018-04-16",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]",
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
             ],
             "properties": {
                 "description": "Alert on pod Failed phase.",
@@ -835,24 +836,6 @@
             "plan": {
                 "name": "[variables('containerInsightsSolutionName')]",
                 "product": "OMSGallery/ContainerInsights",
-                "promotionCode": "",
-                "publisher": "Microsoft"
-            }
-        },
-        {
-            "type": "Microsoft.OperationsManagement/solutions",
-            "apiVersion": "2015-11-01-preview",
-            "name": "[concat('AzureAppGatewayAnalytics(', variables('logAnalyticsWorkspaceName'),')')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
-            ],
-            "properties": {
-                "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
-            },
-            "plan": {
-                "name": "[concat('AzureAppGatewayAnalytics(', variables('logAnalyticsWorkspaceName'),')')]",
-                "product": "OMSGallery/AzureAppGatewayAnalytics",
                 "promotionCode": "",
                 "publisher": "Microsoft"
             }
