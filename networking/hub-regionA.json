@@ -525,7 +525,7 @@
                                         "targetFqdns": [
                                             "*.ods.opinsights.azure.com",
                                             "*.oms.opinsights.azure.com",
-                                            "eastus2.monitoring.azure.com"
+                                            "[concat(parameters('location'), '.monitoring.azure.com')]"
                                         ],
                                         "targetUrls": [],
                                         "terminateTLS": false,
@@ -537,7 +537,30 @@
                                     },
                                     {
                                         "ruleType": "ApplicationRule",
-                                        "name": "Restrict-Using-AKS-tag",
+                                        "name": "azure-policy-addon",
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "fqdnTags": [],
+                                        "webCategories": [],
+                                        "targetFqdns": [
+                                            "data.policy.core.windows.net",
+                                            "store.policy.core.windows.net"
+                                        ],
+                                        "targetUrls": [],
+                                        "terminateTLS": false,
+                                        "sourceAddresses": [],
+                                        "destinationAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "ApplicationRule",
+                                        "name": "service-requirements",
                                         "protocols": [
                                             {
                                                 "protocolType": "Https",
