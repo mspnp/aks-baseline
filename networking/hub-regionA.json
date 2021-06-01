@@ -513,7 +513,31 @@
                                 "rules": [
                                     {
                                         "ruleType": "ApplicationRule",
-                                        "name": "management-plane",
+                                        "name": "azure-monitor-addon",
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "fqdnTags": [],
+                                        "webCategories": [],
+                                        "targetFqdns": [
+                                            "*.ods.opinsights.azure.com",
+                                            "*.oms.opinsights.azure.com",
+                                            "eastus2.monitoring.azure.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "terminateTLS": false,
+                                        "sourceAddresses": [],
+                                        "destinationAddresses": [],
+                                        "sourceIpGroups": [
+                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "ApplicationRule",
+                                        "name": "Restrict-Using-AKS-tag",
                                         "protocols": [
                                             {
                                                 "protocolType": "Https",
