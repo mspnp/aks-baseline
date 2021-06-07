@@ -40,7 +40,6 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 - [Flux GitOps Operator](https://fluxcd.io)
 - [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.4/routing/providers/kubernetes-ingress/)
 - [Azure AD Pod Identity](https://github.com/Azure/aad-pod-identity)
-- [Azure KeyVault Secret Store CSI Provider](https://github.com/Azure/secrets-store-csi-driver-provider-azure)
 - [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
 
 ![Network diagram depicting a hub-spoke network with two peered VNets, each with three subnets and main Azure resources.](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)

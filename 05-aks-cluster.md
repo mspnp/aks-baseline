@@ -23,6 +23,24 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
    RESOURCEID_VNET_CLUSTERSPOKE=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)
    ```
 
+1. Enable the Azure Key Vault Secrets Provider feature
+
+   > :book: The Secrets Store CSI Driver for Kubernetes allows for the integration of Azure Key Vault as a secrets store with a Kubernetes cluster via a CSI volume. Before creating a managed AKS cluster that can use the Secrets Store CSI Driver, you must enable the AKS-AzureKeyVaultSecretsProvider feature flag on your subscription.
+
+   ```bash
+   # Register the AKS-AzureKeyVaultSecretsProvider feature flag by using the az feature register command
+
+   az feature register --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider"
+
+   # It may take almost 30 minutes for the status to show Registered. Verify the registration status by using the az feature list command:
+
+   az feature list -o table --query "[?contains(name, 'Microsoft.ContainerService/AKS-AzureKeyVaultSecretsProvider')].{Name:name,State:properties.state}"
+
+   # When ready, refresh the registration of the Microsoft.ContainerService resource provider by using the az provider register command:
+
+   az provider register --namespace Microsoft.ContainerService
+   ```
+
 1. Deploy the cluster ARM template.  
   :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server.  You can limit access to the API Server to a set of well-known IP addresses (i.,e. a jump box subnet (connected to by Azure Bastion), build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options.  
 
