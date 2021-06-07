@@ -112,22 +112,27 @@ Consider trying out and providing feedback on the following:
 - [GitOps as an add-on](https://github.com/Azure/AKS/issues/1967)
 - [Azure AD Pod Identity as an add-on](https://docs.microsoft.com/azure/aks/use-azure-ad-pod-identity)
 
+## Related Reference Implementations
+
+The AKS Baseline was used as the foundation for the following additional reference implementations. These build on the learnins of the AKS Baseline and applies a specific lens to the cluster to align a specific topology, requirement, and/or workload type.
+
+- [AKS Baseline for Multi-Region Clusters](https://github.com/mspnp/aks-baseline-multi-region)
+- [AKS Baseline for Regulated Workloads](https://github.com/mspnp/aks-baseline-regulated)
+- [AKS Baseline for Microservices](https://github.com/mspnp/aks-fabrikam-dronedelivery)
+- [Azure Landing Zones, Enterprise-Scale Reference Implemenation using Terraform](https://github.com/Azure/caf-terraform-landingzones-starter/tree/starter/enterprise_scale/construction_sets/aks/online/aks_secure_baseline)
+
 ## Advanced topics
 
 This reference implementation intentionally does not cover more advanced scenarios. For example topics like the following are not addressed:
 
 - Cluster lifecycle management with regard to SDLC and GitOps
 - Workload SDLC integration (including concepts like [Bridge to Kubernetes](https://docs.microsoft.com/visualstudio/containers/bridge-to-kubernetes?view=vs-2019), advanced deployment techniques, etc)
-- Mapping decisions to [CIS benchmark controls](https://www.cisecurity.org/benchmark/kubernetes/)
 - Container security
-- Multi-region clusters
-- [Advanced regulatory compliance](https://github.com/Azure/sg-aks-workshop) (FinServ)
 - Multiple (related or unrelated) workloads owned by the same team
 - Multiple workloads owned by disparate teams (AKS as a shared platform in your organization)
 - Cluster-contained state (PVC, etc)
 - Windows node pools
 - Scale-to-zero node pools and event-based scaling (KEDA)
-- [Private Kubernetes API Server](https://docs.microsoft.com/azure/aks/private-clusters)
 - [Terraform](https://docs.microsoft.com/azure/developer/terraform/create-k8s-cluster-with-tf-and-aks)
 - [Bedrock](https://github.com/microsoft/bedrock)
 - [dapr](https://github.com/dapr/dapr)
