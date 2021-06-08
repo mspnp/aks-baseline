@@ -12,7 +12,6 @@ This is the root of the GitOps configuration directory. These Kubernetes object 
 * Ingress Network Policy
 * Flux (self-managing)
 * Azure Monitor Prometheus Scraping
-* Azure KeyVault Secret Store CSI Provider
 * Azure AD Pod Identity
 
 ### Kured

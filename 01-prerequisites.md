@@ -24,6 +24,9 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 
    [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
+1. While the following feature(s) are still in _preview_, please enable them in your subscription.
+   1. [Register the Azure Key Vault Secrets Provider for AKS preview feature - `AKS-AzureKeyVaultSecretsProvider`](https://docs.microsoft.com/azure/aks/csi-secrets-store-driver#register-the-aks-azurekeyvaultsecretsprovider-preview-feature).
+
 1. Clone/download this repo locally, or even better fork this repository.
 
    > :twisted_rightwards_arrows: If you have forked this reference implementation repo, you'll be able to customize some of the files and commands for a more personalized and production-like experience; ensure references to this git repository mentioned throughout the walkthrough are updated to use your own fork.
