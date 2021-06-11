@@ -59,11 +59,24 @@ Following the steps below you will result in an Azure AD configuration that will
 
    This object ID will be used later while creating the cluster. This way, once the cluster gets deployed the new group will get the proper Cluster Role bindings in Kubernetes.
 
+1. Set up RBAC roles association
+
+   > :book: In the prerequisistes step you opted to create a new tenant in case you are not part of the User Administrator group in the tenant associated to you Azure subscription, if that is the case, then ignore this step; however if you are using a single tenant (the one associated with your Azure subscription) and you have enough privileges to create the AKS admin Active Directory Security Group, we strongly suggest you to make the Azure AD group association to [Azure RBAC roles](https://docs.microsoft.com/azure/aks/manage-azure-rbac). let's configure this variable, this will be used in the cluster creation step:
+
+   ```bash
+   export USE_RBAC=false
+
+   TENANT1=$TENANTID_AZURERBAC
+   TENANT2=$TENANTID_K8SRBAC
+
+   if [ "$TENANT1" = "$TENANT2" ]; then
+      export USE_RBAC=true
+   fi
+   ```
+
 1. Set up groups to map into other Kubernetes Roles. _Optional, fork required._
 
    > :book: The team knows there will be more than just cluster admins that need group-managed access to the cluster. Out of the box, Kubernetes has other roles like _admin_, _edit_, and _view_ which can also be mapped to Azure AD Groups for use both at namespace and at the cluster level.
-
-   In the [`cluster-rbac.yaml` file](./cluster-manifests/cluster-rbac.yaml) and the various namespaced [`rbac.yaml files`](./cluster-manifests/cluster-baseline-settings/rbac.yaml), you can uncomment what you wish and replace the `<replace-with-an-aad-group-object-id...>` placeholders with corresponding new or existing AD groups that map to their purpose for this cluster or namespace. You do not need to perform this action for this walk through; they are only here for your reference.
 
    :bulb: Alternatively/Additionally, you can make some of these group associations to [Azure RBAC roles](https://docs.microsoft.com/azure/aks/manage-azure-rbac). At the time of this writing, this feature is still in _preview_. This reference implementation has not been validated with that feature.
 

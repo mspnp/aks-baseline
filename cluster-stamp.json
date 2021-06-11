@@ -15,6 +15,12 @@
                 "description": "Azure AD Group in the identified tenant that will be granted the highly privileged cluster-admin role."
             }
         },
+        "canAssignRBACroles": {
+            "type": "bool",
+            "metadata": {
+                "description": "Determines weather the deployment can asign RBAC roles to the cluster's managed identity or not"
+            }
+        },
         "k8sControlPlaneAuthorizationTenantId": {
             "type": "string",
             "metadata": {
@@ -106,7 +112,7 @@
         "managedIdentityOperatorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830')]",
         "virtualMachineContributorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
         "readerRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
-
+        "clusterAdminRoleId": "b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b",
         "subRgUniqueString": "[uniqueString('aks', subscription().subscriptionId, resourceGroup().id)]",
 
         "nodeResourceGroupName": "[concat('rg-', variables('clusterName'), '-nodepools')]",
@@ -1117,10 +1123,8 @@
                 },
                 "aadProfile": {
                     "managed": true,
-                    "enableAzureRBAC": false,
-                    "adminGroupObjectIDs": [
-                        "[parameters('clusterAdminAadGroupObjectId')]"
-                    ],
+                    "enableAzureRBAC": "[not(parameters('canAssignRBACroles'))]",
+                    "adminGroupObjectIDs": "[if(parameters('canAssignRBACroles'), array(parameters('clusterAdminAadGroupObjectId')), createArray())]",
                     "tenantID": "[parameters('k8sControlPlaneAuthorizationTenantId')]"
                 },
                 "autoScalerProfile": {
@@ -1811,6 +1815,21 @@
                 "severity": 3,
                 "targetResourceType": "Microsoft.ContainerService/managedClusters",
                 "windowSize": "PT1M"
+            }
+        },
+        {
+            "condition": "[parameters('canAssignRBACroles')]",
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
+            "name": "[guid(concat('aad-admin-group', resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+            ],
+            "scope": "[concat('Microsoft.ContainerService/managedClusters/', variables('clusterName'))]",
+            "properties": {
+                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('clusterAdminRoleId'))]",
+                "principalId": "[parameters('clusterAdminAadGroupObjectId')]",
+                "principalType": "Group"
             }
         },
         {
