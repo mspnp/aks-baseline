@@ -27,6 +27,10 @@ This section will help you to validate the workload is exposed correctly and res
 
    > :bulb: A TLS warning will be present due to using a self-signed certificate.
 
+## Validate reader access to namespace a0005
+
+In the [aad step](./03-aad.md) you created an Azure AD security group that maps to the 'Azure Kubernetes Service RBAC Reader' role in Kubernetes. You may have assigned this reader role either by using Kubernetes RBAC backed directly by Azure AD or by Azure RBAC mechanism. If you want to test this assignment it you may want to create and add a user to that role. And you may be able to connect to the cluster by using this user and will be restricted to a readonly view of the a0005 namespace.
+
 ## Validate Web Application Firewall functionality
 
 Your workload is placed behind a Web Application Firewall (WAF), which has rules designed to stop intentionally malicious activity. You can test this by triggering one of the built-in rules with a request that looks malicious.

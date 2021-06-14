@@ -39,6 +39,13 @@ Following the steps below you will result in an Azure AD configuration that will
    export AADOBJECTID_GROUP_CLUSTERADMIN=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN --description "Principals in this group are cluster admins in the bu0001a000800 cluster." --query objectId -o tsv)
    ```
 
+1. Create/identify the Azure AD security group that is going to map to the [Kubernetes Service RBAC Reader](https://docs.microsoft.com/azure/aks/manage-azure-rbac#create-role-assignments-for-users-to-access-cluster) role `Azure Kubernetes Service RBAC Reader`.
+
+   ```bash
+   export AADOBJECTNAME_GROUP_A0005_READER=cluster-reader-ns-a0005-bu0001a000800
+   export AADOBJECTID_GROUP_A0005_READER=$(az ad group create --display-name $AADOBJECTID_GROUP_A0005_READER --mail-nickname $AADOBJECTID_GROUP_A0005_READER --description "Principals in this group are readers of namespace a0005 in the bu0001a000800 cluster." --query objectId -o tsv)
+   ```
+
 1. Create a "break-glass" cluster administrator user for your AKS cluster.
 
    > :book: The organization knows the value of having a break-glass admin user for their critical infrastructure. The app team requests a cluster admin user and Azure AD Admin team proceeds with the creation of the user in Azure AD.
@@ -59,26 +66,27 @@ Following the steps below you will result in an Azure AD configuration that will
 
    This object ID will be used later while creating the cluster. This way, once the cluster gets deployed the new group will get the proper Cluster Role bindings in Kubernetes.
 
-1. Set up RBAC roles association
+1. Decide weather you are using Kubernetes RBAC backed directly by Azure AD or by Azure RBAC
 
-   > :book: In the prerequisistes step you opted to create a new tenant in case you are not part of the User Administrator group in the tenant associated to you Azure subscription, if that is the case, then ignore this step; however if you are using a single tenant (the one associated with your Azure subscription) and you have enough privileges to create the AKS admin Active Directory Security Group, we strongly suggest you to make the Azure AD group association to [Azure RBAC roles](https://docs.microsoft.com/azure/aks/manage-azure-rbac). let's configure this variable, this will be used in the cluster creation step:
+   > :book: In the prerequisites step you opted to create a new tenant if you were not part of the User Administrator group in the tenant associated to your Azure subscription, if that is the case, then ignore this step. You will still leverage integrated authentication between Azure Active Directory (Azure AD) and AKS. When enabled, this integration allows customers to use Azure AD users, groups, or service principals as subjects in Kubernetes RBAC. This feature frees you from having to separately manage user identities and credentials for Kubernetes. However, you still have to set up and manage Azure.
+   
+   If you are using a single tenant (the one associated with your Azure subscription) and you have enough privileges to create the AKS admin Active Directory Security Group, we strongly suggest you to make the Azure AD group association to [Azure RBAC roles](https://docs.microsoft.com/azure/aks/manage-azure-rbac), this new approach allows for the unified management and access control across Azure Resources, AKS, and Kubernetes resources. Let's configure this variable, this will be used in the cluster creation step:
 
    ```bash
-   export USE_RBAC=false
-
-   TENANT1=$TENANTID_AZURERBAC
-   TENANT2=$TENANTID_K8SRBAC
-
-   if [ "$TENANT1" = "$TENANT2" ]; then
-      export USE_RBAC=true
-   fi
+    # Run this step only if you are using a single tenant and you decide to use Azure DBAC instead # of integrated authentication between Azure AD and AKS. 
+    if [ $TENANTID_AZURERBAC = $TENANTID_K8SRBAC ]; then KUBERNETES_RBAC_SOURCE="Azure RBAC"; else KUBERNETES_RBAC_SOURCE="Azure AD"; fi
    ```
 
-1. Set up groups to map into other Kubernetes Roles. _Optional, fork required._
+1. Set up additional Kubernetes RBAC assignments
 
-   > :book: The team knows there will be more than just cluster admins that need group-managed access to the cluster. Out of the box, Kubernetes has other roles like _admin_, _edit_, and _view_ which can also be mapped to Azure AD Groups for use both at namespace and at the cluster level.
+   > :book: In a previous step you created the Azure AD security group that is going to map to the 
+   "Kubernetes Service RBAC Reader" role that comes out of the box in Kubernetes. Follow this step if you decided to use integrated authentication between Azure Active Directory (Azure AD) and AKS, you will map this Azure AD Group to the built RBAC reader role in AKS, for use both at namespace and at the cluster level.
 
-   :bulb: Alternatively/Additionally, you can make some of these group associations to [Azure RBAC roles](https://docs.microsoft.com/azure/aks/manage-azure-rbac). At the time of this writing, this feature is still in _preview_. This reference implementation has not been validated with that feature.
+   In the [`cluster-rbac.yaml` file](./cluster-manifests/cluster-rbac.yaml) and the various namespaced [`rbac.yaml files`](./cluster-manifests/cluster-baseline-settings/rbac.yaml), you can uncomment the role bindings named 'cluster-viewers' and 'namespace-viewer' and replace the `<replace-with-an-aad-group-object-id...>` placeholder with the AD group Object ID created in previous step, that maps to Kubernetes namespace reader role.
+   
+   Role assignments scoped to the cluster
+
+   If your tenants are the same, allowing Azure RBAC to be the backing store for your Kubernetes RBAC is the recommended solution to manage Kubernetes RBAC, do not mix the direct assignment mode illustrated in the prior paragraph with the Azure role assignment method available with Azure RBAC.
 
 ### Next step
 

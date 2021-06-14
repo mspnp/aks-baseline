@@ -15,10 +15,16 @@
                 "description": "Azure AD Group in the identified tenant that will be granted the highly privileged cluster-admin role."
             }
         },
-        "canAssignRBACroles": {
-            "type": "bool",
+        "a0005NamespaceReaderAadGroupObjectId": {
+            "type": "string",
             "metadata": {
-                "description": "Determines weather the deployment can asign RBAC roles to the cluster's managed identity or not"
+                "description": "Azure AD Group in the identified tenant that will be granted the read only privileges in the a0005 namespace that exists in the cluster"
+            }
+        },
+        "kubernetesRBACsource": {
+            "type": "string",
+            "metadata": {
+                "description": "Determines weather the user opted to use Azure RBAC role association or Direct RBAC role association"
             }
         },
         "k8sControlPlaneAuthorizationTenantId": {
@@ -113,6 +119,7 @@
         "virtualMachineContributorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
         "readerRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
         "clusterAdminRoleId": "b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b",
+        "clusterReaderRoleId": "7f6c6a51-bcf8-42ba-9220-52d62157d7db",
         "subRgUniqueString": "[uniqueString('aks', subscription().subscriptionId, resourceGroup().id)]",
 
         "nodeResourceGroupName": "[concat('rg-', variables('clusterName'), '-nodepools')]",
@@ -147,7 +154,9 @@
         "policyAssignmentNameEnforceInternalLoadBalancers": "[guid(variables('policyResourceIdEnforceInternalLoadBalancers'), resourceGroup().name, variables('clusterName'))]",
         "policyAssignmentNameRoRootFilesystem": "[guid(variables('policyResourceIdRoRootFilesystem'), resourceGroup().name, variables('clusterName'))]",
         "policyAssignmentNameEnforceResourceLimits": "[guid(variables('policyResourceIdEnforceResourceLimits'), resourceGroup().name, variables('clusterName'))]",
-        "policyAssignmentNameEnforceImageSource": "[guid(variables('policyResourceIdEnforceImageSource'), resourceGroup().name, variables('clusterName'))]"
+        "policyAssignmentNameEnforceImageSource": "[guid(variables('policyResourceIdEnforceImageSource'), resourceGroup().name, variables('clusterName'))]",
+
+        "isUsingAzureRBACasKubernetesRBAC": "[if(equals(kubernetesRBACsource, 'Azure RBAC'), true, false)]"
     },
     "resources": [
         {
@@ -1123,8 +1132,8 @@
                 },
                 "aadProfile": {
                     "managed": true,
-                    "enableAzureRBAC": "[not(parameters('canAssignRBACroles'))]",
-                    "adminGroupObjectIDs": "[if(parameters('canAssignRBACroles'), array(parameters('clusterAdminAadGroupObjectId')), createArray())]",
+                    "enableAzureRBAC": "[variable('isUsingAzureRBACasKubernetesRBAC')]",
+                    "adminGroupObjectIDs": "[if(not(variable('isUsingAzureRBACasKubernetesRBAC')), array(parameters('clusterAdminAadGroupObjectId')), createArray())]",
                     "tenantID": "[parameters('k8sControlPlaneAuthorizationTenantId')]"
                 },
                 "autoScalerProfile": {
@@ -1818,7 +1827,7 @@
             }
         },
         {
-            "condition": "[parameters('canAssignRBACroles')]",
+            "condition": "[variables('isUsingAzureRBACasKubernetesRBAC')]",
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2018-09-01-preview",
             "name": "[guid(concat('aad-admin-group', resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))))]",
@@ -1829,6 +1838,21 @@
             "properties": {
                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('clusterAdminRoleId'))]",
                 "principalId": "[parameters('clusterAdminAadGroupObjectId')]",
+                "principalType": "Group"
+            }
+        },
+        {
+            "condition": "[variables('isUsingAzureRBACasKubernetesRBAC')]",
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
+            "name": "[guid(concat('aad-admin-group', resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+            ],
+            "scope": "[concat('Microsoft.ContainerService/managedClusters/', variables('clusterName'))]",
+            "properties": {
+                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('clusterReaderRoleId'))]",
+                "principalId": "[parameters('a0005NamespaceReaderAadGroupObjectId')]",
                 "principalType": "Group"
             }
         },
