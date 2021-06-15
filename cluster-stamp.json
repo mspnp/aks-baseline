@@ -156,7 +156,7 @@
         "policyAssignmentNameEnforceResourceLimits": "[guid(variables('policyResourceIdEnforceResourceLimits'), resourceGroup().name, variables('clusterName'))]",
         "policyAssignmentNameEnforceImageSource": "[guid(variables('policyResourceIdEnforceImageSource'), resourceGroup().name, variables('clusterName'))]",
 
-        "isUsingAzureRBACasKubernetesRBAC": "[if(equals(kubernetesRBACsource, 'Azure RBAC'), true, false)]"
+        "isUsingAzureRBACasKubernetesRBAC": "[equals(parameters('kubernetesRBACsource'), 'Azure_RBAC')]"
     },
     "resources": [
         {
@@ -1132,8 +1132,8 @@
                 },
                 "aadProfile": {
                     "managed": true,
-                    "enableAzureRBAC": "[variable('isUsingAzureRBACasKubernetesRBAC')]",
-                    "adminGroupObjectIDs": "[if(not(variable('isUsingAzureRBACasKubernetesRBAC')), array(parameters('clusterAdminAadGroupObjectId')), createArray())]",
+                    "enableAzureRBAC": "[variables('isUsingAzureRBACasKubernetesRBAC')]",
+                    "adminGroupObjectIDs": "[if(not(variables('isUsingAzureRBACasKubernetesRBAC')), array(parameters('clusterAdminAadGroupObjectId')), createArray())]",
                     "tenantID": "[parameters('k8sControlPlaneAuthorizationTenantId')]"
                 },
                 "autoScalerProfile": {
@@ -1845,11 +1845,11 @@
             "condition": "[variables('isUsingAzureRBACasKubernetesRBAC')]",
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2018-09-01-preview",
-            "name": "[guid(concat('aad-admin-group', resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))))]",
+            "name": "[guid(concat('aad-a0005-reader-group', resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))))]",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
-            "scope": "[concat('Microsoft.ContainerService/managedClusters/', variables('clusterName'))]",
+            "scope": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', resourceGroup().name, '/providers/Microsoft.ContainerService/managedClusters/', variables('clusterName'), '/namespaces/a0005')]",
             "properties": {
                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('clusterReaderRoleId'))]",
                 "principalId": "[parameters('a0005NamespaceReaderAadGroupObjectId')]",

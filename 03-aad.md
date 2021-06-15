@@ -43,7 +43,7 @@ Following the steps below you will result in an Azure AD configuration that will
 
    ```bash
    export AADOBJECTNAME_GROUP_A0005_READER=cluster-reader-ns-a0005-bu0001a000800
-   export AADOBJECTID_GROUP_A0005_READER=$(az ad group create --display-name $AADOBJECTID_GROUP_A0005_READER --mail-nickname $AADOBJECTID_GROUP_A0005_READER --description "Principals in this group are readers of namespace a0005 in the bu0001a000800 cluster." --query objectId -o tsv)
+   export AADOBJECTID_GROUP_A0005_READER=$(az ad group create --display-name $AADOBJECTNAME_GROUP_A0005_READER --mail-nickname $AADOBJECTNAME_GROUP_A0005_READER --description "Principals in this group are readers of namespace a0005 in the bu0001a000800 cluster." --query objectId -o tsv)
    ```
 
 1. Create a "break-glass" cluster administrator user for your AKS cluster.
@@ -74,7 +74,7 @@ Following the steps below you will result in an Azure AD configuration that will
 
    ```bash
     # Run this step only if you are using a single tenant and you decide to use Azure DBAC instead # of integrated authentication between Azure AD and AKS. 
-    if [ $TENANTID_AZURERBAC = $TENANTID_K8SRBAC ]; then KUBERNETES_RBAC_SOURCE="Azure RBAC"; else KUBERNETES_RBAC_SOURCE="Azure AD"; fi
+    if [ $TENANTID_AZURERBAC = $TENANTID_K8SRBAC ]; then KUBERNETES_RBAC_SOURCE="Azure_RBAC"; else KUBERNETES_RBAC_SOURCE="Azure_AD"; fi
    ```
 
 1. Set up additional Kubernetes RBAC assignments
