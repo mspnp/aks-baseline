@@ -6,11 +6,12 @@ In the prior step, you [generated the user-facing TLS certificate](./02-ca-certi
 
 Following the steps below you will result in an Azure AD configuration that will be used for Kubernetes control plane (Cluster API) authorization.
 
-| Object                         | Purpose                                                 |
-|--------------------------------|---------------------------------------------------------|
-| A Cluster Admin Security Group | Will be mapped to `cluster-admin` Kubernetes role.      |
-| A Cluster Admin User           | Represents at least one break-glass cluster admin user. |
-| Cluster Admin Group Membership | Association between the Cluster Admin User(s) and the Cluster Admin Security Group. |
+| Object                             | Purpose                                                 |
+|------------------------------------|---------------------------------------------------------|
+| A Cluster Admin Security Group     | Will be mapped to `cluster-admin` Kubernetes role.      |
+| A Cluster Admin User               | Represents at least one break-glass cluster admin user. |
+| Cluster Admin Group Membership     | Association between the Cluster Admin User(s) and the Cluster Admin Security Group. |
+| A Namespace Reader Security Group   | Depending on certain conditions this security group will by associated to the 'Azure Kubernetes Service RBAC Reader' Azure RBAC built in role. |
 | _Additional Security Groups_   | _Optional._ A security group (and its memberships) for the other built-in and custom Kubernetes roles you plan on using. |
 
 ## Steps
@@ -77,7 +78,7 @@ On the other hand, if you are using a single tenant (the one associated with you
 
    In the [`cluster-rbac.yaml` file](./cluster-manifests/cluster-rbac.yaml) and the various namespaced [`rbac.yaml files`](./cluster-manifests/cluster-baseline-settings/rbac.yaml), you can uncomment what you wish and replace the `<replace-with-an-aad-group-object-id...>` placeholders with corresponding new or existing AD groups that map to their purpose for this cluster or namespace. You do not need to perform this action for this walk through; they are only here for your reference.
 
-   :bulb: If your tenants are the same, you will allow Azure RBAC to be the backing store for your Kubernetes RBAC, so you will transparently make these group associations to [Azure RBAC roles](https://docs.microsoft.com/azure/aks/manage-azure-rbac) in the cluster deployment step. Above in the steps you created the Azure AD security group that is going to be a namespace reader, that Group ID will be associated with the 'Azure Kubernetes Service RBAC Reader' Azure RBAC built in role.
+   :bulb: If your tenants are the same, you will allow Azure RBAC to be the backing store for your Kubernetes RBAC, so you will transparently make these group associations to [Azure RBAC roles](https://docs.microsoft.com/azure/aks/manage-azure-rbac) in the cluster deployment step. Above in the steps you created the Azure AD security group that is going to be a namespace reader, that Group ID will be associated to the 'Azure Kubernetes Service RBAC Reader' Azure RBAC built in role.
 
 ### Next step
 
