@@ -21,12 +21,6 @@
                 "description": "Azure AD Group in the identified tenant that will be granted the read only privileges in the a0005 namespace that exists in the cluster"
             }
         },
-        "kubernetesRBACsource": {
-            "type": "string",
-            "metadata": {
-                "description": "Determines weather the user opted to use Azure RBAC role association or Direct RBAC role association"
-            }
-        },
         "k8sControlPlaneAuthorizationTenantId": {
             "type": "string",
             "metadata": {
@@ -156,7 +150,7 @@
         "policyAssignmentNameEnforceResourceLimits": "[guid(variables('policyResourceIdEnforceResourceLimits'), resourceGroup().name, variables('clusterName'))]",
         "policyAssignmentNameEnforceImageSource": "[guid(variables('policyResourceIdEnforceImageSource'), resourceGroup().name, variables('clusterName'))]",
 
-        "isUsingAzureRBACasKubernetesRBAC": "[equals(parameters('kubernetesRBACsource'), 'Azure_RBAC')]"
+        "isUsingAzureRBACasKubernetesRBAC": "[equals(subscription().tenantId, parameters('k8sControlPlaneAuthorizationTenantId'))]"
     },
     "resources": [
         {
