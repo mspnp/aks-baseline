@@ -14,6 +14,9 @@
     "clusterAdminAadGroupObjectId": {
       "value": "[guid--security-group-objectid-that-will-become-cluster-admin]"
     },
+    "a0008NamespaceReaderAadGroupObjectId": {
+      "value": "[guid--security-group-objectid-that-will-become-namespace-a0008-reader]"
+    },
     "k8sControlPlaneAuthorizationTenantId": {
       "value": "[guid--your-cluster-APIs-authorization-tenant-ID]"
     },

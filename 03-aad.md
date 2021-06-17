@@ -62,7 +62,7 @@ Following the steps below you will result in an Azure AD configuration that will
 1. Create/identify the Azure AD security group that is going to be a namespace reader.
 
    ```bash
-   export AADOBJECTID_GROUP_A0005_READER=$(az ad group create --display-name 'cluster-ns-a0005-readers-bu0001a000800' --mail-nickname 'cluster-ns-a0005-readers-bu0001a000800' --description "Principals in this group are readers of namespace a0005 in the bu0001a000800 cluster." --query objectId -o tsv)
+   export AADOBJECTID_GROUP_A0008_READER=$(az ad group create --display-name 'cluster-ns-a0008-readers-bu0001a000800' --mail-nickname 'cluster-ns-a0008-readers-bu0001a000800' --description "Principals in this group are readers of namespace a0008 in the bu0001a000800 cluster." --query objectId -o tsv)
    ```
 
 ## Kubernetes RBAC backing store

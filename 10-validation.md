@@ -27,9 +27,12 @@ This section will help you to validate the workload is exposed correctly and res
 
    > :bulb: A TLS warning will be present due to using a self-signed certificate.
 
-## Validate reader access to namespace a0005
+## Validate reader access to the a0008 namespace. _Optional._
 
-In the [aad step](./03-aad.md) you created an Azure AD security group that maps to the 'Azure Kubernetes Service RBAC Reader' role in Kubernetes. You may have assigned this reader role either by using Kubernetes RBAC backed directly by Azure AD or by Azure RBAC mechanism. If you want to test this assignment it you may want to create and add a user to that role. And you may be able to connect to the cluster by using this user and will be restricted to a readonly view of the a0005 namespace.
+When setting up [Azure AD security groups](./03-aad.md) you created a group to be used as a "reader" for the namespace a0008. If you want to experience this RBAC example, you'll want to add a user to that group.
+If Azure RBAC is your cluster's Kubernetes RBAC backing store, then that is all that is needed.
+If instead Kubernetes RBAC is backed directly by Azure AD, then you'll need to ensure that you've updated and applied the [`rbac.yaml`](./cluster-manifests/a0008/rbac.yaml) according to the instructions found at the end of the [Azure AD configuration page](./03-aad.md).
+No matter which backing store you use, the user assigned to the group will then be able to `az aks get-credentials` to the cluster and you can validate that user is limited to a _read only_ view of the a0008 namespace.
 
 ## Validate Web Application Firewall functionality
 
