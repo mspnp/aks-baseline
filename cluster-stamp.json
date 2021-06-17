@@ -1839,6 +1839,21 @@
             "condition": "[variables('isUsingAzureRBACasKubernetesRBAC')]",
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2018-09-01-preview",
+            "name": "[guid(concat('aad-admin-group-sc', resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+            ],
+            "scope": "[concat('Microsoft.ContainerService/managedClusters/', variables('clusterName'))]",
+            "properties": {
+                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('serviceClusterUserRoleId'))]",
+                "principalId": "[parameters('clusterAdminAadGroupObjectId')]",
+                "principalType": "Group"
+            }
+        },
+        {
+            "condition": "[variables('isUsingAzureRBACasKubernetesRBAC')]",
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
             "name": "[guid(concat('aad-a0008-reader-group', resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))))]",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
