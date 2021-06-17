@@ -12,7 +12,8 @@ Following the steps below you will result in an Azure AD configuration that will
 | A Cluster Admin User               | Represents at least one break-glass cluster admin user. |
 | Cluster Admin Group Membership     | Association between the Cluster Admin User(s) and the Cluster Admin Security Group. |
 | A Namespace Reader Security Group   | Depending on certain conditions this security group will by associated to the 'Azure Kubernetes Service RBAC Reader' Azure RBAC built in role. |
-| _Additional Security Groups_   | _Optional._ A security group (and its memberships) for the other built-in and custom Kubernetes roles you plan on using. |
+| _Additional Security Groups_       | _Optional._ A security group (and its memberships) for the other built-in and custom Kubernetes roles you plan on using. |
+
 
 ## Steps
 
