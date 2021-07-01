@@ -27,7 +27,7 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 1. While the following feature(s) are still in _preview_, please enable them in your subscription.
    1. [Register the Azure Key Vault Secrets Provider for AKS preview feature - `AKS-AzureKeyVaultSecretsProvider`](https://docs.microsoft.com/azure/aks/csi-secrets-store-driver#register-the-aks-azurekeyvaultsecretsprovider-preview-feature).
 
-   1. [Register the 'DisableLocalAccountsPreview' preview feature](https://docs.microsoft.com/azure/aks/managed-aad#register-the-disablelocalaccountspreview-preview-feature)
+   1. [Register the Disable Local Accounts preview feature - 'DisableLocalAccountsPreview'](https://docs.microsoft.com/azure/aks/managed-aad#register-the-disablelocalaccountspreview-preview-feature)
 
 1. Clone/download this repo locally, or even better fork this repository.
 
