@@ -1157,7 +1157,8 @@
                     "enabled": false, /* This feature is currently in preview and will eventually replace the aad-pod-identity configuration set up by hand in this reference implementation */
                     "userAssignedIdentities": [],
                     "userAssignedIdentityExceptions": []
-                }
+                },
+                "disableLocalAccounts": true
             },
             "identity": {
                 "type": "UserAssigned",
