@@ -40,11 +40,12 @@ on:
 env:
   RESOURCE_GROUP_LOCATION: '<resource-group-location>'                              # The location where the resource group is going to be created
   RESOURCE_GROUP: '<resource-group-name>'                                           # The name for the AKS cluster resource group
-  AKS_LOCATION: '<resource-group-location>'                                        # The location where the AKS cluster is going to be deployed
+  AKS_LOCATION: '<resource-group-location>'                                         # The location where the AKS cluster is going to be deployed
   GEO_REDUNDANCY_LOCATION: '<geo-redundancy-location>'                              # The location for Azure resources that support native geo-redunancy. Should be different than the location parameter and ideally should be a paired region - https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions. This region does not need to support availability zones.
   TARGET_VNET_RESOURCE_ID: '<cluster-spoke-vnet-resource-id>'                       # The regional network spoke VNet Resource ID that the cluster will be joined to
   K8S_RBAC_AAD_PROFILE_TENANTID: '<tenant-id-with-user-admin-permissions>'          # The tenant to integrate AKS-managed Azure AD
   K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID: '<azure-ad-aks-admin-group-object-id>' # The Azure AD group object ID that has admin access to the AKS cluster
+  K8S_RBAC_AAD_A0008_READER_GROUP_OBJECTID: '<azure-ad-aks-a0008-group-object-id>'  # The Azure AD group object ID that has readonly access to the a0008 namespace in the AKS cluster
   CLUSTER_AUTHORIZED_IP_RANGES: '[]'                                                # By default, this deployment will allow unrestricted access to your cluster's API Server. You should limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, bastion subnet, build agents, or any other networks you'll administer the cluster from), and can do so by adding a CLUSTER_AUTHORIZED_IP_RANGES="['managementRange1', 'managementRange2', 'AzureFirewallIP/32']"" parameter.
 jobs:
   deploy:
@@ -77,6 +78,7 @@ jobs:
               targetVnetResourceId=${{ env.TARGET_VNET_RESOURCE_ID }} \
               k8sControlPlaneAuthorizationTenantId=${{ env.K8S_RBAC_AAD_PROFILE_TENANTID }} \
               clusterAdminAadGroupObjectId=${{ env.K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID }} \
+              a0008NamespaceReaderAadGroupObjectId=${{ env.K8S_RBAC_AAD_A0008_READER_GROUP_OBJECTID }} \
               clusterAuthorizedIPRanges=${{ env.CLUSTER_AUTHORIZED_IP_RANGES}} \
               appGatewayListenerCertificate=${{ secrets.APP_GATEWAY_LISTENER_CERTIFICATE_BASE64 }} \
               aksIngressControllerCertificate=${{ secrets.AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 }}
