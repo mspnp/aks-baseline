@@ -105,7 +105,7 @@ While this reference implementation tends to avoid _preview_ features of AKS to 
 
 Consider trying out and providing feedback on the following:
 
-- [Azure RBAC for Kubernetes Authentication](https://docs.microsoft.com/azure/aks/manage-azure-rbac) - An extension of the Azure AD integration already in this reference implementation. Allowing you to bind Kubernetes authentication to Azure RBAC role assignments.
+- [Automatic Node Upgrade](https://github.com/Azure/AKS/issues/1486)
 - [Host-based encryption](https://docs.microsoft.com/azure/aks/enable-host-encryption) - Leverages added data encryption on your VMs' temp and OS disks.
 - [Generation 2 VM support](https://docs.microsoft.com/azure/aks/cluster-configuration#generation-2-virtual-machines-preview) - Increased memory options, Intel SGX support, and UEFI-based boot architectures.
 - [Auto Upgrade Profile support](https://github.com/Azure/AKS/issues/1303)
