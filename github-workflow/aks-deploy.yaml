@@ -21,7 +21,7 @@
 # 3. Create the following secrets in your GitHub repository:
 #    - AZURE_CREDENTIALS                         The Azure Service Principal that will deploy the AKS cluster in your Azure subscription. For more information please take a look at https://github.com/Azure/login#configure-deployment-credentials
 #    - APP_GATEWAY_LISTENER_CERTIFICATE_BASE64   The certificate data for app gateway TLS termination. It is base64. Ideally fetch this secret from a platform-managed secret store such as Azure KeyVault: https://github.com/marketplace/actions/azure-key-vault-get-secrets
-#    - AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 The base 64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate.
+#    - AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 The Base64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate.
 
 name: Deploy AKS Secure Baseline cluster stamp and Flux
 
