@@ -501,7 +501,7 @@
                     }
                 ],
                 "autoscaleConfiguration": {
-                    "minCapacity": 2,
+                    "minCapacity": 0,
                     "maxCapacity": 10
                 },
                 "webApplicationFirewallConfiguration": {
