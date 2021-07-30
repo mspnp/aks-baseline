@@ -513,7 +513,7 @@
                     "fileUploadLimitInMb": 10,
                     "disabledRuleGroups": []
                 },
-                "enableHttp2": true,
+                "enableHttp2": false,
                 "sslCertificates": [
                     {
                         "name": "[concat(variables('agwName'), '-ssl-certificate')]",
