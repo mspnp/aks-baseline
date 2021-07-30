@@ -36,7 +36,7 @@
         "aksIngressControllerCertificate": {
             "type": "string",
             "metadata": {
-                "description": "The base 64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate."
+                "description": "The Base64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate."
             }
         },
         "clusterAuthorizedIPRanges": {
@@ -129,7 +129,6 @@
         "vnetIngressServicesSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-cluster-ingressservices')]",
 
         "agwName": "[concat('apw-', variables('clusterName'))]",
-        "apwResourceId": "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]",
 
         "acrPrivateDnsZonesName": "privatelink.azurecr.io",
         "akvPrivateDnsZonesName": "privatelink.vaultcore.azure.net",
@@ -495,23 +494,26 @@
                 ],
                 "frontendPorts": [
                     {
-                        "name": "apw-frontend-ports",
+                        "name": "port-443",
                         "properties": {
                             "port": 443
                         }
                     }
                 ],
                 "autoscaleConfiguration": {
-                    "minCapacity": 0,
+                    "minCapacity": 2,
                     "maxCapacity": 10
                 },
                 "webApplicationFirewallConfiguration": {
                     "enabled": true,
                     "firewallMode": "Prevention",
                     "ruleSetType": "OWASP",
-                    "ruleSetVersion": "3.0"
+                    "ruleSetVersion": "3.2",
+                    "exclusions": [],
+                    "fileUploadLimitInMb": 10,
+                    "disabledRuleGroups": []
                 },
-                "enableHttp2": false,
+                "enableHttp2": true,
                 "sslCertificates": [
                     {
                         "name": "[concat(variables('agwName'), '-ssl-certificate')]",
@@ -558,11 +560,11 @@
                             "pickHostNameFromBackendAddress": true,
                             "requestTimeout": 20,
                             "probe": {
-                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('agwName')), '/probes/probe-bu0001a0008-00.aks-ingress.contoso.com')]"
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/probes', variables('agwName'), 'probe-bu0001a0008-00.aks-ingress.contoso.com')]"
                             },
                             "trustedRootCertificates": [
                                 {
-                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('agwName')), '/trustedRootCertificates/root-cert-wildcard-aks-ingress-contoso')]"
+                                    "id": "[resourceId('Microsoft.Network/applicationGateways/trustedRootCertificates', variables('agwName'), 'root-cert-wildcard-aks-ingress-contoso')]"
                                 }
                             ]
                         }
@@ -573,18 +575,17 @@
                         "name": "listener-https",
                         "properties": {
                             "frontendIPConfiguration": {
-                                "id": "[concat(variables('apwResourceId'), '/frontendIPConfigurations/apw-frontend-ip-configuration')]"
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', variables('agwName'), 'apw-frontend-ip-configuration')]"
                             },
                             "frontendPort": {
-                                "id": "[concat(variables('apwResourceId'), '/frontendPorts/apw-frontend-ports')]"
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts', variables('agwName'), 'port-443')]"
                             },
                             "protocol": "Https",
                             "sslCertificate": {
-                                "id": "[concat(variables('apwResourceId'), '/sslCertificates/', variables('agwName'), '-ssl-certificate')]"
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/sslCertificates', variables('agwName'),  concat(variables('agwName'), '-ssl-certificate'))]"
                             },
                             "hostName": "bicycle.contoso.com",
-                            "hostNames": [
-                            ],
+                            "hostNames": [],
                             "requireServerNameIndication": true
                         }
                     }
@@ -595,13 +596,13 @@
                         "properties": {
                             "RuleType": "Basic",
                             "httpListener": {
-                                "id": "[concat(variables('apwResourceId'), '/httpListeners/listener-https')]"
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/httpListeners', variables('agwName'), 'listener-https')]"
                             },
                             "backendAddressPool": {
-                                "id": "[concat(variables('apwResourceId'), '/backendAddressPools/bu0001a0008-00.aks-ingress.contoso.com')]"
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', variables('agwName'), 'bu0001a0008-00.aks-ingress.contoso.com')]"
                             },
                             "backendHttpSettings": {
-                                "id": "[concat(variables('apwResourceId'), '/backendHttpSettingsCollection/aks-ingress-contoso-backendpool-httpsettings')]"
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', variables('agwName'), 'aks-ingress-contoso-backendpool-httpsettings')]"
                             }
                         }
                     }
@@ -611,7 +612,7 @@
                 {
                     "type": "providers/diagnosticSettings",
                     "apiVersion": "2017-05-01-preview",
-                    "name": "/Microsoft.Insights/default",
+                    "name": "Microsoft.Insights/default",
                     "dependsOn": [
                         "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]",
                         "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"

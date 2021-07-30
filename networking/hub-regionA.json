@@ -667,25 +667,6 @@
                                 "rules": [
                                     {
                                         "ruleType": "NetworkRule",
-                                        "name": "ntp",
-                                        "ipProtocols": [
-                                            "UDP"
-                                        ],
-                                        "sourceAddresses": [],
-                                        "sourceIpGroups": [
-                                            "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
-                                        ],
-                                        "destinationAddresses": [
-                                            "*"
-                                        ],
-                                        "destinationIpGroups": [],
-                                        "destinationFqdns": [],
-                                        "destinationPorts": [
-                                            "123"
-                                        ]
-                                    },
-                                    {
-                                        "ruleType": "NetworkRule",
                                         "name": "pod-to-api-server",
                                         "ipProtocols": [
                                             "TCP"
@@ -695,6 +676,7 @@
                                             "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                         ],
                                         "destinationAddresses": [
+                                            // You can specifically list your AKS server endpoints in appliction rules, instead of this wide-ranged rule
                                             "[concat('AzureCloud.', parameters('location'))]"
                                         ],
                                         "destinationIpGroups": [],
