@@ -103,6 +103,13 @@
         "kubernetesVersion": {
             "defaultValue": "1.21.2",
             "type": "string"
+        },
+        "domainName": {
+            "type": "string",
+            "defaultValue": "contoso.com",
+            "metadata": {
+                "description": "Domain name to use for App Gateway and AKS ingress."
+            }
         }
     },
     "variables": {
@@ -136,6 +143,9 @@
         "clusterControlPlaneIdentityName": "[concat('mi-', variables('clusterName'), '-controlplane')]",
 
         "keyVaultName": "[concat('kv-', variables('clusterName'))]",
+
+        "aksIngressDomainName": "[concat('aks-ingress.', parameters('domainName'))]",
+        "aksBackendDomainName": "[concat('bu0001a0008-00.', variables('aksIngressDomainName'))]",
 
         "policyResourceIdAKSLinuxRestrictive": "/providers/Microsoft.Authorization/policySetDefinitions/42b8ef37-b724-4e24-bbc8-7a7708edfe00",
         "policyResourceIdEnforceHttpsIngress": "/providers/Microsoft.Authorization/policyDefinitions/1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d",
@@ -395,7 +405,7 @@
         {
             "type": "Microsoft.Network/privateDnsZones",
             "apiVersion": "2018-09-01",
-            "name": "aks-ingress.contoso.com",
+            "name": "[variables('aksIngressDomainName')]",
             "location": "global",
             "properties": {},
             "resources": [
@@ -404,7 +414,7 @@
                     "apiVersion": "2018-09-01",
                     "name": "bu0001a0008-00",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateDnsZones', 'aks-ingress.contoso.com')]"
+                        "[resourceId('Microsoft.Network/privateDnsZones', variables('aksIngressDomainName'))]"
                     ],
                     "properties": {
                         "ttl": 3600,
@@ -421,7 +431,7 @@
                     "name": "[concat('to_', variables('vnetName'))]",
                     "location": "global",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateDnsZones', 'aks-ingress.contoso.com')]"
+                        "[resourceId('Microsoft.Network/privateDnsZones', variables('aksIngressDomainName'))]"
                     ],
                     "properties": {
                         "virtualNetwork": {
@@ -524,7 +534,7 @@
                 ],
                 "probes": [
                     {
-                        "name": "probe-bu0001a0008-00.aks-ingress.contoso.com",
+                        "name": "[concat('probe-', variables('aksBackendDomainName'))]",
                         "properties": {
                             "protocol": "Https",
                             "path": "/favicon.ico",
@@ -540,11 +550,11 @@
                 ],
                 "backendAddressPools": [
                     {
-                        "name": "bu0001a0008-00.aks-ingress.contoso.com",
+                        "name": "[variables('aksBackendDomainName')]",
                         "properties": {
                             "backendAddresses": [
                                 {
-                                    "fqdn": "bu0001a0008-00.aks-ingress.contoso.com"
+                                    "fqdn": "[variables('aksBackendDomainName')]"
                                 }
                             ]
                         }
@@ -560,7 +570,7 @@
                             "pickHostNameFromBackendAddress": true,
                             "requestTimeout": 20,
                             "probe": {
-                                "id": "[resourceId('Microsoft.Network/applicationGateways/probes', variables('agwName'), 'probe-bu0001a0008-00.aks-ingress.contoso.com')]"
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/probes', variables('agwName'), concat('probe-', variables('aksBackendDomainName')))]"
                             },
                             "trustedRootCertificates": [
                                 {
@@ -584,7 +594,7 @@
                             "sslCertificate": {
                                 "id": "[resourceId('Microsoft.Network/applicationGateways/sslCertificates', variables('agwName'),  concat(variables('agwName'), '-ssl-certificate'))]"
                             },
-                            "hostName": "bicycle.contoso.com",
+                            "hostName": "[concat('bicycle.', parameters('domainName'))]",
                             "hostNames": [],
                             "requireServerNameIndication": true
                         }
@@ -599,7 +609,7 @@
                                 "id": "[resourceId('Microsoft.Network/applicationGateways/httpListeners', variables('agwName'), 'listener-https')]"
                             },
                             "backendAddressPool": {
-                                "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', variables('agwName'), 'bu0001a0008-00.aks-ingress.contoso.com')]"
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', variables('agwName'), variables('aksBackendDomainName'))]"
                             },
                             "backendHttpSettings": {
                                 "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', variables('agwName'), 'aks-ingress-contoso-backendpool-httpsettings')]"
