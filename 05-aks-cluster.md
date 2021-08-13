@@ -96,8 +96,9 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
            sed "s#<geo-redundancy-location>#centralus#g" | \
            sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_CLUSTERSPOKE}#g" | \
            sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC}#g" | \
-           sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" \
-           sed "s#<azure-ad-aks-a0008-group-object-id>#${AADOBJECTID_GROUP_A0008_READER}#g" \
+           sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN}#g" | \
+           sed "s#<azure-ad-aks-a0008-group-object-id>#${AADOBJECTID_GROUP_A0008_READER}#g" | \
+           sed "s#<domain-name>#${DOMAIN_NAME}#g" \
            > .github/workflows/aks-deploy.yaml
        ```
 
