@@ -7,8 +7,8 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 1. Get the AKS Ingress Controller Managed Identity details.
 
    ```bash
-   export TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
-   export TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
+   export TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_AKS_BASELINE=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
+   export TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_AKS_BASELINE=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
    ```
 
 1. Ensure Flux has created the following namespace.
@@ -31,8 +31,8 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
      namespace: a0008
    spec:
      type: 0
-     resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
-     clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
+     resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID_AKS_BASELINE
+     clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID_AKS_BASELINE
    ---
    apiVersion: aadpodidentity.k8s.io/v1
    kind: AzureIdentityBinding
@@ -52,7 +52,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > Create a `SecretProviderClass` resource with with your Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
 
    ```bash
-   KEYVAULT_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
+   export KEYVAULT_NAME_AKS_BASELINE=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
 
    cat <<EOF | kubectl create -f -
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
@@ -64,7 +64,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
      provider: azure
      parameters:
        usePodIdentity: "true"
-       keyvaultName: $KEYVAULT_NAME
+       keyvaultName: $KEYVAULT_NAME_AKS_BASELINE
        objects:  |
          array:
            - |
@@ -75,7 +75,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
              objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
              objectAlias: tls.key
              objectType: secret
-       tenantId: $TENANTID_AZURERBAC
+       tenantId: $TENANTID_AZURERBAC_AKS_BASELINE
    EOF
    ```
 
@@ -85,10 +85,10 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
    ```bash
    # Get your ACR cluster name
-   ACR_NAME=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   export ACR_NAME_AKS_BASELINE=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
 
    # Import ingress controller image hosted in public container registries
-   az acr import --source docker.io/library/traefik:v2.4.8 -n $ACR_NAME
+   az acr import --source docker.io/library/traefik:v2.4.8 -n $ACR_NAME_AKS_BASELINE
    ```
 
 1. Install the Traefik Ingress Controller.
@@ -110,6 +110,16 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    ```bash
    kubectl wait -n a0008 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s
    ```
+
+### Save your work in-progress
+
+```bash
+# run the saveenv.sh script at any time to save environment variables created above to aks_baseline.env
+./saveenv.sh
+
+# if your terminal session gets reset, you can source the file to reload the environment variables
+# source aks_baseline.env
+```
 
 ### Next step
 
