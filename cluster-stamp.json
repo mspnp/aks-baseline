@@ -253,7 +253,7 @@
                 {
                     "type": "secrets",
                     "apiVersion": "2019-09-01",
-                    "name": "appgw-ingress-internal-aks-ingress-contoso-com-tls",
+                    "name": "appgw-ingress-internal-aks-ingress-tls",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
                     ],
@@ -476,9 +476,9 @@
                 },
                 "trustedRootCertificates": [
                     {
-                        "name": "root-cert-wildcard-aks-ingress-contoso",
+                        "name": "root-cert-wildcard-aks-ingress",
                         "properties": {
-                            "keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/appgw-ingress-internal-aks-ingress-contoso-com-tls')]"
+                            "keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/appgw-ingress-internal-aks-ingress-tls')]"
                         }
                     }
                 ],
@@ -562,7 +562,7 @@
                 ],
                 "backendHttpSettingsCollection": [
                     {
-                        "name": "aks-ingress-contoso-backendpool-httpsettings",
+                        "name": "aks-ingress-backendpool-httpsettings",
                         "properties": {
                             "port": 443,
                             "protocol": "Https",
@@ -574,7 +574,7 @@
                             },
                             "trustedRootCertificates": [
                                 {
-                                    "id": "[resourceId('Microsoft.Network/applicationGateways/trustedRootCertificates', variables('agwName'), 'root-cert-wildcard-aks-ingress-contoso')]"
+                                    "id": "[resourceId('Microsoft.Network/applicationGateways/trustedRootCertificates', variables('agwName'), 'root-cert-wildcard-aks-ingress')]"
                                 }
                             ]
                         }
@@ -612,7 +612,7 @@
                                 "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', variables('agwName'), variables('aksBackendDomainName'))]"
                             },
                             "backendHttpSettings": {
-                                "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', variables('agwName'), 'aks-ingress-contoso-backendpool-httpsettings')]"
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', variables('agwName'), 'aks-ingress-backendpool-httpsettings')]"
                             }
                         }
                     }

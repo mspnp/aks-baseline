@@ -38,10 +38,10 @@ APP_GATEWAY_LISTENER_CERTIFICATE=$(cat appgw.pfx | base64 | tr -d '\n')
 
 # AKS Ingress Controller Certificate
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -out traefik-ingress-internal-aks-ingress-contoso-com-tls.crt \
-        -keyout traefik-ingress-internal-aks-ingress-contoso-com-tls.key \
+        -out traefik-ingress-internal-aks-ingress-tls.crt \
+        -keyout traefik-ingress-internal-aks-ingress-tls.key \
         -subj "/CN=*.aks-ingress.contoso.com/O=Contoso Aks Ingress"
-AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64=$(cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt | base64 | tr -d '\n')
+AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64=$(cat traefik-ingress-internal-aks-ingress-tls.crt | base64 | tr -d '\n')
 
 # AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 10 minutes
 # Note: By default, this deployment will allow unrestricted access to your cluster's API Server.
@@ -64,8 +64,8 @@ APPGW_PUBLIC_IP=$(az deployment group show -g $RGNAMESPOKES -n spoke-0001 --quer
 
 az keyvault set-policy --certificate-permissions import get -n $KEYVAULT_NAME --upn $(az account show --query user.name -o tsv)
 
-cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-internal-aks-ingress-contoso-com-tls.key > traefik-ingress-internal-aks-ingress-contoso-com-tls.pem
-az keyvault certificate import --vault-name $KEYVAULT_NAME -f traefik-ingress-internal-aks-ingress-contoso-com-tls.pem -n traefik-ingress-internal-aks-ingress-contoso-com-tls
+cat traefik-ingress-internal-aks-ingress-tls.crt traefik-ingress-internal-aks-ingress-tls.key > traefik-ingress-internal-aks-ingress-tls.pem
+az keyvault certificate import --vault-name $KEYVAULT_NAME -f traefik-ingress-internal-aks-ingress-tls.pem -n traefik-ingress-internal-aks-ingress-tls
 
 az aks get-credentials -n ${AKS_CLUSTER_NAME} -g ${RGNAMECLUSTER} --admin
 kubectl create namespace cluster-baseline-settings
@@ -111,7 +111,7 @@ cat <<EOF | kubectl apply -f -
 apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
 kind: SecretProviderClass
 metadata:
-  name: aks-ingress-contoso-com-tls-secret-csi-akv
+  name: aks-ingress-tls-secret-csi-akv
   namespace: a0008
 spec:
   provider: azure
@@ -121,11 +121,11 @@ spec:
     objects:  |
       array:
         - |
-          objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+          objectName: traefik-ingress-internal-aks-ingress-tls
           objectAlias: tls.crt
           objectType: cert
         - |
-          objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+          objectName: traefik-ingress-internal-aks-ingress-tls
           objectAlias: tls.key
           objectType: secret
     tenantId: "${TENANT_ID}"
@@ -161,4 +161,3 @@ NEXT STEPS
 deleteResourceGroups.sh
 
 EOF
-
