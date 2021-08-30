@@ -42,7 +42,7 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    exit
    ```
 
-   > :hammer: You might receive a message about `--limits` being deprecated, you can [safely ignore that message](kubernetes/kubectl#1101). Limits are still be honored; and in this deployment are required via Azure Policy for all pods running in your cluster.
+   > :beetle: You might receive a message about `--limits` being deprecated, you can [safely ignore that message](https://github.com/kubernetes/kubectl/issues/1101). Limits are still be honored; and in this deployment are required via Azure Policy for all pods running in your cluster.
 
    > From this container shell, you could also try to directly acess the workload via `curl -I http://<aspnetapp-service-cluster-ip>`. Instead of getting back a `200 OK`, you'll receive a network timeout because of the [`allow-only-ingress-to-workload` network policy](./cluster-manifests/a0008/ingress-network-policy.yaml) that is in place.   
 
