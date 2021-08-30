@@ -28,17 +28,23 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    kubectl get ingress aspnetapp-ingress -n a0008
    ```
 
-   > At this point, the route to the workload is established, SSL offloading configured, and a network policy is in place to only allow Traefik to connect to your workload. Therefore, you should expect a `403` HTTP response if you attempt to connect to it directly.
+   > At this point, the route to the workload is established, SSL offloading configured, a network policy is in place to only only allow Traefik to connect to your workload, and Traefik is configured to only accept requests from App Gateway.
 
-1. Give it a try and see a `403` HTTP response.
+1. Give it a try and see a `403` HTTP response from Traefik.
+
+   > You should expect a `403` HTTP response if you attempt to connect to the ingress controller _without_ going through the App Gateway. Likewise, if any workload other than the ingress controller attempts to reach the workload, the traffic will be denied via network policies.
 
    ```bash
    kubectl run curl -n a0008 -i --tty --rm --image=mcr.microsoft.com/azure-cli --limits='cpu=200m,memory=128Mi'
    
-   # From within the open shell
+   # From within the open shell now running on a container inside your cluster
    curl -kI https://bu0001a0008-00.aks-ingress.contoso.com -w '%{remote_ip}\n'
    exit
    ```
+
+   > :info: You might receive a message about `--limits` being deprecated, you can safely ignore that message. Limits are still be honored; and in this deployment are required via Azure Policy for all pods running in your cluster.
+
+   > From this container shell, you could also try to directly acess the workload via `curl -I http://<aspnetapp-service-cluster-ip>`. Instead of getting back a `200 OK`, you'll receive a network timeout because of the [`allow-only-ingress-to-workload` network policy](./cluster-manifests/a0008/ingress-network-policy.yaml) that is in place.   
 
 ### Next step
 
