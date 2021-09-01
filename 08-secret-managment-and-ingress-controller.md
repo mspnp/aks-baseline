@@ -82,11 +82,8 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for an application that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
 
    ```bash
-   # Get your ACR cluster name
-  ACR_NAME=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
-
    # Import ingress controller image hosted in public container registries
-   az acr import --source docker.io/library/traefik:v2.4.8 -n $ACR_NAME
+   az acr import --source docker.io/library/traefik:v2.4.8 -n $ACR_NAME_AKS_BASELINE
    ```
 
 1. Install the Traefik Ingress Controller.
