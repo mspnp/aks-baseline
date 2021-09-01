@@ -4,6 +4,3 @@
 *.pfx
 *.pem
 sp.json
-
-# Ignore customized ingress patch file
-aspnetapp-ingress-patch.yaml

@@ -1,20 +1,6 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: aspnetapp-ingress
-  namespace: a0008
-spec:
-  tls:
-  - hosts:
-      - bu0001a0008-00.aks-ingress.<domain-name>
-  rules:
-  - host: bu0001a0008-00.aks-ingress.<domain-name>
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: aspnetapp-service
-            port:
-              number: 80
+- op: replace
+  path: "/spec/tls/0/hosts/0"
+  value: bu0001a0008-00.aks-ingress.contoso.com
+- op: replace
+  path: "/spec/rules/0/host"
+  value: bu0001a0008-00.aks-ingress.contoso.com

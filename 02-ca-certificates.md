@@ -16,7 +16,7 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow the ste
 
    :warning: Do not use the certificate created by this script for actual deployments. The use of self-signed certificates are provided for ease of illustration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, _even for development purposes_.
 
-   Create the certificate for Azure Application Gateway with a common name of `bicycle.contoso.com`.
+   Create the certificate that will be presented to web clients by Azure Application Gateway for your domain.
 
    ```bash
    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out appgw.crt -keyout appgw.key -subj "/CN=bicycle.${DOMAIN_NAME}/O=Contoso Bicycle"
