@@ -52,8 +52,6 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > Create a `SecretProviderClass` resource with with your Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
 
    ```bash
-   KEYVAULT_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
-
    cat <<EOF | kubectl create -f -
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
    kind: SecretProviderClass
@@ -64,7 +62,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
      provider: azure
      parameters:
        usePodIdentity: "true"
-       keyvaultName: $KEYVAULT_NAME
+       keyvaultName: $KEYVAULT_NAME_AKS_BASELINE
        objects:  |
          array:
            - |
@@ -75,7 +73,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
              objectName: traefik-ingress-internal-aks-ingress-tls
              objectAlias: tls.key
              objectType: secret
-       tenantId: $TENANTID_AZURERBAC
+       tenantId: $TENANTID_AZURERBAC_AKS_BASELINE
    EOF
    ```
 
@@ -84,11 +82,8 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for an application that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
 
    ```bash
-   # Get your ACR cluster name
-   ACR_NAME=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
-
    # Import ingress controller image hosted in public container registries
-   az acr import --source docker.io/library/traefik:v2.4.8 -n $ACR_NAME
+   az acr import --source docker.io/library/traefik:v2.4.8 -n $ACR_NAME_AKS_BASELINE
    ```
 
 1. Install the Traefik Ingress Controller.
