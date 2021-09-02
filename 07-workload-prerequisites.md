@@ -13,8 +13,8 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops.md), wrappi
    > :book: Finally the app team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller. They use Azure Key Vault to import and manage the lifecycle of this certificate.
 
    ```bash
-   KEYVAULT_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
-   az keyvault set-policy --certificate-permissions import list get --upn $(az ad signed-in-user show --query 'userPrincipalName' -o tsv) -n $KEYVAULT_NAME
+   export KEYVAULT_NAME_AKS_BASELINE=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
+   az keyvault set-policy --certificate-permissions import list get --upn $(az ad signed-in-user show --query 'userPrincipalName' -o tsv) -n $KEYVAULT_NAME_AKS_BASELINE
    ```
 
 1. Import the AKS Ingress Controller's Wildcard Certificate for `*.aks-ingress.contoso.com`.
@@ -25,7 +25,7 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops.md), wrappi
 
    ```bash
    cat traefik-ingress-internal-aks-ingress-contoso-com-tls.crt traefik-ingress-internal-aks-ingress-contoso-com-tls.key > traefik-ingress-internal-aks-ingress-contoso-com-tls.pem
-   az keyvault certificate import -f traefik-ingress-internal-aks-ingress-contoso-com-tls.pem -n traefik-ingress-internal-aks-ingress-contoso-com-tls --vault-name $KEYVAULT_NAME
+   az keyvault certificate import -f traefik-ingress-internal-aks-ingress-contoso-com-tls.pem -n traefik-ingress-internal-aks-ingress-contoso-com-tls --vault-name $KEYVAULT_NAME_AKS_BASELINE
    ```
 
 1. Remove Azure Key Vault import certificates permissions for current user.
@@ -33,7 +33,7 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops.md), wrappi
    > The Azure Key Vault Policy for your user was a temporary policy to allow you to upload the certificate for this walkthrough. In actual deployments, you would manage these access policies via your ARM templates using [Azure RBAC for Key Vault data plane](https://docs.microsoft.com/azure/key-vault/general/secure-your-key-vault#data-plane-and-access-policies).
 
    ```bash
-   az keyvault delete-policy --upn $(az ad signed-in-user show --query 'userPrincipalName' -o tsv) -n $KEYVAULT_NAME
+   az keyvault delete-policy --upn $(az ad signed-in-user show --query 'userPrincipalName' -o tsv) -n $KEYVAULT_NAME_AKS_BASELINE
    ```
 
 ## Check Azure Policies are in place
@@ -56,6 +56,16 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops.md), wrappi
    k8sazurereadonlyrootfilesystem           21m
    k8sazurevolumetypes                      21m
    ```
+
+### Save your work in-progress
+
+```bash
+# run the saveenv.sh script at any time to save environment variables created above to aks_baseline.env
+./saveenv.sh
+
+# if your terminal session gets reset, you can source the file to reload the environment variables
+# source aks_baseline.env
+```
 
 ### Next step
 

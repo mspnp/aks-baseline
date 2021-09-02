@@ -32,7 +32,7 @@ The following two resource groups will be created and populated with networking 
    > :book: The networking team logins into the Azure subscription that will contain the regional hub. At Contoso Bicycle, all of their regional hubs are in the same, centrally-managed subscription.
 
    ```bash
-   az login -t $TENANTID_AZURERBAC
+   az login -t $TENANTID_AZURERBAC_AKS_BASELINE
    ```
 
 1. Create the networking hubs resource group.

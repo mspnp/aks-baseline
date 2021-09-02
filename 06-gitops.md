@@ -51,12 +51,12 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    ```bash
    # Get your ACR cluster name
-   ACR_NAME=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   export ACR_NAME_AKS_BASELINE=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
 
    # Import cluster management images hosted in public container registries
-   az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME
-   az acr import --source docker.io/fluxcd/flux:1.21.1 -n $ACR_NAME
-   az acr import --source docker.io/weaveworks/kured:1.6.1 -n $ACR_NAME
+   az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME_AKS_BASELINE
+   az acr import --source docker.io/fluxcd/flux:1.21.1 -n $ACR_NAME_AKS_BASELINE
+   az acr import --source docker.io/weaveworks/kured:1.6.1 -n $ACR_NAME_AKS_BASELINE
    ```
 
 1. Create the cluster baseline settings namespace.
@@ -91,6 +91,16 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    ```
 
 Generally speaking, this will be the last time you should need to use `kubectl` for day-to-day configuration operations on this cluster (outside of break-fix situations). Between ARM for Azure Resource definitions and the application of manifests via Flux, all normal configuration activities can be performed without the need to use `kubectl`. You will however see us use it for the upcoming workload deployment. This is because the SDLC component of workloads are not in scope for this reference implementation, as this is focused the infrastructure and baseline configuration.
+
+### Save your work in-progress
+
+```bash
+# run the saveenv.sh script at any time to save environment variables created above to aks_baseline.env
+./saveenv.sh
+
+# if your terminal session gets reset, you can source the file to reload the environment variables
+# source aks_baseline.env
+```
 
 ### Next step
 
