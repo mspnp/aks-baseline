@@ -8,4 +8,5 @@ patchesJson6902:
 - target:
     kind: Ingress
     name: aspnetapp-ingress
+    version: v1
   path: aspnetapp-ingress-patch.yaml
