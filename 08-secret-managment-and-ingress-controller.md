@@ -56,7 +56,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
    kind: SecretProviderClass
    metadata:
-     name: aks-ingress-contoso-com-tls-secret-csi-akv
+     name: aks-ingress-tls-secret-csi-akv
      namespace: a0008
    spec:
      provider: azure
@@ -66,11 +66,11 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
        objects:  |
          array:
            - |
-             objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+             objectName: traefik-ingress-internal-aks-ingress-tls
              objectAlias: tls.crt
              objectType: cert
            - |
-             objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+             objectName: traefik-ingress-internal-aks-ingress-tls
              objectAlias: tls.key
              objectType: secret
        tenantId: $TENANTID_AZURERBAC_AKS_BASELINE

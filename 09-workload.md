@@ -6,12 +6,18 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
 
 > :book: The Contoso app team is about to conclude this journey, but they need an app to test their new infrastructure. For this task they've picked out the venerable [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/master/samples/aspnetapp).
 
+1. Customize the host name of the Ingress resource to match your custom domain. _(You can skip this step if domain was left as contoso.com.)_
+
+   ```bash
+   sed -i "s/contoso.com/${DOMAIN_NAME}/" workload/aspnetapp-ingress-patch.yaml
+   ```
+
 1. Deploy the ASP.NET Core Docker sample web app
 
    > The workload definition demonstrates the inclusion of a Pod Disruption Budget rule, ingress configuration, and pod (anti-)affinity rules for your reference.
 
    ```bash
-   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/aspnetapp.yaml
+   kubectl apply -k workload/
    ```
 
 1. Wait until is ready to process requests running
@@ -38,7 +44,8 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    kubectl run curl -n a0008 -i --tty --rm --image=mcr.microsoft.com/azure-cli --limits='cpu=200m,memory=128Mi'
    
    # From within the open shell now running on a container inside your cluster
-   curl -kI https://bu0001a0008-00.aks-ingress.contoso.com -w '%{remote_ip}\n'
+   DOMAIN_NAME="contoso.com" # <-- Change to your custom domain value if a different one was used
+   curl -kI https://bu0001a0008-00.aks-ingress.$DOMAIN_NAME -w '%{remote_ip}\n'
    exit
    ```
 

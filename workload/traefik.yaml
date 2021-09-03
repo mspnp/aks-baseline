@@ -292,7 +292,7 @@ spec:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
-              secretProviderClass: aks-ingress-contoso-com-tls-secret-csi-akv
+              secretProviderClass: aks-ingress-tls-secret-csi-akv
         - name: data
           emptyDir: {}
       nodeSelector:
