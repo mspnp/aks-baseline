@@ -120,7 +120,7 @@ The AKS Baseline was used as the foundation for the following additional referen
 - [AKS Baseline for Multi-Region Clusters](https://github.com/mspnp/aks-baseline-multi-region)
 - [AKS Baseline for Regulated Workloads](https://github.com/mspnp/aks-baseline-regulated)
 - [AKS Baseline for Microservices](https://github.com/mspnp/aks-fabrikam-dronedelivery)
-- [Azure Landing Zones, Enterprise-Scale Reference Implemenation using Terraform](https://github.com/Azure/caf-terraform-landingzones-starter/tree/starter/enterprise_scale/construction_sets/aks/online/aks_secure_baseline)
+- [Azure Landing Zones, Enterprise-Scale Reference Implementation using Terraform](https://github.com/Azure/caf-terraform-landingzones-starter/tree/starter/enterprise_scale/construction_sets/aks/online/aks_secure_baseline)
 
 ## Advanced topics
 
