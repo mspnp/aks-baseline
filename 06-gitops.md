@@ -21,7 +21,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 1. Get the cluster name.
 
    ```bash
-   AKS_CLUSTER_NAME=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
+   AKS_CLUSTER_NAME=$(az aks list -g rg-bu0001a0008 --query '[0].name' -o tsv)
    ```
 
 1. Get AKS `kubectl` credentials.
