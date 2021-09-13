@@ -69,4 +69,4 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops.md), wrappi
 
 ### Next step
 
-:arrow_forward: [Configure AKS Ingress Controller with Azure Key Vault integration](./08-secret-managment-and-ingress-controller.md)
+:arrow_forward: [Configure AKS Ingress Controller with Azure Key Vault integration](./08-secret-management-and-ingress-controller.md)

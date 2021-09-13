@@ -4,7 +4,7 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow the ste
 
 ## Steps
 
-1. Set a variale for the domain that will be used in the rest of this deployment.
+1. Set a variable for the domain that will be used in the rest of this deployment.
 
    ```bash
    export DOMAIN_NAME="contoso.com"
