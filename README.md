@@ -80,7 +80,7 @@ We perform the prior steps manually here for you to understand the involved comp
 Without a workload deployed to the cluster it will be hard to see how these decisions come together to work as a reliable application platform for your business. The deployment of this workload would typically follow a CI/CD pattern and may involve even more advanced deployment strategies (blue/green, etc). The following steps represent a manual deployment, suitable for illustration purposes of this infrastructure.
 
 - [ ] Just like the cluster, there are [workload prerequisites to address](./07-workload-prerequisites.md)
-- [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./08-secret-managment-and-ingress-controller.md)
+- [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./08-secret-management-and-ingress-controller.md)
 - [ ] [Deploy the workload](./09-workload.md)
 
 ### 5. :checkered_flag: Validation
@@ -120,7 +120,7 @@ The AKS Baseline was used as the foundation for the following additional referen
 - [AKS Baseline for Multi-Region Clusters](https://github.com/mspnp/aks-baseline-multi-region)
 - [AKS Baseline for Regulated Workloads](https://github.com/mspnp/aks-baseline-regulated)
 - [AKS Baseline for Microservices](https://github.com/mspnp/aks-fabrikam-dronedelivery)
-- [Azure Landing Zones, Enterprise-Scale Reference Implemenation using Terraform](https://github.com/Azure/caf-terraform-landingzones-starter/tree/starter/enterprise_scale/construction_sets/aks/online/aks_secure_baseline)
+- [Azure Landing Zones, Enterprise-Scale Reference Implementation using Terraform](https://github.com/Azure/caf-terraform-landingzones-starter/tree/starter/enterprise_scale/construction_sets/aks/online/aks_secure_baseline)
 
 ## Advanced topics
 
