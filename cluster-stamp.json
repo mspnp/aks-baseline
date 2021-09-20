@@ -1022,6 +1022,10 @@
             "apiVersion": "2021-02-01",
             "name": "[variables('clusterName')]",
             "location": "[parameters('location')]",
+            "tags": {
+                "Business unit": "BU0001",
+                "Application identifier": "a0008"
+            },
             "dependsOn": [
                 "[resourceId('Microsoft.OperationsManagement/solutions', variables('containerInsightsSolutionName'))]",
                 "[resourceId(variables('vNetResourceGroup'), 'Microsoft.Resources/deployments', 'EnsureClusterIdentityHasRbacToSelfManagedResources')]",
