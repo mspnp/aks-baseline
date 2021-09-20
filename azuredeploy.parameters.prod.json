@@ -30,7 +30,7 @@
       "value": "[array of IP ranges, like ['168.196.25.0/24','73.140.245.0/28', AzureFirewallIP/32] ]"
     },
     "domainName": {
-      "value": "contoso.com"
+      "value": "[the value of DOMAIN_NAME_AKS_BASELINE (e.g. contoso.com)]"
     }
   }
 }
