@@ -1177,6 +1177,10 @@
                     "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('clusterControlPlaneIdentityName'))]": {}
                 }
             },
+            "sku": {
+                "name": "Basic",
+                "tier": "Paid"
+            },
             "resources": [
                 {
                     "type": "providers/roleAssignments",
