@@ -1062,7 +1062,10 @@
                         ],
                         "upgradeSettings": {
                             "maxSurge": "33%"
-                        }
+                        },
+                        "nodeTaints": [
+                            "CriticalAddonsOnly=true:NoSchedule"
+                        ]
                     },
                     {
                         "name": "npuser01",
