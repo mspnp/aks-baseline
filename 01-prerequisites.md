@@ -24,10 +24,25 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 
    [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
-1. While the following feature(s) are still in _preview_, please enable them in your subscription.
+1. While the following feature(s) are still in _preview_, please enable them in your target subscription.
+
    1. [Register the Azure Key Vault Secrets Provider for AKS preview feature - `AKS-AzureKeyVaultSecretsProvider`](https://docs.microsoft.com/azure/aks/csi-secrets-store-driver#register-the-aks-azurekeyvaultsecretsprovider-preview-feature).
 
-   1. [Register the Azure Event Grid preview feature - 'EventgridPreview'](https://docs.microsoft.com/azure/aks/quickstart-event-grid#register-the-eventgridpreview-preview-feature)
+   1. [Register the Azure Event Grid preview feature - `EventgridPreview`](https://docs.microsoft.com/azure/aks/quickstart-event-grid#register-the-eventgridpreview-preview-feature)
+
+   1. [Register the Disable local accounts feature - `DisableLocalAccountsPreview`](https://docs.microsoft.com/azure/aks/managed-aad#disable-local-accounts-preview)
+
+   ```bash
+   az feature register --namespace "Microsoft.ContainerService" -n "AKS-AzureKeyVaultSecretsProvider"
+   az feature register --namespace "Microsoft.ContainerService" -n "EventgridPreview"
+   az feature register --namespace "Microsoft.ContainerService" -n "DisableLocalAccountsPreview"
+
+   # Keep running until all three say "Registered." (This may take up to 20 minutes.)
+   az feature list -o table --query "[?name=='Microsoft.ContainerService/AKS-AzureKeyVaultSecretsProvider' || name=='Microsoft.ContainerService/EventgridPreview' || name=='Microsoft.ContainerService/DisableLocalAccountsPreview'].{Name:name,State:properties.state}"
+
+   # When all say "Registered" then re-register the AKS resource provider
+   az provider register --namespace Microsoft.ContainerService
+   ```
 
 1. Clone/download this repo locally, or even better fork this repository.
 
