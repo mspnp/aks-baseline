@@ -7,7 +7,7 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow the ste
 1. Set a variable for the domain that will be used in the rest of this deployment.
 
    ```bash
-   export DOMAIN_NAME="contoso.com"
+   export DOMAIN_NAME_AKS_BASELINE="contoso.com"
    ```
 
 1. Generate a client-facing self-signed TLS certificate
@@ -19,7 +19,7 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow the ste
    Create the certificate that will be presented to web clients by Azure Application Gateway for your domain.
 
    ```bash
-   openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out appgw.crt -keyout appgw.key -subj "/CN=bicycle.${DOMAIN_NAME}/O=Contoso Bicycle"
+   openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out appgw.crt -keyout appgw.key -subj "/CN=bicycle.${DOMAIN_NAME_AKS_BASELINE}/O=Contoso Bicycle" -addext "subjectAltName = DNS:bicycle.${DOMAIN_NAME_AKS_BASELINE}" -addext "keyUsage = digitalSignature" -addext "extendedKeyUsage = serverAuth"
    openssl pkcs12 -export -out appgw.pfx -in appgw.crt -inkey appgw.key -passout pass:
    ```
 
@@ -36,7 +36,7 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow the ste
    > :book: Contoso Bicycle will also procure another TLS certificate, a standard cert, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing. Finally the app team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller.
 
    ```bash
-   openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out traefik-ingress-internal-aks-ingress-tls.crt -keyout traefik-ingress-internal-aks-ingress-tls.key -subj "/CN=*.aks-ingress.${DOMAIN_NAME}/O=Contoso Aks Ingress"
+   openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out traefik-ingress-internal-aks-ingress-tls.crt -keyout traefik-ingress-internal-aks-ingress-tls.key -subj "/CN=*.aks-ingress.${DOMAIN_NAME_AKS_BASELINE}/O=Contoso AKS Ingress"
    ```
 
 1. Base64 encode the AKS Ingress Controller certificate

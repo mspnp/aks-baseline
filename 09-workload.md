@@ -9,7 +9,7 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
 1. Customize the host name of the Ingress resource to match your custom domain. _(You can skip this step if domain was left as contoso.com.)_
 
    ```bash
-   sed -i "s/contoso.com/${DOMAIN_NAME}/" workload/aspnetapp-ingress-patch.yaml
+   sed -i "s/contoso.com/${DOMAIN_NAME_AKS_BASELINE}/" workload/aspnetapp-ingress-patch.yaml
    ```
 
 1. Deploy the ASP.NET Core Docker sample web app

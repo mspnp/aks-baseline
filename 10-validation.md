@@ -21,7 +21,7 @@ This section will help you to validate the workload is exposed correctly and res
 
    > :bulb: You can simulate this via a local hosts file modification. You're welcome to add a real DNS entry for your specific deployment's application domain name, if you have access to do so.
 
-   Map the Azure Application Gateway public IP address to the application domain name. To do that, please edit your hosts file (`C:\Windows\System32\drivers\etc\hosts` or `/etc/hosts`) and add the following record to the end: `${APPGW_PUBLIC_IP} bicycle.${DOMAIN_NAME}`
+   Map the Azure Application Gateway public IP address to the application domain name. To do that, please edit your hosts file (`C:\Windows\System32\drivers\etc\hosts` or `/etc/hosts`) and add the following record to the end: `${APPGW_PUBLIC_IP} bicycle.${DOMAIN_NAME_AKS_BASELINE}` (e.g. `50.140.130.120   bicycle.contoso.com`)
 
 1. Browse to the site (e.g. <https://bicycle.contoso.com>).
 
