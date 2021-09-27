@@ -201,7 +201,7 @@
                 },
                 "tenantId": "[subscription().tenantId]",
                 "networkAcls": {
-                    "bypass": "None", // Required for AppGW communication
+                    "bypass": "AzureServices", // "None", // Required for AppGW communication
                     "defaultAction": "Deny", // Production readiness change: This is only needed because we upload a certificate after deployment as part of the instructions. This can be set to "Deny" for runtime.
                     "ipRules": [/*
                         {
@@ -225,26 +225,24 @@
             "resources": [
                 {
                     "type": "secrets",
-                    "apiVersion": "2019-09-01",
-                    "name": "sslcert",
+                    "apiVersion": "2021-06-01-preview",
+                    "name": "gateway-public-cert",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName') )]"
                     ],
                     "properties": {
-                        "value": "[parameters('appGatewayListenerCertificate')]",
-                        "recoveryLevel": "Purgeable"
+                        "value": "[parameters('appGatewayListenerCertificate')]"
                     }
                 },
                 {
                     "type": "secrets",
-                    "apiVersion": "2019-09-01",
+                    "apiVersion": "2021-06-01-preview",
                     "name": "appgw-ingress-internal-aks-ingress-tls",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
                     ],
                     "properties": {
-                        "value": "[parameters('aksIngressControllerCertificate')]",
-                        "recoveryLevel": "Purgeable"
+                        "value": "[parameters('aksIngressControllerCertificate')]"
                     }
                 },
                 {
@@ -478,7 +476,8 @@
             "name": "[variables('agwName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName') )]"
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName') )]",
+                "[resourceId('Microsoft.Network/privateEndpoints', 'nodepools-to-akv')]"
             ],
             "identity": {
                 "type": "UserAssigned",
@@ -558,7 +557,7 @@
                     {
                         "name": "[concat(variables('agwName'), '-ssl-certificate')]",
                         "properties": {
-                            "keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/sslcert')]"
+                            "keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/gateway-public-cert')]"
                         }
                     }
                 ],
@@ -1065,7 +1064,8 @@
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceImageSource'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceInternalLoadBalancers'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceResourceLimits'))]",
-                "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameRoRootFilesystem'))]"
+                "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameRoRootFilesystem'))]",
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
             ],
             "properties": {
                 "kubernetesVersion": "[parameters('kubernetesVersion')]",
