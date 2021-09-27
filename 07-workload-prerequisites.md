@@ -8,13 +8,15 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops.md), wrappi
 
 > :book: Contoso Bicycle procured a CA certificate, a standard one, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing.
 
-1. Obtain the Azure Key Vault details and give the current user permissions to import certificates.
+1. Obtain the Azure Key Vault details and give the current user permissions and network access to import certificates.
 
    > :book: Finally the app team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller. They use Azure Key Vault to import and manage the lifecycle of this certificate.
 
    ```bash
    export KEYVAULT_NAME_AKS_BASELINE=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
-   az keyvault set-policy --certificate-permissions import list get --upn $(az ad signed-in-user show --query 'userPrincipalName' -o tsv) -n $KEYVAULT_NAME_AKS_BASELINE
+   TEMP_ROLEASSIGNMENT_TO_UPLOAD_CERT=$(az role assignment create --role a4417e6f-fecd-4de8-b567-7b0420556985 --assignee-principal-type user --assignee-object-id $(az ad signed-in-user show --query 'objectId' -o tsv) --scope $(az keyvault show --name $KEYVAULT_NAME_AKS_BASELINE --query 'id' -o tsv) --query 'id' -o tsv)
+   CURRENT_IP_ADDRESS=$(curl -s https://ifconfig.io)
+   az keyvault network-rule add -n $KEYVAULT_NAME_AKS_BASELINE --ip-address ${CURRENT_IP_ADDRESS}
    ```
 
 1. Import the AKS Ingress Controller's Wildcard Certificate for `*.aks-ingress.contoso.com`.
@@ -28,12 +30,13 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops.md), wrappi
    az keyvault certificate import -f traefik-ingress-internal-aks-ingress-tls.pem -n traefik-ingress-internal-aks-ingress-tls --vault-name $KEYVAULT_NAME_AKS_BASELINE
    ```
 
-1. Remove Azure Key Vault import certificates permissions for current user.
+1. Remove Azure Key Vault import certificates permissions and network access for current user.
 
    > The Azure Key Vault Policy for your user was a temporary policy to allow you to upload the certificate for this walkthrough. In actual deployments, you would manage these access policies via your ARM templates using [Azure RBAC for Key Vault data plane](https://docs.microsoft.com/azure/key-vault/general/secure-your-key-vault#data-plane-and-access-policies).
 
    ```bash
-   az keyvault delete-policy --upn $(az ad signed-in-user show --query 'userPrincipalName' -o tsv) -n $KEYVAULT_NAME_AKS_BASELINE
+   az keyvault network-rule remove -n $KEYVAULT_NAME_AKS_BASELINE --ip-address "${CURRENT_IP_ADDRESS}/32"
+   az role assignment delete --ids $TEMP_ROLEASSIGNMENT_TO_UPLOAD_CERT
    ```
 
 ## Check Azure Policies are in place
