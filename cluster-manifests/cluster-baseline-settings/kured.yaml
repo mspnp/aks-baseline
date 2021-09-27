@@ -78,7 +78,7 @@ spec:
     matchLabels:
       name: kured
   updateStrategy:
-   type: RollingUpdate
+    type: RollingUpdate
   template:
     metadata:
       labels:
