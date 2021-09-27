@@ -7,7 +7,7 @@
 cat > aks_baseline.env << EOF
 #!/bin/bash
 
-$(env | sed -n "s/\(_AKS_BASELINE=\)\(.*\)/\1'\2'/p" | sort)
+$(env | sed -n "s/\(.*_AKS_BASELINE=\)\(.*\)/export \1'\2'/p" | sort)
 EOF
 
 cat aks_baseline.env
