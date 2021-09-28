@@ -215,7 +215,6 @@
                         }*/
                     ]
                 },
-                "publicNetworkAccess": "Enabled", // Production readiness change: This is only needed because we upload a certificate after deployment as part of the instructions. This can be set to "Disabled" for runtime.
                 "enableRbacAuthorization": true,
                 "enabledForDeployment": false,
                 "enabledForDiskEncryption": false,
