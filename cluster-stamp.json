@@ -194,7 +194,7 @@
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')]"
             ],
             "properties": {
-                "accessPolicies": [],
+                "accessPolicies": [], // Azure RBAC is used instead
                 "sku": {
                     "family": "A",
                     "name": "standard"
@@ -202,18 +202,9 @@
                 "tenantId": "[subscription().tenantId]",
                 "networkAcls": {
                     "bypass": "AzureServices", // Required for AppGW communication
-                    "defaultAction": "Deny", // Production readiness change: This is only needed because we upload a certificate after deployment as part of the instructions. This can be set to "Deny" for runtime.
-                    "ipRules": [/*
-                        {
-                            "value": "[reference(resourceId(variables('vNetResourceGroup'), 'Microsoft.Network/publicIpAddresses', 'pip-BU0001A0008-00'), '2021-02-01').ipAddress]"
-                        }*/
-                    ],
-                    "virtualNetworkRules": [/*
-                        {
-                            "id": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-applicationgateway')]",
-                            "ignoreMissingVnetServiceEndpoint": true
-                        }*/
-                    ]
+                    "defaultAction": "Deny",
+                    "ipRules": [],
+                    "virtualNetworkRules": []
                 },
                 "enableRbacAuthorization": true,
                 "enabledForDeployment": false,
