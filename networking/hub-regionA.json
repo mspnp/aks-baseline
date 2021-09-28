@@ -375,7 +375,7 @@
         },
         {
             "type": "Microsoft.Network/ipGroups",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2021-05-01",
             "name": "[variables('aksIpGroupName')]",
             "location": "[parameters('location')]",
             "comments": "This holds IP addresses of known nodepool subnets in spokes.",
@@ -391,9 +391,12 @@
         },
         {
             "type": "Microsoft.Network/firewallPolicies",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-02-01",
             "name": "[variables('fwPoliciesBaseName')]",
             "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+            ],
             "properties": {
                 "sku": {
                     "tier": "Standard"
@@ -410,7 +413,7 @@
             "resources": [
                 {
                     "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
-                    "apiVersion": "2020-11-01",
+                    "apiVersion": "2021-02-01",
                     "name": "[concat(variables('fwPoliciesBaseName'), '/DefaultNetworkRuleCollectionGroup')]",
                     "location": "[parameters('location')]",
                     "dependsOn": [
@@ -455,7 +458,7 @@
         },
         {
             "type": "Microsoft.Network/firewallPolicies",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-02-01",
             "name": "[variables('fwPoliciesName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -481,7 +484,7 @@
             "resources": [
                 {
                     "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
-                    "apiVersion": "2020-11-01",
+                    "apiVersion": "2021-02-01",
                     "name": "[concat(variables('fwPoliciesName'), '/DefaultDnatRuleCollectionGroup')]",
                     "location": "[parameters('location')]",
                     "dependsOn": [
@@ -494,7 +497,7 @@
                 },
                 {
                     "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
-                    "apiVersion": "2020-11-01",
+                    "apiVersion": "2021-02-01",
                     "name": "[concat(variables('fwPoliciesName'), '/DefaultApplicationRuleCollectionGroup')]",
                     "location":"[parameters('location')]",
                     "dependsOn": [
@@ -648,7 +651,7 @@
                 },
                 {
                     "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
-                    "apiVersion": "2020-11-01",
+                    "apiVersion": "2021-02-01",
                     "name": "[concat(variables('fwPoliciesName'), '/DefaultNetworkRuleCollectionGroup')]",
                     "location": "[parameters('location')]",
                     "dependsOn": [

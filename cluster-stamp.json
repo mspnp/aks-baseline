@@ -118,7 +118,8 @@
         "acrPullRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
         "managedIdentityOperatorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830')]",
         "virtualMachineContributorRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
-        "readerRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+        "keyVaultReader": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/21090545-7ca7-4776-b22c-e363652d74d2')]",
+        "keyVaultSecretsUserRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6')]",
         "clusterAdminRoleId": "b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b",
         "clusterReaderRoleId": "7f6c6a51-bcf8-42ba-9220-52d62157d7db",
         "serviceClusterUserRoleId": "4abbcc35-e782-43d8-92c5-2d3f1bd2253f",
@@ -185,7 +186,7 @@
         },
         {
             "type": "Microsoft.KeyVault/vaults",
-            "apiVersion": "2019-09-01",
+            "apiVersion": "2021-06-01-preview",
             "name": "[variables('keyVaultName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -193,45 +194,19 @@
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')]"
             ],
             "properties": {
-                "accessPolicies": [
-                    {
-                        "tenantId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'mi-appgateway-frontend')).tenantId]",
-                        "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'mi-appgateway-frontend')).principalId]",
-                        "permissions": {
-                            "secrets": [
-                                "get"
-                            ],
-                            "certificates": [
-                                "get"
-                            ],
-                            "keys": []
-                        }
-                    },
-                    {
-                        "tenantId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','podmi-ingress-controller')).tenantId]",
-                        "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','podmi-ingress-controller')).principalId]",
-                        "permissions": {
-                            "secrets": [
-                                "get"
-                            ],
-                            "certificates": [
-                                "get"
-                            ],
-                            "keys": []
-                        }
-                    }
-                ],
+                "accessPolicies": [], // Azure RBAC is used instead
                 "sku": {
                     "family": "A",
                     "name": "standard"
                 },
                 "tenantId": "[subscription().tenantId]",
                 "networkAcls": {
-                    "bypass": "AzureServices",
-                    "defaultAction": "Allow",
+                    "bypass": "AzureServices", // Required for AppGW communication
+                    "defaultAction": "Deny",
                     "ipRules": [],
                     "virtualNetworkRules": []
                 },
+                "enableRbacAuthorization": true,
                 "enabledForDeployment": false,
                 "enabledForDiskEncryption": false,
                 "enabledForTemplateDeployment": false,
@@ -240,26 +215,24 @@
             "resources": [
                 {
                     "type": "secrets",
-                    "apiVersion": "2019-09-01",
-                    "name": "sslcert",
+                    "apiVersion": "2021-06-01-preview",
+                    "name": "gateway-public-cert",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName') )]"
                     ],
                     "properties": {
-                        "value": "[parameters('appGatewayListenerCertificate')]",
-                        "recoveryLevel": "Purgeable"
+                        "value": "[parameters('appGatewayListenerCertificate')]"
                     }
                 },
                 {
                     "type": "secrets",
-                    "apiVersion": "2019-09-01",
+                    "apiVersion": "2021-06-01-preview",
                     "name": "appgw-ingress-internal-aks-ingress-tls",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
                     ],
                     "properties": {
-                        "value": "[parameters('aksIngressControllerCertificate')]",
-                        "recoveryLevel": "Purgeable"
+                        "value": "[parameters('aksIngressControllerCertificate')]"
                     }
                 },
                 {
@@ -289,14 +262,59 @@
                 {
                     "type": "providers/roleAssignments",
                     "apiVersion": "2018-09-01-preview",
-                    "name": "[concat('Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('readerRole')))]",
+                    "name": "[concat('Microsoft.Authorization/', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultSecretsUserRole')))]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'mi-appgateway-frontend')]"
+                    ],
+                    "comments": "Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.",
+                    "properties": {
+                        "roleDefinitionId": "[variables('keyVaultSecretsUserRole')]",
+                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'mi-appgateway-frontend')).principalId]",
+                        "principalType": "ServicePrincipal"
+                    }
+                },
+                {
+                    "type": "providers/roleAssignments",
+                    "apiVersion": "2018-09-01-preview",
+                    "name": "[concat('Microsoft.Authorization/', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultReader')))]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'mi-appgateway-frontend')]"
+                    ],
+                    "comments": "Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.",
+                    "properties": {
+                        "roleDefinitionId": "[variables('keyVaultReader')]",
+                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'mi-appgateway-frontend')).principalId]",
+                        "principalType": "ServicePrincipal"
+                    }
+                },
+                {
+                    "type": "providers/roleAssignments",
+                    "apiVersion": "2018-09-01-preview",
+                    "name": "[concat('Microsoft.Authorization/', guid(resourceGroup().id, 'podmi-ingress-controller', variables('keyVaultSecretsUserRole')))]",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
                         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')]"
                     ],
-                    "comments": "Grant the AKS cluster ingress controller pod managed identity with reader role permissions over Key Vault; paired with the Access Policy, this allows our ingress controller to pull certificates.",
+                    "comments": "Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates.",
                     "properties": {
-                        "roleDefinitionId": "[variables('readerRole')]",
+                        "roleDefinitionId": "[variables('keyVaultSecretsUserRole')]",
+                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')).principalId]",
+                        "principalType": "ServicePrincipal"
+                    }
+                },
+                {
+                    "type": "providers/roleAssignments",
+                    "apiVersion": "2018-09-01-preview",
+                    "name": "[concat('Microsoft.Authorization/', guid(resourceGroup().id, 'podmi-ingress-controller', variables('keyVaultReader')))]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')]"
+                    ],
+                    "comments": "Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates.",
+                    "properties": {
+                        "roleDefinitionId": "[variables('keyVaultReader')]",
                         "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')).principalId]",
                         "principalType": "ServicePrincipal"
                     }
@@ -448,7 +466,10 @@
             "name": "[variables('agwName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName') )]"
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+                "[resourceId('Microsoft.Network/privateEndpoints', 'nodepools-to-akv')]",
+                "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultReader')))]",
+                "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultSecretsUserRole')))]"
             ],
             "identity": {
                 "type": "UserAssigned",
@@ -456,11 +477,7 @@
                     "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',  'mi-appgateway-frontend')]": {}
                 }
             },
-            "zones": [
-                "1",
-                "2",
-                "3"
-            ],
+            "zones": "[pickZones('Microsoft.Network', 'applicationGateways', parameters('location'), 3)]",
             "properties": {
                 "sku": {
                     "name": "WAF_v2",
@@ -528,7 +545,7 @@
                     {
                         "name": "[concat(variables('agwName'), '-ssl-certificate')]",
                         "properties": {
-                            "keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/sslcert')]"
+                            "keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/gateway-public-cert')]"
                         }
                     }
                 ],
@@ -1035,7 +1052,10 @@
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceImageSource'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceInternalLoadBalancers'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceResourceLimits'))]",
-                "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameRoRootFilesystem'))]"
+                "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameRoRootFilesystem'))]",
+                "[resourceId('Microsoft.Network/privateEndpoints', 'nodepools-to-akv')]",
+                "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'podmi-ingress-controller', variables('keyVaultReader')))]",
+                "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'podmi-ingress-controller', variables('keyVaultSecretsUserRole')))]"
             ],
             "properties": {
                 "kubernetesVersion": "[parameters('kubernetesVersion')]",
@@ -1945,8 +1965,8 @@
         },
         {
             "type": "Microsoft.ManagedIdentity/userAssignedIdentities/providers/roleAssignments",
-            "name": "[concat('podmi-ingress-controller', '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('managedIdentityOperatorRole')))]",
             "apiVersion": "2018-09-01-preview",
+            "name": "[concat('podmi-ingress-controller', '/Microsoft.Authorization/', guid(resourceGroup().id, 'podmi-ingress-controller', variables('managedIdentityOperatorRole')))]",
             "comments": "Grant the AKS cluster with Manage Identity Operator role permissions over the managed identity used for the ingress controller.  Allows it to be assigned to the underlying VMSS.",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
