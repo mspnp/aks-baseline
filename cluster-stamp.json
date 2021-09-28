@@ -201,7 +201,7 @@
                 },
                 "tenantId": "[subscription().tenantId]",
                 "networkAcls": {
-                    "bypass": "AzureServices", // "None", // Required for AppGW communication
+                    "bypass": "AzureServices", // Required for AppGW communication
                     "defaultAction": "Deny", // Production readiness change: This is only needed because we upload a certificate after deployment as part of the instructions. This can be set to "Deny" for runtime.
                     "ipRules": [/*
                         {
@@ -476,7 +476,9 @@
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName') )]",
-                "[resourceId('Microsoft.Network/privateEndpoints', 'nodepools-to-akv')]"
+                "[resourceId('Microsoft.Network/privateEndpoints', 'nodepools-to-akv')]",
+                "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', 'Microsoft.Authorization', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultReader')))]",
+                "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', 'Microsoft.Authorization', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultSecretsUserRole')))]"
             ],
             "identity": {
                 "type": "UserAssigned",
@@ -1064,7 +1066,9 @@
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceInternalLoadBalancers'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceResourceLimits'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameRoRootFilesystem'))]",
-                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+                "[resourceId('Microsoft.Network/privateEndpoints', 'nodepools-to-akv')]",
+                "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', 'Microsoft.Authorization', guid(resourceGroup().id, 'podmi-ingress-controller', variables('keyVaultReader')))]",
+                "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', 'Microsoft.Authorization', guid(resourceGroup().id, 'podmi-ingress-controller', variables('keyVaultSecretsUserRole')))]"
             ],
             "properties": {
                 "kubernetesVersion": "[parameters('kubernetesVersion')]",
