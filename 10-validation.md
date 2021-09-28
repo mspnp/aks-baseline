@@ -14,7 +14,7 @@ This section will help you to validate the workload is exposed correctly and res
 
    ```bash
    # query the Azure Application Gateway Public Ip
-   export APPGW_PUBLIC_IP=$(az deployment group show --resource-group rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
+   APPGW_PUBLIC_IP=$(az deployment group show --resource-group rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
    ```
 
 1. Create `A` Record for DNS
@@ -25,7 +25,7 @@ This section will help you to validate the workload is exposed correctly and res
 
 1. Browse to the site (e.g. <https://bicycle.contoso.com>).
 
-   > :bulb: A TLS warning will be present due to using a self-signed certificate.
+   > :bulb: A TLS warning will be present due to using a self-signed certificate. You can ignore it or import the self-signed cert (`appgw.pfx`) to your user's trusted root store.
 
 ## Validate reader access to the a0008 namespace. _Optional._
 
