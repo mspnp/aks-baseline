@@ -1,0 +1,108 @@
+# This workflow will deploy our cluster stamp, without the workload.
+#
+# Follow the next steps to use this workflow:
+#
+# 1. Your repository has the following structure.
+#    .
+#    ├── .github
+#    │   ├── workflows
+#    │   │   └── aks-deploy.yaml
+#    ├── cluster-manifests
+#    │   ├── a0008/*
+#    │   ├── cluster-baseline-settings/*
+#    │   ├── kube-system/*
+#    │   ├── cluster-rbac.yaml
+#    └── cluster-stamp.json
+#
+# 2. Ensure you have followed the prior sections before deploying this AKS cluster. This way, you will be capable of setting:
+#    - the secrets values as detailed in the next step.
+#    - the environment variables from the env dictionary at the worklflow level.
+#
+# 3. Create the following secrets in your GitHub repository:
+#    - AZURE_CREDENTIALS                         The Azure Service Principal that will deploy the AKS cluster in your Azure subscription. For more information please take a look at https://github.com/Azure/login#configure-deployment-credentials
+#    - APP_GATEWAY_LISTENER_CERTIFICATE_BASE64   The certificate data for app gateway TLS termination. It is base64. Ideally fetch this secret from a platform-managed secret store such as Azure KeyVault: https://github.com/marketplace/actions/azure-key-vault-get-secrets
+#    - AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 The Base64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate.
+
+name: Deploy AKS Secure Baseline cluster stamp and Flux
+
+on:
+  push:
+    paths:
+      - 'cluster-stamp.json'
+      - '.github/workflows/aks-deploy.yaml'
+    branches: [ main ]
+  pull_request:
+    paths:
+      - 'cluster-stamp.json'
+      - '.github/workflows/aks-deploy.yaml'
+    branches: [ main ]
+
+env:
+  RESOURCE_GROUP_LOCATION: 'eastus2'                              # The location where the resource group is going to be created
+  RESOURCE_GROUP: 'rg-bu0001a0008'                                           # The name for the AKS cluster resource group
+  AKS_LOCATION: 'eastus2'                                         # The location where the AKS cluster is going to be deployed
+  GEO_REDUNDANCY_LOCATION: 'centralus'                              # The location for Azure resources that support native geo-redunancy. Should be different than the location parameter and ideally should be a paired region - https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions. This region does not need to support availability zones.
+  TARGET_VNET_RESOURCE_ID: ''                       # The regional network spoke VNet Resource ID that the cluster will be joined to
+  K8S_RBAC_AAD_PROFILE_TENANTID: ''          # The tenant to integrate AKS-managed Azure AD
+  K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID: '' # The Azure AD group object ID that has admin access to the AKS cluster
+  K8S_RBAC_AAD_A0008_READER_GROUP_OBJECTID: ''  # The Azure AD group object ID that has readonly access to the a0008 namespace in the AKS cluster
+  CLUSTER_AUTHORIZED_IP_RANGES: '[]'                                                # By default, this deployment will allow unrestricted access to your cluster's API Server. You should limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, bastion subnet, build agents, or any other networks you'll administer the cluster from), and can do so by adding a CLUSTER_AUTHORIZED_IP_RANGES="['managementRange1', 'managementRange2', 'AzureFirewallIP/32']"" parameter.
+  DOMAIN_NAME: ''                                                      # The domain name to use for App Gateway and AKS ingress.
+jobs:
+  deploy:
+    name: Deploy AKS cluster and Flux
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Login into your Azure Subscription using your Azure credentials - make sure the credentials has write permissions for the specific resource group/subscription. The credentials should be stored in GitHub Secrets - (Go to Settings Tab ->Secrets)
+    - name: Azure Login
+      uses: Azure/login@v1.1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    # Deploy the cluster into your environment, assuming all prerequisites are up and running.
+    - name: Azure CLI - Deploy AKS cluster
+      id: aks-cluster
+      uses: Azure/cli@v1.0.0
+      with:
+        inlineScript: |
+         az group create --name ${{ env.RESOURCE_GROUP }} --location ${{ env.RESOURCE_GROUP_LOCATION }}
+         az deployment group $([[ ${{ github.event_name }} = pull_request ]] && echo what-if --no-pretty-print || echo create) \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --template-file "cluster-stamp.json" \
+            --name "cluster-stamp" \
+            --parameters \
+              location=${{ env.AKS_LOCATION }} \
+              geoRedundancyLocation=${{ env.GEO_REDUNDANCY_LOCATION }} \
+              targetVnetResourceId=${{ env.TARGET_VNET_RESOURCE_ID }} \
+              k8sControlPlaneAuthorizationTenantId=${{ env.K8S_RBAC_AAD_PROFILE_TENANTID }} \
+              clusterAdminAadGroupObjectId=${{ env.K8S_RBAC_AAD_PROFILE_ADMIN_GROUP_OBJECTID }} \
+              a0008NamespaceReaderAadGroupObjectId=${{ env.K8S_RBAC_AAD_A0008_READER_GROUP_OBJECTID }} \
+              clusterAuthorizedIPRanges=${{ env.CLUSTER_AUTHORIZED_IP_RANGES}} \
+              appGatewayListenerCertificate=${{ secrets.APP_GATEWAY_LISTENER_CERTIFICATE_BASE64 }} \
+              aksIngressControllerCertificate=${{ secrets.AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 }} \
+              domainName=${{ env.DOMAIN_NAME }}
+
+          echo "::set-output name=name::$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
+        azcliversion: 2.17.1
+
+    # Set the AKS cluster context
+    - name: Set the AKS cluster context
+      uses: Azure/aks-set-context@v1
+      if: github.event_name == 'push'
+      with:
+        creds: '${{ secrets.AZURE_CREDENTIALS }}'
+        cluster-name: ${{ steps.aks-cluster.outputs.name }}
+        resource-group: ${{ env.RESOURCE_GROUP }}
+
+    # Create the cluster-baseline-settings namespace and deploy Flux into it
+    - name: Create the cluster-baseline-settings namespace and deploy Flux
+      uses: Azure/k8s-deploy@v1
+      if: github.event_name == 'push'
+      with:
+        namespace: 'cluster-baseline-settings'
+        manifests: |
+          cluster-manifests/cluster-baseline-settings/ns-cluster-baseline-settings.yaml
+          cluster-manifests/cluster-baseline-settings/flux.yaml
