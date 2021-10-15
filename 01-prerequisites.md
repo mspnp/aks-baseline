@@ -57,6 +57,8 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 
 1. Ensure [OpenSSL is installed](https://github.com/openssl/openssl#download) in order to generate self-signed certs used in this implementation. _OpenSSL is already installed in Azure Cloud Shell._
 
+   > :warning: Some shells may have the `openssl` command aliased for LibreSSL. LibreSSL will not work with the instructions found here. You can check this by running `openssl version` and you should see output that says `OpenSSL <version>` and not `LibreSSL <version>`.
+
 ### Next step
 
 :arrow_forward: [Generate your client-facing TLS certificate](./02-ca-certificates.md)
