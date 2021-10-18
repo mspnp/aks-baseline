@@ -99,7 +99,7 @@ The example workload uses the standard dotnet logger interface, which are captur
 
    ```
    let podInventory = KubePodInventory
-   | where ContainerName endswith "aspnetcore-webapp-sample"
+   | where ContainerName endswith "aspnet-webapp-sample"
    | distinct ContainerID, ContainerName
    | project-rename Name=ContainerName;
    ContainerLog
