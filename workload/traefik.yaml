@@ -38,6 +38,7 @@ rules:
       - watch
   - apiGroups:
       - extensions
+      - networking.k8s.io
     resources:
       - ingresses/status
     verbs:
@@ -46,6 +47,7 @@ rules:
       - traefik.containo.us
     resources:
       - middlewares
+      - middlewaretcps
       - ingressroutes
       - traefikservices
       - ingressroutetcps
@@ -153,29 +155,6 @@ data:
       [tls.options.default]
         minVersion = "VersionTLS12"
         sniStrict = true
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: traefik-ingress-service
-  namespace: a0008
-  labels:
-    app.kubernetes.io/name: traefik-ingress-ilb
-    app.kubernetes.io/instance: traefik-ingress-ilb
-  annotations:
-    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-clusteringressservices"
-spec:
-  type: LoadBalancer
-  loadBalancerIP: 10.240.4.4
-  externalTrafficPolicy: Local
-  selector:
-    app.kubernetes.io/name: traefik-ingress-ilb
-    app.kubernetes.io/instance: traefik-ingress-ilb
-  ports:
-  - port: 443
-    name: https
-    targetPort: websecure
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -297,3 +276,32 @@ spec:
           emptyDir: {}
       nodeSelector:
        agentpool: npuser01
+---
+apiVersion: v1
+kind: List
+metadata:
+  name: traefik-ingress-service
+items:
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: traefik-ingress-service
+      namespace: a0008
+      labels:
+        app.kubernetes.io/name: traefik-ingress-ilb
+        app.kubernetes.io/instance: traefik-ingress-ilb
+      annotations:
+        service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+        service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-clusteringressservices"
+    spec:
+      type: LoadBalancer
+      loadBalancerIP: 10.240.4.4
+      externalTrafficPolicy: Local
+      selector:
+        app.kubernetes.io/name: traefik-ingress-ilb
+        app.kubernetes.io/instance: traefik-ingress-ilb
+      ports:
+      - port: 443
+        name: "https"
+        targetPort: "websecure"
+        protocol: "TCP"
