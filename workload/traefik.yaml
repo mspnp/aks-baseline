@@ -38,6 +38,7 @@ rules:
       - watch
   - apiGroups:
       - extensions
+      - networking.k8s.io
     resources:
       - ingresses/status
     verbs:
@@ -46,6 +47,7 @@ rules:
       - traefik.containo.us
     resources:
       - middlewares
+      - middlewaretcps
       - ingressroutes
       - traefikservices
       - ingressroutetcps
@@ -174,8 +176,9 @@ spec:
     app.kubernetes.io/instance: traefik-ingress-ilb
   ports:
   - port: 443
-    name: https
-    targetPort: websecure
+    name: "https"
+    targetPort: "websecure"
+    protocol: "TCP"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -224,10 +227,10 @@ spec:
         # PRODUCTION READINESS CHANGE REQUIRED
         # This image should be sourced from a non-public container registry, such as the
         # one deployed along side of this reference implementation.
-        # az acr import --source docker.io/library/traefik:v2.4.8 -n <your-acr-instance-name>
+        # az acr import --source docker.io/library/traefik:v2.5.3 -n <your-acr-instance-name>
         # and then set this to
-        # image: <your-acr-instance-name>.azurecr.io/library/traefik:v2.4.8
-      - image: docker.io/library/traefik:v2.4.8
+        # image: <your-acr-instance-name>.azurecr.io/library/traefik:v2.5.3
+      - image: docker.io/library/traefik:v2.5.3
         name: traefik-ingress-controller
         resources:
           requests:
@@ -265,6 +268,7 @@ spec:
           containerPort: 8082
           protocol: TCP
         securityContext:
+          allowPrivilegeEscalation: false
           capabilities:
             drop:
             - ALL
