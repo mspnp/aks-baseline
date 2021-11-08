@@ -1132,6 +1132,9 @@
                             "logAnalyticsWorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
                         }
                     },
+                    "extensionManager": {
+                        "enabled": true
+                    },
                     "aciConnectorLinux": {
                         "enabled": false
                     },
@@ -1209,6 +1212,28 @@
                 "tier": "Paid"
             },
             "resources": [
+                {
+                    "type": "providers/extensions",
+                    "apiVersion": "2021-09-01",
+                    "name": "Microsoft.KubernetesConfiguration/flux",
+                    "comments": "Enrolls the cluster is GitOps management via flux",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+                    ],
+                    "properties": {
+                        "extensionType": "Microsoft.Flux",
+                        "autoUpgradeMinorVersion": true,
+                        "releaseTrain": "Stable",
+                        "scope": {
+                            "cluster": {
+                                "releaseNamespace": "flux-system",
+                                "configurationSettings": {},
+                                "configurationProtectedSettings": {}
+                            }
+                        }
+                        
+                    }
+                },
                 {
                     "type": "providers/roleAssignments",
                     "apiVersion": "2020-04-01-preview",
@@ -2083,7 +2108,8 @@
                             "kube-system",
                             "gatekeeper-system",
                             "azure-arc",
-                            "cluster-baseline-settings"
+                            "cluster-baseline-settings",
+                            "flux-system" /* Flux add-on, not all containers have limits defined by Microsoft */
                         ]
                     },
                     "effect": {
@@ -2103,7 +2129,7 @@
                 "policyDefinitionId": "[variables('policyResourceIdEnforceImageSource')]",
                 "parameters": {
                     "allowedContainerImagesRegex": {
-                        "value": "[concat(variables('defaultAcrName'),'.azurecr.io/.+$|mcr.microsoft.com/.+$|docker.io/fluxcd/flux.+$|docker.io/weaveworks/kured.+$|docker.io/library/.+$')]"
+                        "value": "[concat(variables('defaultAcrName'),'.azurecr.io/.+$|mcr.microsoft.com/.+$|azurearcfork8s.azurecr.io/azurearcflux/images/stable/.+$|docker.io/fluxcd/flux.+$|docker.io/weaveworks/kured.+$|docker.io/library/.+$')]"
                     },
                     "excludedNamespaces": {
                         "value": [
