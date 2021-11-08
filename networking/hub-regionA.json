@@ -618,7 +618,7 @@
                                     },
                                     {
                                         "ruleType": "ApplicationRule",
-                                        "name": "pull-flux-images",
+                                        "name": "flux-addon-runtime-requirements",
                                         "protocols": [
                                             {
                                                 "protocolType": "Https",
@@ -628,11 +628,11 @@
                                         "fqdnTags": [],
                                         "webCategories": [],
                                         "targetFqdns": [
-                                            "*.docker.com",
-                                            "*.docker.io",
-                                            "docker.io",
-                                            "ghcr.io",
-                                            "github-production-container-registry.s3.amazonaws.com"
+                                            "azurearcfork8s.azurecr.io",
+                                            "[concat(parameters('location'), '.dp.kubernetesconfiguration.azure.com')]",
+                                            "mcr.microsoft.com",
+                                            "management.azure.com",
+                                            "login.microsoftonline.com"
                                         ],
                                         "targetUrls": [],
                                         "terminateTLS": false,
