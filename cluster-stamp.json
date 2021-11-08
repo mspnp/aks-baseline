@@ -1216,7 +1216,7 @@
                     "type": "providers/extensions",
                     "apiVersion": "2021-09-01",
                     "name": "Microsoft.KubernetesConfiguration/flux",
-                    "comments": "Enrolls the cluster is GitOps management via flux",
+                    "comments": "Ensures that flux add-on (extension) is installed.",
                     "dependsOn": [
                         "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
                     ],
@@ -1232,6 +1232,47 @@
                             }
                         }
                         
+                    }
+                },
+                {
+                    "type": "providers/fluxConfigurations",
+                    "apiVersion": "2021-11-01-preview",
+                    "name": "Microsoft.KubernetesConfiguration/bootstrap",
+                    "comments": "Bootstraps your cluster using content from your repo.",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ContainerService/managedClusters/providers/extensions', variables('clusterName'), 'Microsoft.KubernetesConfiguration', 'flux')]",
+                        "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+                    ],
+                    "properties": {
+                        "scope": "Cluster",
+                        "namespace": "flux-system",
+                        "sourceKind": "GitRepository",
+                        "gitRepository": {
+                            "url": "https://github.com/mspnp/aks-secure-baseline",
+                            "timeoutInSeconds": 600,
+                            "syncIntervalInSeconds": 600,
+                            "repositoryRef": {
+                                "branch": "main",
+                                "tag": "[null()]",
+                                "semver": "[null()]",
+                                "commit": "[null()]"
+                            },
+                            "sshKnownHosts": "",
+                            "httpsUser": "[null()]",
+                            "httpsCAFile": "[null()]",
+                            "localAuthRef": "[null()]"
+                        },
+                        "kustomizations": {
+                            "unified": {
+                                "path": "./cluster-manifests",
+                                "dependsOn": [],
+                                "timeoutInSeconds": 600,
+                                "syncIntervalInSeconds": 600,
+                                "retryIntervalInSeconds": "[null()]",
+                                "prune": true,
+                                "force": false
+                            }
+                        }
                     }
                 },
                 {
