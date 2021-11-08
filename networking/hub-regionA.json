@@ -634,7 +634,9 @@
                                             "management.azure.com",
                                             "login.microsoftonline.com",
                                             "*.blob.core.windows.net", // required for the extension installer to download the helm chart install flux. This storage account is not predictable, but does look like eusreplstore196 for example.
-                                            "azurearcfork8s.azurecr.io" // required for a few of the images installed by the extension
+                                            "azurearcfork8s.azurecr.io", // required for a few of the images installed by the extension,
+                                            "*.docker.io", // Only required if you use the default bootstrapping manifests included in this repo. Kured is sourced from here by default.
+                                            "*.docker.com" // Only required if you use the default bootstrapping manifests included in this repo. Kured is sourced from here by default.
                                         ],
                                         "targetUrls": [],
                                         "terminateTLS": false,
