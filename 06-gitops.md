@@ -1,17 +1,16 @@
-# Place the Cluster Under GitOps Management
+# Validate your cluster is bootstrapped and enrolled in GitOps
 
-Now that [the AKS cluster](./05-aks-cluster.md) has been deployed, the next step to configure a GitOps management solution on our cluster, Flux in this case.
+Now that [the AKS cluster](./05-aks-cluster.md) has been deployed, the next step to validate that your cluster has been placed under a GitOps management solution, Flux in this case.
 
 ## Steps
 
-GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically apply to their cluster as changes occur.  This reference implementation is focused on the baseline cluster, so Flux is managing cluster-level concerns. This is distinct from workload-level concerns, which would be possible as well to manage via Flux, and would typically be done by additional Flux operators in the cluster. The namespace `cluster-baseline-settings` will be used to provide a logical division of the cluster bootstrap configuration from workload configuration.  Examples of manifests that are applied:
+GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically apply to their cluster as changes occur. This reference implementation is focused on the baseline cluster, so Flux is managing cluster-level concerns. This is distinct from workload-level concerns, which would be possible as well to manage via Flux, and would typically be done by additional Flux configuration in the cluster. The namespace `cluster-baseline-settings` will be used to provide a logical division of the cluster bootstrap configuration from workload configuration.  Examples of manifests that are applied:
 
 * Cluster Role Bindings for the AKS-managed Azure AD integration
 * AAD Pod Identity
-* CSI driver and Azure KeyVault CSI Provider
 * the workload's namespace named `a0008`
 
-1. Install `kubectl` 1.20 or newer. (`kubctl` supports +/-1 Kubernetes version.)
+1. Install `kubectl` 1.21 or newer. (`kubctl` supports +/-1 Kubernetes version.)
 
    ```bash
    sudo az aks install-cli
@@ -45,62 +44,52 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes please refer to [the related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).
 
-1. Import cluster management images to your container registry.
 
-   > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for a system that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
+1. Validate your cluster is bootstrapped.
 
-   ```bash
-   # Get your ACR cluster name
-   export ACR_NAME_AKS_BASELINE=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   The bootstrapping process that already happened due to the usage of the Flux extension for AKS has set up the following, amoung other things
 
-   # Import cluster management images hosted in public container registries
-   az acr import --source docker.io/library/memcached:1.5.20 -n $ACR_NAME_AKS_BASELINE
-   az acr import --source docker.io/fluxcd/flux:1.21.1 -n $ACR_NAME_AKS_BASELINE
-   az acr import --source docker.io/weaveworks/kured:1.7.0 -n $ACR_NAME_AKS_BASELINE
-   ```
-
-1. Create the cluster baseline settings namespace.
+   * AAD Pod Identity
+   * the workload's namespace named `a0008`
+   * Installed kured
 
    ```bash
-   # Verify the user you logged in with has the appropriate permissions. This should result in a 
-   # "yes" response. If you receive "no" to this command, check which user you authenticated as
-   # and ensure they are assigned to the Azure AD Group you designated for cluster admins.
-   kubectl auth can-i create namespace -A
-
-   kubectl create namespace cluster-baseline-settings
+   kubectl get namespace a0008
+   kubectl get all -n cluster-baseline-settings
    ```
 
-1. Deploy Flux.
+   These commands will show you results that were due to the automatic bootstrapping process your cluster experienced due to the Flux GitOps extension. This content mirrors the content found in [`cluster-manifests`](./cluster-manifests), and commits made there will reflect in your cluster within minutes of making the change.
 
-   > If you used your own fork of this GitHub repo, update the [`flux.yaml`](./cluster-manifests/cluster-baseline-settings/flux.yaml) file to **reference your own repo and change the URL below** to point to yours as well. Also, since Flux will begin processing the manifests in [`cluster-manifests/`](./cluster-manifests/) now would be the right time push the following changes to your fork:
-   >
-   > * Update three `image` references to use your container registry instead of public container registries. See the comment in each file for instructions.
-   >   * update the two `image:` values in [`flux.yaml`](./cluster-manifests/cluster-baseline-settings/flux.yaml).
-   >   * update the one `image:` values in [`kured.yaml`](./cluster-manifests/cluster-baseline-settings/kured.yaml).
+The end result of all of this is that `kubectl` was not required for any part of the bootstrapping process of a cluster.  The usage of `kubectl`-based access should be reserved for emergency break-fix situations and not for day-to-day configuration operations on this cluster. Between templates for Azure Resource definitions, and the bootstrapping of manifests via the GitOps extension, all normal configuration activities can be performed without the need to use `kubectl`. You will however see us use it for the upcoming workload deployment. This is because the SDLC component of workloads are not in scope for this reference implementation, as this is focused the infrastructure and baseline configuration.
 
-   :warning: Deploying the flux configuration using the `flux.yaml` file unmodified from this repo will be deploying your cluster to take dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure _all_ image references you bring to your cluster are from _your_ container registry (as imported in the prior step) or another that you feel confident relying on.
+1. Test GitOps enrollement. _Optional._
+
+   If you wish to experience how GitOps keeps your cluster in sync with your repo, you could make the following change.
 
    ```bash
-   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/cluster-manifests/cluster-baseline-settings/flux.yaml
+   # TODO Pre Change
+
+   # TODO Change
+
+   git commit -a -m "TODO"
+   git push
    ```
 
-1. Wait for Flux to be ready before proceeding.
+   Now, after about ten minutes, you'll see that you cluster automatically updated to reflect that change.  This change could have been subjected to a pipeline for automated tests and even been gated behind a human review step before being merged.
 
    ```bash
-   kubectl wait -n cluster-baseline-settings --for=condition=ready pod --selector=app.kubernetes.io/name=flux --timeout=90s
+   #TODO Validation
    ```
 
-Generally speaking, this will be the last time you should need to use `kubectl` for day-to-day configuration operations on this cluster (outside of break-fix situations). Between ARM for Azure Resource definitions and the application of manifests via Flux, all normal configuration activities can be performed without the need to use `kubectl`. You will however see us use it for the upcoming workload deployment. This is because the SDLC component of workloads are not in scope for this reference implementation, as this is focused the infrastructure and baseline configuration.
+## Alternatives
 
-### Save your work in-progress
+Using the AKS Extension for Flux gives you a seemless bootstrapping process that applies immediately after the cluster resource is created in Azure. It also supports the inclusion of that bootstrapping as resource templates to align with your IaC strategy. Alterantively you could apply bootstrapping as a secondary step after the cluster is deployed and manage that process external to the lifecycle of the cluster. This can be performed via the az cli command `az ....` or still via templates. This does open your cluster up to a potentiall prolonged window between the cluster being deployed and your bootstrapping being applied.
 
-```bash
-# run the saveenv.sh script at any time to save environment variables created above to aks_baseline.env
-./saveenv.sh
+Likewise, Flux doesn't need to be installed as an extension and the GitOps operator of your choice (such as ArgoCD) could be installed as part of your external bootstrapping process.
 
-# if your terminal session gets reset, you can source the file to reload the environment variables
-# source aks_baseline.env
-```
+## Recommendations
+
+It is recommended to have a clearly defined bootstrapping process that occurs as close as practiable to the actual cluster deployment for immediate enrollment of your cluster into your internal processes and tooling. GitOps lends itself well to this desired outcome, and you're encouraged to explore its usage for your cluster bootstrapping process and optionally also workload-level concerns. Use a bootstrapping process that aligns with your desired objectives and constraints found within your organization and team.
 
 ### Next step
 

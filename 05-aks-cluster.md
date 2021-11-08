@@ -1,26 +1,15 @@
 # Deploy the AKS Cluster
 
-Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS cluster and its adjacent Azure resources.
+Now that the your [ACR instance is deployed and ready to support cluster bootstrapping](./05a-pre-gitops.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS cluster and its remaining adjacent Azure resources.
 
 ## Steps
 
-1. Create the AKS cluster resource group.
+1. Indicate your GitOps repo.
 
-   > :book: The app team working on behalf of business unit 0001 (BU001) is looking to create an AKS cluster of the app they are creating (Application ID: 0008). They have worked with the organization's networking team and have been provisioned a spoke network in which to lay their cluster and network-aware external resources into (such as Application Gateway). They took that information and added it to their [`cluster-stamp.json`](./cluster-stamp.json) and [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) files.
-   >
-   > They create this resource group to be the parent group for the application.
+   > If you cloned this repo, then the value will be the original mspnp GitHub organization's repo, which will mean that your cluster will be bootstraped using public container images. If instead you forked this repo, then the GitOps repo will be your own repo, and your cluster will be bootstrapped using container images references based on the values in your repo's manifest files. On the prior instruction screen you had the oppertunity to update those manifests to use your ACR instance.
 
    ```bash
-   # [This takes less than one minute.]
-   az group create --name rg-bu0001a0008 --location eastus2
-   ```
-
-1. Get the AKS cluster spoke VNet resource ID.
-
-   > :book: The app team will be deploying to a spoke VNet, that was already provisioned by the network team.
-
-   ```bash
-   RESOURCEID_VNET_CLUSTERSPOKE=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+   GITOPS_REPOURL=$(git config --get remote.origin.url)
    ```
 
 1. Deploy the cluster ARM template.  
@@ -29,8 +18,8 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
     **Option 1 - Deploy from the command line**
 
    ```bash
-   # [This takes about 15 minutes.]
-   az deployment group create -g rg-bu0001a0008 -f cluster-stamp.json -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE} clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE} a0008NamespaceReaderAadGroupObjectId=${AADOBJECTID_GROUP_A0008_READER_AKS_BASELINE} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC_AKS_BASELINE} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_AKS_BASELINE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE} domainName=${DOMAIN_NAME_AKS_BASELINE}
+   # [This takes about 18 minutes.]
+   az deployment group create -g rg-bu0001a0008 -f cluster-stamp.json -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE} clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE} a0008NamespaceReaderAadGroupObjectId=${AADOBJECTID_GROUP_A0008_READER_AKS_BASELINE} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC_AKS_BASELINE} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_AKS_BASELINE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE} domainName=${DOMAIN_NAME_AKS_BASELINE} gitOpsBootstrappingRepoHttpsUrl=${GITOPS_REPOURL} gitOpsBootstrappingRepoBranch=flux-v2-addon
    ```
 
    > Alteratively, you could have updated the [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) file and deployed as above, using `-p "@azuredeploy.parameters.prod.json"` instead of providing the individual key-value pairs.
