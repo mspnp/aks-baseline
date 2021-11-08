@@ -110,6 +110,22 @@
             "metadata": {
                 "description": "Domain name to use for App Gateway and AKS ingress."
             }
+        },
+        "gitOpsBootstrappingRepoHttpsUrl": {
+            "type": "string",
+            "defaultValue": "https://github.com/mspnp/aks-secure-baseline",
+            "minLength": 9,
+            "metadata": {
+                "description": "Your cluster will be bootstrapped from this git repo."
+            }
+        },
+        "gitOpsBootstrappingRepoBranch": {
+            "type": "string",
+            "defaultValue": "main",
+            "minLength": 1,
+            "metadata": {
+                "description": "You cluster will be bootstrapped from this branch in the identifed git repo."
+            }
         }
     },
     "variables": {
@@ -1248,11 +1264,11 @@
                         "namespace": "flux-system",
                         "sourceKind": "GitRepository",
                         "gitRepository": {
-                            "url": "https://github.com/mspnp/aks-secure-baseline",
+                            "url": "[parameters('gitOpsBootstrappingRepoHttpsUrl')]",
                             "timeoutInSeconds": 600,
                             "syncIntervalInSeconds": 600,
                             "repositoryRef": {
-                                "branch": "main",
+                                "branch": "[parameters('gitOpsBootstrappingRepoBranch')]",
                                 "tag": "[null()]",
                                 "semver": "[null()]",
                                 "commit": "[null()]"
