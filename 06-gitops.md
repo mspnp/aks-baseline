@@ -54,7 +54,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    * Installed kured
 
    ```bash
-   kubectl get namespace a0008
+   kubectl get namespaces
    kubectl get all -n cluster-baseline-settings
    ```
 

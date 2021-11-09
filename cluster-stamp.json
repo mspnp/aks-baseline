@@ -245,7 +245,7 @@
                 },
                 {
                     "type": "providers/roleAssignments",
-                    "apiVersion": "2018-09-01-preview",
+                    "apiVersion": "2020-04-01-preview",
                     "name": "[concat('Microsoft.Authorization/', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultSecretsUserRole')))]",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
@@ -260,7 +260,7 @@
                 },
                 {
                     "type": "providers/roleAssignments",
-                    "apiVersion": "2018-09-01-preview",
+                    "apiVersion": "2020-04-01-preview",
                     "name": "[concat('Microsoft.Authorization/', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultReader')))]",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
@@ -275,7 +275,7 @@
                 },
                 {
                     "type": "providers/roleAssignments",
-                    "apiVersion": "2018-09-01-preview",
+                    "apiVersion": "2020-04-01-preview",
                     "name": "[concat('Microsoft.Authorization/', guid(resourceGroup().id, 'podmi-ingress-controller', variables('keyVaultSecretsUserRole')))]",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
@@ -290,7 +290,7 @@
                 },
                 {
                     "type": "providers/roleAssignments",
-                    "apiVersion": "2018-09-01-preview",
+                    "apiVersion": "2020-04-01-preview",
                     "name": "[concat('Microsoft.Authorization/', guid(resourceGroup().id, 'podmi-ingress-controller', variables('keyVaultReader')))]",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
@@ -679,7 +679,7 @@
                     "resources": [
                         {
                             "type": "Microsoft.Authorization/roleAssignments",
-                            "apiVersion": "2018-09-01-preview",
+                            "apiVersion": "2020-04-01-preview",
                             "name": "[guid(resourceGroup().id)]",
                             "comments": "It is required to grant the AKS cluster with Virtual Machine Contributor role permissions over the cluster infrastructure resource group to work with Managed Identities and aad-pod-identity. Otherwise MIC component fails while attempting to update MSI on VMSS cluster nodes",
                             "properties": {
@@ -820,13 +820,14 @@
             "scope": "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
             "properties": {
                 "roleDefinitionId": "[variables('acrPullRole')]",
+                "description": "Allows AKS to pull container images from this ACR instance.",
                 "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-12-01').identityProfile.kubeletidentity.objectId]",
                 "principalType": "ServicePrincipal"
             }
         },
         {
             "type": "Microsoft.ContainerService/managedClusters",
-            "apiVersion": "2021-02-01",
+            "apiVersion": "2021-09-01",
             "name": "[variables('clusterName')]",
             "location": "[parameters('location')]",
             "tags": {
@@ -922,9 +923,9 @@
                             "logAnalyticsWorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
                         }
                     },
-                    "extensionManager": {
+                    /*"extensionManager": {
                         "enabled": true
-                    },
+                    },*/
                     "aciConnectorLinux": {
                         "enabled": false
                     },
@@ -1009,7 +1010,7 @@
                     "comments": "Ensures that flux add-on (extension) is installed.",
                     "dependsOn": [
                         "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]",
-                        "[resourceId('Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), variables('acrPullRole')))]"
+                        "[resourceId('Microsoft.ContainerRegistry/registries/providers/roleAssignments', variables('defaultAcrName'), 'Microsoft.Authorization', guid(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), variables('acrPullRole')))]"
                     ],
                     "properties": {
                         "extensionType": "Microsoft.Flux",
@@ -1032,7 +1033,7 @@
                     "comments": "Bootstraps your cluster using content from your repo.",
                     "dependsOn": [
                         "[resourceId('Microsoft.ContainerService/managedClusters/providers/extensions', variables('clusterName'), 'Microsoft.KubernetesConfiguration', 'flux')]",
-                        "[resourceId('Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), variables('acrPullRole')))]",
+                        "[resourceId('Microsoft.ContainerRegistry/registries/providers/roleAssignments', variables('defaultAcrName'), 'Microsoft.Authorization', guid(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), variables('acrPullRole')))]",
                         "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
                     ],
                     "properties": {
@@ -1041,8 +1042,8 @@
                         "sourceKind": "GitRepository",
                         "gitRepository": {
                             "url": "[parameters('gitOpsBootstrappingRepoHttpsUrl')]",
-                            "timeoutInSeconds": 600,
-                            "syncIntervalInSeconds": 600,
+                            "timeoutInSeconds": 180,
+                            "syncIntervalInSeconds": 300,
                             "repositoryRef": {
                                 "branch": "[parameters('gitOpsBootstrappingRepoBranch')]",
                                 "tag": "[null()]",
@@ -1058,8 +1059,8 @@
                             "unified": {
                                 "path": "./cluster-manifests",
                                 "dependsOn": [],
-                                "timeoutInSeconds": 600,
-                                "syncIntervalInSeconds": 600,
+                                "timeoutInSeconds": 300,
+                                "syncIntervalInSeconds": 300,
                                 "retryIntervalInSeconds": "[null()]",
                                 "prune": true,
                                 "force": false
@@ -1762,7 +1763,7 @@
         {
             "condition": "[variables('isUsingAzureRBACasKubernetesRBAC')]",
             "type": "Microsoft.Authorization/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
+            "apiVersion": "2020-04-01-preview",
             "name": "[guid('aad-admin-group', resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), parameters('clusterAdminAadGroupObjectId'))]",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
@@ -1770,6 +1771,7 @@
             "scope": "[concat('Microsoft.ContainerService/managedClusters/', variables('clusterName'))]",
             "properties": {
                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('clusterAdminRoleId'))]",
+                "description": "Members of this group are cluster admins of this cluster.",
                 "principalId": "[parameters('clusterAdminAadGroupObjectId')]",
                 "principalType": "Group"
             }
@@ -1777,7 +1779,7 @@
         {
             "condition": "[variables('isUsingAzureRBACasKubernetesRBAC')]",
             "type": "Microsoft.Authorization/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
+            "apiVersion": "2020-04-01-preview",
             "name": "[guid('aad-admin-group-sc', resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), parameters('clusterAdminAadGroupObjectId'))]",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
@@ -1785,6 +1787,7 @@
             "scope": "[concat('Microsoft.ContainerService/managedClusters/', variables('clusterName'))]",
             "properties": {
                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('serviceClusterUserRoleId'))]",
+                "description": "Members of this group are cluster users of this cluster.",
                 "principalId": "[parameters('clusterAdminAadGroupObjectId')]",
                 "principalType": "Group"
             }
@@ -1792,7 +1795,7 @@
         {
             "condition": "[and(variables('isUsingAzureRBACasKubernetesRBAC'), not(equals(parameters('a0008NamespaceReaderAadGroupObjectId'), parameters('clusterAdminAadGroupObjectId'))))]",
             "type": "Microsoft.Authorization/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
+            "apiVersion": "2020-04-01-preview",
             "name": "[guid('aad-a0008-reader-group', resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), parameters('a0008NamespaceReaderAadGroupObjectId'))]",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
@@ -1801,13 +1804,14 @@
             "properties": {
                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('clusterReaderRoleId'))]",
                 "principalId": "[parameters('a0008NamespaceReaderAadGroupObjectId')]",
+                "description": "Members of this group are cluster admins of the a0008 namespace in this cluster.",
                 "principalType": "Group"
             }
         },
         {
             "condition": "[and(variables('isUsingAzureRBACasKubernetesRBAC'), not(equals(parameters('a0008NamespaceReaderAadGroupObjectId'), parameters('clusterAdminAadGroupObjectId'))))]",
             "type": "Microsoft.Authorization/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
+            "apiVersion": "2020-04-01-preview",
             "name": "[guid('aad-a0008-reader-group-sc', resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), parameters('a0008NamespaceReaderAadGroupObjectId'))]",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
@@ -1816,12 +1820,13 @@
             "properties": {
                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('serviceClusterUserRoleId'))]",
                 "principalId": "[parameters('a0008NamespaceReaderAadGroupObjectId')]",
+                "description": "Members of this group are cluster users of this cluster.",
                 "principalType": "Group"
             }
         },
         {
             "type": "Microsoft.ManagedIdentity/userAssignedIdentities/providers/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
+            "apiVersion": "2020-04-01-preview",
             "name": "[concat('podmi-ingress-controller', '/Microsoft.Authorization/', guid(resourceGroup().id, 'podmi-ingress-controller', variables('managedIdentityOperatorRole')))]",
             "comments": "Grant the AKS cluster with Manage Identity Operator role permissions over the managed identity used for the ingress controller.  Allows it to be assigned to the underlying VMSS.",
             "dependsOn": [

@@ -63,7 +63,7 @@ The role of this pre-existing ACR instance is made more prominant when we think 
    :warning: Without updating these files and using your own fork, you will be deploying your cluster such that it takes dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure _all_ image references you bring to your cluster are from _your_ container registry (link imported in the prior step) or another that you feel confident relying on.
 
    ```bash
-   sed -i 's:docker.io:${ACR_NAME_AKS_BASELINE}.azurecr.io:' ./cluster-manifests/cluster-baseline-settings/kured.yaml
+   sed -i "s:docker.io:${ACR_NAME_AKS_BASELINE}.azurecr.io:" ./cluster-manifests/cluster-baseline-settings/kured.yaml
 
    git commit -a -m "Update image source to use my ACR instance instead of a public container registry."
    git push
