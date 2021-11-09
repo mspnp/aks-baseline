@@ -651,5 +651,5 @@ metadata:
   name: flux-extension-exception
   namespace: flux-system
 spec:
-  pooLabels:
+  podLabels:
     app.kubernetes.io/component: fluxconfig-agent
