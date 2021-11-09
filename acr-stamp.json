@@ -195,7 +195,7 @@
         {
             "type": "Microsoft.Network/privateEndpoints",
             "apiVersion": "2020-11-01",
-            "name": "[concat('to_', variables('vnetName'))]",
+            "name": "[concat('acr_to_', variables('vnetName'))]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerRegistry/registries/replications', variables('defaultAcrName'), parameters('geoRedundancyLocation'))]"
@@ -223,7 +223,7 @@
                     "name": "default",
                     "location": "[parameters('location')]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateEndpoints', concat('to_', variables('vnetName')))]",
+                        "[resourceId('Microsoft.Network/privateEndpoints', concat('acr_to_', variables('vnetName')))]",
                         "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
                     ],
                     "properties": {

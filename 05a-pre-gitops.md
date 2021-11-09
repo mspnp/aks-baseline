@@ -36,7 +36,7 @@ The role of this pre-existing ACR instance is made more prominant when we think 
 1. Deploy the container registry template.
 
    ```bash
-   # [This takes about four minutes.]
+   # [This takes about three minutes.]
    az deployment group create -g rg-bu0001a0008 -f acr-stamp.json -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE}
    ```
 
@@ -45,14 +45,14 @@ The role of this pre-existing ACR instance is made more prominant when we think 
    > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for a system that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
 
    ```bash
-   # Get your ACR cluster name
+   # Get your ACR instance name
    export ACR_NAME_AKS_BASELINE=$(az deployment group show -g rg-bu0001a0008 -n acr-stamp --query properties.outputs.containerRegistryName.value -o tsv)
 
-   # Import cluster management image(s) hosted in public container registries
+   # Import core image(s) hosted in public container registries to be used during bootstrapping
    az acr import --source docker.io/weaveworks/kured:1.7.0 -n $ACR_NAME_AKS_BASELINE
    ```
 
-   > In this walkthrough, there is only one image that is included in the bootstrapping process. It's included as an example/reference for this process. Your choice to use kured or any other images, including helm charts in your cluster is yours to make.
+   > In this walkthrough, there is only one image that is included in the bootstrapping process. It's included as an example/reference for this process. Your choice to use kured or any other images, including helm charts as part of your bootstrapping, in your cluster is yours to make.
 
 1. Update bootstrapping manifests to pull from your ACR instance. _Optional. Fork required._
 
@@ -63,7 +63,7 @@ The role of this pre-existing ACR instance is made more prominant when we think 
    :warning: Without updating these files and using your own fork, you will be deploying your cluster such that it takes dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure _all_ image references you bring to your cluster are from _your_ container registry (link imported in the prior step) or another that you feel confident relying on.
 
    ```bash
-   sed 's:docker.io:${ACR_NAME_AKS_BASELINE}.azurecr.io:' ./cluster-manifests/cluster-baseline-settings/kured.yaml
+   sed -i 's:docker.io:${ACR_NAME_AKS_BASELINE}.azurecr.io:' ./cluster-manifests/cluster-baseline-settings/kured.yaml
 
    git commit -a -m "Update image source to use my ACR instance instead of a public container registry."
    git push
