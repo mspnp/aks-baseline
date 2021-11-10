@@ -24,6 +24,8 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops.md), wrappi
    :warning: If you already have access to an appropriate certificate, or can procure one from your organization, consider using it for this step. For more information, please take a look at the [import certificate tutorial using Azure Key Vault](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate#import-a-certificate-to-key-vault).
 
    :warning: Do not use the certificate created by this script for actual deployments. The use of self-signed certificates are provided for ease of illustration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, _even for development purposes_.
+   
+   :warning: If uploading your key in a combined PEM file make sure the private key is encoded in PKCS8 format or it will be rejected by Azure Key Vault as unreadable.
 
    ```bash
    cat traefik-ingress-internal-aks-ingress-tls.crt traefik-ingress-internal-aks-ingress-tls.key > traefik-ingress-internal-aks-ingress-tls.pem
