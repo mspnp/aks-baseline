@@ -83,7 +83,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
    ```bash
    # Import ingress controller image hosted in public container registries
-   az acr import --source docker.io/library/traefik:v2.4.8 -n $ACR_NAME_AKS_BASELINE
+   az acr import --source docker.io/library/traefik:v2.5.3 -n $ACR_NAME_AKS_BASELINE
    ```
 
 1. Install the Traefik Ingress Controller.

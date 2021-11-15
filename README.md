@@ -24,7 +24,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 #### Azure platform
 
-- AKS v1.21
+- AKS v1.22
   - System and User [node pool separation](https://docs.microsoft.com/azure/aks/use-system-pools)
   - [AKS-managed Azure AD](https://docs.microsoft.com/azure/aks/managed-aad)
   - Azure AD-backed Kubernetes RBAC (_local user accounts disabled_)
@@ -39,7 +39,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 #### In-cluster OSS components
 
 - [Flux GitOps Operator](https://fluxcd.io)
-- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.4/routing/providers/kubernetes-ingress/)
+- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.5/routing/providers/kubernetes-ingress/)
 - [Azure AD Pod Identity](https://docs.microsoft.com/azure/aks/use-azure-ad-pod-identity)
 - [Secrets Store CSI Driver for Kubernetes](https://docs.microsoft.com/azure/aks/csi-secrets-store-driver)
 - [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
