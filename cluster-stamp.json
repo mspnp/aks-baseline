@@ -1019,7 +1019,14 @@
                         "scope": {
                             "cluster": {
                                 "releaseNamespace": "flux-system",
-                                "configurationSettings": {},
+                                "configurationSettings": {
+                                    "helm-controller.enabled": "false",
+                                    "source-controller.enabled": "true",
+                                    "kustomize-controller.enabled": "true",
+                                    "notification-controller.enabled": "false",
+                                    "image-automation-controller.enabled": "false",
+                                    "image-reflector-controller.enabled": "false"
+                                },
                                 "configurationProtectedSettings": {}
                             }
                         }
