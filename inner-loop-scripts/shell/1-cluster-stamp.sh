@@ -43,6 +43,8 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -subj "/CN=*.aks-ingress.contoso.com/O=Contoso Aks Ingress"
 AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64=$(cat traefik-ingress-internal-aks-ingress-tls.crt | base64 | tr -d '\n')
 
+# WARNING: Below hasn't yet been updated for Azure Key Vault RBAC support that came in https://github.com/mspnp/aks-secure-baseline/releases/tag/v1.21.2.2
+
 # AKS Cluster Creation. Advance Networking. AAD identity integration. This might take about 10 minutes
 # Note: By default, this deployment will allow unrestricted access to your cluster's API Server.
 #   You should limit access to the API Server to a set of well-known IP addresses (i.,e. your hub firewall IP, bastion subnet, build agents, or any other networks you'll administer the cluster from),

@@ -24,6 +24,9 @@ az acr import --source docker.io/weaveworks/kured:1.7.0 -n $ACR_NAME
 # Finally the app team wants to import a wildcard certificate *.aks-ingress.contoso.com to AzureKeyVault
 # A while later this certificate is going to be the one served by a Traefik Ingress Controller wich is
 # deployed downstream
+
+# WARNING: Below hasn't yet been updated for Azure Key Vault RBAC support that came in https://github.com/mspnp/aks-secure-baseline/releases/tag/v1.21.2.2
+
 KEYVAULT_NAME=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv) && \
 az keyvault set-policy --certificate-permissions import -n $KEYVAULT_NAME --upn $(az account show --query user.name -o tsv) && \
 cat traefik-ingress-internal-aks-ingress-tls.crt traefik-ingress-internal-aks-ingress-tls.key > traefik-ingress-internal-aks-ingress-tls.pem && \
