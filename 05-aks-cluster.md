@@ -132,6 +132,10 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 
 This deployment creates an SLA-backed Azure Container Registry for your cluster's needs. Your organization may have a central container registry for you to use, or your registry may be tied specifically to your application's infrastructure (as demonstrated in this implementation). **Only use container registries that satisfy the security and availability needs of your application.**
 
+## Application Gateway placement
+
+Azure Application Gateway, for this reference implementation, is placed in the same virtual network as the cluster nodes (isolated by subnets and related NSGs). This facilitates direct network line-of-sight from Application Gateway to the cluster's private load balancer and still allows for strong network boundry control. More importantly, this aligns with cluster operator team team owning the poing of ingress. Some organizations may instead leverage a perimeter network in which Application Gateway is managed centrally which resides in an entirely seperated virtual network. That topology is also fine, but you'll need to ensure there is secure and limited routing between that parimeter network and your internal private load balancer for your cluster. Also there will be additional coordination necessary between the cluster/workload operators and the team owning the Application Gateway.
+
 ### Next step
 
 :arrow_forward: [Place the cluster under GitOps management](./06-gitops.md)
