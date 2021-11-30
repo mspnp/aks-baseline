@@ -15,13 +15,16 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops.md), wrappi
    ```bash
    export KEYVAULT_NAME_AKS_BASELINE=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
    TEMP_ROLEASSIGNMENT_TO_UPLOAD_CERT=$(az role assignment create --role a4417e6f-fecd-4de8-b567-7b0420556985 --assignee-principal-type user --assignee-object-id $(az ad signed-in-user show --query 'objectId' -o tsv) --scope $(az keyvault show --name $KEYVAULT_NAME_AKS_BASELINE --query 'id' -o tsv) --query 'id' -o tsv)
+
+   # If you are behind a proxy or some other egress that does not give a static IP, you'll need to manually adjust the Azure Key Vault firewall to
+   # allow this traffic.
    CURRENT_IP_ADDRESS=$(curl -s https://ifconfig.io)
    az keyvault network-rule add -n $KEYVAULT_NAME_AKS_BASELINE --ip-address ${CURRENT_IP_ADDRESS}
    ```
 
 1. Import the AKS Ingress Controller's Wildcard Certificate for `*.aks-ingress.contoso.com`.
 
-   :warning: If you already have access to an appropriate certificate, or can procure one from your organization, consider using it for this step. For more information, please take a look at the [import certificate tutorial using Azure Key Vault](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate#import-a-certificate-to-key-vault).
+   :warning: If you already have access to an [appropriate certificate](https://docs.microsoft.com/azure/key-vault/certificates/certificate-scenarios#formats-of-import-we-support), or can procure one from your organization, consider using it for this step. For more information, please take a look at the [import certificate tutorial using Azure Key Vault](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate#import-a-certificate-to-key-vault).
 
    :warning: Do not use the certificate created by this script for actual deployments. The use of self-signed certificates are provided for ease of illustration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, _even for development purposes_.
 
@@ -32,7 +35,7 @@ The AKS Cluster has been enrolled in [GitOps management](./06-gitops.md), wrappi
 
 1. Remove Azure Key Vault import certificates permissions and network access for current user.
 
-   > The Azure Key Vault Policy for your user was a temporary policy to allow you to upload the certificate for this walkthrough. In actual deployments, you would manage these access policies via your ARM templates using [Azure RBAC for Key Vault data plane](https://docs.microsoft.com/azure/key-vault/general/secure-your-key-vault#data-plane-and-access-policies).
+   > The Azure Key Vault RBAC assignment for your user and network allowance was temporary to allow you to upload the certificate for this walkthrough. In actual deployments, you would manage these any RBAC policies via your ARM templates using [Azure RBAC for Key Vault data plane](https://docs.microsoft.com/azure/key-vault/general/secure-your-key-vault#data-plane-and-access-policies) and only network-allowed traffic would access your Key Vault.
 
    ```bash
    az keyvault network-rule remove -n $KEYVAULT_NAME_AKS_BASELINE --ip-address "${CURRENT_IP_ADDRESS}/32"
