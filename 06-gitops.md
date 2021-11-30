@@ -11,7 +11,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 * CSI driver and Azure KeyVault CSI Provider
 * the workload's namespace named `a0008`
 
-1. Install `kubectl` 1.20 or newer. (`kubctl` supports +/-1 Kubernetes version.)
+1. Install `kubectl` 1.22 or newer. (`kubctl` supports +/-1 Kubernetes version.)
 
    ```bash
    sudo az aks install-cli
@@ -64,7 +64,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    ```bash
    # Verify the user you logged in with has the appropriate permissions. This should result in a 
    # "yes" response. If you receive "no" to this command, check which user you authenticated as
-   # and ensure they are assigned to the Azure AD Group you designated for cluster admins.
+   # and ensure it is assigned to the Azure AD Group you designated for cluster admins.
    kubectl auth can-i create namespace -A
 
    kubectl create namespace cluster-baseline-settings

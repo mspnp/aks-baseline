@@ -36,9 +36,9 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
 
    > At this point, the route to the workload is established, SSL offloading configured, a network policy is in place to only allow Traefik to connect to your workload, and Traefik is configured to only accept requests from App Gateway.
 
-1. Give it a try and see a `403` HTTP response from Traefik.
+1. Test direct workload access from unauthorized network loactions. _Optional._
 
-   > You should expect a `403` HTTP response if you attempt to connect to the ingress controller _without_ going through the App Gateway. Likewise, if any workload other than the ingress controller attempts to reach the workload, the traffic will be denied via network policies.
+   > You should expect a `403` HTTP response from your ingress controller if you attempt to connect to it _without_ going through the App Gateway. Likewise, if any workload other than the ingress controller attempts to reach the workload, the traffic will be denied via network policies.
 
    ```bash
    kubectl run curl -n a0008 -i --tty --rm --image=mcr.microsoft.com/azure-cli --limits='cpu=200m,memory=128Mi'
@@ -49,7 +49,11 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    exit
    ```
 
-   > :beetle: You might receive a message about `--limits` being deprecated, you can [safely ignore that message](https://github.com/kubernetes/kubectl/issues/1101). Limits are still be honored; and in this deployment are required via Azure Policy for all pods running in your cluster.
+   > :beetle: You might receive a message about `--limits` being deprecated, you can [safely ignore that message](https://github.com/kubernetes/kubectl/issues/1101) if you are using kubectl 1.22. However, if you are running kubectl 1.23+, you will need to use the following command instead.
+
+   ```bash
+   kubectl run curl -n a0008 -i --tty --rm --image=mcr.microsoft.com/azure-cli --overrides='[{"op":"add","path":"/spec/containers/0/resources","value":{"limits":{"cpu":"200m","memory":"128Mi"}}}]' --override-type json
+   ```
 
    > From this container shell, you could also try to directly access the workload via `curl -I http://<aspnetapp-service-cluster-ip>`. Instead of getting back a `200 OK`, you'll receive a network timeout because of the [`allow-only-ingress-to-workload` network policy](./cluster-manifests/a0008/ingress-network-policy.yaml) that is in place.   
 
