@@ -1,6 +1,6 @@
 # End-to-End Validation
 
-Now that you have a workload deployed, the [ASP.NET Core Docker sample web app](./09-workload.md), you can start validating and exploring this reference implementation of the [AKS secure baseline cluster](./). In addition to the workload, there are some observability validation you can perform as well.
+Now that you have a workload deployed, the [ASP.NET Core Docker sample web app](./09-workload.md), you can start validating and exploring this reference implementation of the [AKS Baseline cluster](./). In addition to the workload, there are some observability validation you can perform as well.
 
 ## Validate the Web App
 

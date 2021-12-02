@@ -1,6 +1,6 @@
 # Deploy the AKS Cluster
 
-Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS cluster and its adjacent Azure resources.
+Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS Baseline reference implementation](./) is deploying the AKS cluster and its adjacent Azure resources.
 
 ## Steps
 
