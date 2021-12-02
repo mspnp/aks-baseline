@@ -23,7 +23,7 @@
 #    - APP_GATEWAY_LISTENER_CERTIFICATE_BASE64   The certificate data for app gateway TLS termination. It is base64. Ideally fetch this secret from a platform-managed secret store such as Azure KeyVault: https://github.com/marketplace/actions/azure-key-vault-get-secrets
 #    - AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64 The Base64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate.
 
-name: Deploy AKS Secure Baseline cluster stamp and Flux
+name: Deploy AKS Baseline cluster stamp and Flux
 
 on:
   push:
