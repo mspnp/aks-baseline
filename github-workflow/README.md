@@ -1,6 +1,6 @@
 # GitHub Actions Workflow
 
-> Note: This is part of the Azure Kubernetes Service (AKS) Baseline Cluster reference implementation. For more information check out the [readme file in the root](../README.md).
+> Note: This is part of the Azure Kubernetes Service (AKS) Baseline cluster reference implementation. For more information check out the [readme file in the root](../README.md).
 
 This cluster, as with any workload, should be managed via an automated deployment pipeline. In this reference implementation we provide a "getting started" GitHub Action workflow file that you can reference to build your own.
 
