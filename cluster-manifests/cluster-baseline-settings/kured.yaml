@@ -1,4 +1,4 @@
-# Source: https://github.com/weaveworks/kured/releases/download/1.7.0/kured-1.7.0-dockerhub.yaml
+# Source: https://github.com/weaveworks/kured/releases/download/1.9.0/kured-1.9.0-dockerhub.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -106,10 +106,10 @@ spec:
           # PRODUCTION READINESS CHANGE REQUIRED
           # This image should be sourced from a non-public container registry, such as the
           # one deployed along side of this reference implementation.
-          # az acr import --source docker.io/weaveworks/kured:1.7.0 -n <your-acr-instance-name>
+          # az acr import --source docker.io/weaveworks/kured:1.9.0 -n <your-acr-instance-name>
           # and then set this to
-          # image: <your-acr-instance-name>.azurecr.io/weaveworks/kured:1.7.0
-          image: docker.io/weaveworks/kured:1.7.0
+          # image: <your-acr-instance-name>.azurecr.io/weaveworks/kured:1.9.0
+          image: docker.io/weaveworks/kured:1.9.0
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -138,6 +138,7 @@ spec:
 #            - --lock-ttl=0
 #            - --prometheus-url=http://prometheus.monitoring.svc.cluster.local
 #            - --alert-filter-regexp=^RebootRequired$
+#            - --alert-firing-only=false
 #            - --reboot-sentinel=/var/run/reboot-required
 #            - --prefer-no-schedule-taint=""
 #            - --reboot-sentinel-command=""
@@ -151,8 +152,10 @@ spec:
 #            - --blocking-pod-selector=name=temperamental
 #            - --blocking-pod-selector=...
 #            - --reboot-days=sun,mon,tue,wed,thu,fri,sat
+#            - --reboot-delay=90s
 #            - --start-time=0:00
 #            - --end-time=23:59:59
 #            - --time-zone=UTC
 #            - --annotate-nodes=false
 #            - --lock-release-delay=30m
+#            - --log-format=text

@@ -1,6 +1,6 @@
 # GitHub Actions Workflow
 
-> Note: This is part of the Azure Kubernetes Service (AKS) Baseline Cluster reference implementation. For more information check out the [readme file in the root](../README.md).
+> Note: This is part of the Azure Kubernetes Service (AKS) Baseline cluster reference implementation. For more information check out the [readme file in the root](../README.md).
 
 This cluster, as with any workload, should be managed via an automated deployment pipeline. In this reference implementation we provide a "getting started" GitHub Action workflow file that you can reference to build your own.
 
@@ -14,7 +14,7 @@ Secrets should not be stored in this file, but instead should be stored as part 
 
 ## Workload
 
-The workload is NOT part of this deployment.  This is a deployment of the infrastructure only.  Separation of infrastructure and workload is recommended as it allows you to have distinct lifecycle and operational concerns.
+The workload is NOT part of this deployment. This is a deployment of the infrastructure only. Separation of infrastructure and workload is recommended as it allows you to have distinct lifecycle and operational concerns.
 
 ## Next Steps
 

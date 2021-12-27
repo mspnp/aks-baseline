@@ -1,6 +1,6 @@
 # Configure AKS Ingress Controller with Azure Key Vault integration
 
-Previously you have configured [workload prerequisites](./07-workload-prerequisites.md). These steps configure Traefik, the AKS ingress solution used in this reference implementation, so that it can securely expose the web app to your Application Gateway.
+Previously you have configured [workload prerequisites](./08-workload-prerequisites.md). These steps configure Traefik, the AKS ingress solution used in this reference implementation, so that it can securely expose the web app to your Application Gateway.
 
 ## Steps
 
@@ -11,7 +11,7 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
    TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
    ```
 
-1. Ensure Flux has created the following namespace.
+1. Ensure your bootstrapping process has created the following namespace.
 
    ```bash
    # press Ctrl-C once you receive a successful response
@@ -108,4 +108,4 @@ Previously you have configured [workload prerequisites](./07-workload-prerequisi
 
 ### Next step
 
-:arrow_forward: [Deploy the Workload](./09-workload.md)
+:arrow_forward: [Deploy the Workload](./10-workload.md)

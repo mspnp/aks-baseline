@@ -1,0 +1,249 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "0.0.0.1",
+    "parameters": {
+        "targetVnetResourceId": {
+            "type": "string",
+            "minLength": 79,
+            "metadata": {
+                "description": "The regional network spoke VNet Resource ID that the cluster will be joined to."
+            }
+        },
+        "location": {
+            "defaultValue": "eastus2",
+            "type": "string",
+            "allowedValues": [
+                "australiaeast",
+                "canadacentral",
+                "centralus",
+                "eastus",
+                "eastus2",
+                "westus2",
+                "francecentral",
+                "germanywestcentral",
+                "northeurope",
+                "southafricanorth",
+                "southcentralus",
+                "uksouth",
+                "westeurope",
+                "japaneast",
+                "southeastasia"
+            ],
+            "metadata": {
+                "description": "AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region. This needs to be the same region as the vnet provided in these parameters."
+            }
+        },
+        "geoRedundancyLocation": {
+            "defaultValue": "centralus",
+            "type": "string",
+            "allowedValues": [
+                "australiasoutheast",
+                "canadaeast",
+                "eastus2",
+                "westus",
+                "centralus",
+                "westcentralus",
+                "francesouth",
+                "germanynorth",
+                "westeurope",
+                "ukwest",
+                "northeurope",
+                "japanwest",
+                "southafricawest",
+                "northcentralus",
+                "eastasia",
+                "eastus",
+                "westus2",
+                "francecentral",
+                "uksouth",
+                "japaneast",
+                "southeastasia"
+            ],
+            "metadata": {
+                "description": "For Azure resources that support native geo-redunancy, provide the location the redundant service will have its secondary. Should be different than the location parameter and ideally should be a paired region - https://docs.microsoft.com/azure/best-practices-availability-paired-regions. This region does not need to support availability zones."
+            }
+        }
+    },
+    "variables": {
+        "subRgUniqueString": "[uniqueString('aks', subscription().subscriptionId, resourceGroup().id)]",
+
+        "clusterName": "[concat('aks-', variables('subRgUniqueString'))]",
+        "logAnalyticsWorkspaceName": "[concat('la-', variables('clusterName'))]",
+        "defaultAcrName": "[concat('acraks', variables('subRgUniqueString'))]",
+
+        "vnetName": "[split(parameters('targetVnetResourceId'),'/')[8]]",
+        "vnetAcrPrivateEndpointSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-clusternodes')]",
+        "acrPrivateDnsZonesName": "privatelink.azurecr.io"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2020-10-01",
+            "name": "[variables('logAnalyticsWorkspaceName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "sku": {
+                    "name": "PerGB2018"
+                },
+                "retentionInDays": 30
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2020-06-01",
+            "name": "[variables('acrPrivateDnsZonesName')]",
+            "location": "global",
+            "comments": "Enabling Azure Container Registry Private Link on vnet.",
+            "properties": {},
+            "resources": [
+                {
+                    "type": "virtualNetworkLinks",
+                    "apiVersion": "2020-06-01",
+                    "name": "[concat('to_', variables('vnetName'))]",
+                    "location": "global",
+                    "comments": "Enabling cluster vnet private zone DNS lookup - used by cluster vnet for direct DNS queries (ones not proxied via the hub).",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
+                    ],
+                    "properties": {
+                        "virtualNetwork": {
+                            "id": "[parameters('targetVnetResourceId')]"
+                        },
+                        "registrationEnabled": false
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.ContainerRegistry/registries",
+            "apiVersion": "2020-11-01-preview",
+            "name": "[variables('defaultAcrName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Premium"
+            },
+            "properties": {
+                "adminUserEnabled": false,
+                "networkRuleSet": {
+                    "defaultAction": "Deny",
+                    "virtualNetworkRules": [],
+                    "ipRules": []
+                },
+                "policies": {
+                    "quarantinePolicy": {
+                        "status": "disabled"
+                    },
+                    "trustPolicy": {
+                        "type": "Notary",
+                        "status": "disabled"
+                    },
+                    "retentionPolicy": {
+                        "days": 15,
+                        "status": "enabled"
+                    }
+                },
+                "publicNetworkAccess": "Disabled",
+                "encryption": {
+                    "status": "disabled"
+                },
+                "dataEndpointEnabled": true,
+                "networkRuleBypassOptions": "AzureServices",
+                "zoneRedundancy": "Disabled" // This Preview feature only supports three regions at this time, and eastus2's paired region (centralus), does not support this. So disabling for now.
+            },
+            "resources": [
+                {
+                    "type": "replications",
+                    "apiVersion": "2020-11-01-preview",
+                    "name": "[parameters('geoRedundancyLocation')]",
+                    "location": "[parameters('geoRedundancyLocation')]",
+                    "dependsOn": [
+                        "[variables('defaultAcrName')]"
+                    ],
+                    "properties": {}
+                },
+                {
+                    "type": "providers/diagnosticSettings",
+                    "apiVersion": "2017-05-01-preview",
+                    "name": "Microsoft.Insights/default",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
+                        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+                    ],
+                    "properties": {
+                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+                        "metrics": [
+                            {
+                                "timeGrain": "PT1M",
+                                "category": "AllMetrics",
+                                "enabled": true
+                            }
+                        ],
+                        "logs": [
+                            {
+                                "category": "ContainerRegistryRepositoryEvents",
+                                "enabled": true
+                            },
+                            {
+                                "category": "ContainerRegistryLoginEvents",
+                                "enabled": true
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2020-11-01",
+            "name": "[concat('acr_to_', variables('vnetName'))]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerRegistry/registries/replications', variables('defaultAcrName'), parameters('geoRedundancyLocation'))]"
+            ],
+            "properties": {
+                "subnet": {
+                    "id": "[variables('vnetAcrPrivateEndpointSubnetResourceId')]"
+                },
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "nodepools",
+                        "properties": {
+                            "privateLinkServiceId": "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
+                            "groupIds": [
+                                "registry"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "resources": [
+                {
+                    "type": "privateDnsZoneGroups",
+                    "apiVersion": "2020-11-01",
+                    "name": "default",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/privateEndpoints', concat('acr_to_', variables('vnetName')))]",
+                        "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
+                    ],
+                    "properties": {
+                        "privateDnsZoneConfigs": [
+                            {
+                                "name": "privatelink-azurecr-io",
+                                "properties": {
+                                    "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('acrPrivateDnsZonesName'))]"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "outputs": {
+        "containerRegistryName": {
+            "type": "string",
+            "value": "[variables('defaultAcrName')]"
+        }
+    }
+}

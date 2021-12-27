@@ -644,3 +644,12 @@ metadata:
 spec:
   podLabels:
     kubernetes.azure.com/managedby: aks
+---
+apiVersion: aadpodidentity.k8s.io/v1
+kind: AzurePodIdentityException
+metadata:
+  name: flux-extension-exception
+  namespace: flux-system
+spec:
+  podLabels:
+    app.kubernetes.io/component: fluxconfig-agent

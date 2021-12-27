@@ -1,36 +1,25 @@
 # Deploy the AKS Cluster
 
-Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS Baseline reference implementation](./) is deploying the AKS cluster and its adjacent Azure resources.
+Now that the your [ACR instance is deployed and ready to support cluster bootstrapping](./05-bootstrap-prep.md), the next step in the [AKS Baseline reference implementation](./) is deploying the AKS cluster and its remaining adjacent Azure resources.
 
 ## Steps
 
-1. Create the AKS cluster resource group.
+1. Indicate your bootstrapping repo.
 
-   > :book: The app team working on behalf of business unit 0001 (BU001) is looking to create an AKS cluster of the app they are creating (Application ID: 0008). They have worked with the organization's networking team and have been provisioned a spoke network in which to lay their cluster and network-aware external resources into (such as Application Gateway). They took that information and added it to their [`cluster-stamp.json`](./cluster-stamp.json) and [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) files.
-   >
-   > They create this resource group to be the parent group for the application.
+   > If you cloned this repo, then the value will be the original mspnp GitHub organization's repo, which will mean that your cluster will be bootstraped using public container images. If instead you forked this repo, then the GitOps repo will be your own repo, and your cluster will be bootstrapped using container images references based on the values in your repo's manifest files. On the prior instruction page you had the oppertunity to update those manifests to use your ACR instance.
 
    ```bash
-   # [This takes less than one minute.]
-   az group create --name rg-bu0001a0008 --location eastus2
+   GITOPS_REPOURL=$(git config --get remote.origin.url)
    ```
 
-1. Get the AKS cluster spoke VNet resource ID.
-
-   > :book: The app team will be deploying to a spoke VNet, that was already provisioned by the network team.
-
-   ```bash
-   RESOURCEID_VNET_CLUSTERSPOKE=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)
-   ```
-
-1. Deploy the cluster ARM template.  
+1. Deploy the cluster ARM template.
   :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server. You can limit access to the API Server to a set of well-known IP addresses (i.,e. a jump box subnet (connected to by Azure Bastion), build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options. This setting will also impact traffic originating from within the cluster trying to use the API server, so you will also need to include _all_ of the public IPs used by your egress Azure Firewall. For more information, see [Secure access to the API server using authorized IP address ranges](https://docs.microsoft.com/azure/aks/api-server-authorized-ip-ranges#create-an-aks-cluster-with-api-server-authorized-ip-ranges-enabled).
 
     **Option 1 - Deploy from the command line**
 
    ```bash
-   # [This takes about 15 minutes.]
-   az deployment group create -g rg-bu0001a0008 -f cluster-stamp.json -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE} clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE} a0008NamespaceReaderAadGroupObjectId=${AADOBJECTID_GROUP_A0008_READER_AKS_BASELINE} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC_AKS_BASELINE} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_AKS_BASELINE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE} domainName=${DOMAIN_NAME_AKS_BASELINE}
+   # [This takes about 18 minutes.]
+   az deployment group create -g rg-bu0001a0008 -f cluster-stamp.json -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE} clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE} a0008NamespaceReaderAadGroupObjectId=${AADOBJECTID_GROUP_A0008_READER_AKS_BASELINE} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC_AKS_BASELINE} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_AKS_BASELINE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE} domainName=${DOMAIN_NAME_AKS_BASELINE} gitOpsBootstrappingRepoHttpsUrl=${GITOPS_REPOURL}
    ```
 
    > Alteratively, you could have updated the [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) file and deployed as above, using `-p "@azuredeploy.parameters.prod.json"` instead of providing the individual key-value pairs.
@@ -94,11 +83,12 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
            sed "s#<resource-group-location>#eastus2#g" | \
            sed "s#<resource-group-name>#rg-bu0001a0008#g" | \
            sed "s#<geo-redundancy-location>#centralus#g" | \
-           sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_CLUSTERSPOKE}#g" | \
+           sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE}#g" | \
            sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC_AKS_BASELINE}#g" | \
            sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE}#g" | \
            sed "s#<azure-ad-aks-a0008-group-object-id>#${AADOBJECTID_GROUP_A0008_READER_AKS_BASELINE}#g" | \
            sed "s#<domain-name>#${DOMAIN_NAME_AKS_BASELINE}#g" \
+           sed "s#<bootstrapping-repo-https-url>#${GITOPS_REPOURL}#g" \
            > .github/workflows/aks-deploy.yaml
        ```
 
@@ -115,16 +105,11 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 
     1. Navigate to your GitHub forked repository and open a PR against `main` using the recently pushed changes to the remote branch `kick-off-workflow`.
 
-       > :book: The DevOps team configured the GitHub Workflow to preview the changes that will happen when a PR is opened. This will allow them to evaluate the changes before they get deployed. After the PR reviewers see how resources will change if the AKS cluster ARM template gets deployed, it is possible to merge or discard the pull request. If the decision is made to merge, it will trigger a push event that will kick off the actual deployment process that consists of:
-       >
-       > * AKS cluster creation
-       > * Flux deployment
+       > :book: The DevOps team configured the GitHub Workflow to preview the changes that will happen when a PR is opened. This will allow them to evaluate the changes before they get deployed. After the PR reviewers see how resources will change if the AKS cluster ARM template gets deployed, it is possible to merge or discard the pull request. If the decision is made to merge, it will trigger a push event that will kick off the actual deployment process.
 
     1. Once the GitHub Workflow validation finished successfully, please proceed by merging this PR into `main`.
 
        > :book: The DevOps team monitors this Workflow execution instance. In this instance it will impact a critical piece of infrastructure as well as the management. This flow works for both new or an existing AKS cluster.
-
-    1. :fast_forward: The cluster is placed under GitOps managed as part of these GitHub Workflow steps. Therefore, you should proceed straight to [Workflow Prerequisites](./07-workload-prerequisites.md).
 
 ## Container registry note
 
@@ -138,4 +123,4 @@ Azure Application Gateway, for this reference implementation, is placed in the s
 
 ### Next step
 
-:arrow_forward: [Place the cluster under GitOps management](./06-gitops.md)
+:arrow_forward: [Validate your cluster is bootstrapped](./07-bootstrap-validation.md)

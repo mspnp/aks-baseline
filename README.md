@@ -6,7 +6,7 @@ We walk through the deployment here in a rather _verbose_ method to help you und
 
 ## Azure Architecture Center guidance
 
-This project has a companion set of articles that describe challenges, design patterns, and best practices for a secure AKS cluster. You can find this article on the Azure Architecture Center at [Azure Kubernetes Service (AKS) Baseline Cluster](https://aka.ms/architecture/aks-baseline). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
+This project has a companion set of articles that describe challenges, design patterns, and best practices for a secure AKS cluster. You can find this article on the Azure Architecture Center at [Azure Kubernetes Service (AKS) Baseline cluster](https://aka.ms/architecture/aks-baseline). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
 
 ## Architecture
 
@@ -68,10 +68,11 @@ Microsoft recommends AKS be deploy into a carefully planned network; sized appro
 
 ### 3. Deploying the cluster
 
-This is the heart of the guidance in this reference implementation; paired with prior network topology guidance. Here you will deploy the Azure resources for your cluster and the adjacent services such as Azure Application Gateway WAF, Azure Monitor, Azure Container Registry, and Azure Key Vault. This is also where you put the cluster under GitOps orchestration.
+This is the heart of the guidance in this reference implementation; paired with prior network topology guidance. Here you will deploy the Azure resources for your cluster and the adjacent services such as Azure Application Gateway WAF, Azure Monitor, Azure Container Registry, and Azure Key Vault. This is also where you will validate the cluster is bootstrapped.
 
-- [ ] [Deploy the AKS cluster and supporting services](./05-aks-cluster.md)
-- [ ] [Place the cluster under GitOps management](./06-gitops.md)
+- [ ] [Prep for cluster bootstrapping](./05-boostrap-prep.md)
+- [ ] [Deploy the AKS cluster and supporting services](./06-aks-cluster.md)
+- [ ] [Validate cluster bootsrapping](./07-bootstrap-validation.md)
 
 We perform the prior steps manually here for you to understand the involved components, but we advocate for an automated DevOps process. Therefore, incorporate the prior steps into your CI/CD pipeline, as you would any infrastructure as code (IaC). We have included [a starter GitHub workflow](./github-workflow/aks-deploy.yaml) that demonstrates this.
 
@@ -79,25 +80,21 @@ We perform the prior steps manually here for you to understand the involved comp
 
 Without a workload deployed to the cluster it will be hard to see how these decisions come together to work as a reliable application platform for your business. The deployment of this workload would typically follow a CI/CD pattern and may involve even more advanced deployment strategies (blue/green, etc). The following steps represent a manual deployment, suitable for illustration purposes of this infrastructure.
 
-- [ ] Just like the cluster, there are [workload prerequisites to address](./07-workload-prerequisites.md)
-- [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./08-secret-management-and-ingress-controller.md)
-- [ ] [Deploy the workload](./09-workload.md)
+- [ ] Just like the cluster, there are [workload prerequisites to address](./08-workload-prerequisites.md)
+- [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./09-secret-management-and-ingress-controller.md)
+- [ ] [Deploy the workload](./10-workload.md)
 
 ### 5. :checkered_flag: Validation
 
 Now that the cluster and the sample workload is deployed; it's time to look at how the cluster is functioning.
 
-- [ ] [Perform end-to-end deployment validation](./10-validation.md)
+- [ ] [Perform end-to-end deployment validation](./11-validation.md)
 
 ## :broom: Clean up resources
 
 Most of the Azure resources deployed in the prior steps will incur ongoing charges unless removed.
 
-- [ ] [Cleanup all resources](./11-cleanup.md)
-
-## Inner-loop development scripts
-
-We have provided some sample deployment scripts that you could adapt for your own purposes while doing a POC/spike on this. Those scripts are found in the [inner-loop-scripts directory](./inner-loop-scripts). They include some additional considerations and may include some additional narrative as well. Consider checking them out. They consolidate most of the walk-through performed above into combined execution steps.
+- [ ] [Cleanup all resources](./12-cleanup.md)
 
 ## Preview features
 
@@ -108,9 +105,7 @@ Consider trying out and providing feedback on the following:
 - [Automatic Node Upgrade](https://github.com/Azure/AKS/issues/1486)
 - [Host-based encryption](https://docs.microsoft.com/azure/aks/enable-host-encryption) - Leverages added data encryption on your VMs' temp and OS disks.
 - [Generation 2 VM support](https://docs.microsoft.com/azure/aks/cluster-configuration#generation-2-virtual-machines-preview) - Increased memory options, Intel SGX support, and UEFI-based boot architectures.
-- [Auto Upgrade Profile support](https://github.com/Azure/AKS/issues/1303)
 - [Customizable Node & Kublet config](https://github.com/Azure/AKS/issues/323)
-- [GitOps as an add-on](https://github.com/Azure/AKS/issues/1967)
 - [Azure AD Pod Identity as an add-on](https://docs.microsoft.com/azure/aks/use-azure-ad-pod-identity)
 
 ## Related Reference Implementations
@@ -135,7 +130,6 @@ This reference implementation intentionally does not cover more advanced scenari
 - Windows node pools
 - Scale-to-zero node pools and event-based scaling (KEDA)
 - [Terraform](https://docs.microsoft.com/azure/developer/terraform/create-k8s-cluster-with-tf-and-aks)
-- [Bedrock](https://github.com/microsoft/bedrock)
 - [dapr](https://github.com/dapr/dapr)
 
 Keep watching this space, as we build out reference implementation guidance on topics such as these. Further guidance delivered will use this baseline AKS implementation as their starting point. If you would like to contribute or suggest a pattern built on this baseline, [please get in touch](./CONTRIBUTING.md).

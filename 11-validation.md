@@ -1,6 +1,6 @@
 # End-to-End Validation
 
-Now that you have a workload deployed, the [ASP.NET Core Docker sample web app](./09-workload.md), you can start validating and exploring this reference implementation of the [AKS Baseline cluster](./). In addition to the workload, there are some observability validation you can perform as well.
+Now that you have a workload deployed, the [ASP.NET Core Docker sample web app](./10-workload.md), you can start validating and exploring this reference implementation of the [AKS Baseline cluster](./). In addition to the workload, there are some observability validation you can perform as well.
 
 ## Validate the Web App
 
@@ -74,7 +74,7 @@ You can also execute [queries](https://docs.microsoft.com/azure/azure-monitor/lo
 Azure Monitor is configured to [scrape Prometheus metrics](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-prometheus-integration) in your cluster. This reference implementation is configured to collect Prometheus metrics from two namespaces, as configured in [`container-azm-ms-agentconfig.yaml`](./cluster-baseline-settings/container-azm-ms-agentconfig.yaml). There are two pods configured to emit Prometheus metrics:
 
 - [Traefik](./workload/traefik.yaml) (in the `a0008` namespace)
-- [Kured](./cluster-baseline-settings/kured-1.4.0-dockerhub.yaml) (in the `cluster-baseline-settings` namespace)
+- [Kured](./cluster-baseline-settings/kured.yaml) (in the `cluster-baseline-settings` namespace)
 
 ### Steps
 
@@ -150,8 +150,8 @@ If you configured your third-party images to be pulled from your Azure Container
    | where OperationName == 'Pull'
    ```
 
-1. You should see logs for CSI, flux, kured, memcached, and traefik. You'll see multiple for some as the image was pulled to multiple nodes to satisfy ReplicaSet/DaemonSet placement.
+1. You should see logs for CSI, kured, memcached, and traefik. You'll see multiple for some as the image was pulled to multiple nodes to satisfy ReplicaSet/DaemonSet placement.
 
 ## Next step
 
-:arrow_forward: [Clean Up Azure Resources](./11-cleanup.md)
+:arrow_forward: [Clean Up Azure Resources](./12-cleanup.md)

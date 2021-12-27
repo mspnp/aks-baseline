@@ -28,14 +28,21 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
 
    1. [Register the Azure Event Grid preview feature - `EventgridPreview`](https://docs.microsoft.com/azure/aks/quickstart-event-grid#register-the-eventgridpreview-preview-feature)
 
+   1. [Register the AKS Extensions preview feature - `AKS-ExtensionManager`](https://docs.microsoft.com/azure/aks/cluster-extensions?tabs=azure-cli#register-the-aks-extensionmanager-preview-features)
+
+   1. [Register the Kubernetes Configuration preview feature = `fluxConfigurations`](https://docs.microsoft.com/azure/azure-arc/kubernetes/tutorial-use-gitops-flux2#for-azure-kubernetes-service-clusters)
+
    ```bash
    az feature register --namespace "Microsoft.ContainerService" -n "EventgridPreview"
+   az feature register --namespace "Microsoft.ContainerService" -n "AKS-ExtensionManager"
+   az feature register --namespace "Microsoft.KubernetesConfiguration" -n "fluxConfigurations"
 
    # Keep running until all say "Registered." (This may take up to 20 minutes.)
-   az feature list -o table --query "[?name=='Microsoft.ContainerService/EventgridPreview'].{Name:name,State:properties.state}"
+   az feature list -o table --query "[?name=='Microsoft.ContainerService/EventgridPreview' || name=='Microsoft.ContainerService/AKS-ExtensionManager' || name=='Microsoft.KubernetesConfiguration/fluxConfigurations'].{Name:name,State:properties.state}"
 
-   # When all say "Registered" then re-register the AKS resource provider
+   # When all say "Registered" then re-register the AKS and related resource providers
    az provider register --namespace Microsoft.ContainerService
+   az provider register --namespace Microsoft.KubernetesConfiguration
    ```
 
 1. Clone/download this repo locally, or even better fork this repository.
