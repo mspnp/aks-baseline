@@ -56,7 +56,7 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed by t
    az acr import --source docker.io/weaveworks/kured:1.9.0 -n $ACR_NAME_AKS_BASELINE
    ```
 
-   > In this walkthrough, there is only one image that is included in the bootstrapping process. It's included as an example/reference for this process. Your choice to use kured or any other images, including helm charts as part of your bootstrapping, in your cluster is yours to make.
+   > In this walkthrough, there is only one image that is included in the bootstrapping process. It's included as an example/reference for this process. Your choice to use kured or any other images, including helm charts, as part of your bootstrapping is yours to make.
 
 1. Update bootstrapping manifests to pull from your ACR instance. _Optional. Fork required._
 
