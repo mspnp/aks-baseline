@@ -83,7 +83,7 @@ Now that the your [ACR instance is deployed and ready to support cluster bootstr
            sed "s#<resource-group-location>#eastus2#g" | \
            sed "s#<resource-group-name>#rg-bu0001a0008#g" | \
            sed "s#<geo-redundancy-location>#centralus#g" | \
-           sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_CLUSTERSPOKE}#g" | \
+           sed "s#<cluster-spoke-vnet-resource-id>#${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE}#g" | \
            sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC_AKS_BASELINE}#g" | \
            sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE}#g" | \
            sed "s#<azure-ad-aks-a0008-group-object-id>#${AADOBJECTID_GROUP_A0008_READER_AKS_BASELINE}#g" | \
