@@ -1835,7 +1835,7 @@
             "type": "Microsoft.ManagedIdentity/userAssignedIdentities/providers/roleAssignments",
             "apiVersion": "2020-04-01-preview",
             "name": "[concat('podmi-ingress-controller', '/Microsoft.Authorization/', guid(resourceGroup().id, 'podmi-ingress-controller', variables('managedIdentityOperatorRole')))]",
-            "comments": "Grant the AKS cluster with Manage Identity Operator role permissions over the managed identity used for the ingress controller.  Allows it to be assigned to the underlying VMSS.",
+            "comments": "Grant the AKS cluster with Managed Identity Operator role permissions over the managed identity used for the ingress controller. Allows it to be assigned to the underlying VMSS.",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],

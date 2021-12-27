@@ -14,7 +14,7 @@ Secrets should not be stored in this file, but instead should be stored as part 
 
 ## Workload
 
-The workload is NOT part of this deployment.  This is a deployment of the infrastructure only.  Separation of infrastructure and workload is recommended as it allows you to have distinct lifecycle and operational concerns.
+The workload is NOT part of this deployment. This is a deployment of the infrastructure only. Separation of infrastructure and workload is recommended as it allows you to have distinct lifecycle and operational concerns.
 
 ## Next Steps
 

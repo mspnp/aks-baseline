@@ -8,7 +8,7 @@ Container registries often have a lifecycle that extends beyond the scope of a s
 
 * Azure Container Registry (ACR) is deployed, and exposed as a private endpoint.
 * ACR is populated with images your cluster will need as part of its bootstrapping process.
-* Log Analytics is deployed and ACR platform logging is configured.  This workspace will be used by your cluster as well.
+* Log Analytics is deployed and ACR platform logging is configured. This workspace will be used by your cluster as well.
 
 The role of this pre-existing ACR instance is made more prominant when we think about cluster bootstrapping. That is the process that happens after Azure Resource deployment of the cluster, but before your first workload lands in the cluster. The cluster will be bootstrapped immedately and automatically after resource deployment, which means you'll need ACR in place to act as your official OCI artifact repository for required images and Helm charts used in that bootstrapping process.
 
