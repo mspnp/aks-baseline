@@ -86,7 +86,7 @@ jobs:
               domainName=${{ env.DOMAIN_NAME }}
 
           echo "::set-output name=name::$(az deployment group show --resource-group ${{ env.RESOURCE_GROUP }} -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)"
-        azcliversion: 2.17.1
+        azcliversion: 2.29.2
 
     # Set the AKS cluster context
     - name: Set the AKS cluster context

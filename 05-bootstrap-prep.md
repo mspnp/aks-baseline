@@ -46,14 +46,14 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed by t
 
 1. Import cluster management images to your container registry.
 
-   > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for a system that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
+   > Public container registries are subject to faults such as outages or request throttling. Interruptions like these can be crippling for a system that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
 
    ```bash
    # Get your ACR instance name
    export ACR_NAME_AKS_BASELINE=$(az deployment group show -g rg-bu0001a0008 -n acr-stamp --query properties.outputs.containerRegistryName.value -o tsv)
 
    # Import core image(s) hosted in public container registries to be used during bootstrapping
-   az acr import --source docker.io/weaveworks/kured:1.7.0 -n $ACR_NAME_AKS_BASELINE
+   az acr import --source docker.io/weaveworks/kured:1.9.0 -n $ACR_NAME_AKS_BASELINE
    ```
 
    > In this walkthrough, there is only one image that is included in the bootstrapping process. It's included as an example/reference for this process. Your choice to use kured or any other images, including helm charts as part of your bootstrapping, in your cluster is yours to make.
