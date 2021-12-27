@@ -628,7 +628,6 @@
                                         "fqdnTags": [],
                                         "webCategories": [],
                                         "targetFqdns": [
-                                            "azurearcfork8s.azurecr.io",
                                             "[concat(parameters('location'), '.dp.kubernetesconfiguration.azure.com')]",
                                             "mcr.microsoft.com",
                                             "management.azure.com",
