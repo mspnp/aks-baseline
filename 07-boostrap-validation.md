@@ -10,7 +10,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 * AAD Pod Identity
 * the workload's namespace named `a0008`
 
-1. Install `kubectl` 1.22 or newer. (`kubctl` supports +/-1 Kubernetes version.)
+1. Install `kubectl` 1.23 or newer. (`kubctl` supports +/-1 Kubernetes version.)
 
    ```bash
    sudo az aks install-cli
@@ -61,34 +61,15 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
 The end result of all of this is that `kubectl` was not required for any part of the bootstrapping process of a cluster.  The usage of `kubectl`-based access should be reserved for emergency break-fix situations and not for day-to-day configuration operations on this cluster. Between templates for Azure Resource definitions, and the bootstrapping of manifests via the GitOps extension, all normal configuration activities can be performed without the need to use `kubectl`. You will however see us use it for the upcoming workload deployment. This is because the SDLC component of workloads are not in scope for this reference implementation, as this is focused the infrastructure and baseline configuration.
 
-1. Test GitOps enrollement. _Optional._
-
-   If you wish to experience how GitOps keeps your cluster in sync with your repo, you could make the following change.
-
-   ```bash
-   # TODO Pre Change
-
-   # TODO Change
-
-   git commit -a -m "TODO"
-   git push
-   ```
-
-   Now, after ten minutes, you'll see that you cluster automatically updated to reflect that change. This change could have been subjected to a pipeline for automated tests and even been gated behind a human review step before being merged.
-
-   ```bash
-   #TODO Validation
-   ```
-
 ## Alternatives
 
-Using the AKS Extension for Flux gives you a seemless bootstrapping process that applies immediately after the cluster resource is created in Azure. It also supports the inclusion of that bootstrapping as resource templates to align with your IaC strategy. Alterantively you could apply bootstrapping as a secondary step after the cluster is deployed and manage that process external to the lifecycle of the cluster. This can be performed via deployment pipelines or the az cli command `az ....` or still via templates. This does open your cluster up to a potentiall prolonged window between the cluster being deployed and your bootstrapping being applied.
+Using the AKS extension for Flux gives you a seemless bootstrapping process that applies immediately after the cluster resource is created in Azure. It also supports the inclusion of that bootstrapping as resource templates to align with your IaC strategy. Alterantively you could apply bootstrapping as a secondary step after the cluster is deployed and manage that process external to the lifecycle of the cluster. Doing so will open your cluster up to a prolonged window between the cluster being deployed and your bootstrapping being applied.
 
-Likewise, Flux doesn't need to be installed as an extension and the GitOps operator of your choice (such as ArgoCD) could be installed as part of your external bootstrapping process.
+Furthermore, Flux doesn't need to be installed as an extension and instead the GitOps operator of your choice (such as ArgoCD) could be installed as part of your external bootstrapping process.
 
 ## Recommendations
 
-It is recommended to have a clearly defined bootstrapping process that occurs as close as practiable to the actual cluster deployment for immediate enrollment of your cluster into your internal processes and tooling. GitOps lends itself well to this desired outcome, and you're encouraged to explore its usage for your cluster bootstrapping process and optionally also workload-level concerns. GitOps is often positioned best for fleet (many clusters) management for uniformity and its simplicity at scale, and a more manual (via deployment pipelines) bootstrapping is common on small instance-count AKS deployments. Either process can work with either cluster topologies. Use a bootstrapping process that aligns with your desired objectives and constraints found within your organization and team.
+It is recommended to have a clearly defined bootstrapping process that occurs as close as practiable to the actual cluster deployment for immediate enrollment of your cluster into your internal processes and tooling. GitOps lends itself well to this desired outcome, and you're encouraged to explore its usage for your cluster bootstrapping process and optionally also workload-level concerns. GitOps is often positioned best for fleet (many clusters) management for uniformity and its simplicity at scale; a more manual (via deployment pipelines) bootstrapping is common on small instance-count AKS deployments. Either process can work with either cluster topologies. Use a bootstrapping process that aligns with your desired objectives and constraints found within your organization and team.
 
 ### Next step
 

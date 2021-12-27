@@ -11,7 +11,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
    ```
 
-1. Ensure Flux has created the following namespace.
+1. Ensure your bootstrapping process has created the following namespace.
 
    ```bash
    # press Ctrl-C once you receive a successful response

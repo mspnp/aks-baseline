@@ -16,8 +16,8 @@ The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
    export KEYVAULT_NAME_AKS_BASELINE=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
    TEMP_ROLEASSIGNMENT_TO_UPLOAD_CERT=$(az role assignment create --role a4417e6f-fecd-4de8-b567-7b0420556985 --assignee-principal-type user --assignee-object-id $(az ad signed-in-user show --query 'objectId' -o tsv) --scope $(az keyvault show --name $KEYVAULT_NAME_AKS_BASELINE --query 'id' -o tsv) --query 'id' -o tsv)
 
-   # If you are behind a proxy or some other egress that does not give a static IP, you'll need to manually adjust the Azure Key Vault firewall to
-   # allow this traffic.
+   # If you are behind a proxy or some other egress that does not provide a consistent IP, you'll need to manually adjust the
+   # Azure Key Vault firewall to allow this traffic.
    CURRENT_IP_ADDRESS=$(curl -s https://ifconfig.io)
    az keyvault network-rule add -n $KEYVAULT_NAME_AKS_BASELINE --ip-address ${CURRENT_IP_ADDRESS}
    ```
