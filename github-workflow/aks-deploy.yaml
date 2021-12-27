@@ -7,6 +7,8 @@
 #    ├── .github
 #    │   ├── workflows
 #    │   │   └── aks-deploy.yaml
+#    ├── cluster-manifests
+#    │   ├── cluster-baseline-settings/*
 #    └── cluster-stamp.json
 #
 # 2. Ensure you have followed the prior sections before deploying this AKS cluster. This way, you will be capable of setting:
