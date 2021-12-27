@@ -28,7 +28,9 @@ This is the starting point for the instructions on deploying the [AKS Secure Bas
 
    1. [Register the Azure Event Grid preview feature - `EventgridPreview`](https://docs.microsoft.com/azure/aks/quickstart-event-grid#register-the-eventgridpreview-preview-feature)
 
-   1. Register the GitOps Add-On preview feature - `AKS-ExtensionManager` (No documentation yet)
+   1. [Register the AKS Extensions preview feature - `AKS-ExtensionManager`](https://docs.microsoft.com/azure/aks/cluster-extensions?tabs=azure-cli#register-the-aks-extensionmanager-preview-features)
+
+   1. [Register the Kubernetes Configuration preview feature = `fluxConfigurations`](https://docs.microsoft.com/azure/azure-arc/kubernetes/tutorial-use-gitops-flux2#for-azure-kubernetes-service-clusters)
 
    ```bash
    az feature register --namespace "Microsoft.ContainerService" -n "EventgridPreview"
