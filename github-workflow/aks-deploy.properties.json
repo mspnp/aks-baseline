@@ -1,6 +1,6 @@
 {
     "name": "Deploy AKS Secure Baseline cluster stamp and Flux",
-    "description": "This workflow will deploy our cluster stamp in your own vnet and also Flux",
+    "description": "This workflow will deploy our cluster stamp in your own vnet",
     "creator": "Microsoft Patterns & Practices",
     "iconName": "azure",
     "categories": ["AKS"],

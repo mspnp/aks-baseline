@@ -109,7 +109,7 @@ spec:
           # az acr import --source ${ACR_NAME_AKS_BASELINE}.azurecr.io/weaveworks/kured:1.9.0 -n <your-acr-instance-name>
           # and then set this to
           # image: <your-acr-instance-name>.azurecr.io/weaveworks/kured:1.9.0
-          image: acraksnsag5lvqcnyzu.azurecr.io/weaveworks/kured:1.9.0
+          image: docker.io/weaveworks/kured:1.9.0
           imagePullPolicy: IfNotPresent
           resources:
             limits:
