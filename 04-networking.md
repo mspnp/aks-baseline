@@ -104,4 +104,4 @@ The following two resource groups will be created and populated with networking 
 
 ### Next step
 
-:arrow_forward: [Deploy the AKS cluster](./05-aks-cluster.md)
+:arrow_forward: [Prep for cluster bootstrapping](./05-bootstrap-prep.md)

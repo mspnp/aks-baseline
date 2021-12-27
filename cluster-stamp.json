@@ -71,7 +71,7 @@
             }
         },
         "kubernetesVersion": {
-            "defaultValue": "1.22.2",
+            "defaultValue": "1.22.4",
             "type": "string"
         },
         "domainName": {

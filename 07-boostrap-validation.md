@@ -1,10 +1,10 @@
 # Validate your cluster is bootstrapped and enrolled in GitOps
 
-Now that [the AKS cluster](./05-aks-cluster.md) has been deployed, the next step to validate that your cluster has been placed under a GitOps management solution, Flux in this case.
+Now that [the AKS cluster](./06-aks-cluster.md) has been deployed, the next step to validate that your cluster has been placed under a GitOps management solution, Flux in this case.
 
 ## Steps
 
-GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically apply to their cluster as changes occur. This reference implementation is focused on the baseline cluster, so Flux is managing cluster-level concerns. This is distinct from workload-level concerns, which would be possible as well to manage via Flux, and would typically be done by additional Flux configuration in the cluster. The namespace `cluster-baseline-settings` will be used to provide a logical division of the cluster bootstrap configuration from workload configuration.  Examples of manifests that are applied:
+GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically apply to their cluster as changes occur. This reference implementation is focused on the baseline cluster, so Flux is managing cluster-level concerns. This is distinct from workload-level concerns, which would be possible as well to manage via Flux, and would typically be done by additional Flux configuration in the cluster. The namespace `cluster-baseline-settings` will be used to provide a logical division of the cluster bootstrap configuration from workload configuration. Examples of manifests that are applied:
 
 * Cluster Role Bindings for the AKS-managed Azure AD integration
 * AAD Pod Identity
@@ -44,7 +44,6 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes please refer to [the related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).
 
-
 1. Validate your cluster is bootstrapped.
 
    The bootstrapping process that already happened due to the usage of the Flux extension for AKS has set up the following, amoung other things
@@ -75,7 +74,7 @@ The end result of all of this is that `kubectl` was not required for any part of
    git push
    ```
 
-   Now, after about ten minutes, you'll see that you cluster automatically updated to reflect that change.  This change could have been subjected to a pipeline for automated tests and even been gated behind a human review step before being merged.
+   Now, after ten minutes, you'll see that you cluster automatically updated to reflect that change. This change could have been subjected to a pipeline for automated tests and even been gated behind a human review step before being merged.
 
    ```bash
    #TODO Validation
@@ -83,14 +82,14 @@ The end result of all of this is that `kubectl` was not required for any part of
 
 ## Alternatives
 
-Using the AKS Extension for Flux gives you a seemless bootstrapping process that applies immediately after the cluster resource is created in Azure. It also supports the inclusion of that bootstrapping as resource templates to align with your IaC strategy. Alterantively you could apply bootstrapping as a secondary step after the cluster is deployed and manage that process external to the lifecycle of the cluster. This can be performed via the az cli command `az ....` or still via templates. This does open your cluster up to a potentiall prolonged window between the cluster being deployed and your bootstrapping being applied.
+Using the AKS Extension for Flux gives you a seemless bootstrapping process that applies immediately after the cluster resource is created in Azure. It also supports the inclusion of that bootstrapping as resource templates to align with your IaC strategy. Alterantively you could apply bootstrapping as a secondary step after the cluster is deployed and manage that process external to the lifecycle of the cluster. This can be performed via deployment pipelines or the az cli command `az ....` or still via templates. This does open your cluster up to a potentiall prolonged window between the cluster being deployed and your bootstrapping being applied.
 
 Likewise, Flux doesn't need to be installed as an extension and the GitOps operator of your choice (such as ArgoCD) could be installed as part of your external bootstrapping process.
 
 ## Recommendations
 
-It is recommended to have a clearly defined bootstrapping process that occurs as close as practiable to the actual cluster deployment for immediate enrollment of your cluster into your internal processes and tooling. GitOps lends itself well to this desired outcome, and you're encouraged to explore its usage for your cluster bootstrapping process and optionally also workload-level concerns. Use a bootstrapping process that aligns with your desired objectives and constraints found within your organization and team.
+It is recommended to have a clearly defined bootstrapping process that occurs as close as practiable to the actual cluster deployment for immediate enrollment of your cluster into your internal processes and tooling. GitOps lends itself well to this desired outcome, and you're encouraged to explore its usage for your cluster bootstrapping process and optionally also workload-level concerns. GitOps is often positioned best for fleet (many clusters) management for uniformity and its simplicity at scale, and a more manual (via deployment pipelines) bootstrapping is common on small instance-count AKS deployments. Either process can work with either cluster topologies. Use a bootstrapping process that aligns with your desired objectives and constraints found within your organization and team.
 
 ### Next step
 
-:arrow_forward: [Prepare for the workload by installing its prerequisites](./07-workload-prerequisites.md)
+:arrow_forward: [Prepare for the workload by installing its prerequisites](./08-workload-prerequisites.md)

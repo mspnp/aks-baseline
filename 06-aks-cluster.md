@@ -1,6 +1,6 @@
 # Deploy the AKS Cluster
 
-Now that the your [ACR instance is deployed and ready to support cluster bootstrapping](./05a-pre-gitops.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS cluster and its remaining adjacent Azure resources.
+Now that the your [ACR instance is deployed and ready to support cluster bootstrapping](./05-bootstrap-prep.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS cluster and its remaining adjacent Azure resources.
 
 ## Steps
 
@@ -127,4 +127,4 @@ Azure Application Gateway, for this reference implementation, is placed in the s
 
 ### Next step
 
-:arrow_forward: [Place the cluster under GitOps management](./06-gitops.md)
+:arrow_forward: [Validate your cluster is bootstrapped](./07-bootstrap-validation.md)
