@@ -222,7 +222,7 @@
                 },
                 {
                     "type": "providers/diagnosticSettings",
-                    "apiVersion": "2017-05-01-preview",
+                    "apiVersion": "2021-05-01-preview",
                     "name": "Microsoft.Insights/default",
                     "dependsOn": [
                         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
@@ -596,7 +596,7 @@
             "resources": [
                 {
                     "type": "providers/diagnosticSettings",
-                    "apiVersion": "2017-05-01-preview",
+                    "apiVersion": "2021-05-01-preview",
                     "name": "Microsoft.Insights/default",
                     "dependsOn": [
                         "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]"
@@ -827,7 +827,7 @@
         },
         {
             "type": "Microsoft.ContainerService/managedClusters",
-            "apiVersion": "2021-09-01",
+            "apiVersion": "2021-11-01-preview",
             "name": "[variables('clusterName')]",
             "location": "[parameters('location')]",
             "tags": {
@@ -923,9 +923,6 @@
                             "logAnalyticsWorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
                         }
                     },
-                    /*"extensionManager": {
-                        "enabled": true
-                    },*/
                     "aciConnectorLinux": {
                         "enabled": false
                     },
@@ -990,7 +987,10 @@
                     "userAssignedIdentities": [],
                     "userAssignedIdentityExceptions": []
                 },
-                "disableLocalAccounts": true
+                "disableLocalAccounts": true,
+                "oidcIssuerProfile": {
+                    "enabled": true
+                }
             },
             "identity": {
                 "type": "UserAssigned",
@@ -1005,7 +1005,7 @@
             "resources": [
                 {
                     "type": "providers/extensions",
-                    "apiVersion": "2021-09-01",
+                    "apiVersion": "2022-01-01-preview",
                     "name": "Microsoft.KubernetesConfiguration/flux",
                     "comments": "Ensures that flux add-on (extension) is installed.",
                     "dependsOn": [
@@ -1035,7 +1035,7 @@
                 },
                 {
                     "type": "providers/fluxConfigurations",
-                    "apiVersion": "2021-11-01-preview",
+                    "apiVersion": "2022-01-01-preview",
                     "name": "Microsoft.KubernetesConfiguration/bootstrap",
                     "comments": "Bootstraps your cluster using content from your repo.",
                     "dependsOn": [
@@ -1044,7 +1044,7 @@
                         "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
                     ],
                     "properties": {
-                        "scope": "Cluster",
+                        "scope": "cluster",
                         "namespace": "flux-system",
                         "sourceKind": "GitRepository",
                         "gitRepository": {
@@ -1091,7 +1091,7 @@
                 },
                 {
                     "type": "providers/diagnosticSettings",
-                    "apiVersion": "2017-05-01-preview",
+                    "apiVersion": "2021-05-01-preview",
                     "name": "Microsoft.Insights/default",
                     "dependsOn": [
                         "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
@@ -1136,7 +1136,7 @@
             "resources": [
                 {
                     "type": "providers/diagnosticSettings",
-                    "apiVersion": "2017-05-01-preview",
+                    "apiVersion": "2021-05-01-preview",
                     "name": "Microsoft.Insights/default",
                     "dependsOn": [
                         "[resourceId('Microsoft.EventGrid/systemTopics', variables('clusterName'))]"
