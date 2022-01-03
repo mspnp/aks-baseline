@@ -1005,7 +1005,7 @@
             "resources": [
                 {
                     "type": "providers/extensions",
-                    "apiVersion": "2022-01-01-preview",
+                    "apiVersion": "2021-09-01",
                     "name": "Microsoft.KubernetesConfiguration/flux",
                     "comments": "Ensures that flux add-on (extension) is installed.",
                     "dependsOn": [
@@ -1035,7 +1035,7 @@
                 },
                 {
                     "type": "providers/fluxConfigurations",
-                    "apiVersion": "2022-01-01-preview",
+                    "apiVersion": "2021-09-01",
                     "name": "Microsoft.KubernetesConfiguration/bootstrap",
                     "comments": "Bootstraps your cluster using content from your repo.",
                     "dependsOn": [
