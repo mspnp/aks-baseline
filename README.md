@@ -70,7 +70,7 @@ Microsoft recommends AKS be deploy into a carefully planned network; sized appro
 
 This is the heart of the guidance in this reference implementation; paired with prior network topology guidance. Here you will deploy the Azure resources for your cluster and the adjacent services such as Azure Application Gateway WAF, Azure Monitor, Azure Container Registry, and Azure Key Vault. This is also where you will validate the cluster is bootstrapped.
 
-- [ ] [Prep for cluster bootstrapping](./05-boostrap-prep.md)
+- [ ] [Prep for cluster bootstrapping](./05-bootstrap-prep.md)
 - [ ] [Deploy the AKS cluster and supporting services](./06-aks-cluster.md)
 - [ ] [Validate cluster bootsrapping](./07-bootstrap-validation.md)
 
