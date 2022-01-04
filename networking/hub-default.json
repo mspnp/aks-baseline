@@ -560,7 +560,7 @@
             "resources": [
                 {
                     "type": "providers/diagnosticSettings",
-                    "apiVersion": "2017-05-01-preview",
+                    "apiVersion": "2021-05-01-preview",
                     "name": "Microsoft.Insights/default",
                     "dependsOn": [
                         "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
@@ -570,15 +570,7 @@
                         "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('hubLaName'))]",
                         "logs": [
                             {
-                                "category": "AzureFirewallApplicationRule",
-                                "enabled": true
-                            },
-                            {
-                                "category": "AzureFirewallNetworkRule",
-                                "enabled": true
-                            },
-                            {
-                                "category": "AzureFirewallDnsProxy",
+                                "categoryGroup": "allLogs",
                                 "enabled": true
                             }
                         ],
