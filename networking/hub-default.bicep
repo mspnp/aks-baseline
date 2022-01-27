@@ -23,14 +23,10 @@ param hubVirtualNetworkGatewaySubnetAddressSpace string = '10.200.0.64/27'
 @minLength(10)
 param hubVirtualNetworkBastionSubnetAddressSpace string = '10.200.0.96/27'
 
-
-var hubVirtualNetworkName = 'vnet-${location}-hub'
-var hubLogAnalyticsWorkspaceName = 'la-hub-${location}-${uniqueString(resourceId('Microsoft.Network/virtualNetworks', hubVirtualNetworkName))}'
-var bastionSubnetNsgName = 'nsg-${location}-bastion'
-
 // This Log Analytics workspace stores logs from the regional hub network, its spokes, and bastion.
+// Log analytics is a regional resource, as such there will be one workspace per hub (region)
 resource laHub 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
-  name: hubLogAnalyticsWorkspaceName
+  name: 'la-hub-${location}'
   location: location
   properties: {
     sku: {
@@ -50,38 +46,9 @@ resource laHub 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
   }
 }
 
-var nsgRuleDenyAllInbound = {
-  name: 'DenyAllInbound'
-  properties: {
-    description: 'No further inbound traffic allowed.'
-    protocol: '*'
-    sourcePortRange: '*'
-    destinationPortRange: '*'
-    sourceAddressPrefix: '*'
-    destinationAddressPrefix: '*'
-    access: 'Deny'
-    priority: 1000
-    direction: 'Inbound'
-  }
-}
-
-var nsgRuleDenyAllOutbound = {
-  name: 'DenyAllOutbound'
-  properties: {
-    description: 'No further outbound traffic allowed.'
-    protocol: '*'
-    sourcePortRange: '*'
-    destinationPortRange: '*'
-    sourceAddressPrefix: '*'
-    destinationAddressPrefix: '*'
-    access: 'Deny'
-    priority: 1000
-    direction: 'Outbound'
-  }
-}
-
+// NSG around the Azure Bastion Subnet.
 resource nsgBastionSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' = {
-  name: bastionSubnetNsgName
+  name: 'nsg-${location}-bastion'
   location: location
   properties: {
     securityRules: [
@@ -144,7 +111,20 @@ resource nsgBastionSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' =
           direction: 'Inbound'
         }
       }
-      nsgRuleDenyAllInbound
+      {
+        name: 'DenyAllInbound'
+        properties: {
+          description: 'No further inbound traffic allowed.'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
+          access: 'Deny'
+          priority: 1000
+          direction: 'Inbound'
+        }
+      }
       {
         name: 'AllowSshToVnetOutbound'
         properties: {
@@ -218,7 +198,20 @@ resource nsgBastionSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' =
           direction: 'Outbound'
         }
       }
-      nsgRuleDenyAllOutbound
+      {
+        name: 'DenyAllOutbound'
+        properties: {
+          description: 'No further outbound traffic allowed.'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
+          access: 'Deny'
+          priority: 1000
+          direction: 'Outbound'
+        }
+      }
     ]
   }
 }
@@ -238,11 +231,13 @@ resource nsgBastionSubnet_diagnosticSettings 'Microsoft.Insights/diagnosticSetti
         enabled: true
       }
     ]
+    logAnalyticsDestinationType: 'Dedicated'
   }
 }
 
+// The regional hub network
 resource vnetHub 'Microsoft.Network/virtualNetworks@2021-05-01' = {
-  name: hubVirtualNetworkName
+  name: 'vnet-${location}-hub'
   location: location
   properties: {
     addressSpace: {
@@ -287,6 +282,7 @@ resource vnetHub_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-
         enabled: true
       }
     ]
+    logAnalyticsDestinationType: 'Dedicated'
   }
 }
 
@@ -309,8 +305,8 @@ resource pipsAzureFirewall 'Microsoft.Network/publicIPAddresses@2021-05-01' = [f
   }
 }]
 
-resource firewallPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
-  name: 'fw-policies-base'
+resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
+  name: 'fw-policies-${location}'
   location: location
   properties: {
     sku: {
@@ -341,7 +337,15 @@ resource firewallPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
     }
   }
 
-  resource d 'ruleCollectionGroups@2021-05-01' = {
+  resource defaultDnatRuleCollection 'ruleCollectionGroups@2021-05-01' = {
+    name: 'DefaultDnatRuleCollectionGroup'
+    properties: {
+      priority: 100
+      ruleCollections: []
+    }
+  }
+
+  resource defaultNetworkRuleCollectionGroup 'ruleCollectionGroups@2021-05-01' = {
     name: 'DefaultNetworkRuleCollectionGroup'
     properties: {
       priority: 200
@@ -378,6 +382,64 @@ resource firewallPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
         }
       ]
     }
+  }
+
+  resource defaultApplicationRuleCollectionGroup 'ruleCollectionGroups@2021-05-01' = {
+    name: 'DefaultApplicationRuleCollectionGroup'
+    properties: {
+      priority: 300
+      ruleCollections: []
+    }
+  }
+}
+
+// This is the regional Azure Firewall that all regional spoke networks can egress through.
+resource hubFirewall 'Microsoft.Network/azureFirewalls@2021-05-01' = {
+  name: 'fw-${location}'
+  location: location
+  zones: [
+    '1'
+    '2'
+    '3'
+  ]
+  properties: {
+    sku: {
+      name: 'AZFW_VNet'
+    }
+    firewallPolicy: {
+      id: fwPolicy.id
+    }
+    ipConfigurations: [for i in range(0, 3): {
+      name: pipsAzureFirewall[i].name
+      properties: {
+        subnet: {
+          id: vnetHub.id
+        }
+        publicIPAddress: {
+          id: pipsAzureFirewall[i].id
+        }
+      }
+    }]
+  }
+}
+
+resource hubFirewall_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  properties: {
+    workspaceId: laHub.id
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+    logAnalyticsDestinationType: 'Dedicated'
   }
 }
 
