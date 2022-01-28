@@ -1,6 +1,25 @@
 targetScope = 'resourceGroup'
 
-@description('Required. Location for this network hub.')
+/*** PARAMETERS ***/
+
+@allowed([
+  'australiaeast'
+  'canadacentral'
+  'centralus'
+  'eastus'
+  'eastus2'
+  'westus2'
+  'francecentral'
+  'germanywestcentral'
+  'northeurope'
+  'southafricanorth'
+  'southcentralus'
+  'uksouth'
+  'westeurope'
+  'japaneast'
+  'southeastasia'
+])
+@description('Required. The hub\'s regional affinity. All resources tied to this hub will also be homed in this region. The network team maintains this approved regional list which is a subset of zones with Availability Zone support.')
 param location string
 
 @description('Optional. A /24 to contain the regional firewall, management, and gateway subnet. Defaults to 10.200.0.0/24')
@@ -22,6 +41,8 @@ param hubVirtualNetworkGatewaySubnetAddressSpace string = '10.200.0.64/27'
 @maxLength(18)
 @minLength(10)
 param hubVirtualNetworkBastionSubnetAddressSpace string = '10.200.0.96/27'
+
+/*** RESOURCES ***/
 
 // This Log Analytics workspace stores logs from the regional hub network, its spokes, and bastion.
 // Log analytics is a regional resource, as such there will be one workspace per hub (region)
@@ -46,6 +67,27 @@ resource laHub 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
   }
 }
 
+resource laHub_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: laHub
+  properties: {
+    workspaceId: laHub.id
+    logAnalyticsDestinationType: 'Dedicated'
+    logs: [
+      {
+        categoryGroup: 'audit'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
+}
+
 // NSG around the Azure Bastion Subnet.
 resource nsgBastionSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' = {
   name: 'nsg-${location}-bastion'
@@ -60,7 +102,7 @@ resource nsgBastionSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' =
           sourcePortRange: '*'
           destinationPortRange: '443'
           sourceAddressPrefix: 'Internet'
-          destinationAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: '*'
           access: 'Allow'
           priority: 100
           direction: 'Inbound'
@@ -74,7 +116,7 @@ resource nsgBastionSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' =
           sourcePortRange: '*'
           destinationPortRange: '443'
           sourceAddressPrefix: 'GatewayManager'
-          destinationAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: '*'
           access: 'Allow'
           priority: 110
           direction: 'Inbound'
@@ -88,7 +130,7 @@ resource nsgBastionSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' =
           sourcePortRange: '*'
           destinationPortRange: '443'
           sourceAddressPrefix: 'AzureLoadBalancer'
-          destinationAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: '*'
           access: 'Allow'
           priority: 120
           direction: 'Inbound'
@@ -131,7 +173,7 @@ resource nsgBastionSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' =
           description: 'Allow SSH out to the virtual network'
           protocol: 'Tcp'
           sourcePortRange: '*'
-          sourceAddressPrefix: 'VirtualNetwork'
+          sourceAddressPrefix: '*'
           destinationPortRange: '22'
           destinationAddressPrefix: 'VirtualNetwork'
           access: 'Allow'
@@ -145,7 +187,7 @@ resource nsgBastionSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' =
           description: 'Allow RDP out to the virtual network'
           protocol: 'Tcp'
           sourcePortRange: '*'
-          sourceAddressPrefix: 'VirtualNetwork'
+          sourceAddressPrefix: '*'
           destinationPortRange: '3389'
           destinationAddressPrefix: 'VirtualNetwork'
           access: 'Allow'
@@ -221,17 +263,13 @@ resource nsgBastionSubnet_diagnosticSettings 'Microsoft.Insights/diagnosticSetti
   name: 'default'
   properties: {
     workspaceId: laHub.id
+    logAnalyticsDestinationType: 'Dedicated'
     logs: [
       {
-        category: 'NetworkSecurityGroupEvent'
-        enabled: true
-      }
-      {
-        category: 'NetworkSecurityGroupRuleCounter'
+        categoryGroup: 'allLogs'
         enabled: true
       }
     ]
-    logAnalyticsDestinationType: 'Dedicated'
   }
 }
 
@@ -269,6 +307,10 @@ resource vnetHub 'Microsoft.Network/virtualNetworks@2021-05-01' = {
       }
     ]
   }
+
+  resource azureFirewallSubnet 'subnets' existing = {
+    name: 'AzureFirewallSubnet'
+  }
 }
 
 resource vnetHub_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -276,18 +318,19 @@ resource vnetHub_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-
   name: 'default'
   properties: {
     workspaceId: laHub.id
+    logAnalyticsDestinationType: 'Dedicated'
     metrics: [
       {
         category: 'AllMetrics'
         enabled: true
       }
     ]
-    logAnalyticsDestinationType: 'Dedicated'
   }
 }
 
 // Allocate three IP addresses to the firewall
-resource pipsAzureFirewall 'Microsoft.Network/publicIPAddresses@2021-05-01' = [for i in range(0, 3): {
+var numFirewallIpAddressesToAssign = 3
+resource pipsAzureFirewall 'Microsoft.Network/publicIPAddresses@2021-05-01' = [for i in range(0, numFirewallIpAddressesToAssign): {
   name: 'pip-fw-${location}-${padLeft(i, 2, '0')}'
   location: location
   sku: {
@@ -305,6 +348,27 @@ resource pipsAzureFirewall 'Microsoft.Network/publicIPAddresses@2021-05-01' = [f
   }
 }]
 
+resource pipAzureFirewall_diagnosticSetting 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = [for i in range(0, numFirewallIpAddressesToAssign): {
+  name: 'default'
+  scope: pipsAzureFirewall[i]
+  properties: {
+    workspaceId: laHub.id
+    logAnalyticsDestinationType: 'Dedicated'
+    logs: [
+      {
+        categoryGroup: 'audit'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
+}]
+
 resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
   name: 'fw-policies-${location}'
   location: location
@@ -315,6 +379,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
     threatIntelMode: 'Deny'
     insights: {
       isEnabled: true
+      retentionDays: 30
       logAnalyticsResources: {
         defaultWorkspaceId: {
           id: laHub.id
@@ -329,22 +394,18 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
       mode: 'Deny'
       configuration: {
         bypassTrafficSettings: []
+        signatureOverrides: []
       }
     }
     dnsSettings: {
       servers: []
-      enableProxy: true
+      enableProxy: false
     }
   }
 
-  resource defaultDnatRuleCollection 'ruleCollectionGroups@2021-05-01' = {
-    name: 'DefaultDnatRuleCollectionGroup'
-    properties: {
-      priority: 100
-      ruleCollections: []
-    }
-  }
-
+  // Network hub starts out with only supporting DNS. This is only being done for
+  // simplicity in this deployment and is not guidance, please ensure all firewall
+  // rules are aligned with your security standards.
   resource defaultNetworkRuleCollectionGroup 'ruleCollectionGroups@2021-05-01' = {
     name: 'DefaultNetworkRuleCollectionGroup'
     properties: {
@@ -384,8 +445,12 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
     }
   }
 
+  // Network hub starts out with no allowances for appliction rules
   resource defaultApplicationRuleCollectionGroup 'ruleCollectionGroups@2021-05-01' = {
     name: 'DefaultApplicationRuleCollectionGroup'
+    dependsOn: [
+      defaultNetworkRuleCollectionGroup
+    ]
     properties: {
       priority: 300
       ruleCollections: []
@@ -404,17 +469,18 @@ resource hubFirewall 'Microsoft.Network/azureFirewalls@2021-05-01' = {
   ]
   properties: {
     sku: {
+      tier: 'Premium'
       name: 'AZFW_VNet'
     }
     firewallPolicy: {
       id: fwPolicy.id
     }
-    ipConfigurations: [for i in range(0, 3): {
+    ipConfigurations: [for i in range(0, numFirewallIpAddressesToAssign): {
       name: pipsAzureFirewall[i].name
       properties: {
-        subnet: {
-          id: vnetHub.id
-        }
+        subnet: (0 == i) ? {
+          id: vnetHub::azureFirewallSubnet.id
+        } : null
         publicIPAddress: {
           id: pipsAzureFirewall[i].id
         }
@@ -425,8 +491,10 @@ resource hubFirewall 'Microsoft.Network/azureFirewalls@2021-05-01' = {
 
 resource hubFirewall_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'default'
+  scope: hubFirewall
   properties: {
     workspaceId: laHub.id
+    logAnalyticsDestinationType: 'Dedicated'
     logs: [
       {
         categoryGroup: 'allLogs'
@@ -439,8 +507,9 @@ resource hubFirewall_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2
         enabled: true
       }
     ]
-    logAnalyticsDestinationType: 'Dedicated'
   }
 }
+
+/*** OUTPUT ***/
 
 output hubVnetId string = vnetHub.id

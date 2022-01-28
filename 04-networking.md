@@ -63,7 +63,7 @@ The following two resource groups will be created and populated with networking 
 
    ```bash
    # [This takes about five minutes to run.]
-   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-default.json -p location=eastus2
+   az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-default.bicep -p location=eastus2
    ```
 
    The hub creation will emit the following:
