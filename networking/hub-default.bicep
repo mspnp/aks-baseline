@@ -19,7 +19,7 @@ targetScope = 'resourceGroup'
   'japaneast'
   'southeastasia'
 ])
-@description('Required. The hub\'s regional affinity. All resources tied to this hub will also be homed in this region. The network team maintains this approved regional list which is a subset of zones with Availability Zone support.')
+@description('The hub\'s regional affinity. All resources tied to this hub will also be homed in this region. The network team maintains this approved regional list which is a subset of zones with Availability Zone support.')
 param location string
 
 @description('Optional. A /24 to contain the regional firewall, management, and gateway subnet. Defaults to 10.200.0.0/24')
@@ -369,6 +369,7 @@ resource pipAzureFirewall_diagnosticSetting 'Microsoft.Insights/diagnosticSettin
   }
 }]
 
+// Azure Firewall starter policy
 resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
   name: 'fw-policies-${location}'
   location: location
@@ -467,6 +468,12 @@ resource hubFirewall 'Microsoft.Network/azureFirewalls@2021-05-01' = {
     '2'
     '3'
   ]
+  dependsOn: [
+    // This helps prevent multiple PUT updates happening to the firewall causing a CONFLICT race condition
+    // Ref: https://docs.microsoft.com/azure/firewall-manager/quick-firewall-policy
+    fwPolicy::defaultApplicationRuleCollectionGroup
+    fwPolicy::defaultNetworkRuleCollectionGroup
+  ]
   properties: {
     sku: {
       tier: 'Premium'
@@ -510,6 +517,6 @@ resource hubFirewall_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2
   }
 }
 
-/*** OUTPUT ***/
+/*** OUTPUTS ***/
 
 output hubVnetId string = vnetHub.id
