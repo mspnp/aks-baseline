@@ -72,7 +72,6 @@ resource laHub_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-0
   scope: laHub
   properties: {
     workspaceId: laHub.id
-    logAnalyticsDestinationType: 'Dedicated'
     logs: [
       {
         categoryGroup: 'audit'
@@ -263,7 +262,6 @@ resource nsgBastionSubnet_diagnosticSettings 'Microsoft.Insights/diagnosticSetti
   name: 'default'
   properties: {
     workspaceId: laHub.id
-    logAnalyticsDestinationType: 'Dedicated'
     logs: [
       {
         categoryGroup: 'allLogs'
@@ -318,7 +316,6 @@ resource vnetHub_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-
   name: 'default'
   properties: {
     workspaceId: laHub.id
-    logAnalyticsDestinationType: 'Dedicated'
     metrics: [
       {
         category: 'AllMetrics'
@@ -353,7 +350,6 @@ resource pipAzureFirewall_diagnosticSetting 'Microsoft.Insights/diagnosticSettin
   scope: pipsAzureFirewall[i]
   properties: {
     workspaceId: laHub.id
-    logAnalyticsDestinationType: 'Dedicated'
     logs: [
       {
         categoryGroup: 'audit'
@@ -501,7 +497,6 @@ resource hubFirewall_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2
   scope: hubFirewall
   properties: {
     workspaceId: laHub.id
-    logAnalyticsDestinationType: 'Dedicated'
     logs: [
       {
         categoryGroup: 'allLogs'

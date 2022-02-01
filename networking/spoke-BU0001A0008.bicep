@@ -89,7 +89,6 @@ resource nsgNodepoolSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSet
   name: 'default'
   properties: {
     workspaceId: laHub.id
-    logAnalyticsDestinationType: 'Dedicated'
     logs: [
       {
         categoryGroup: 'allLogs'
@@ -113,7 +112,6 @@ resource nsgInternalLoadBalancerSubnet_diagnosticsSettings 'Microsoft.Insights/d
   name: 'default'
   properties: {
     workspaceId: laHub.id
-    logAnalyticsDestinationType: 'Dedicated'
     logs: [
       {
         categoryGroup: 'allLogs'
@@ -208,7 +206,6 @@ resource nsgAppGwSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSettin
   name: 'default'
   properties: {
     workspaceId: laHub.id
-    logAnalyticsDestinationType: 'Dedicated'
     logs: [
       {
         categoryGroup: 'allLogs'
@@ -307,7 +304,6 @@ resource vnetSpoke_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@202
   name: 'default'
   properties: {
     workspaceId: laHub.id
-    logAnalyticsDestinationType: 'Dedicated'
     metrics: [
       {
         category: 'AllMetrics'
@@ -342,7 +338,6 @@ resource pipPrimaryClusterIp_diagnosticSetting 'Microsoft.Insights/diagnosticSet
   scope: pipPrimaryClusterIp
   properties: {
     workspaceId: laHub.id
-    logAnalyticsDestinationType: 'Dedicated'
     logs: [
       {
         categoryGroup: 'audit'
