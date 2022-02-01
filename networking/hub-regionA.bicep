@@ -714,29 +714,3 @@ resource hubFirewall_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2
 /*** OUTPUTS ***/
 
 output hubVnetId string = vnetHub.id
-
-
-
-/* TODO
-"properties": {
-  "mode": "Incremental",
-  "template": {
-      "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-      "contentVersion": "1.0.0.0",
-      "resources": [
-          {
-              "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
-              "apiVersion": "2020-05-01",
-              "name": "[concat(variables('hubNetworkName'), '/hub-to-', variables('clusterVNetName'))]",
-              "properties": {
-                  "remoteVirtualNetwork": {
-                      "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('clusterVNetName'))]"
-                  },
-                  "allowForwardedTraffic": false,
-                  "allowGatewayTransit": false,
-                  "allowVirtualNetworkAccess": true,
-                  "useRemoteGateways": false
-              }
-          }
-      ]
-  }*/
