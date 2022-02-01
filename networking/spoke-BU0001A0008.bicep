@@ -186,15 +186,15 @@ resource nsgAppGwSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' = {
         }
       }
       {
-        name: 'DenyAllOutbound'
+        name: 'AllowAllOutbound'
         properties: {
-          description: 'No further outbound traffic allowed.'
+          description: 'App Gateway v2 requires full outbound access.'
           protocol: '*'
           sourcePortRange: '*'
           destinationPortRange: '*'
           sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
-          access: 'Deny'
+          access: 'Allow'
           priority: 1000
           direction: 'Outbound'
         }
@@ -361,5 +361,5 @@ resource pipPrimaryClusterIp_diagnosticSetting 'Microsoft.Insights/diagnosticSet
 /*** OUTPUTS ***/
 
 output clusterVnetResourceId string = vnetSpoke.id
-output nodepoolSubnetResourceIds string = vnetSpoke::snetClusterNodes.id
+output nodepoolSubnetResourceIds string = '[\'${vnetSpoke::snetClusterNodes.id}\']'
 output appGwPublicIpAddress string = pipPrimaryClusterIp.id
