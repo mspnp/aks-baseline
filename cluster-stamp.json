@@ -983,7 +983,7 @@
                     "enablePrivateCluster": false
                 },
                 "podIdentityProfile": { 
-                    "enabled": false, /* This feature is currently in preview and will eventually replace the aad-pod-identity configuration set up by hand in this reference implementation */
+                    "enabled": false,
                     "userAssignedIdentities": [],
                     "userAssignedIdentityExceptions": []
                 },
