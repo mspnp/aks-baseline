@@ -361,5 +361,5 @@ resource pipPrimaryClusterIp_diagnosticSetting 'Microsoft.Insights/diagnosticSet
 /*** OUTPUTS ***/
 
 output clusterVnetResourceId string = vnetSpoke.id
-output nodepoolSubnetResourceIds string = vnetSpoke::snetClusterNodes.id
+output nodepoolSubnetResourceIds string = '[\'${vnetSpoke::snetClusterNodes.id}\']'
 output appGwPublicIpAddress string = pipPrimaryClusterIp.id

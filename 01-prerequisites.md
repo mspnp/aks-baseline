@@ -18,7 +18,7 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
    > :warning: The user or service principal initiating the deployment process _must_ have the following minimal set of Azure AD permissions assigned:
    >
    > * Azure AD [User Administrator](https://docs.microsoft.com/azure/active-directory/users-groups-roles/directory-assign-admin-roles#user-administrator-permissions) is _required_ to create a "break glass" AKS admin Active Directory Security Group and User. Alternatively, you could get your Azure AD admin to create this for you when instructed to do so.
-   >   * If you are not part of the User Administrator group in the tenant associated to your Azure subscription, please consider [creating a new tenant](https://docs.microsoft.com/azure/active-directory/fundamentals/active-directory-access-create-new-tenant#create-a-new-tenant-for-your-organization) to use while evaluating this implementation. The Azure AD tenant backing your Cluster's API RBAC does NOT need to be the same tenant associated with your Azure subscription.
+   >   * If you are not part of the User Administrator group in the tenant associated to your Azure subscription, please consider [creating a new tenant](https://docs.microsoft.com/azure/active-directory/fundamentals/active-directory-access-create-new-tenant#create-a-new-tenant-for-your-organization) to use while evaluating this implementation. The Azure AD tenant backing your cluster's API RBAC does NOT need to be the same tenant associated with your Azure subscription.
 
 1. Latest [Azure CLI installed](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) or you can perform this from Azure Cloud Shell by clicking below.
 
@@ -32,13 +32,16 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
 
    1. [Register the Kubernetes Configuration preview feature = `fluxConfigurations`](https://docs.microsoft.com/azure/azure-arc/kubernetes/tutorial-use-gitops-flux2#for-azure-kubernetes-service-clusters)
 
+   1. [Register the OIDC Issuer preview feature = `EnableOIDCIssuerPreview`](https://docs.microsoft.com/azure/aks/cluster-configuration#oidc-issuer-preview)
+
    ```bash
    az feature register --namespace "Microsoft.ContainerService" -n "EventgridPreview"
    az feature register --namespace "Microsoft.ContainerService" -n "AKS-ExtensionManager"
    az feature register --namespace "Microsoft.KubernetesConfiguration" -n "fluxConfigurations"
+   az feature register --namespace "Microsoft.ContainerService" -n "EnableOIDCIssuerPreview"
 
    # Keep running until all say "Registered." (This may take up to 20 minutes.)
-   az feature list -o table --query "[?name=='Microsoft.ContainerService/EventgridPreview' || name=='Microsoft.ContainerService/AKS-ExtensionManager' || name=='Microsoft.KubernetesConfiguration/fluxConfigurations'].{Name:name,State:properties.state}"
+   az feature list -o table --query "[?name=='Microsoft.ContainerService/EventgridPreview' || name=='Microsoft.ContainerService/AKS-ExtensionManager' || name=='Microsoft.ContainerService/EnableOIDCIssuerPreview' || name=='Microsoft.KubernetesConfiguration/fluxConfigurations'].{Name:name,State:properties.state}"
 
    # When all say "Registered" then re-register the AKS and related resource providers
    az provider register --namespace Microsoft.ContainerService

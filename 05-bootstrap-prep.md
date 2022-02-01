@@ -1,6 +1,6 @@
 # Prep for cluster bootstrapping
 
-Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS secure Baseline reference implementation](./) is preparing what your AKS cluster should be bootstrapped with.
+Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS baseline reference implementation](./) is preparing what your AKS cluster should be bootstrapped with.
 
 ## Expected results
 
@@ -10,11 +10,11 @@ Container registries often have a lifecycle that extends beyond the scope of a s
 * ACR is populated with images your cluster will need as part of its bootstrapping process.
 * Log Analytics is deployed and ACR platform logging is configured. This workspace will be used by your cluster as well.
 
-The role of this pre-existing ACR instance is made more prominant when we think about cluster bootstrapping. That is the process that happens after Azure Resource deployment of the cluster, but before your first workload lands in the cluster. The cluster will be bootstrapped immedately and automatically after resource deployment, which means you'll need ACR in place to act as your official OCI artifact repository for required images and Helm charts used in that bootstrapping process.
+The role of this pre-existing ACR instance is made more prominant when we think about cluster bootstrapping. That is the process that happens after Azure resource deployment of the cluster, but before your first workload lands in the cluster. The cluster will be bootstrapped _immedately and automatically_ after resource deployment, which means you'll need ACR in place to act as your official OCI artifact repository for required images and Helm charts used in that bootstrapping process.
 
 ### Method
 
-We'll be bootstrapping this cluster with the Flux GitOps agent as installed by the AKS extension. This specific choice does not imply that Flux or GitOps in general is the only approach to bootstrapping. Consider your organizational familiarity and acceptance of tooling like this and decide if cluster baseline management should be performed with GitOps or via your deployment pipelines. If you are running a fleet of clusters, a GitOps approach is highly recommended for uniformity and easier governance. When running only a few clusters, GitOps might be seen as "too much" and you might instead opt for integrating that process into one or more deployment pipelines to ensure bootstrapping takes place. No matter which way you go, you'll need your bootstrapping artifacts ready to go before you start your cluster deployment so that you can minimize the time between cluster deployment and bootstrapping. Using the Flux AKS Extension allows your cluster to start already bootstrapped and sets you up with a solid management foundation going forward.
+We'll be bootstrapping this cluster with the Flux GitOps agent as installed as an AKS extension. This specific choice does not imply that Flux, or GitOps in general, is the only approach to bootstrapping. Consider your organizational familiarity and acceptance of tooling like this and decide if cluster bootstrapping should be performed with GitOps or via your deployment pipelines. If you are running a fleet of clusters, a GitOps approach is highly recommended for uniformity and easier governance. When running only a few clusters, GitOps might be seen as "too much" and you might instead opt for integrating that process into one or more deployment pipelines to ensure bootstrapping takes place. No matter which way you go, you'll need your bootstrapping artifacts ready to go before you start your cluster deployment so that you can minimize the time between cluster deployment and bootstrapping. Using the Flux AKS extension allows your cluster to start already bootstrapped and sets you up with a solid management foundation going forward.
 
 ## Steps
 
@@ -29,9 +29,9 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed by t
    az group create --name rg-bu0001a0008 --location eastus2
    ```
 
-1. Get the AKS cluster spoke VNet resource ID.
+1. Get the AKS cluster spoke virtual network resource ID.
 
-   > :book: The app team will be deploying to a spoke VNet, that was already provisioned by the network team.
+   > :book: The app team will be deploying to a spoke virtual network, that was already provisioned by the network team.
 
    ```bash
    export RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)
@@ -40,7 +40,7 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed by t
 1. Deploy the container registry template.
 
    ```bash
-   # [This takes about three minutes.]
+   # [This takes about four minutes.]
    az deployment group create -g rg-bu0001a0008 -f acr-stamp.json -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE}
    ```
 
@@ -56,7 +56,7 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed by t
    az acr import --source docker.io/weaveworks/kured:1.9.0 -n $ACR_NAME_AKS_BASELINE
    ```
 
-   > In this walkthrough, there is only one image that is included in the bootstrapping process. It's included as an example/reference for this process. Your choice to use kured or any other images, including helm charts, as part of your bootstrapping is yours to make.
+   > In this walkthrough, there is only one image that is included in the bootstrapping process. It's included as an reference for this process. Your choice to use Kubernetes Reboot Daemon (Kured) or any other images, including helm charts, as part of your bootstrapping is yours to make.
 
 1. Update bootstrapping manifests to pull from your ACR instance. _Optional. Fork required._
 
