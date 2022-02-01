@@ -78,7 +78,7 @@ az account set -s $MAIN_SUBSCRIPTION
 #Main Network.Build the hub. First arm template execution and catching outputs. This might take about 6 minutes
 az group create --name "${RGNAMEHUB}" --location "${LOCATION}"
 
-az deployment group create --resource-group "${RGNAMEHUB}" --template-file "../../networking/hub-default.json"  --name "hub-0001" --parameters \
+az deployment group create --resource-group "${RGNAMEHUB}" --template-file "../../networking/hub-default.bicep"  --name "hub-0001" --parameters \
          location=$LOCATION
 
 HUB_VNET_ID=$(az deployment group show -g $RGNAMEHUB -n hub-0001 --query properties.outputs.hubVnetId.value -o tsv)
@@ -86,7 +86,7 @@ HUB_VNET_ID=$(az deployment group show -g $RGNAMEHUB -n hub-0001 --query propert
 #Cluster Subnet.Build the spoke. Second arm template execution and catching outputs. This might take about 2 minutes
 az group create --name "${RGNAMESPOKES}" --location "${LOCATION}"
 
-az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "../../networking/spoke-BU0001A0008.json" --name "spoke-0001" --parameters \
+az deployment group  create --resource-group "${RGNAMESPOKES}" --template-file "../../networking/spoke-BU0001A0008.bicep" --name "spoke-0001" --parameters \
           location=$LOCATION \
           hubVnetResourceId=$HUB_VNET_ID 
 
@@ -96,7 +96,7 @@ NODEPOOL_SUBNET_RESOURCE_IDS=$(az deployment group show -g $RGNAMESPOKES -n spok
 
 #Main Network Update. Third arm template execution and catching outputs. This might take about 3 minutes
 
-az deployment group create --resource-group "${RGNAMEHUB}" --template-file "../../networking/hub-regionA.json" --name "hub-0002" --parameters \
+az deployment group create --resource-group "${RGNAMEHUB}" --template-file "../../networking/hub-regionA.bicep" --name "hub-0002" --parameters \
             location=$LOCATION \
             nodepoolSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_IDS']"
 
