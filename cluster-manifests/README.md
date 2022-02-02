@@ -35,7 +35,7 @@ Use the following pattern in your `fluxConfigurations` extension resource.
             "url": "git@github.com:yourorg/yourrepo.git"
         },
         "configurationProtectedSettings": {
-            "sshPrivateKey": "<Base64 Encoded PEM Private Key>"
+            "sshPrivateKey": "<Base64 encoded PEM private key>"
         }
     }
 }
@@ -54,9 +54,8 @@ You'll use the following pattern in your `fluxConfigurations` extension resource
             "httpsUser": "<Username>"
         },
         "configurationProtectedSettings": {
-            "httpsKey": "<Personal Access Token>"
+            "httpsKey": "<Base64 encoded, UTF-8 encoded Personal Access Token>"
         }
     }
 }
-
 ```
