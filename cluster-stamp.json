@@ -47,7 +47,7 @@
             }
         },
         "location": {
-            "defaultValue": "eastus",
+            "defaultValue": "eastus2",
             "type": "string",
             "allowedValues": [
                 "australiaeast",
