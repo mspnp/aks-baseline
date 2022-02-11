@@ -3,6 +3,7 @@ param privateLinkSubnetId string
 param keyVaultName string
 param location string
 param appGWListenerCertificate string
+param aksIngressCertificate string
 param appGWIdentityPrincipalId string
 param aksIngressIdentityPrincipalId string
 param logAnalyticsWorkspaceName string
@@ -44,12 +45,12 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-06-01-preview' = {
     }
   }
 
-  // resource aksIngressCertificateSecret 'secrets@2021-06-01-preview' = {
-  //   name: 'appgw-aks-ingress-tls-cert'
-  //   properties: {
-  //     value: aksIngressCertificate
-  //   }
-  // }
+  resource aksIngressCertificateSecret 'secrets@2021-06-01-preview' = {
+    name: 'appgw-aks-ingress-tls-cert'
+    properties: {
+      value: aksIngressCertificate
+    }
+  }
 
 }
 
@@ -186,3 +187,4 @@ resource keyVaultAnalyticsSolution 'Microsoft.OperationsManagement/solutions@201
 }
 
 output appGWListenerCertificateSecretId string = keyVault::appGWListenerCertificateSecret.properties.secretUri
+output aksIngressCertificateSecretId string = keyVault::aksIngressCertificateSecret.properties.secretUri

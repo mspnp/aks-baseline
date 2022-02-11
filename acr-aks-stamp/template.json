@@ -5,45 +5,133 @@
     "_generator": {
       "name": "bicep",
       "version": "0.4.1124.51302",
-      "templateHash": "1333267089642660611"
+      "templateHash": "1916544472320339020"
     }
   },
-  "variables": {
-    "location": "northeurope",
-    "geoRedundancyLocation": "westeurope",
-    "teamIdentitfier": "ateam",
-    "appIdentitfier": "a001",
-    "acrName": "[format('acr{0}{1}', variables('teamIdentitfier'), variables('appIdentitfier'))]",
-    "logAnalyticsWorkspaceName": "[format('la-{0}-{1}', variables('teamIdentitfier'), variables('appIdentitfier'))]",
-    "aksClusterName": "[format('aks-{0}-{1}', variables('teamIdentitfier'), variables('appIdentitfier'))]",
-    "keyVaultName": "[format('kv-{0}-{1}', variables('teamIdentitfier'), variables('appIdentitfier'))]",
-    "appGWName": "[format('appgw-{0}-{1}', variables('teamIdentitfier'), variables('appIdentitfier'))]",
-    "vnetGroupName": "rg-Networking",
-    "aksNodeResourceGroup": "[format('rg-{0}-Nodes', variables('aksClusterName'))]",
-    "vnetName": "vnet-northeurope",
-    "appGWSubnetName": "Subnet-AppGW",
-    "privateLinkSubnetName": "Subnet-PrivateLink",
-    "aksSubnetName": "Subnet-AKS",
-    "aksIngressSubnetName": "Subnet-AKS-Ingress",
-    "aksIngressLoadBalancerIp": "10.1.3.4",
-    "domainName": "yourdomain.com",
-    "aksIngressDomainName": "[format('aksingress.{0}', variables('domainName'))]",
-    "aksBackendSubDomainName": "[variables('appIdentitfier')]",
-    "appGWHostName": "[format('www.{0}', variables('domainName'))]",
-    "aksControlPlaneIdentityName": "[format('mi-{0}-controlplane', variables('aksClusterName'))]",
-    "appGWIdentityName": "mi-appgateway-frontend",
-    "aksIngressIdentityName": "podmi-ingress-controller",
-    "useAzureRBAC": true,
-    "clusterAdminAadGroupObjectId": "<GUID>",
-    "clusterUserAadGroupObjectId": "<GUID>",
-    "appGWListenerCertificateBase64": "base64EncodedPfx"
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "westeurope"
+    },
+    "geoRedundancyLocation": {
+      "type": "string",
+      "defaultValue": "northeurope"
+    },
+    "teamIdentitfier": {
+      "type": "string",
+      "defaultValue": "bu0001"
+    },
+    "appIdentitfier": {
+      "type": "string",
+      "defaultValue": "a0008"
+    },
+    "acrName": {
+      "type": "string",
+      "defaultValue": "[format('acr{0}{1}', parameters('teamIdentitfier'), parameters('appIdentitfier'))]"
+    },
+    "logAnalyticsWorkspaceName": {
+      "type": "string",
+      "defaultValue": "[format('la-{0}-{1}', parameters('teamIdentitfier'), parameters('appIdentitfier'))]"
+    },
+    "aksClusterName": {
+      "type": "string",
+      "defaultValue": "[format('aks-{0}-{1}', parameters('teamIdentitfier'), parameters('appIdentitfier'))]"
+    },
+    "keyVaultName": {
+      "type": "string",
+      "defaultValue": "[format('kv-{0}-{1}', parameters('teamIdentitfier'), parameters('appIdentitfier'))]"
+    },
+    "appGWName": {
+      "type": "string",
+      "defaultValue": "[format('appgw-{0}-{1}', parameters('teamIdentitfier'), parameters('appIdentitfier'))]"
+    },
+    "vnetGroupName": {
+      "type": "string",
+      "defaultValue": "rg-Networking"
+    },
+    "aksNodeResourceGroup": {
+      "type": "string",
+      "defaultValue": "[format('rg-{0}-Nodes', parameters('aksClusterName'))]"
+    },
+    "vnetName": {
+      "type": "string",
+      "defaultValue": "[format('vnet-spoke-{0}{1}-00', parameters('teamIdentitfier'), parameters('appIdentitfier'))]"
+    },
+    "appGWSubnetName": {
+      "type": "string",
+      "defaultValue": "snet-applicationgateway"
+    },
+    "privateLinkSubnetName": {
+      "type": "string",
+      "defaultValue": "snet-privatelink"
+    },
+    "aksSubnetName": {
+      "type": "string",
+      "defaultValue": "snet-clusternodes"
+    },
+    "aksIngressSubnetName": {
+      "type": "string",
+      "defaultValue": "snet-clusteringressservices"
+    },
+    "aksIngressLoadBalancerIp": {
+      "type": "string",
+      "defaultValue": "10.240.4.4"
+    },
+    "aksAuthorizedIPRanges": {
+      "type": "string",
+      "defaultValue": "0.0.0.0/0"
+    },
+    "domainName": {
+      "type": "string",
+      "defaultValue": "contoso.com"
+    },
+    "aksIngressDomainName": {
+      "type": "string",
+      "defaultValue": "[format('aks-ingress.{0}', parameters('domainName'))]"
+    },
+    "aksBackendSubDomainName": {
+      "type": "string",
+      "defaultValue": "[parameters('appIdentitfier')]"
+    },
+    "appGWHostName": {
+      "type": "string",
+      "defaultValue": "[format('bicycle.{0}', parameters('domainName'))]"
+    },
+    "aksControlPlaneIdentityName": {
+      "type": "string",
+      "defaultValue": "[format('mi-{0}-controlplane', parameters('aksClusterName'))]"
+    },
+    "appGWIdentityName": {
+      "type": "string",
+      "defaultValue": "mi-appgateway-frontend"
+    },
+    "aksIngressIdentityName": {
+      "type": "string",
+      "defaultValue": "podmi-ingress-controller"
+    },
+    "useAzureRBAC": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "clusterAdminAadGroupObjectId": {
+      "type": "string"
+    },
+    "clusterUserAadGroupObjectId": {
+      "type": "string"
+    },
+    "appGWListenerCertificateBase64": {
+      "type": "string"
+    },
+    "aksIngressCertificateBase64": {
+      "type": "string"
+    }
   },
   "resources": [
     {
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2021-06-01",
-      "name": "[variables('logAnalyticsWorkspaceName')]",
-      "location": "[variables('location')]"
+      "name": "[parameters('logAnalyticsWorkspaceName')]",
+      "location": "[parameters('location')]"
     },
     {
       "type": "Microsoft.Resources/deployments",
@@ -56,22 +144,22 @@
         "mode": "Incremental",
         "parameters": {
           "acrName": {
-            "value": "[variables('acrName')]"
+            "value": "[parameters('acrName')]"
           },
           "geoRedundancyLocation": {
-            "value": "[variables('geoRedundancyLocation')]"
+            "value": "[parameters('geoRedundancyLocation')]"
           },
           "location": {
-            "value": "[variables('location')]"
+            "value": "[parameters('location')]"
           },
           "logAnalyticsWorkspaceName": {
-            "value": "[variables('logAnalyticsWorkspaceName')]"
+            "value": "[parameters('logAnalyticsWorkspaceName')]"
           },
           "privateLinkSubnetId": {
-            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('vnetGroupName')), 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('privateLinkSubnetName'))]"
+            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('vnetGroupName')), 'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('privateLinkSubnetName'))]"
           },
           "vnetId": {
-            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('vnetGroupName')), 'Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('vnetGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
           }
         },
         "template": {
@@ -265,16 +353,16 @@
         "mode": "Incremental",
         "parameters": {
           "aksControlPlaneIdentityName": {
-            "value": "[variables('aksControlPlaneIdentityName')]"
+            "value": "[parameters('aksControlPlaneIdentityName')]"
           },
           "appGWIdentityName": {
-            "value": "[variables('appGWIdentityName')]"
+            "value": "[parameters('appGWIdentityName')]"
           },
           "aksIngressIdentityName": {
-            "value": "[variables('aksIngressIdentityName')]"
+            "value": "[parameters('aksIngressIdentityName')]"
           },
           "location": {
-            "value": "[variables('location')]"
+            "value": "[parameters('location')]"
           }
         },
         "template": {
@@ -349,13 +437,16 @@
         "mode": "Incremental",
         "parameters": {
           "location": {
-            "value": "[variables('location')]"
+            "value": "[parameters('location')]"
           },
           "appGWListenerCertificate": {
-            "value": "[variables('appGWListenerCertificateBase64')]"
+            "value": "[parameters('appGWListenerCertificateBase64')]"
+          },
+          "aksIngressCertificate": {
+            "value": "[parameters('aksIngressCertificateBase64')]"
           },
           "keyVaultName": {
-            "value": "[variables('keyVaultName')]"
+            "value": "[parameters('keyVaultName')]"
           },
           "aksIngressIdentityPrincipalId": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'managedIdentities'), '2020-10-01').outputs.aksIngressIdentityPrincipalId.value]"
@@ -364,13 +455,13 @@
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'managedIdentities'), '2020-10-01').outputs.appGWIdentityPrincipalId.value]"
           },
           "logAnalyticsWorkspaceName": {
-            "value": "[variables('logAnalyticsWorkspaceName')]"
+            "value": "[parameters('logAnalyticsWorkspaceName')]"
           },
           "privateLinkSubnetId": {
-            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('vnetGroupName')), 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('privateLinkSubnetName'))]"
+            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('vnetGroupName')), 'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('privateLinkSubnetName'))]"
           },
           "vnetId": {
-            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('vnetGroupName')), 'Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('vnetGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
           }
         },
         "template": {
@@ -380,7 +471,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.4.1124.51302",
-              "templateHash": "8749585384120125352"
+              "templateHash": "17473172951302433684"
             }
           },
           "parameters": {
@@ -397,6 +488,9 @@
               "type": "string"
             },
             "appGWListenerCertificate": {
+              "type": "string"
+            },
+            "aksIngressCertificate": {
               "type": "string"
             },
             "appGWIdentityPrincipalId": {
@@ -421,6 +515,17 @@
               "name": "[format('{0}/{1}', parameters('keyVaultName'), 'gateway-ssl-cert')]",
               "properties": {
                 "value": "[parameters('appGWListenerCertificate')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.KeyVault/vaults/secrets",
+              "apiVersion": "2021-06-01-preview",
+              "name": "[format('{0}/{1}', parameters('keyVaultName'), 'appgw-aks-ingress-tls-cert')]",
+              "properties": {
+                "value": "[parameters('aksIngressCertificate')]"
               },
               "dependsOn": [
                 "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
@@ -617,6 +722,10 @@
             "appGWListenerCertificateSecretId": {
               "type": "string",
               "value": "[reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), 'gateway-ssl-cert')).secretUri]"
+            },
+            "aksIngressCertificateSecretId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), 'appgw-aks-ingress-tls-cert')).secretUri]"
             }
           }
         }
@@ -629,7 +738,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
       "name": "EnsureClusterIdentityHasRbacToSelfManagedResources",
-      "resourceGroup": "[variables('vnetGroupName')]",
+      "resourceGroup": "[parameters('vnetGroupName')]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -640,13 +749,13 @@
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'managedIdentities'), '2020-10-01').outputs.aksControlPlaneIdentityPrincipalId.value]"
           },
           "aksSubnetName": {
-            "value": "[variables('aksSubnetName')]"
+            "value": "[parameters('aksSubnetName')]"
           },
           "aksIngressSubnetName": {
-            "value": "[variables('aksIngressSubnetName')]"
+            "value": "[parameters('aksIngressSubnetName')]"
           },
           "vnetName": {
-            "value": "[variables('vnetName')]"
+            "value": "[parameters('vnetName')]"
           }
         },
         "template": {
@@ -717,55 +826,58 @@
         "mode": "Incremental",
         "parameters": {
           "acrName": {
-            "value": "[variables('acrName')]"
+            "value": "[parameters('acrName')]"
           },
           "aksClusterName": {
-            "value": "[variables('aksClusterName')]"
+            "value": "[parameters('aksClusterName')]"
           },
           "aksControlPlaneIdentityName": {
-            "value": "[variables('aksControlPlaneIdentityName')]"
+            "value": "[parameters('aksControlPlaneIdentityName')]"
           },
           "aksNodeResourceGroup": {
-            "value": "[variables('aksNodeResourceGroup')]"
+            "value": "[parameters('aksNodeResourceGroup')]"
           },
           "aksSubnetId": {
-            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('vnetGroupName')), 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('aksSubnetName'))]"
+            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('vnetGroupName')), 'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('aksSubnetName'))]"
           },
           "location": {
-            "value": "[variables('location')]"
+            "value": "[parameters('location')]"
           },
           "logAnalyticsWorkspaceName": {
-            "value": "[variables('logAnalyticsWorkspaceName')]"
+            "value": "[parameters('logAnalyticsWorkspaceName')]"
           },
           "aksIngressDomainName": {
-            "value": "[variables('aksIngressDomainName')]"
+            "value": "[parameters('aksIngressDomainName')]"
           },
           "aksIngressIdentityName": {
-            "value": "[variables('aksIngressIdentityName')]"
+            "value": "[parameters('aksIngressIdentityName')]"
           },
           "aksIngressLoadBalancerIp": {
-            "value": "[variables('aksIngressLoadBalancerIp')]"
+            "value": "[parameters('aksIngressLoadBalancerIp')]"
+          },
+          "aksAuthorizedIPRanges": {
+            "value": "[parameters('aksAuthorizedIPRanges')]"
           },
           "appSubDomainName": {
-            "value": "[variables('aksBackendSubDomainName')]"
+            "value": "[parameters('aksBackendSubDomainName')]"
           },
           "vnetId": {
-            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('vnetGroupName')), 'Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('vnetGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
           },
           "useAzureRBAC": {
-            "value": "[variables('useAzureRBAC')]"
+            "value": "[parameters('useAzureRBAC')]"
           },
           "clusterAdminAadGroupObjectId": {
-            "value": "[variables('clusterAdminAadGroupObjectId')]"
+            "value": "[parameters('clusterAdminAadGroupObjectId')]"
           },
           "clusterUserAadGroupObjectId": {
-            "value": "[variables('clusterUserAadGroupObjectId')]"
+            "value": "[parameters('clusterUserAadGroupObjectId')]"
           },
           "applicationIdentifierTag": {
-            "value": "[variables('appIdentitfier')]"
+            "value": "[parameters('appIdentitfier')]"
           },
           "businessUnitTag": {
-            "value": "[variables('teamIdentitfier')]"
+            "value": "[parameters('teamIdentitfier')]"
           }
         },
         "template": {
@@ -775,7 +887,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.4.1124.51302",
-              "templateHash": "16300693222620474814"
+              "templateHash": "3951441104176281279"
             }
           },
           "parameters": {
@@ -798,6 +910,9 @@
               "type": "string"
             },
             "aksIngressLoadBalancerIp": {
+              "type": "string"
+            },
+            "aksAuthorizedIPRanges": {
               "type": "string"
             },
             "appSubDomainName": {
@@ -970,8 +1085,8 @@
                   "networkPlugin": "azure",
                   "loadBalancerSku": "standard",
                   "outboundType": "loadBalancer",
-                  "serviceCidr": "192.168.0.0/16",
-                  "dnsServiceIP": "192.168.0.10",
+                  "serviceCidr": "172.16.0.0/16",
+                  "dnsServiceIP": "172.16.0.10",
                   "dockerBridgeCidr": "172.18.0.1/16"
                 },
                 "aadProfile": {
@@ -1001,7 +1116,7 @@
                 },
                 "apiServerAccessProfile": {
                   "authorizedIPRanges": [
-                    "0.0.0.0/0"
+                    "[parameters('aksAuthorizedIPRanges')]"
                   ],
                   "enablePrivateCluster": false
                 },
@@ -1530,28 +1645,31 @@
         "mode": "Incremental",
         "parameters": {
           "aksBackendDomainName": {
-            "value": "[format('{0}.{1}', variables('aksBackendSubDomainName'), variables('aksIngressDomainName'))]"
+            "value": "[format('{0}.{1}', parameters('aksBackendSubDomainName'), parameters('aksIngressDomainName'))]"
           },
           "appGWHostName": {
-            "value": "[variables('appGWHostName')]"
+            "value": "[parameters('appGWHostName')]"
           },
           "appGWIdentityName": {
-            "value": "[variables('appGWIdentityName')]"
+            "value": "[parameters('appGWIdentityName')]"
           },
           "appGWListenerCertificateSecretId": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'keyVaultStamp'), '2020-10-01').outputs.appGWListenerCertificateSecretId.value]"
           },
+          "aksIngressCertificateSecretId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'keyVaultStamp'), '2020-10-01').outputs.aksIngressCertificateSecretId.value]"
+          },
           "appGWName": {
-            "value": "[variables('appGWName')]"
+            "value": "[parameters('appGWName')]"
           },
           "appGWSubnetId": {
-            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('vnetGroupName')), 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('appGWSubnetName'))]"
+            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('vnetGroupName')), 'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('appGWSubnetName'))]"
           },
           "location": {
-            "value": "[variables('location')]"
+            "value": "[parameters('location')]"
           },
           "logAnalyticsWorkspaceName": {
-            "value": "[variables('logAnalyticsWorkspaceName')]"
+            "value": "[parameters('logAnalyticsWorkspaceName')]"
           }
         },
         "template": {
@@ -1561,7 +1679,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.4.1124.51302",
-              "templateHash": "15620178163354168418"
+              "templateHash": "10856746252855872980"
             }
           },
           "parameters": {
@@ -1575,6 +1693,9 @@
               "type": "string"
             },
             "appGWListenerCertificateSecretId": {
+              "type": "string"
+            },
+            "aksIngressCertificateSecretId": {
               "type": "string"
             },
             "appGWSubnetId": {
@@ -1641,6 +1762,14 @@
                   ],
                   "minProtocolVersion": "TLSv1_2"
                 },
+                "trustedRootCertificates": [
+                  {
+                    "name": "root-cert-wildcard-aks-ingress",
+                    "properties": {
+                      "keyVaultSecretId": "[parameters('aksIngressCertificateSecretId')]"
+                    }
+                  }
+                ],
                 "sslCertificates": [
                   {
                     "name": "ssl-certificate",
@@ -1744,7 +1873,12 @@
                       "cookieBasedAffinity": "Disabled",
                       "probe": {
                         "id": "[resourceId('Microsoft.Network/applicationGateways/probes', parameters('appGWName'), 'aks-probe')]"
-                      }
+                      },
+                      "trustedRootCertificates": [
+                        {
+                          "id": "[resourceId('Microsoft.Network/applicationGateways/trustedRootCertificates', parameters('appGWName'), 'root-cert-wildcard-aks-ingress')]"
+                        }
+                      ]
                     }
                   }
                 ],
@@ -1809,13 +1943,13 @@
         "mode": "Incremental",
         "parameters": {
           "aksClusterName": {
-            "value": "[variables('aksClusterName')]"
+            "value": "[parameters('aksClusterName')]"
           },
           "location": {
-            "value": "[variables('location')]"
+            "value": "[parameters('location')]"
           },
           "logAnalyticsWorkspaceName": {
-            "value": "[variables('logAnalyticsWorkspaceName')]"
+            "value": "[parameters('logAnalyticsWorkspaceName')]"
           }
         },
         "template": {
@@ -2494,7 +2628,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'aks')]",
-        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName'))]"
       ]
     }
   ]

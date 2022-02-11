@@ -1,47 +1,48 @@
 // Azure Regions
-var location = 'westeurope'
-var geoRedundancyLocation = 'northeurope'
+param location string = 'westeurope'
+param geoRedundancyLocation string = 'northeurope'
 
 // Unique Strings and Tags
-var teamIdentitfier = 'bu0001'
-var appIdentitfier = 'a0008'
+param teamIdentitfier string = 'bu0001'
+param appIdentitfier string = 'a0008'
 
 // Resource Names
-var acrName = 'acr${teamIdentitfier}${appIdentitfier}'
-var logAnalyticsWorkspaceName = 'la-${teamIdentitfier}-${appIdentitfier}'
-var aksClusterName = 'aks-${teamIdentitfier}-${appIdentitfier}'
-var keyVaultName = 'kv-${teamIdentitfier}-${appIdentitfier}'
-var appGWName = 'appgw-${teamIdentitfier}-${appIdentitfier}'
+param acrName string = 'acr${teamIdentitfier}${appIdentitfier}'
+param logAnalyticsWorkspaceName string = 'la-${teamIdentitfier}-${appIdentitfier}'
+param aksClusterName string = 'aks-${teamIdentitfier}-${appIdentitfier}'
+param keyVaultName string = 'kv-${teamIdentitfier}-${appIdentitfier}'
+param appGWName string = 'appgw-${teamIdentitfier}-${appIdentitfier}'
 
 // Additional Resource Groups
-var vnetGroupName = 'rg-Networking'
-var aksNodeResourceGroup = 'rg-${aksClusterName}-Nodes'
+param vnetGroupName string = 'rg-Networking'
+param aksNodeResourceGroup string = 'rg-${aksClusterName}-Nodes'
 
 // Network
-var vnetName = 'vnet-northeurope'
-var appGWSubnetName = 'Subnet-AppGW'
-var privateLinkSubnetName = 'Subnet-PrivateLink'
-var aksSubnetName = 'Subnet-AKS'
-var aksIngressSubnetName = 'Subnet-AKS-Ingress'
-var aksIngressLoadBalancerIp = '10.240.4.4'
-var aksAuthorizedIPRanges = '0.0.0.0/0'
+param vnetName string = 'vnet-spoke-${teamIdentitfier}${appIdentitfier}-00'
+param appGWSubnetName string = 'snet-applicationgateway'
+param privateLinkSubnetName string = 'snet-privatelink'
+param aksSubnetName string = 'snet-clusternodes'
+param aksIngressSubnetName string = 'snet-clusteringressservices'
+param aksIngressLoadBalancerIp string = '10.240.4.4'
+param aksAuthorizedIPRanges string = '0.0.0.0/0'
 
 // DNS
-var domainName = 'contoso.com'
-var aksIngressDomainName = 'aksingress.${domainName}'
-var aksBackendSubDomainName = appIdentitfier
-var appGWHostName = 'www.${domainName}'
+param domainName string = 'contoso.com'
+param aksIngressDomainName string = 'aks-ingress.${domainName}'
+param aksBackendSubDomainName string = appIdentitfier
+param appGWHostName string = 'bicycle.${domainName}'
 
 // Identities
-var aksControlPlaneIdentityName = 'mi-${aksClusterName}-controlplane'
-var appGWIdentityName = 'mi-appgateway-frontend'
-var aksIngressIdentityName = 'podmi-ingress-controller'
-var useAzureRBAC = true
-var clusterAdminAadGroupObjectId = '<GUID>'
-var clusterUserAadGroupObjectId = '<GUID>'
+param aksControlPlaneIdentityName string = 'mi-${aksClusterName}-controlplane'
+param appGWIdentityName string = 'mi-appgateway-frontend'
+param aksIngressIdentityName string = 'podmi-ingress-controller'
+param useAzureRBAC bool = true
+param clusterAdminAadGroupObjectId string
+param clusterUserAadGroupObjectId string
 
 // Identifier and Secrets
-var appGWListenerCertificateBase64 = 'base64EncodedPfx'
+param appGWListenerCertificateBase64 string // base64EncodedPfx
+param aksIngressCertificateBase64 string // base64EncodedCer
 
 
 resource vnetGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
@@ -106,6 +107,7 @@ module keyVaultModule 'modules/keyvault.bicep' = {
   params: {
     location: location
     appGWListenerCertificate: appGWListenerCertificateBase64
+    aksIngressCertificate: aksIngressCertificateBase64
     keyVaultName: keyVaultName
     aksIngressIdentityPrincipalId: managedIdentitiesModule.outputs.aksIngressIdentityPrincipalId
     appGWIdentityPrincipalId: managedIdentitiesModule.outputs.appGWIdentityPrincipalId
@@ -157,6 +159,7 @@ module appGWModule 'modules/appgw.bicep' = {
     appGWHostName: appGWHostName
     appGWIdentityName: appGWIdentityName
     appGWListenerCertificateSecretId: keyVaultModule.outputs.appGWListenerCertificateSecretId
+    aksIngressCertificateSecretId: keyVaultModule.outputs.aksIngressCertificateSecretId
     appGWName: appGWName
     appGWSubnetId: appGWSubnet.id
     location: location
