@@ -85,6 +85,7 @@ resource laAks 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
   }
 }
 
+// Limit access to a the ACR by assigning virtual network private IP addresses to the registry endpoints and using Azure Private Link
 resource dnsPrivateZoneAcr 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: 'privatelink.azurecr.io'
   location: 'global'
@@ -102,6 +103,7 @@ resource dnsPrivateZoneAcr 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 }
 
+// The Container Registry that will be used when bootstrapped the AKS cluster
 resource acrAks 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
   name: 'acraks${subRgUniqueString}'
   location: location
@@ -112,7 +114,6 @@ resource acrAks 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
     adminUserEnabled: false
     networkRuleSet: {
       defaultAction: 'Deny'
-      virtualNetworkRules: []
       ipRules: []
     }
     policies: {
@@ -169,6 +170,7 @@ resource acrAks_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-
   }
 }
 
+// Create a private Endpoint to allow the private AKS cluster to access the ACR via a private IP address.
 resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2021-05-01' = {
   name: 'acr_to_${spokeVirtualNetwork.name}'
   location: location
@@ -192,6 +194,7 @@ resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2021-05-01
     ]
   }
 
+  // Since the private endpoint is integrated with a private DNS zone, a private DNS zone group is also created.
   resource privateDnsZoneGroupAcr 'privateDnsZoneGroups@2021-05-01' = {
     name: 'default'
     properties: {
