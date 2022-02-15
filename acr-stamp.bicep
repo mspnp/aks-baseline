@@ -86,7 +86,7 @@ resource laAks 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
   }
 }
 
-// Limit access to a the ACR by assigning virtual network private IP addresses to the registry endpoints and using Azure Private Link
+// Azure Container Registry will be exposed via Private Link, set up the related Private DNS zone and virtual network link to the spoke.
 resource dnsPrivateZoneAcr 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: 'privatelink.azurecr.io'
   location: 'global'
