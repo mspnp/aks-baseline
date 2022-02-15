@@ -163,7 +163,7 @@ resource nsgAppGwSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' = {
           sourcePortRange: '*'
           sourceAddressPrefix: 'AzureLoadBalancer'
           destinationPortRange: '*'
-          destinationAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: '*'
           direction: 'Inbound'
           access: 'Allow'
           priority: 120
