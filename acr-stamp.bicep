@@ -103,7 +103,7 @@ resource dnsPrivateZoneAcr 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 }
 
-// The Container Registry that will be used when bootstrapped the AKS cluster
+// The Container Registry that the AKS cluster will be authorized to use to pull images.
 resource acrAks 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
   name: 'acraks${subRgUniqueString}'
   location: location
