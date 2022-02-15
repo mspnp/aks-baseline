@@ -160,11 +160,7 @@ resource acrAks_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-
     ]
     logs: [
       {
-        category: 'ContainerRegistryRepositoryEvents'
-        enabled: true
-      }
-      {
-        category: 'ContainerRegistryLoginEvents'
+        categoryGroup: 'allLogs'
         enabled: true
       }
     ]
