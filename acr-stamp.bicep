@@ -3,7 +3,7 @@ targetScope = 'resourceGroup'
 /*** PARAMETERS ***/
 
 @description('The regional network spoke VNet Resource ID that the cluster will be joined to.')
-@minLength(1)
+@minLength(79)
 param targetVnetResourceId string
 
 @allowed([
@@ -136,7 +136,7 @@ resource acrAks 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
     }
     dataEndpointEnabled: true
     networkRuleBypassOptions: 'AzureServices'
-    zoneRedundancy: 'Disabled'
+    zoneRedundancy: 'Disabled' // This Preview feature only supports three regions at this time, and eastus2's paired region (centralus), does not support this. So disabling for now.
   }
 
   resource acrReplication 'replications@2021-09-01' = {
