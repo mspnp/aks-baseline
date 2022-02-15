@@ -170,7 +170,7 @@ resource acrAks_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-
   }
 }
 
-// Create a private Endpoint to allow the private AKS cluster to access the ACR via a private IP address.
+// Expose Azure Container Registry via Private Link, into the cluster nodes subnet.
 resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2021-05-01' = {
   name: 'acr_to_${spokeVirtualNetwork.name}'
   location: location
