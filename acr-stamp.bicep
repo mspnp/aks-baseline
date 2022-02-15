@@ -195,7 +195,6 @@ resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2021-05-01
     ]
   }
 
-  // Since the private endpoint is integrated with a private DNS zone, a private DNS zone group is also created.
   resource privateDnsZoneGroupAcr 'privateDnsZoneGroups@2021-05-01' = {
     name: 'default'
     properties: {
