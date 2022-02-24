@@ -1022,7 +1022,7 @@
                         "[resourceId('Microsoft.ContainerRegistry/registries/providers/roleAssignments', variables('defaultAcrName'), 'Microsoft.Authorization', guid(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), variables('acrPullRole')))]"
                     ],
                     "properties": {
-                        "extensionType": "Microsoft.Flux",
+                        "extensionType": "microsoft.flux",
                         "autoUpgradeMinorVersion": true,
                         "releaseTrain": "Stable",
                         "scope": {
