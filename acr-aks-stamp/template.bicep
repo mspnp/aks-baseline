@@ -44,6 +44,13 @@ param clusterUserAadGroupObjectId string
 param appGWListenerCertificateBase64 string // base64EncodedPfx
 param aksIngressCertificateBase64 string // base64EncodedCer
 
+// Flux GitOps
+param fluxConfig object = {
+  RepositoryUrl: 'https://github.com/mspnp/aks-baseline'
+  RepositoryBranch: 'main'
+  RepositorySubfolder: './cluster-manifests'
+} 
+
 
 resource vnetGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
   name: vnetGroupName
@@ -149,6 +156,7 @@ module aksModule 'modules/aks.bicep' = {
     clusterUserAadGroupObjectId: clusterUserAadGroupObjectId
     applicationIdentifierTag: appIdentitfier
     businessUnitTag: teamIdentitfier
+    fluxSettings: fluxConfig
   }
 }
 
@@ -164,6 +172,7 @@ module appGWModule 'modules/appgw.bicep' = {
     appGWSubnetId: appGWSubnet.id
     location: location
     logAnalyticsWorkspaceName: logAnalyticsWorkspaceName
+    trustedRootCertificatesRequired: !empty(aksIngressCertificateBase64)
   }
 }
 

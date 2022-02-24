@@ -45,7 +45,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-06-01-preview' = {
     }
   }
 
-  resource aksIngressCertificateSecret 'secrets@2021-06-01-preview' = {
+  resource aksIngressCertificateSecret 'secrets@2021-06-01-preview' = if (!empty(aksIngressCertificate)) {
     name: 'appgw-aks-ingress-tls-cert'
     properties: {
       value: aksIngressCertificate
@@ -187,4 +187,4 @@ resource keyVaultAnalyticsSolution 'Microsoft.OperationsManagement/solutions@201
 }
 
 output appGWListenerCertificateSecretId string = keyVault::appGWListenerCertificateSecret.properties.secretUri
-output aksIngressCertificateSecretId string = keyVault::aksIngressCertificateSecret.properties.secretUri
+output aksIngressCertificateSecretId string = !empty(aksIngressCertificate) ? keyVault::aksIngressCertificateSecret.properties.secretUri : ''

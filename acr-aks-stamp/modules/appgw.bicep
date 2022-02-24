@@ -7,6 +7,7 @@ param appGWSubnetId string
 param appGWHostName string
 param aksBackendDomainName string
 param logAnalyticsWorkspaceName string
+param trustedRootCertificatesRequired bool
 
 var appGWPublicIpName = 'ip-${appGWName}'
 
@@ -59,14 +60,14 @@ resource appgw 'Microsoft.Network/applicationGateways@2021-05-01' = {
       ]
       minProtocolVersion: 'TLSv1_2'
     }
-    trustedRootCertificates: [
+    trustedRootCertificates: trustedRootCertificatesRequired ? [
       {
         name: 'root-cert-wildcard-aks-ingress'
         properties: {
           keyVaultSecretId: aksIngressCertificateSecretId
         }
       }
-    ]
+    ] : []
     sslCertificates: [
       {
         name: 'ssl-certificate'
@@ -171,11 +172,11 @@ resource appgw 'Microsoft.Network/applicationGateways@2021-05-01' = {
           probe: {
             id: resourceId('Microsoft.Network/applicationGateways/probes', appGWName, 'aks-probe')
           }
-          trustedRootCertificates: [
+          trustedRootCertificates: trustedRootCertificatesRequired ? [
             {
               id: resourceId('Microsoft.Network/applicationGateways/trustedRootCertificates', appGWName, 'root-cert-wildcard-aks-ingress')
             }
-          ]
+          ] : []
         }
       }
     ]

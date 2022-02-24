@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.4.1124.51302",
-      "templateHash": "1916544472320339020"
+      "version": "0.4.1272.37030",
+      "templateHash": "689486126199306958"
     }
   },
   "parameters": {
@@ -124,6 +124,14 @@
     },
     "aksIngressCertificateBase64": {
       "type": "string"
+    },
+    "fluxConfig": {
+      "type": "object",
+      "defaultValue": {
+        "RepositoryUrl": "https://github.com/mspnp/aks-baseline",
+        "RepositoryBranch": "main",
+        "RepositorySubfolder": "./cluster-manifests"
+      }
     }
   },
   "resources": [
@@ -168,8 +176,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1124.51302",
-              "templateHash": "14497074803311532430"
+              "version": "0.4.1272.37030",
+              "templateHash": "17506562387358908869"
             }
           },
           "parameters": {
@@ -371,8 +379,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1124.51302",
-              "templateHash": "4798043355151891364"
+              "version": "0.4.1272.37030",
+              "templateHash": "10829328124836994140"
             }
           },
           "parameters": {
@@ -449,10 +457,10 @@
             "value": "[parameters('keyVaultName')]"
           },
           "aksIngressIdentityPrincipalId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'managedIdentities'), '2020-10-01').outputs.aksIngressIdentityPrincipalId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'managedIdentities')).outputs.aksIngressIdentityPrincipalId.value]"
           },
           "appGWIdentityPrincipalId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'managedIdentities'), '2020-10-01').outputs.appGWIdentityPrincipalId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'managedIdentities')).outputs.appGWIdentityPrincipalId.value]"
           },
           "logAnalyticsWorkspaceName": {
             "value": "[parameters('logAnalyticsWorkspaceName')]"
@@ -470,8 +478,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1124.51302",
-              "templateHash": "17473172951302433684"
+              "version": "0.4.1272.37030",
+              "templateHash": "10444007696249941006"
             }
           },
           "parameters": {
@@ -521,6 +529,7 @@
               ]
             },
             {
+              "condition": "[not(empty(parameters('aksIngressCertificate')))]",
               "type": "Microsoft.KeyVault/vaults/secrets",
               "apiVersion": "2021-06-01-preview",
               "name": "[format('{0}/{1}', parameters('keyVaultName'), 'appgw-aks-ingress-tls-cert')]",
@@ -725,7 +734,7 @@
             },
             "aksIngressCertificateSecretId": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), 'appgw-aks-ingress-tls-cert')).secretUri]"
+              "value": "[if(not(empty(parameters('aksIngressCertificate'))), reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), 'appgw-aks-ingress-tls-cert')).secretUri, '')]"
             }
           }
         }
@@ -746,7 +755,7 @@
         "mode": "Incremental",
         "parameters": {
           "aksControlPlanePrincipalId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'managedIdentities'), '2020-10-01').outputs.aksControlPlaneIdentityPrincipalId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'managedIdentities')).outputs.aksControlPlaneIdentityPrincipalId.value]"
           },
           "aksSubnetName": {
             "value": "[parameters('aksSubnetName')]"
@@ -764,8 +773,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1124.51302",
-              "templateHash": "12568926824582918475"
+              "version": "0.4.1272.37030",
+              "templateHash": "5804087660004797214"
             }
           },
           "parameters": {
@@ -878,6 +887,9 @@
           },
           "businessUnitTag": {
             "value": "[parameters('teamIdentitfier')]"
+          },
+          "fluxSettings": {
+            "value": "[parameters('fluxConfig')]"
           }
         },
         "template": {
@@ -886,8 +898,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1124.51302",
-              "templateHash": "3951441104176281279"
+              "version": "0.4.1272.37030",
+              "templateHash": "11755729549761782274"
             }
           },
           "parameters": {
@@ -944,6 +956,9 @@
             },
             "applicationIdentifierTag": {
               "type": "string"
+            },
+            "fluxSettings": {
+              "type": "object"
             }
           },
           "variables": {
@@ -1200,6 +1215,76 @@
               ]
             },
             {
+              "type": "Microsoft.KubernetesConfiguration/extensions",
+              "apiVersion": "2021-09-01",
+              "scope": "[format('Microsoft.ContainerService/managedClusters/{0}', parameters('aksClusterName'))]",
+              "name": "flux",
+              "properties": {
+                "extensionType": "microsoft.flux",
+                "autoUpgradeMinorVersion": true,
+                "releaseTrain": "Stable",
+                "scope": {
+                  "cluster": {
+                    "releaseNamespace": "flux-system"
+                  }
+                },
+                "configurationSettings": {
+                  "helm-controller.enabled": "false",
+                  "source-controller.enabled": "true",
+                  "kustomize-controller.enabled": "true",
+                  "notification-controller.enabled": "false",
+                  "image-automation-controller.enabled": "false",
+                  "image-reflector-controller.enabled": "false"
+                },
+                "configurationProtectedSettings": {}
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', parameters('aksClusterName'))]",
+                "[extensionResourceId(resourceId('Microsoft.ContainerRegistry/registries', parameters('acrName')), 'Microsoft.Authorization/roleAssignments', guid(format('{0}-{1}-{2}', resourceId('Microsoft.ContainerService/managedClusters', parameters('aksClusterName')), parameters('acrName'), variables('acrPullRole'))))]"
+              ]
+            },
+            {
+              "type": "Microsoft.KubernetesConfiguration/fluxConfigurations",
+              "apiVersion": "2022-01-01-preview",
+              "scope": "[format('Microsoft.ContainerService/managedClusters/{0}', parameters('aksClusterName'))]",
+              "name": "bootstrap",
+              "properties": {
+                "scope": "cluster",
+                "namespace": "flux-system",
+                "sourceKind": "GitRepository",
+                "gitRepository": {
+                  "url": "[parameters('fluxSettings').RepositoryUrl]",
+                  "timeoutInSeconds": 180,
+                  "syncIntervalInSeconds": 300,
+                  "repositoryRef": {
+                    "branch": "[parameters('fluxSettings').RepositoryBranch]",
+                    "tag": null,
+                    "semver": null,
+                    "commit": null
+                  },
+                  "sshKnownHosts": "",
+                  "httpsUser": null,
+                  "httpsCACert": null,
+                  "localAuthRef": null
+                },
+                "kustomizations": {
+                  "unified": {
+                    "path": "[parameters('fluxSettings').RepositorySubfolder]",
+                    "timeoutInSeconds": 300,
+                    "syncIntervalInSeconds": 300,
+                    "retryIntervalInSeconds": null,
+                    "prune": true,
+                    "force": false
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', parameters('aksClusterName'))]",
+                "[extensionResourceId(resourceId('Microsoft.ContainerRegistry/registries', parameters('acrName')), 'Microsoft.Authorization/roleAssignments', guid(format('{0}-{1}-{2}', resourceId('Microsoft.ContainerService/managedClusters', parameters('aksClusterName')), parameters('acrName'), variables('acrPullRole'))))]",
+                "[extensionResourceId(resourceId('Microsoft.ContainerService/managedClusters', parameters('aksClusterName')), 'Microsoft.KubernetesConfiguration/extensions', 'flux')]"
+              ]
+            },
+            {
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2020-08-01-preview",
               "scope": "[format('Microsoft.ContainerService/managedClusters/{0}', parameters('aksClusterName'))]",
@@ -1284,8 +1369,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.4.1124.51302",
-                      "templateHash": "8732578123839952932"
+                      "version": "0.4.1272.37030",
+                      "templateHash": "14995945467472764956"
                     }
                   },
                   "parameters": {
@@ -1344,8 +1429,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.4.1124.51302",
-                      "templateHash": "17626172983959320999"
+                      "version": "0.4.1272.37030",
+                      "templateHash": "17192544908865129077"
                     }
                   },
                   "parameters": {
@@ -1463,8 +1548,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.4.1124.51302",
-                      "templateHash": "6580516607977697482"
+                      "version": "0.4.1272.37030",
+                      "templateHash": "17432528997072655890"
                     }
                   },
                   "parameters": {
@@ -1654,10 +1739,10 @@
             "value": "[parameters('appGWIdentityName')]"
           },
           "appGWListenerCertificateSecretId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'keyVaultStamp'), '2020-10-01').outputs.appGWListenerCertificateSecretId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'keyVaultStamp')).outputs.appGWListenerCertificateSecretId.value]"
           },
           "aksIngressCertificateSecretId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'keyVaultStamp'), '2020-10-01').outputs.aksIngressCertificateSecretId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'keyVaultStamp')).outputs.aksIngressCertificateSecretId.value]"
           },
           "appGWName": {
             "value": "[parameters('appGWName')]"
@@ -1670,6 +1755,9 @@
           },
           "logAnalyticsWorkspaceName": {
             "value": "[parameters('logAnalyticsWorkspaceName')]"
+          },
+          "trustedRootCertificatesRequired": {
+            "value": "[not(empty(parameters('aksIngressCertificateBase64')))]"
           }
         },
         "template": {
@@ -1678,8 +1766,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1124.51302",
-              "templateHash": "10856746252855872980"
+              "version": "0.4.1272.37030",
+              "templateHash": "1169476776455845993"
             }
           },
           "parameters": {
@@ -1709,6 +1797,9 @@
             },
             "logAnalyticsWorkspaceName": {
               "type": "string"
+            },
+            "trustedRootCertificatesRequired": {
+              "type": "bool"
             }
           },
           "variables": {
@@ -1762,14 +1853,7 @@
                   ],
                   "minProtocolVersion": "TLSv1_2"
                 },
-                "trustedRootCertificates": [
-                  {
-                    "name": "root-cert-wildcard-aks-ingress",
-                    "properties": {
-                      "keyVaultSecretId": "[parameters('aksIngressCertificateSecretId')]"
-                    }
-                  }
-                ],
+                "trustedRootCertificates": "[if(parameters('trustedRootCertificatesRequired'), createArray(createObject('name', 'root-cert-wildcard-aks-ingress', 'properties', createObject('keyVaultSecretId', parameters('aksIngressCertificateSecretId')))), createArray())]",
                 "sslCertificates": [
                   {
                     "name": "ssl-certificate",
@@ -1874,11 +1958,7 @@
                       "probe": {
                         "id": "[resourceId('Microsoft.Network/applicationGateways/probes', parameters('appGWName'), 'aks-probe')]"
                       },
-                      "trustedRootCertificates": [
-                        {
-                          "id": "[resourceId('Microsoft.Network/applicationGateways/trustedRootCertificates', parameters('appGWName'), 'root-cert-wildcard-aks-ingress')]"
-                        }
-                      ]
+                      "trustedRootCertificates": "[if(parameters('trustedRootCertificatesRequired'), createArray(createObject('id', resourceId('Microsoft.Network/applicationGateways/trustedRootCertificates', parameters('appGWName'), 'root-cert-wildcard-aks-ingress'))), createArray())]"
                     }
                   }
                 ],
@@ -1958,8 +2038,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1124.51302",
-              "templateHash": "16962381339057575987"
+              "version": "0.4.1272.37030",
+              "templateHash": "7153158418628871618"
             }
           },
           "parameters": {
