@@ -1027,19 +1027,18 @@
                         "releaseTrain": "Stable",
                         "scope": {
                             "cluster": {
-                                "releaseNamespace": "flux-system",
-                                "configurationSettings": {
-                                    "helm-controller.enabled": "false",
-                                    "source-controller.enabled": "true",
-                                    "kustomize-controller.enabled": "true",
-                                    "notification-controller.enabled": "false",
-                                    "image-automation-controller.enabled": "false",
-                                    "image-reflector-controller.enabled": "false"
-                                },
-                                "configurationProtectedSettings": {}
+                                "releaseNamespace": "flux-system"
                             }
-                        }
-                        
+                        },
+                        "configurationSettings": {
+                            "helm-controller.enabled": "false",
+                            "source-controller.enabled": "true",
+                            "kustomize-controller.enabled": "true",
+                            "notification-controller.enabled": "false",
+                            "image-automation-controller.enabled": "false",
+                            "image-reflector-controller.enabled": "false"
+                        },
+                        "configurationProtectedSettings": {}
                     }
                 },
                 {
