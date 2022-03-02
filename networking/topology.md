@@ -61,9 +61,9 @@ In the future, this VNet might hold more subnets like [ACI Provider instance] su
 [Azure Hub-Spoke topology]: https://docs.microsoft.com/azure/architecture/reference-architectures/hybrid-networking/hub-spoke
 [Azure Firewall subnet]: https://docs.microsoft.com/azure/firewall/firewall-faq#does-the-firewall-subnet-size-need-to-change-as-the-service-scales
 [Gateway subnet]: https://docs.microsoft.com/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gwsub
-[Azure Application Gateway subnet]: https://docs.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#virtual-network-and-dedicated-subnet
-[Private Link Endpoint subnet]: https://docs.microsoft.com/en-us/azure/architecture/guide/networking/private-link-hub-spoke-network#networking
-[Private Link deployment options]: https://docs.microsoft.com/en-us/azure/architecture/guide/networking/private-link-hub-spoke-network#decision-tree-for-private-link-deployment
+[Azure Application Gateway subnet]: https://docs.microsoft.com/azure/application-gateway/configuration-infrastructure#virtual-network-and-dedicated-subnet
+[Private Link Endpoint subnet]: https://docs.microsoft.com/azure/architecture/guide/networking/private-link-hub-spoke-network#networking
+[Private Link deployment options]: https://docs.microsoft.com/azure/architecture/guide/networking/private-link-hub-spoke-network#decision-tree-for-private-link-deployment
 [Azure Bastion subnet]: https://docs.microsoft.com/azure/bastion/bastion-create-host-portal#createhost
 [AKS System Nodepool]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
 [AKS User Nodepool]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
