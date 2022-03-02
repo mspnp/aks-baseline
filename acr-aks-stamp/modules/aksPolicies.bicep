@@ -7,15 +7,17 @@ var policyResourceIdEnforceInternalLoadBalancers = '/providers/Microsoft.Authori
 var policyResourceIdRoRootFilesystem = '/providers/Microsoft.Authorization/policyDefinitions/df49d893-a74c-421d-bc95-c663042e5b80'
 var policyResourceIdEnforceResourceLimits = '/providers/Microsoft.Authorization/policyDefinitions/e345eecc-fa47-480f-9e88-67dcc122b164'
 var policyResourceIdEnforceImageSource = '/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469'
-var policyAssignmentNameAKSLinuxRestrictiveName = guid(policyResourceIdAKSLinuxRestrictive, resourceGroup().name, aksClusterName)
-var policyAssignmentNameEnforceHttpsIngressName = guid(policyResourceIdEnforceHttpsIngress, resourceGroup().name, aksClusterName)
-var policyAssignmentNameEnforceInternalLoadBalancersName = guid(policyResourceIdEnforceInternalLoadBalancers, resourceGroup().name, aksClusterName)
-var policyAssignmentNameRoRootFilesystemName = guid(policyResourceIdRoRootFilesystem, resourceGroup().name, aksClusterName)
-var policyAssignmentNameEnforceResourceLimitsName = guid(policyResourceIdEnforceResourceLimits, resourceGroup().name, aksClusterName)
-var policyAssignmentNameEnforceImageSourceName = guid(policyResourceIdEnforceImageSource, resourceGroup().name, aksClusterName)
+var policyResourceIdEnforceDefenderInCluster = '/providers/Microsoft.Authorization/policyDefinitions/a1840de2-8088-4ea8-b153-b4c723e9cb01'
+var policyAssignmentNameAKSLinuxRestrictive = guid(policyResourceIdAKSLinuxRestrictive, resourceGroup().name, aksClusterName)
+var policyAssignmentNameEnforceHttpsIngress = guid(policyResourceIdEnforceHttpsIngress, resourceGroup().name, aksClusterName)
+var policyAssignmentNameEnforceInternalLoadBalancers = guid(policyResourceIdEnforceInternalLoadBalancers, resourceGroup().name, aksClusterName)
+var policyAssignmentNameRoRootFilesystem = guid(policyResourceIdRoRootFilesystem, resourceGroup().name, aksClusterName)
+var policyAssignmentNameEnforceResourceLimits = guid(policyResourceIdEnforceResourceLimits, resourceGroup().name, aksClusterName)
+var policyAssignmentNameEnforceImageSource = guid(policyResourceIdEnforceImageSource, resourceGroup().name, aksClusterName)
+var policyAssignmentNameEnforceDefenderInCluster = guid(policyResourceIdEnforceDefenderInCluster, resourceGroup().name, aksClusterName)
 
-resource policyAssignmentNameAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2020-03-01' = {
-  name: policyAssignmentNameAKSLinuxRestrictiveName
+resource policyAssignmentAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2020-09-01' = {
+  name: policyAssignmentNameAKSLinuxRestrictive
   properties: {
     displayName: '[${aksClusterName}] ${reference(policyResourceIdAKSLinuxRestrictive, '2020-09-01').displayName}'
     scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
@@ -36,8 +38,8 @@ resource policyAssignmentNameAKSLinuxRestrictive 'Microsoft.Authorization/policy
   }
 }
 
-resource policyAssignmentNameEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2020-03-01' = {
-  name: policyAssignmentNameEnforceHttpsIngressName
+resource policyAssignmentEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2020-09-01' = {
+  name: policyAssignmentNameEnforceHttpsIngress
   properties: {
     displayName: '[${aksClusterName}] ${reference(policyResourceIdEnforceHttpsIngress, '2020-09-01').displayName}'
     scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
@@ -53,8 +55,8 @@ resource policyAssignmentNameEnforceHttpsIngress 'Microsoft.Authorization/policy
   }
 }
 
-resource policyAssignmentNameEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignments@2020-03-01' = {
-  name: policyAssignmentNameEnforceInternalLoadBalancersName
+resource policyAssignmentEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignments@2020-09-01' = {
+  name: policyAssignmentNameEnforceInternalLoadBalancers
   properties: {
     displayName: '[${aksClusterName}] ${reference(policyResourceIdEnforceInternalLoadBalancers, '2020-09-01').displayName}'
     scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
@@ -70,8 +72,8 @@ resource policyAssignmentNameEnforceInternalLoadBalancers 'Microsoft.Authorizati
   }
 }
 
-resource policyAssignmentNameRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2020-03-01' = {
-  name: policyAssignmentNameRoRootFilesystemName
+resource policyAssignmentRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2020-09-01' = {
+  name: policyAssignmentNameRoRootFilesystem
   properties: {
     displayName: '[${aksClusterName}] ${reference(policyResourceIdRoRootFilesystem, '2020-09-01').displayName}'
     scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
@@ -91,8 +93,8 @@ resource policyAssignmentNameRoRootFilesystem 'Microsoft.Authorization/policyAss
   }
 }
 
-resource policyAssignmentNameEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2020-03-01' = {
-  name: policyAssignmentNameEnforceResourceLimitsName
+resource policyAssignmentEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2020-09-01' = {
+  name: policyAssignmentNameEnforceResourceLimits
   properties: {
     displayName: '[${aksClusterName}] ${reference(policyResourceIdEnforceResourceLimits, '2020-09-01').displayName}'
     scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
@@ -120,8 +122,8 @@ resource policyAssignmentNameEnforceResourceLimits 'Microsoft.Authorization/poli
   }
 }
 
-resource policyAssignmentNameEnforceImageSource 'Microsoft.Authorization/policyAssignments@2020-03-01' = {
-  name: policyAssignmentNameEnforceImageSourceName
+resource policyAssignmentEnforceImageSource 'Microsoft.Authorization/policyAssignments@2020-09-01' = {
+  name: policyAssignmentNameEnforceImageSource
   properties: {
     displayName: '[${aksClusterName}] ${reference(policyResourceIdEnforceImageSource, '2020-09-01').displayName}'
     scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
@@ -139,6 +141,21 @@ resource policyAssignmentNameEnforceImageSource 'Microsoft.Authorization/policyA
       }
       effect: {
         value: 'deny'
+      }
+    }
+  }
+}
+
+resource policyAssignmentEnforceDefenderInCluster 'Microsoft.Authorization/policyAssignments@2020-09-01' = {
+  name: policyAssignmentNameEnforceDefenderInCluster
+  properties: {
+    displayName: '[${aksClusterName}] ${reference(policyResourceIdEnforceDefenderInCluster, '2020-09-01').displayName}'
+    description: 'Microsoft Defender for Containers should be enabled in the cluster.'
+    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    policyDefinitionId: policyResourceIdEnforceDefenderInCluster
+    parameters: {
+      effect: {
+        value: 'Audit'
       }
     }
   }

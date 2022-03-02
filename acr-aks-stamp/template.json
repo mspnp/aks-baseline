@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.4.1272.37030",
-      "templateHash": "689486126199306958"
+      "templateHash": "10716463035553745571"
     }
   },
   "parameters": {
@@ -899,7 +899,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.4.1272.37030",
-              "templateHash": "11755729549761782274"
+              "templateHash": "3617214316864246343"
             }
           },
           "parameters": {
@@ -1141,10 +1141,19 @@
                   "userAssignedIdentityExceptions": []
                 },
                 "disableLocalAccounts": true,
+                "securityProfile": {
+                  "azureDefender": {
+                    "enabled": true,
+                    "logAnalyticsWorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName'))]"
+                  }
+                },
                 "oidcIssuerProfile": {
                   "enabled": true
                 }
-              }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'aksPolicies')]"
+              ]
             },
             {
               "type": "Microsoft.Insights/diagnosticSettings",
@@ -1549,7 +1558,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.4.1272.37030",
-                      "templateHash": "17432528997072655890"
+                      "templateHash": "6557873674375311407"
                     }
                   },
                   "parameters": {
@@ -1567,18 +1576,20 @@
                     "policyResourceIdRoRootFilesystem": "/providers/Microsoft.Authorization/policyDefinitions/df49d893-a74c-421d-bc95-c663042e5b80",
                     "policyResourceIdEnforceResourceLimits": "/providers/Microsoft.Authorization/policyDefinitions/e345eecc-fa47-480f-9e88-67dcc122b164",
                     "policyResourceIdEnforceImageSource": "/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469",
-                    "policyAssignmentNameAKSLinuxRestrictiveName": "[guid(variables('policyResourceIdAKSLinuxRestrictive'), resourceGroup().name, parameters('aksClusterName'))]",
-                    "policyAssignmentNameEnforceHttpsIngressName": "[guid(variables('policyResourceIdEnforceHttpsIngress'), resourceGroup().name, parameters('aksClusterName'))]",
-                    "policyAssignmentNameEnforceInternalLoadBalancersName": "[guid(variables('policyResourceIdEnforceInternalLoadBalancers'), resourceGroup().name, parameters('aksClusterName'))]",
-                    "policyAssignmentNameRoRootFilesystemName": "[guid(variables('policyResourceIdRoRootFilesystem'), resourceGroup().name, parameters('aksClusterName'))]",
-                    "policyAssignmentNameEnforceResourceLimitsName": "[guid(variables('policyResourceIdEnforceResourceLimits'), resourceGroup().name, parameters('aksClusterName'))]",
-                    "policyAssignmentNameEnforceImageSourceName": "[guid(variables('policyResourceIdEnforceImageSource'), resourceGroup().name, parameters('aksClusterName'))]"
+                    "policyResourceIdEnforceDefenderInCluster": "/providers/Microsoft.Authorization/policyDefinitions/a1840de2-8088-4ea8-b153-b4c723e9cb01",
+                    "policyAssignmentNameAKSLinuxRestrictive": "[guid(variables('policyResourceIdAKSLinuxRestrictive'), resourceGroup().name, parameters('aksClusterName'))]",
+                    "policyAssignmentNameEnforceHttpsIngress": "[guid(variables('policyResourceIdEnforceHttpsIngress'), resourceGroup().name, parameters('aksClusterName'))]",
+                    "policyAssignmentNameEnforceInternalLoadBalancers": "[guid(variables('policyResourceIdEnforceInternalLoadBalancers'), resourceGroup().name, parameters('aksClusterName'))]",
+                    "policyAssignmentNameRoRootFilesystem": "[guid(variables('policyResourceIdRoRootFilesystem'), resourceGroup().name, parameters('aksClusterName'))]",
+                    "policyAssignmentNameEnforceResourceLimits": "[guid(variables('policyResourceIdEnforceResourceLimits'), resourceGroup().name, parameters('aksClusterName'))]",
+                    "policyAssignmentNameEnforceImageSource": "[guid(variables('policyResourceIdEnforceImageSource'), resourceGroup().name, parameters('aksClusterName'))]",
+                    "policyAssignmentNameEnforceDefenderInCluster": "[guid(variables('policyResourceIdEnforceDefenderInCluster'), resourceGroup().name, parameters('aksClusterName'))]"
                   },
                   "resources": [
                     {
                       "type": "Microsoft.Authorization/policyAssignments",
-                      "apiVersion": "2020-03-01",
-                      "name": "[variables('policyAssignmentNameAKSLinuxRestrictiveName')]",
+                      "apiVersion": "2020-09-01",
+                      "name": "[variables('policyAssignmentNameAKSLinuxRestrictive')]",
                       "properties": {
                         "displayName": "[format('[{0}] {1}', parameters('aksClusterName'), reference(variables('policyResourceIdAKSLinuxRestrictive'), '2020-09-01').displayName)]",
                         "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
@@ -1600,8 +1611,8 @@
                     },
                     {
                       "type": "Microsoft.Authorization/policyAssignments",
-                      "apiVersion": "2020-03-01",
-                      "name": "[variables('policyAssignmentNameEnforceHttpsIngressName')]",
+                      "apiVersion": "2020-09-01",
+                      "name": "[variables('policyAssignmentNameEnforceHttpsIngress')]",
                       "properties": {
                         "displayName": "[format('[{0}] {1}', parameters('aksClusterName'), reference(variables('policyResourceIdEnforceHttpsIngress'), '2020-09-01').displayName)]",
                         "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
@@ -1618,8 +1629,8 @@
                     },
                     {
                       "type": "Microsoft.Authorization/policyAssignments",
-                      "apiVersion": "2020-03-01",
-                      "name": "[variables('policyAssignmentNameEnforceInternalLoadBalancersName')]",
+                      "apiVersion": "2020-09-01",
+                      "name": "[variables('policyAssignmentNameEnforceInternalLoadBalancers')]",
                       "properties": {
                         "displayName": "[format('[{0}] {1}', parameters('aksClusterName'), reference(variables('policyResourceIdEnforceInternalLoadBalancers'), '2020-09-01').displayName)]",
                         "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
@@ -1636,8 +1647,8 @@
                     },
                     {
                       "type": "Microsoft.Authorization/policyAssignments",
-                      "apiVersion": "2020-03-01",
-                      "name": "[variables('policyAssignmentNameRoRootFilesystemName')]",
+                      "apiVersion": "2020-09-01",
+                      "name": "[variables('policyAssignmentNameRoRootFilesystem')]",
                       "properties": {
                         "displayName": "[format('[{0}] {1}', parameters('aksClusterName'), reference(variables('policyResourceIdRoRootFilesystem'), '2020-09-01').displayName)]",
                         "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
@@ -1658,8 +1669,8 @@
                     },
                     {
                       "type": "Microsoft.Authorization/policyAssignments",
-                      "apiVersion": "2020-03-01",
-                      "name": "[variables('policyAssignmentNameEnforceResourceLimitsName')]",
+                      "apiVersion": "2020-09-01",
+                      "name": "[variables('policyAssignmentNameEnforceResourceLimits')]",
                       "properties": {
                         "displayName": "[format('[{0}] {1}', parameters('aksClusterName'), reference(variables('policyResourceIdEnforceResourceLimits'), '2020-09-01').displayName)]",
                         "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
@@ -1688,8 +1699,8 @@
                     },
                     {
                       "type": "Microsoft.Authorization/policyAssignments",
-                      "apiVersion": "2020-03-01",
-                      "name": "[variables('policyAssignmentNameEnforceImageSourceName')]",
+                      "apiVersion": "2020-09-01",
+                      "name": "[variables('policyAssignmentNameEnforceImageSource')]",
                       "properties": {
                         "displayName": "[format('[{0}] {1}', parameters('aksClusterName'), reference(variables('policyResourceIdEnforceImageSource'), '2020-09-01').displayName)]",
                         "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
@@ -1707,6 +1718,22 @@
                           },
                           "effect": {
                             "value": "deny"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Authorization/policyAssignments",
+                      "apiVersion": "2020-09-01",
+                      "name": "[variables('policyAssignmentNameEnforceDefenderInCluster')]",
+                      "properties": {
+                        "displayName": "[format('[{0}] {1}', parameters('aksClusterName'), reference(variables('policyResourceIdEnforceDefenderInCluster'), '2020-09-01').displayName)]",
+                        "description": "Microsoft Defender for Containers should be enabled in the cluster.",
+                        "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
+                        "policyDefinitionId": "[variables('policyResourceIdEnforceDefenderInCluster')]",
+                        "parameters": {
+                          "effect": {
+                            "value": "Audit"
                           }
                         }
                       }

@@ -201,10 +201,19 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-08-01' = {
       userAssignedIdentityExceptions: []
     }
     disableLocalAccounts: true
+    securityProfile: {
+      azureDefender: {
+        enabled: true
+        logAnalyticsWorkspaceResourceId: logAnalyticsWorkspace.id
+      }
+    }
     oidcIssuerProfile: {
       enabled: true
     }
   }
+  dependsOn: [
+    aksPolicies
+  ]
 }
 
 module aksNodes 'aksNodes.bicep' = {
