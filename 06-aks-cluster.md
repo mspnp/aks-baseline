@@ -30,6 +30,10 @@ Now that your [ACR instance is deployed and ready to support cluster bootstrappi
 
        ```bash
        # Create an Azure Service Principal
+       #
+       # This command will generate a sp.json file in the format expected by GitHub Actions for Azure.
+       # This is accomplished by using the deprecated --sdk-auth flag. For alternatives, including using
+       # Federated Identity, see https://github.com/Azure/login#configure-deployment-credentials.
        az ad sp create-for-rbac --name "github-workflow-aks-cluster" --sdk-auth --skip-assignment > sp.json
        export APP_ID=$(grep -oP '(?<="clientId": ").*?[^\\](?=",)' sp.json)
 

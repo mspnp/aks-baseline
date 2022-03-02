@@ -139,12 +139,14 @@
         "policyResourceIdRoRootFilesystem": "/providers/Microsoft.Authorization/policyDefinitions/df49d893-a74c-421d-bc95-c663042e5b80",
         "policyResourceIdEnforceResourceLimits": "/providers/Microsoft.Authorization/policyDefinitions/e345eecc-fa47-480f-9e88-67dcc122b164",
         "policyResourceIdEnforceImageSource": "/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469",
+        "policyResourceIdEnforceDefenderInCluster": "/providers/Microsoft.Authorization/policyDefinitions/a1840de2-8088-4ea8-b153-b4c723e9cb01",
         "policyAssignmentNameAKSLinuxRestrictive": "[guid(variables('policyResourceIdAKSLinuxRestrictive'), resourceGroup().name, variables('clusterName'))]",
         "policyAssignmentNameEnforceHttpsIngress": "[guid(variables('policyResourceIdEnforceHttpsIngress'), resourceGroup().name, variables('clusterName'))]",
         "policyAssignmentNameEnforceInternalLoadBalancers": "[guid(variables('policyResourceIdEnforceInternalLoadBalancers'), resourceGroup().name, variables('clusterName'))]",
         "policyAssignmentNameRoRootFilesystem": "[guid(variables('policyResourceIdRoRootFilesystem'), resourceGroup().name, variables('clusterName'))]",
         "policyAssignmentNameEnforceResourceLimits": "[guid(variables('policyResourceIdEnforceResourceLimits'), resourceGroup().name, variables('clusterName'))]",
         "policyAssignmentNameEnforceImageSource": "[guid(variables('policyResourceIdEnforceImageSource'), resourceGroup().name, variables('clusterName'))]",
+        "policyAssignmentNameEnforceDefenderInCluster": "[guid(variables('policyResourceIdEnforceDefenderInCluster'), resourceGroup().name, variables('clusterName'))]",
         "isUsingAzureRBACasKubernetesRBAC": "[equals(subscription().tenantId, parameters('k8sControlPlaneAuthorizationTenantId'))]"
     },
     "resources": [
@@ -844,6 +846,7 @@
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceInternalLoadBalancers'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceResourceLimits'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameRoRootFilesystem'))]",
+                "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceDefenderInCluster'))]",
                 "[resourceId('Microsoft.Network/privateEndpoints', 'nodepools-to-akv')]",
                 "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'podmi-ingress-controller', variables('keyVaultReader')))]",
                 "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'podmi-ingress-controller', variables('keyVaultSecretsUserRole')))]"
@@ -988,6 +991,12 @@
                     "userAssignedIdentityExceptions": []
                 },
                 "disableLocalAccounts": true,
+                "securityProfile": {
+                    "azureDefender": {
+                        "enabled": true,
+                        "logAnalyticsWorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+                    }
+                },
                 "oidcIssuerProfile": {
                     "enabled": true
                 }
@@ -1013,24 +1022,23 @@
                         "[resourceId('Microsoft.ContainerRegistry/registries/providers/roleAssignments', variables('defaultAcrName'), 'Microsoft.Authorization', guid(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), variables('acrPullRole')))]"
                     ],
                     "properties": {
-                        "extensionType": "Microsoft.Flux",
+                        "extensionType": "microsoft.flux",
                         "autoUpgradeMinorVersion": true,
                         "releaseTrain": "Stable",
                         "scope": {
                             "cluster": {
-                                "releaseNamespace": "flux-system",
-                                "configurationSettings": {
-                                    "helm-controller.enabled": "false",
-                                    "source-controller.enabled": "true",
-                                    "kustomize-controller.enabled": "true",
-                                    "notification-controller.enabled": "false",
-                                    "image-automation-controller.enabled": "false",
-                                    "image-reflector-controller.enabled": "false"
-                                },
-                                "configurationProtectedSettings": {}
+                                "releaseNamespace": "flux-system"
                             }
-                        }
-                        
+                        },
+                        "configurationSettings": {
+                            "helm-controller.enabled": "false",
+                            "source-controller.enabled": "true",
+                            "kustomize-controller.enabled": "true",
+                            "notification-controller.enabled": "false",
+                            "image-automation-controller.enabled": "false",
+                            "image-reflector-controller.enabled": "false"
+                        },
+                        "configurationProtectedSettings": {}
                     }
                 },
                 {
@@ -1847,7 +1855,7 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "apiVersion": "2020-03-01",
+            "apiVersion": "2020-09-01",
             "name": "[variables('policyAssignmentNameAKSLinuxRestrictive')]",
             "comments": "Applying the 'AKS Linux Restrictive' policy to the resource group",
             "properties": {
@@ -1871,7 +1879,7 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "apiVersion": "2020-03-01",
+            "apiVersion": "2020-09-01",
             "name": "[variables('policyAssignmentNameEnforceHttpsIngress')]",
             "comments": "Applying the 'Enforce HTTPS ingress in Kubernetes cluster' policy to the resource group.",
             "properties": {
@@ -1890,7 +1898,7 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "apiVersion": "2020-03-01",
+            "apiVersion": "2020-09-01",
             "name": "[variables('policyAssignmentNameEnforceInternalLoadBalancers')]",
             "comments": "Applying the 'Enforce internal load balancers in Kubernetes cluster' policy to the resource group.",
             "properties": {
@@ -1909,7 +1917,7 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "apiVersion": "2020-03-01",
+            "apiVersion": "2020-09-01",
             "name": "[variables('policyAssignmentNameRoRootFilesystem')]",
             "comments": "Applying the 'Kubernetes cluster containers should run with a read only root file system' policy to the resource group.",
             "properties": {
@@ -1932,7 +1940,7 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "apiVersion": "2020-03-01",
+            "apiVersion": "2020-09-01",
             "name": "[variables('policyAssignmentNameEnforceResourceLimits')]",
             "comments": "Applying the 'Container Images Resource Limits' policy at the resource group level.",
             "properties": {
@@ -1963,7 +1971,7 @@
         },
         {
             "type": "Microsoft.Authorization/policyAssignments",
-            "apiVersion": "2020-03-01",
+            "apiVersion": "2020-09-01",
             "name": "[variables('policyAssignmentNameEnforceImageSource')]",
             "comments": "Applying the 'Allowed Container Images' regex policy at the resource group level. If all images are pull into your ARC instance as described in these instructions you can remove the docker.io entries.",
             "properties": {
@@ -1983,6 +1991,23 @@
                     },
                     "effect": {
                         "value": "deny"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Authorization/policyAssignments",
+            "apiVersion": "2020-09-01",
+            "name": "[variables('policyAssignmentNameEnforceDefenderInCluster')]",
+            "comments": "Applying the 'Azure Kubernetes Service clusters should have Defender profile enabled' policy at the resource group level.",
+            "properties": {
+                "displayName": "[concat('[', variables('clusterName'),'] ', reference(variables('policyResourceIdEnforceDefenderInCluster'), '2020-09-01').displayName)]",
+                "description": "Microsoft Defender for Containers should be enabled in the cluster.",
+                "scope": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)]",
+                "policyDefinitionId": "[variables('policyResourceIdEnforceDefenderInCluster')]",
+                "parameters": {
+                    "effect": {
+                        "value": "Audit"
                     }
                 }
             }

@@ -147,7 +147,7 @@ resource nsgAppGwSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' = {
           description: 'Allow Azure Control Plane in. (https://docs.microsoft.com/azure/application-gateway/configuration-infrastructure#network-security-groups)'
           protocol: '*'
           sourcePortRange: '*'
-          sourceAddressPrefix: '*'
+          sourceAddressPrefix: 'GatewayManager'
           destinationPortRange: '65200-65535'
           destinationAddressPrefix: '*'
           direction: 'Inbound'
@@ -163,7 +163,7 @@ resource nsgAppGwSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' = {
           sourcePortRange: '*'
           sourceAddressPrefix: 'AzureLoadBalancer'
           destinationPortRange: '*'
-          destinationAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: '*'
           direction: 'Inbound'
           access: 'Allow'
           priority: 120
@@ -356,5 +356,7 @@ resource pipPrimaryClusterIp_diagnosticSetting 'Microsoft.Insights/diagnosticSet
 /*** OUTPUTS ***/
 
 output clusterVnetResourceId string = vnetSpoke.id
-output nodepoolSubnetResourceIds string = '[\'${vnetSpoke::snetClusterNodes.id}\']'
+output nodepoolSubnetResourceIds array = [
+  vnetSpoke::snetClusterNodes.id
+]
 output appGwPublicIpAddress string = pipPrimaryClusterIp.id
