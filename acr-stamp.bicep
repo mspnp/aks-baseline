@@ -169,7 +169,7 @@ resource acrAks_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-
 
 // Expose Azure Container Registry via Private Link, into the cluster nodes subnet.
 resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2021-05-01' = {
-  name: 'acr_to_${spokeVirtualNetwork.name}'
+  name: 'pe-${acrAks.name}'
   location: location
   dependsOn: [
     acrAks::acrReplication
@@ -180,7 +180,7 @@ resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2021-05-01
     }
     privateLinkServiceConnections: [
       {
-        name: 'nodepools'
+        name: 'to_${spokeVirtualNetwork.name}'
         properties: {
           privateLinkServiceId: acrAks.id
           groupIds: [

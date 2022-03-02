@@ -311,7 +311,7 @@
         {
             "type": "Microsoft.Network/privateEndpoints",
             "apiVersion": "2020-05-01",
-            "name": "[concat('akv_to_', variables('vnetName'))]",
+            "name": "[concat('pe-', variables('keyVaultName'))]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
@@ -322,7 +322,7 @@
                 },
                 "privateLinkServiceConnections": [
                     {
-                        "name": "nodepools",
+                        "name": "[concat('to_', variables('vnetName'))]",
                         "properties": {
                             "privateLinkServiceId": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
                             "groupIds": [
@@ -339,7 +339,7 @@
                     "name": "default",
                     "location": "[parameters('location')]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateEndpoints', concat('akv_to_', variables('vnetName')))]",
+                        "[resourceId('Microsoft.Network/privateEndpoints', concat('pe-', variables('keyVaultName')))]",
                         "[resourceId('Microsoft.Network/privateDnsZones', variables('akvPrivateDnsZonesName'))]"
                     ],
                     "properties": {
@@ -428,7 +428,7 @@
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
-                "[resourceId('Microsoft.Network/privateEndpoints', concat('akv_to_', variables('vnetName')))]",
+                "[resourceId('Microsoft.Network/privateEndpoints', concat('pe-', variables('keyVaultName')))]",
                 "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultReader')))]",
                 "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultSecretsUserRole')))]"
             ],
@@ -848,7 +848,7 @@
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceResourceLimits'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameRoRootFilesystem'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceDefenderInCluster'))]",
-                "[resourceId('Microsoft.Network/privateEndpoints', concat('akv_to_', variables('vnetName')))]",
+                "[resourceId('Microsoft.Network/privateEndpoints', concat('pe-', variables('keyVaultName')))]",
                 "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'podmi-ingress-controller', variables('keyVaultReader')))]",
                 "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'podmi-ingress-controller', variables('keyVaultSecretsUserRole')))]"
             ],
