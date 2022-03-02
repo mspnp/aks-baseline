@@ -22,7 +22,8 @@ This VNet Spoke is meant to hold the following subnets:
 
 * [AKS System Nodepool] and [AKS User Nodepool] subnet
 * [AKS Internal Load Balancer subnet]
-* [Azure Application Gateway subnet][Gateway subnet]
+* [Azure Application Gateway subnet]
+* [Private Link Endpoint subnet]
 * All with basic NSGs around each
 
 In the future, this VNet might hold more subnets like [ACI Provider instance] subnets, more [AKS Nodepools subnets], and more.
@@ -31,9 +32,10 @@ In the future, this VNet might hold more subnets like [ACI Provider instance] su
 
 | Subnet                                                 | Upgrade Node | Nodes/VMs/Instance | % Seasonal scale out | +Nodes/VMs | Max Ips/Pods per VM/Node | [% Max Surge] | [% Max Unavailable] | +Ips/Pods per VM/Node | Tot. Ips/Pods per VM/Node | [Azure Subnet not assignable Ips factor] | [Private Endpoints] | [Minimum Subnet size] | Scaled Subnet size | [Subnet Mask bits] | Cidr           | Host        | Broadcast     |
 |--------------------------------------------------------|--------------|--------------------|------------------|------------|--------------------------|---------------|---------------------|-----------------------|---------------------------|------------------------------------------|---------------------|-----------------------|--------------------|--------------------|----------------|-------------|---------------|
-| AKS System and User Nodepool Subnet                    | 2            | 5                  | 200              | 10         | [30]                     | 100           | 0                   | 30                    | 60                        | 5                                        | 2                   | 374                   | 984                | 22                 | 10.240.0.0/22  | 10.240.0.0  | 10.240.3.255  |
+| AKS System and User Nodepool Subnet                    | 2            | 5                  | 200              | 10         | [30]                     | 100           | 0                   | 30                    | 60                        | 5                                        | 0                   | 372                   | 982                | 22                 | 10.240.0.0/22  | 10.240.0.0  | 10.240.3.255  |
 | AKS Internal Load Balancer Services Subnet             | 0            | 0                  | 0                | 0          | 5                        | 100           | 100                 | 0                     | 5                         | 5                                        | 0                   | 10                    | 10                 | 28                 | 10.240.4.0/28  | 10.240.4.0  | 10.240.4.15   |
-| Azure Application Gateway Subnet                       | 0            | [11]               | 0                | 0          | 0                        | 100           | 100                 | 0                     | 0                         | 5                                        | 0                   | 16                    | 16                 | 28                 | 10.240.4.16/28  | 10.240.4.16 | 10.240.4.31   |
+| Azure Application Gateway Subnet                       | 0            | [11]               | 0                | 0          | 0                        | 100           | 100                 | 0                     | 0                         | 5                                        | 0                   | 16                    | 16                 | 28                 | 10.240.4.16/28 | 10.240.4.16 | 10.240.4.31   |
+| Private Link Endpoint Subnet                           | 0            | 0                  | 0                | 0          | 0                        | 100           | 100                 | 0                     | 0                         | 5                                        | 2                   | 7                     | 7                  | 28                 | 10.240.4.32/28 | 10.240.4.32 | 10.240.4.47   |
 | Gateway Subnet (GatewaySubnet)                         | 0            | [27<sup>1</sup>]   | 0                | 0          | 0                        | 100           | 100                 | 0                     | 0                         | 5                                        | 0                   | 32                    | 32                 | 27                 | 10.200.0.64/27 | 10.200.0.64 | 10.200.0.95   |
 | Azure Firewall Subnet (AzureFirewallSubnet)            | 0            | [59]               | 0                | 0          | 0                        | 100           | 100                 | 0                     | 0                         | 5                                        | 0                   | 64                    | 64                 | 26                 | 10.200.0.0/26  | 10.200.0.0  | 10.200.0.63   |
 | Azure Bastion Subnet (AzureBastionSubnet)              | 0            | [27<sup>2</sup>]   | 0                | 0          | 0                        | 100           | 100                 | 0                     | 0                         | 5                                        | 0                   | 32                    | 32                 | 27                 | 10.200.0.96/27 | 10.200.0.96 | 10.200.0.127  |
@@ -42,7 +44,7 @@ In the future, this VNet might hold more subnets like [ACI Provider instance] su
 
 1. [AKS System Nodepool] and [AKS User Nodepool] subnet:  Multi-tenant or other advanced workloads may have nodepool isolation requirements that might demand more (and likely smaller) subnets.
 2. [AKS Internal Load Balancer subnet]: Multi-tenant, multiple SSL termination rules, single PPE supporting dev/QA/UAT, etc could lead to needing more ingress controllers, but for baseline, we should start with one.
-3. [Private Endpoints] Private Links are created for ACR and Azure KeyVault, so these Azure services can be accessed using Private Endpoints within the Spoke vNet, specifically allocating an private Ip address from the AKS System and User Nodepool Subnet.
+3. [Private Endpoints] Private Links are created for ACR and Azure Key Vault, so these Azure services can be accessed using Private Endpoints within the Spoke vNet. There are multiple [Private Link deployment options]. In the baseline they are deployed to a dedicated subnet within the Spoke vNet.
 
 [27<sup>1</sup>]: https://docs.microsoft.com/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gwsub
 [11]: https://docs.microsoft.com/azure/application-gateway/configuration-overview#size-of-the-subnet
@@ -59,6 +61,9 @@ In the future, this VNet might hold more subnets like [ACI Provider instance] su
 [Azure Hub-Spoke topology]: https://docs.microsoft.com/azure/architecture/reference-architectures/hybrid-networking/hub-spoke
 [Azure Firewall subnet]: https://docs.microsoft.com/azure/firewall/firewall-faq#does-the-firewall-subnet-size-need-to-change-as-the-service-scales
 [Gateway subnet]: https://docs.microsoft.com/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gwsub
+[Azure Application Gateway subnet]: https://docs.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#virtual-network-and-dedicated-subnet
+[Private Link Endpoint subnet]: https://docs.microsoft.com/en-us/azure/architecture/guide/networking/private-link-hub-spoke-network#networking
+[Private Link deployment options]: https://docs.microsoft.com/en-us/azure/architecture/guide/networking/private-link-hub-spoke-network#decision-tree-for-private-link-deployment
 [Azure Bastion subnet]: https://docs.microsoft.com/azure/bastion/bastion-create-host-portal#createhost
 [AKS System Nodepool]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
 [AKS User Nodepool]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
