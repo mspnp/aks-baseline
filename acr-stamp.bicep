@@ -67,8 +67,8 @@ resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' exis
   scope: spokeResourceGroup
   name: '${last(split(targetVnetResourceId,'/'))}'
   
-  resource snetClusterNodes 'subnets@2021-05-01' existing = {
-    name: 'snet-clusternodes'
+  resource snetPrivateLinkEndpoints 'subnets@2021-05-01' existing = {
+    name: 'snet-privatelinkendpoints'
   }
 }
 
@@ -176,7 +176,7 @@ resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2021-05-01
   ]
   properties: {
     subnet: {
-      id: spokeVirtualNetwork::snetClusterNodes.id
+      id: spokeVirtualNetwork::snetPrivateLinkEndpoints.id
     }
     privateLinkServiceConnections: [
       {
