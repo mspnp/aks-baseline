@@ -279,7 +279,8 @@ resource nsgPrivateLinkEndpointsSubnet_diagnosticsSettings 'Microsoft.Insights/d
 }
 
 // The spoke virtual network.
-// 65,536 (-reserved) IPs available to the workload, split across two subnets for AKS and one for App Gateway.
+// 65,536 (-reserved) IPs available to the workload, split across two subnets for AKS,
+// one for App Gateway and one for Private Link endpoints.
 resource vnetSpoke 'Microsoft.Network/virtualNetworks@2021-05-01' = {
   name: clusterVNetName
   location: location
@@ -301,7 +302,7 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2021-05-01' = {
             id: nsgNodepoolSubnet.id
           }
           privateEndpointNetworkPolicies: 'Disabled'
-          privateLinkServiceNetworkPolicies: 'Enabled'
+          privateLinkServiceNetworkPolicies: 'Disabled'
         }
       }
       {
