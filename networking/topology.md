@@ -44,7 +44,7 @@ In the future, this VNet might hold more subnets like [ACI Provider instance] su
 
 1. [AKS System Nodepool] and [AKS User Nodepool] subnet:  Multi-tenant or other advanced workloads may have nodepool isolation requirements that might demand more (and likely smaller) subnets.
 2. [AKS Internal Load Balancer subnet]: Multi-tenant, multiple SSL termination rules, single PPE supporting dev/QA/UAT, etc could lead to needing more ingress controllers, but for baseline, we should start with one.
-3. [Private Endpoints] Private Links are created for ACR and Azure Key Vault, so these Azure services can be accessed using Private Endpoints within the Spoke vNet. There are multiple [Private Link deployment options]. In the baseline they are deployed to a dedicated subnet within the Spoke vNet.
+3. [Private Endpoints] subnet: Private Links are created for Azure Container Registry and Azure Key Vault, so these Azure services can be accessed using Private Endpoints within the spoke virtual network. There are multiple [Private Link deployment options]; this this implementation they are deployed to a dedicated subnet within the spoke virtual network.
 
 [27<sup>1</sup>]: https://docs.microsoft.com/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gwsub
 [11]: https://docs.microsoft.com/azure/application-gateway/configuration-overview#size-of-the-subnet
