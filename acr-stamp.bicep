@@ -67,8 +67,8 @@ resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' exis
   scope: spokeResourceGroup
   name: '${last(split(targetVnetResourceId,'/'))}'
   
-  resource snetClusterNodes 'subnets@2021-05-01' existing = {
-    name: 'snet-clusternodes'
+  resource snetPrivateLinkEndpoints 'subnets@2021-05-01' existing = {
+    name: 'snet-privatelinkendpoints'
   }
 }
 
@@ -169,18 +169,18 @@ resource acrAks_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-
 
 // Expose Azure Container Registry via Private Link, into the cluster nodes subnet.
 resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2021-05-01' = {
-  name: 'acr_to_${spokeVirtualNetwork.name}'
+  name: 'pe-${acrAks.name}'
   location: location
   dependsOn: [
     acrAks::acrReplication
   ]
   properties: {
     subnet: {
-      id: spokeVirtualNetwork::snetClusterNodes.id
+      id: spokeVirtualNetwork::snetPrivateLinkEndpoints.id
     }
     privateLinkServiceConnections: [
       {
-        name: 'nodepools'
+        name: 'to_${spokeVirtualNetwork.name}'
         properties: {
           privateLinkServiceId: acrAks.id
           groupIds: [
