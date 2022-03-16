@@ -44,7 +44,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 - [Secrets Store CSI Driver for Kubernetes](https://docs.microsoft.com/azure/aks/csi-secrets-store-driver)
 - [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
 
-![Network diagram depicting a hub-spoke network with two peered VNets, each with three subnets and main Azure resources.](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)
+![Network diagram depicting a hub-spoke network with two peered VNets and main Azure resources used in the architecture.](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)
 
 ## Deploy the reference implementation
 

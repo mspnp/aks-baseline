@@ -215,8 +215,72 @@ resource nsgAppGwSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSettin
   }
 }
 
+// NSG on the Private Link subnet.
+resource nsgPrivateLinkEndpointsSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' = {
+  name: 'nsg-${clusterVNetName}-privatelinkendpoints'
+  location: location
+  properties: {
+    securityRules: [
+      {
+        name: 'AllowAll443InFromVnet'
+        properties: {
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          sourceAddressPrefix: 'VirtualNetwork'
+          destinationPortRange: '443'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 100
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'DenyAllInbound'
+        properties: {
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationPortRange: '*'
+          destinationAddressPrefix: '*'
+          access: 'Deny'
+          priority: 1000
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'DenyAllOutbound'
+        properties: {
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationPortRange: '*'
+          destinationAddressPrefix: '*'
+          access: 'Deny'
+          priority: 1000
+          direction: 'Outbound'
+        }
+      }
+    ]
+  }
+}
+
+resource nsgPrivateLinkEndpointsSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: nsgPrivateLinkEndpointsSubnet
+  name: 'default'
+  properties: {
+    workspaceId: laHub.id
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+    ]
+  }
+}
+
 // The spoke virtual network.
-// 65,536 (-reserved) IPs available to the workload, split across two subnets for AKS and one for App Gateway.
+// 65,536 (-reserved) IPs available to the workload, split across two subnets for AKS,
+// one for App Gateway and one for Private Link endpoints.
 resource vnetSpoke 'Microsoft.Network/virtualNetworks@2021-05-01' = {
   name: clusterVNetName
   location: location
@@ -238,7 +302,7 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2021-05-01' = {
             id: nsgNodepoolSubnet.id
           }
           privateEndpointNetworkPolicies: 'Disabled'
-          privateLinkServiceNetworkPolicies: 'Enabled'
+          privateLinkServiceNetworkPolicies: 'Disabled'
         }
       }
       {
@@ -264,6 +328,17 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2021-05-01' = {
           }
           privateEndpointNetworkPolicies: 'Disabled'
           privateLinkServiceNetworkPolicies: 'Disabled'
+        }
+      }
+      {
+        name: 'snet-privatelinkendpoints'
+        properties: {
+          addressPrefix: '10.240.4.32/28'
+          networkSecurityGroup: {
+            id: nsgPrivateLinkEndpointsSubnet.id
+          }
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Enabled'
         }
       }
     ]
