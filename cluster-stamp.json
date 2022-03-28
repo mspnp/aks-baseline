@@ -883,7 +883,7 @@
                             "maxSurge": "33%"
                         },
                         "nodeTaints": [
-                            "CriticalAddonsOnly=true:NoSchedule"
+                            /* "CriticalAddonsOnly=true:NoSchedule" - Not currently supported by the Flux v2 extension, in talks now to remediate */
                         ]
                     },
                     {
@@ -1032,7 +1032,7 @@
                             }
                         },
                         "configurationSettings": {
-                            "helm-controller.enabled": "false",
+                            "helm-controller.enabled": "true", /* 0.5.2 requires this to be enabled, but next patch rolling out soon will remove this requirement */
                             "source-controller.enabled": "true",
                             "kustomize-controller.enabled": "true",
                             "notification-controller.enabled": "false",
