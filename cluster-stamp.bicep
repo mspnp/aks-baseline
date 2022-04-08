@@ -123,6 +123,28 @@ resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' 
   }
 }
 
+resource ssPrometheusAll 'Microsoft.OperationalInsights/workspaces/savedSearches@2020-08-01' = {
+  name: '${logAnalyticsWorkspaceName}/AllPrometheus'
+  properties: {
+    etag: '*'
+    category: 'Prometheus'
+    displayName: 'All collected Prometheus information'
+    query: 'InsightsMetrics | where Namespace == "prometheus"'
+    version: 1
+  }
+}
+
+resource ssPrometheusKuredRequestedReeboot 'Microsoft.OperationalInsights/workspaces/savedSearches@2020-08-01' = {
+  name: '${logAnalyticsWorkspaceName}/NodeRebootRequested'
+  properties: {
+    etag: '*'
+    category: 'Prometheus'
+    displayName: 'Nodes reboot required by kured'
+    query: 'InsightsMetrics | where Namespace == "prometheus" and Name == "kured_reboot_required" | where Val > 0'
+    version: 1
+  }
+}
+
 resource clusterControlPlaneIdentityName 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'mi-${clusterName}-controlplane'
   location: location
