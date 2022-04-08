@@ -264,6 +264,34 @@ resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
   }
 }
 
+resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: aksIngressDomainName
+  location: 'global'
+
+  resource aksIngressDomainName_bu0001a0008_00 'A' = {
+    name: 'bu0001a0008-00'
+    properties: {
+      ttl: 3600
+      aRecords: [
+        {
+          ipv4Address: '10.240.4.4'
+        }
+      ]
+    }
+  }
+
+  resource vnetlnk 'virtualNetworkLinks' = {
+    name: 'to_${vnetName}'
+    location: 'global'
+    properties: {
+      virtualNetwork: {
+        id: targetVnetResourceId
+      }
+      registrationEnabled: false
+    }
+  }
+}
+
 output aksClusterName string = clusterName
 output aksIngressControllerPodManagedIdentityResourceId string = podmiIngressController.id
 output aksIngressControllerPodManagedIdentityClientId string = reference(podmiIngressController.id, '2018-11-30').clientId
