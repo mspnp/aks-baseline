@@ -739,6 +739,21 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
   ]
 }
 
+resource acr 'Microsoft.ContainerRegistry/registries@2021-12-01-preview' existing = {
+  name: defaultAcrName
+}
+
+resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: acr
+  name: guid(mc.id, acrPullRole)
+  properties: {
+    roleDefinitionId: acrPullRole
+    description: 'Allows AKS to pull container images from this ACR instance.'
+    principalId: reference(mc.id, '2020-12-01').identityProfile.kubeletidentity.objectId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'nested_EnsureClusterUserAssignedHasRbacToManageVMSS.bicep' = {
   name: 'EnsureClusterUserAssignedHasRbacToManageVMSS'
   scope: resourceGroup(nodeResourceGroupName)
