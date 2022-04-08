@@ -554,6 +554,192 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 }
 
+resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
+  name: clusterName
+  location: location
+  tags: {
+    'Business unit': 'BU0001'
+    'Application identifier': 'a0008'
+  }
+  properties: {
+    kubernetesVersion: kubernetesVersion
+    dnsPrefix: uniqueString(subscription().subscriptionId, resourceGroup().id, clusterName)
+    agentPoolProfiles: [
+      {
+        name: 'npsystem'
+        count: 3
+        vmSize: 'Standard_DS2_v2'
+        osDiskSizeGB: 80
+        osDiskType: 'Ephemeral'
+        osType: 'Linux'
+        minCount: 3
+        maxCount: 4
+        vnetSubnetID: vnetNodePoolSubnetResourceId
+        enableAutoScaling: true
+        type: 'VirtualMachineScaleSets'
+        mode: 'System'
+        scaleSetPriority: 'Regular'
+        scaleSetEvictionPolicy: 'Delete'
+        orchestratorVersion: kubernetesVersion
+        enableNodePublicIP: false
+        maxPods: 30
+        availabilityZones: [
+          '1'
+          '2'
+          '3'
+        ]
+        upgradeSettings: {
+          maxSurge: '33%'
+        }
+        nodeTaints: [
+          'CriticalAddonsOnly=true:NoSchedule'
+        ]
+      }
+      {
+        name: 'npuser01'
+        count: 2
+        vmSize: 'Standard_DS3_v2'
+        osDiskSizeGB: 120
+        osDiskType: 'Ephemeral'
+        osType: 'Linux'
+        minCount: 2
+        maxCount: 5
+        vnetSubnetID: vnetNodePoolSubnetResourceId
+        enableAutoScaling: true
+        type: 'VirtualMachineScaleSets'
+        mode: 'User'
+        scaleSetPriority: 'Regular'
+        scaleSetEvictionPolicy: 'Delete'
+        orchestratorVersion: kubernetesVersion
+        enableNodePublicIP: false
+        maxPods: 30
+        availabilityZones: [
+          '1'
+          '2'
+          '3'
+        ]
+        upgradeSettings: {
+          maxSurge: '33%'
+        }
+      }
+    ]
+    servicePrincipalProfile: {
+      clientId: 'msi'
+    }
+    addonProfiles: {
+      httpApplicationRouting: {
+        enabled: false
+      }
+      omsagent: {
+        enabled: true
+        config: {
+          logAnalyticsWorkspaceResourceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+        }
+      }
+      aciConnectorLinux: {
+        enabled: false
+      }
+      azurepolicy: {
+        enabled: true
+        config: {
+          version: 'v2'
+        }
+      }
+      azureKeyvaultSecretsProvider: {
+        enabled: true
+        config: {
+          enableSecretRotation: 'false'
+        }
+      }
+    }
+    nodeResourceGroup: nodeResourceGroupName
+    enableRBAC: true
+    enablePodSecurityPolicy: false
+    maxAgentPools: 2
+    networkProfile: {
+      networkPlugin: 'azure'
+      networkPolicy: 'azure'
+      outboundType: 'userDefinedRouting'
+      loadBalancerSku: 'standard'
+      loadBalancerProfile: json('null')
+      serviceCidr: '172.16.0.0/16'
+      dnsServiceIP: '172.16.0.10'
+      dockerBridgeCidr: '172.18.0.1/16'
+    }
+    aadProfile: {
+      managed: true
+      enableAzureRBAC: isUsingAzureRBACasKubernetesRBAC
+      adminGroupObjectIDs: ((!isUsingAzureRBACasKubernetesRBAC) ? array(clusterAdminAadGroupObjectId) : [])
+      tenantID: k8sControlPlaneAuthorizationTenantId
+    }
+    autoScalerProfile: {
+      'balance-similar-node-groups': 'false'
+      expander: 'random'
+      'max-empty-bulk-delete': '10'
+      'max-graceful-termination-sec': '600'
+      'max-node-provision-time': '15m'
+      'max-total-unready-percentage': '45'
+      'new-pod-scale-up-delay': '0s'
+      'ok-total-unready-count': '3'
+      'scale-down-delay-after-add': '10m'
+      'scale-down-delay-after-delete': '20s'
+      'scale-down-delay-after-failure': '3m'
+      'scale-down-unneeded-time': '10m'
+      'scale-down-unready-time': '20m'
+      'scale-down-utilization-threshold': '0.5'
+      'scan-interval': '10s'
+      'skip-nodes-with-local-storage': 'true'
+      'skip-nodes-with-system-pods': 'true'
+    }
+    apiServerAccessProfile: {
+      authorizedIPRanges: clusterAuthorizedIPRanges
+      enablePrivateCluster: false
+    }
+    podIdentityProfile: {
+      enabled: false
+      userAssignedIdentities: []
+      userAssignedIdentityExceptions: []
+    }
+    disableLocalAccounts: true
+    securityProfile: {
+      azureDefender: {
+        enabled: true
+        logAnalyticsWorkspaceResourceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+      }
+    }
+    oidcIssuerProfile: {
+      enabled: true
+    }
+  }
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${miClusterControlPlane.id}': {}
+    }
+  }
+  sku: {
+    name: 'Basic'
+    tier: 'Paid'
+  }
+  dependsOn: [
+    sci
+
+    ndEnsureClusterIdentityHasRbacToSelfManagedResources
+
+    paAKSLinuxRestrictive
+    paEnforceHttpsIngress
+    paEnforceInternalLoadBalancers
+    paEnforceResourceLimits
+    paRoRootFilesystem
+    paEnforceImageSource
+    paEnforceDefenderInCluster
+
+    peKv
+    kvPodMiIngressControllerKeyVaultReader_roleAssignment
+    kvMiAppGatewayFrontendSecretsUserRole_roleAssignment
+  ]
+}
+
 output aksClusterName string = clusterName
 output aksIngressControllerPodManagedIdentityResourceId string = podmiIngressController.id
 output aksIngressControllerPodManagedIdentityClientId string = reference(podmiIngressController.id, '2018-11-30').clientId
