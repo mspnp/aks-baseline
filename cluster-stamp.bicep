@@ -78,8 +78,6 @@ var vnetIngressServicesSubnetResourceId = '${targetVnetResourceId}/subnets/snet-
 
 var agwName = 'apw-${clusterName}'
 
-var akvPrivateDnsZonesName = 'privatelink.vaultcore.azure.net'
-
 var aksIngressDomainName = 'aks-ingress.${domainName}'
 var aksBackendDomainName = 'bu0001a0008-00.${aksIngressDomainName}'
 var policyResourceIdAKSLinuxRestrictive = '/providers/Microsoft.Authorization/policySetDefinitions/42b8ef37-b724-4e24-bbc8-7a7708edfe00'
@@ -212,6 +210,57 @@ resource podmiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authoriz
     roleDefinitionId: keyVaultReader
     principalId: podmiIngressController.properties.principalId
     principalType: 'ServicePrincipal'
+  }
+}
+
+resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.vaultcore.azure.net'
+  location: 'global'
+
+  resource vnetlnk 'virtualNetworkLinks' = {
+    name: 'to_${vnetName}'
+    location: 'global'
+    properties: {
+      virtualNetwork: {
+        id: targetVnetResourceId
+      }
+      registrationEnabled: false
+    }
+  }
+}
+
+resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
+  name: 'pe-${kv.name}'
+  location: location
+  properties: {
+    subnet: {
+      id: vnetPrivateLinkEndpointsSubnetResourceId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: 'to_${vnetName}'
+        properties: {
+          privateLinkServiceId: kv.id
+          groupIds: [
+            'vault'
+          ]
+        }
+      }
+    ]
+  }
+
+  resource pdnszg 'privateDnsZoneGroups' = {
+    name: 'default'
+    properties: {
+      privateDnsZoneConfigs: [
+        {
+          name: 'privatelink-akv-net'
+          properties: {
+            privateDnsZoneId: pdzKv.id
+          }
+        }
+      ]
+    }
   }
 }
 
