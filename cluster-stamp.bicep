@@ -96,6 +96,33 @@ var policyAssignmentNameEnforceImageSource = guid(policyResourceIdEnforceImageSo
 var policyAssignmentNameEnforceDefenderInCluster = guid(policyResourceIdEnforceDefenderInCluster, resourceGroup().name, clusterName)
 var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPlaneAuthorizationTenantId)
 
+resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' = {
+  name: 'AllAzureAdvisorAlert'
+  location: 'Global'
+  properties: {
+    scopes: [
+      resourceGroup().id
+    ]
+    condition: {
+      allOf: [
+        {
+          field: 'category'
+          equals: 'Recommendation'
+        }
+        {
+          field: 'operationName'
+          equals: 'Microsoft.Advisor/recommendations/available/action'
+        }
+      ]
+    }
+    actions: {
+      actionGroups: []
+    }
+    enabled: true
+    description: 'All azure advisor alerts'
+  }
+}
+
 resource clusterControlPlaneIdentityName 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'mi-${clusterName}-controlplane'
   location: location
