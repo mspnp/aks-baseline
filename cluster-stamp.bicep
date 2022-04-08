@@ -140,6 +140,19 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
     podmiIngressController
   ]
 
+  resource kvsGatewayPublicCert 'secrets' = {
+    name: 'gateway-public-cert'
+    properties: {
+      value: appGatewayListenerCertificate
+    }
+  }
+
+  resource kvsAppGwIngressInternalAksIngressTls 'secrets' = {
+    name: 'appgw-ingress-internal-aks-ingress-tls'
+    properties: {
+      value: aksIngressControllerCertificate
+    }
+  }
 }
 
 output aksClusterName string = clusterName
