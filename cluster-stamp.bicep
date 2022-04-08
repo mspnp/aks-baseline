@@ -348,7 +348,7 @@ resource paEnforceDefenderInCluster 'Microsoft.Authorization/policyAssignments@2
   }
 }
 
-resource clusterControlPlaneIdentityName 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+resource miClusterControlPlane 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'mi-${clusterName}-controlplane'
   location: location
 }
@@ -425,7 +425,7 @@ resource kv_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
   }
 }
 
-resource miAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+resource kvMiAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: '${guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultSecretsUserRole)}'
   properties: {
@@ -435,7 +435,7 @@ resource miAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authoriza
   }
 }
 
-resource miAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: '${guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultReader)}'
   properties: {
@@ -445,7 +445,7 @@ resource miAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authorizat
   }
 }
 
-resource podmiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: '${guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultSecretsUserRole)}'
   properties: {
@@ -455,7 +455,7 @@ resource podmiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authori
   }
 }
 
-resource podmiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: '${guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultReader)}'
   properties: {
