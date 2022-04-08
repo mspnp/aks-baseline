@@ -203,6 +203,151 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
   }
 }
 
+resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: policyAssignmentNameAKSLinuxRestrictive
+  properties: {
+    displayName: '[${clusterName}] ${reference(policyResourceIdAKSLinuxRestrictive, '2020-09-01').displayName}'
+    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    policyDefinitionId: policyResourceIdAKSLinuxRestrictive
+    parameters: {
+      excludedNamespaces: {
+        value: [
+          'kube-system'
+          'gatekeeper-system'
+          'azure-arc'
+          'cluster-baseline-settings'
+        ]
+      }
+      effect: {
+        value: 'audit'
+      }
+    }
+  }
+}
+
+resource paEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: policyAssignmentNameEnforceHttpsIngress
+  properties: {
+    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceHttpsIngress, '2020-09-01').displayName}'
+    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    policyDefinitionId: policyResourceIdEnforceHttpsIngress
+    parameters: {
+      excludedNamespaces: {
+        value: []
+      }
+      effect: {
+        value: 'deny'
+      }
+    }
+  }
+}
+
+resource paEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: policyAssignmentNameEnforceInternalLoadBalancers
+  properties: {
+    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceInternalLoadBalancers, '2020-09-01').displayName}'
+    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    policyDefinitionId: policyResourceIdEnforceInternalLoadBalancers
+    parameters: {
+      excludedNamespaces: {
+        value: []
+      }
+      effect: {
+        value: 'deny'
+      }
+    }
+  }
+}
+
+resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: policyAssignmentNameRoRootFilesystem
+  properties: {
+    displayName: '[${clusterName}] ${reference(policyResourceIdRoRootFilesystem, '2020-09-01').displayName}'
+    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    policyDefinitionId: policyResourceIdRoRootFilesystem
+    parameters: {
+      excludedNamespaces: {
+        value: [
+          'kube-system'
+          'gatekeeper-system'
+          'azure-arc'
+        ]
+      }
+      effect: {
+        value: 'audit'
+      }
+    }
+  }
+}
+
+resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: policyAssignmentNameEnforceResourceLimits
+  properties: {
+    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceResourceLimits, '2020-09-01').displayName}'
+    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    policyDefinitionId: policyResourceIdEnforceResourceLimits
+    parameters: {
+      cpuLimit: {
+        value: '1000m'
+      }
+      memoryLimit: {
+        value: '512Mi'
+      }
+      excludedNamespaces: {
+        value: [
+          'kube-system'
+          'gatekeeper-system'
+          'azure-arc'
+          'cluster-baseline-settings'
+          'flux-system'
+        ]
+      }
+      effect: {
+        value: 'deny'
+      }
+    }
+  }
+}
+
+resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: policyAssignmentNameEnforceImageSource
+  properties: {
+    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceImageSource, '2020-09-01').displayName}'
+    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    policyDefinitionId: policyResourceIdEnforceImageSource
+    parameters: {
+      allowedContainerImagesRegex: {
+        value: '${defaultAcrName}.azurecr.io/.+$|mcr.microsoft.com/.+$|azurearcfork8s.azurecr.io/azurearcflux/images/stable/.+$|docker.io/weaveworks/kured.+$|docker.io/library/.+$'
+      }
+      excludedNamespaces: {
+        value: [
+          'kube-system'
+          'gatekeeper-system'
+          'azure-arc'
+        ]
+      }
+      effect: {
+        value: 'deny'
+      }
+    }
+  }
+}
+
+resource paEnforceDefenderInCluster 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: policyAssignmentNameEnforceDefenderInCluster
+  properties: {
+    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceDefenderInCluster, '2020-09-01').displayName}'
+    description: 'Microsoft Defender for Containers should be enabled in the cluster.'
+    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
+    policyDefinitionId: policyResourceIdEnforceDefenderInCluster
+    parameters: {
+      effect: {
+        value: 'Audit'
+      }
+    }
+  }
+}
+
 resource clusterControlPlaneIdentityName 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'mi-${clusterName}-controlplane'
   location: location
