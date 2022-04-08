@@ -67,7 +67,6 @@ var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resou
 var clusterName = 'aks-${subRgUniqueString}'
 var nodeResourceGroupName = 'rg-${clusterName}-nodepools'
 var logAnalyticsWorkspaceName = 'la-${clusterName}'
-var containerInsightsSolutionName_var = 'ContainerInsights(${logAnalyticsWorkspaceName})'
 var defaultAcrName = 'acraks${subRgUniqueString}'
 
 var vNetResourceGroup = split(targetVnetResourceId, '/')[4]
@@ -142,6 +141,34 @@ resource ssPrometheusKuredRequestedReeboot 'Microsoft.OperationalInsights/worksp
     displayName: 'Nodes reboot required by kured'
     query: 'InsightsMetrics | where Namespace == "prometheus" and Name == "kured_reboot_required" | where Val > 0'
     version: 1
+  }
+}
+
+resource sci 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
+  name: 'ContainerInsights(${logAnalyticsWorkspaceName})'
+  location: location
+  properties: {
+    workspaceResourceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+  }
+  plan: {
+    name: 'ContainerInsights(${logAnalyticsWorkspaceName})'
+    product: 'OMSGallery/ContainerInsights'
+    promotionCode: ''
+    publisher: 'Microsoft'
+  }
+}
+
+resource skva 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
+  name: 'KeyVaultAnalytics(${logAnalyticsWorkspaceName})'
+  location: location
+  properties: {
+    workspaceResourceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+  }
+  plan: {
+    name: 'KeyVaultAnalytics(${logAnalyticsWorkspaceName})'
+    product: 'OMSGallery/KeyVaultAnalytics'
+    promotionCode: ''
+    publisher: 'Microsoft'
   }
 }
 
