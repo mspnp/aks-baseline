@@ -98,4 +98,21 @@ var policyAssignmentNameEnforceImageSource = guid(policyResourceIdEnforceImageSo
 var policyAssignmentNameEnforceDefenderInCluster = guid(policyResourceIdEnforceDefenderInCluster, resourceGroup().name, clusterName)
 var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPlaneAuthorizationTenantId)
 
+resource clusterControlPlaneIdentityName 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name: 'mi-${clusterName}-controlplane'
+  location: location
+}
+
+resource miAppGatewayFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name: 'mi-appgateway-frontend'
+  location: location
+}
+
+resource podmiIngressController 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name: 'podmi-ingress-controller'
+  location: location
+}
+
 output aksClusterName string = clusterName
+output aksIngressControllerPodManagedIdentityResourceId string = podmiIngressController.id
+output aksIngressControllerPodManagedIdentityClientId string = reference(podmiIngressController.id, '2018-11-30').clientId
