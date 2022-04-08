@@ -113,6 +113,36 @@ resource podmiIngressController 'Microsoft.ManagedIdentity/userAssignedIdentitie
   location: location
 }
 
+resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
+  name: 'kv-${clusterName}'
+  location: location
+  properties: {
+    accessPolicies: []
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    tenantId: subscription().tenantId
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      ipRules: []
+      virtualNetworkRules: []
+    }
+    enableRbacAuthorization: true
+    enabledForDeployment: false
+    enabledForDiskEncryption: false
+    enabledForTemplateDeployment: false
+    enableSoftDelete: true
+  }
+  dependsOn: [
+    miAppGatewayFrontend
+    podmiIngressController
+  ]
+
+}
+
 output aksClusterName string = clusterName
 output aksIngressControllerPodManagedIdentityResourceId string = podmiIngressController.id
 output aksIngressControllerPodManagedIdentityClientId string = reference(podmiIngressController.id, '2018-11-30').clientId
+output keyVaultName string = kv.name
