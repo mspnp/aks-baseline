@@ -56,7 +56,6 @@ var networkContributorRole = '${subscription().id}/providers/Microsoft.Authoriza
 var monitoringMetricsPublisherRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb'
 var acrPullRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d'
 var managedIdentityOperatorRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830'
-var virtualMachineContributorRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/9980e02c-c2be-4d73-94e8-173b1dc7cf3c'
 var keyVaultReader = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/21090545-7ca7-4776-b22c-e363652d74d2'
 var keyVaultSecretsUserRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6'
 var clusterAdminRoleId = 'b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b'
@@ -738,6 +737,14 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
     kvMiAppGatewayFrontendSecretsUserRole_roleAssignment
   ]
+}
+
+module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'nested_EnsureClusterUserAssignedHasRbacToManageVMSS.bicep' = {
+  name: 'EnsureClusterUserAssignedHasRbacToManageVMSS'
+  scope: resourceGroup(nodeResourceGroupName)
+  params: {
+    kubeletidentityObjectId: reference(mc.id, '2020-03-01').identityProfile.kubeletidentity.objectId
+  }
 }
 
 output aksClusterName string = clusterName
