@@ -172,6 +172,37 @@ resource skva 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
   }
 }
 
+resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
+  name: 'PodFailedScheduledQuery'
+  location: location
+  properties: {
+    description: 'Alert on pod Failed phase.'
+    enabled: 'true'
+    source: {
+      query: '//https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts \r\n let endDateTime = now(); let startDateTime = ago(1h); let trendBinSize = 1m; let clusterName = "${clusterName}"; KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | where ClusterName == clusterName | distinct ClusterName, TimeGenerated | summarize ClusterSnapshotCount = count() by bin(TimeGenerated, trendBinSize), ClusterName | join hint.strategy=broadcast ( KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | distinct ClusterName, Computer, PodUid, TimeGenerated, PodStatus | summarize TotalCount = count(), PendingCount = sumif(1, PodStatus =~ "Pending"), RunningCount = sumif(1, PodStatus =~ "Running"), SucceededCount = sumif(1, PodStatus =~ "Succeeded"), FailedCount = sumif(1, PodStatus =~ "Failed") by ClusterName, bin(TimeGenerated, trendBinSize) ) on ClusterName, TimeGenerated | extend UnknownCount = TotalCount - PendingCount - RunningCount - SucceededCount - FailedCount | project TimeGenerated, TotalCount = todouble(TotalCount) / ClusterSnapshotCount, PendingCount = todouble(PendingCount) / ClusterSnapshotCount, RunningCount = todouble(RunningCount) / ClusterSnapshotCount, SucceededCount = todouble(SucceededCount) / ClusterSnapshotCount, FailedCount = todouble(FailedCount) / ClusterSnapshotCount, UnknownCount = todouble(UnknownCount) / ClusterSnapshotCount| summarize AggregatedValue = avg(FailedCount) by bin(TimeGenerated, trendBinSize)'
+      dataSourceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+      queryType: 'ResultCount'
+    }
+    schedule: {
+      frequencyInMinutes: 5
+      timeWindowInMinutes: 10
+    }
+    action: {
+      'odata.type': 'Microsoft.WindowsAzure.Management.Monitoring.Alerts.Models.Microsoft.AppInsights.Nexus.DataContracts.Resources.ScheduledQueryRules.AlertingAction'
+      severity: 3
+      trigger: {
+        thresholdOperator: 'GreaterThan'
+        threshold: 3
+        metricTrigger: {
+          thresholdOperator: 'GreaterThan'
+          threshold: 2
+          metricTriggerType: 'Consecutive'
+        }
+      }
+    }
+  }
+}
+
 resource clusterControlPlaneIdentityName 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'mi-${clusterName}-controlplane'
   location: location
