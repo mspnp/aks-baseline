@@ -754,6 +754,73 @@ resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssig
   }
 }
 
+resource mcFlux_extension 'Microsoft.KubernetesConfiguration/extensions@2021-09-01' = {
+  scope: mc
+  name: 'flux'
+  properties: {
+    extensionType: 'microsoft.flux'
+    autoUpgradeMinorVersion: true
+    releaseTrain: 'Stable'
+    scope: {
+      cluster: {
+        releaseNamespace: 'flux-system'
+      }
+    }
+    configurationSettings: {
+      'helm-controller.enabled': 'false'
+      'source-controller.enabled': 'true'
+      'kustomize-controller.enabled': 'true'
+      'notification-controller.enabled': 'false'
+      'image-automation-controller.enabled': 'false'
+      'image-reflector-controller.enabled': 'false'
+    }
+    configurationProtectedSettings: {}
+  }
+  dependsOn: [
+    acrKubeletAcrPullRole_roleAssignment
+  ]
+}
+
+resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurations@2022-03-01' = {
+  scope: mc
+  name: 'bootstrap'
+  properties: {
+    scope: 'cluster'
+    namespace: 'flux-system'
+    sourceKind: 'GitRepository'
+    gitRepository: {
+      url: gitOpsBootstrappingRepoHttpsUrl
+      timeoutInSeconds: 180
+      syncIntervalInSeconds: 300
+      repositoryRef: {
+        branch: gitOpsBootstrappingRepoBranch
+        tag: null
+        semver: null
+        commit: null
+      }
+      sshKnownHosts: ''
+      httpsUser: null
+      httpsCACert: null
+      localAuthRef: null
+    }
+    kustomizations: {
+      unified: {
+        path: './cluster-manifests'
+        dependsOn: []
+        timeoutInSeconds: 300
+        syncIntervalInSeconds: 300
+        retryIntervalInSeconds: null
+        prune: true
+        force: false
+      }
+    }
+  }
+  dependsOn: [
+    mcFlux_extension
+    acrKubeletAcrPullRole_roleAssignment
+  ]
+}
+
 module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'nested_EnsureClusterUserAssignedHasRbacToManageVMSS.bicep' = {
   name: 'EnsureClusterUserAssignedHasRbacToManageVMSS'
   scope: resourceGroup(nodeResourceGroupName)
