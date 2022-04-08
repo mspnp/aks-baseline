@@ -465,6 +465,16 @@ resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Author
   }
 }
 
+module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'nested_EnsureClusterIdentityHasRbacToSelfManagedResources.bicep' = {
+  name: 'EnsureClusterIdentityHasRbacToSelfManagedResources'
+  scope: resourceGroup(vNetResourceGroup)
+  params: {
+    miClusterControlPlanePrincipalId: miClusterControlPlane.properties.principalId
+    clusterControlPlaneIdentityName: miClusterControlPlane.name
+    vnetName: vnetName
+  }
+}
+
 resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: 'privatelink.vaultcore.azure.net'
   location: 'global'
