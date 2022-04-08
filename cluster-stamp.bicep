@@ -174,6 +174,47 @@ resource kv_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
     ]
   }
 }
+
+resource miAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: kv
+  name: '${guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultSecretsUserRole)}'
+  properties: {
+    roleDefinitionId: keyVaultSecretsUserRole
+    principalId: miAppGatewayFrontend.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource miAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: kv
+  name: '${guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultReader)}'
+  properties: {
+    roleDefinitionId: keyVaultReader
+    principalId: miAppGatewayFrontend.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource podmiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: kv
+  name: '${guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultSecretsUserRole)}'
+  properties: {
+    roleDefinitionId: keyVaultSecretsUserRole
+    principalId: podmiIngressController.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource podmiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: kv
+  name: '${guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultReader)}'
+  properties: {
+    roleDefinitionId: keyVaultReader
+    principalId: podmiIngressController.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 output aksClusterName string = clusterName
 output aksIngressControllerPodManagedIdentityResourceId string = podmiIngressController.id
 output aksIngressControllerPodManagedIdentityClientId string = reference(podmiIngressController.id, '2018-11-30').clientId
