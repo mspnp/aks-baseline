@@ -865,6 +865,15 @@ module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'nested_EnsureClusterUserA
   }
 }
 
+resource st 'Microsoft.EventGrid/systemTopics@2021-12-01' = {
+  name: clusterName
+  location: location
+  properties: {
+    source: mc.id
+    topicType: 'Microsoft.ContainerService.ManagedClusters'
+  }
+}
+
 output aksClusterName string = clusterName
 output aksIngressControllerPodManagedIdentityResourceId string = podmiIngressController.id
 output aksIngressControllerPodManagedIdentityClientId string = reference(podmiIngressController.id, '2018-11-30').clientId
