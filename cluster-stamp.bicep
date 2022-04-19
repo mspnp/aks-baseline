@@ -764,6 +764,16 @@ resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Auth
   }
 }
 
+resource miKubeletManagedIdentityOperatorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: podmiIngressController
+  name: guid(resourceGroup().id, 'podmi-ingress-controller', managedIdentityOperatorRole)
+  properties: {
+    roleDefinitionId: managedIdentityOperatorRole
+    principalId: reference(mc.id, '2020-12-01').identityProfile.kubeletidentity.objectId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: mc
   name: 'default'
