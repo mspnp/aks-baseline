@@ -764,6 +764,32 @@ resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Auth
   }
 }
 
+resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: mc
+  name: 'default'
+  properties: {
+    workspaceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+    logs: [
+      {
+        category: 'cluster-autoscaler'
+        enabled: true
+      }
+      {
+        category: 'kube-controller-manager'
+        enabled: true
+      }
+      {
+        category: 'kube-audit-admin'
+        enabled: true
+      }
+      {
+        category: 'guard'
+        enabled: true
+      }
+    ]
+  }
+}
+
 resource mcFlux_extension 'Microsoft.KubernetesConfiguration/extensions@2021-09-01' = {
   scope: mc
   name: 'flux'
