@@ -1358,6 +1358,50 @@ resource miKubeletManagedIdentityOperatorRole_roleAssignment 'Microsoft.Authoriz
   }
 }
 
+resource mcAadAdminGroupClusterAdminRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC) {
+  scope: mc
+  name: guid('aad-admin-group', mc.id, clusterAdminAadGroupObjectId)
+  properties: {
+    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/${clusterAdminRoleId}'
+    description: 'Members of this group are cluster admins of this cluster.'
+    principalId: clusterAdminAadGroupObjectId
+    principalType: 'Group'
+  }
+}
+
+resource mcAadAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC) {
+  scope: mc
+  name: guid('aad-admin-group-sc', mc.id, clusterAdminAadGroupObjectId)
+  properties: {
+    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/${serviceClusterUserRoleId}'
+    description: 'Members of this group are cluster users of this cluster.'
+    principalId: clusterAdminAadGroupObjectId
+    principalType: 'Group'
+  }
+}
+
+resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
+  scope: mc // TODO: reference namespace instead
+  name: guid('aad-a0008-reader-group', mc.id, a0008NamespaceReaderAadGroupObjectId)
+  properties: {
+    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/${clusterReaderRoleId}'
+    principalId: a0008NamespaceReaderAadGroupObjectId
+    description: 'Members of this group are cluster admins of the a0008 namespace in this cluster.'
+    principalType: 'Group'
+  }
+}
+
+resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
+  scope: mc
+  name: guid('aad-a0008-reader-group-sc', mc.id, a0008NamespaceReaderAadGroupObjectId)
+  properties: {
+    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/${serviceClusterUserRoleId}'
+    principalId: a0008NamespaceReaderAadGroupObjectId
+    description: 'Members of this group are cluster users of this cluster.'
+    principalType: 'Group'
+  }
+}
+
 resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: mc
   name: 'default'
