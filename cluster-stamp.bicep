@@ -754,6 +754,16 @@ resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssig
   }
 }
 
+resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: mc
+  name: guid(mc.id, 'omsagent', monitoringMetricsPublisherRole)
+  properties: {
+    roleDefinitionId: monitoringMetricsPublisherRole
+    principalId: reference(mc.id, '2020-12-01').addonProfiles.omsagent.identity.objectId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 resource mcFlux_extension 'Microsoft.KubernetesConfiguration/extensions@2021-09-01' = {
   scope: mc
   name: 'flux'
