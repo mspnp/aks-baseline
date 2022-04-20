@@ -997,10 +997,9 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
     enabledForTemplateDeployment: false
     enableSoftDelete: true
     softDeleteRetentionInDays: 7
-    enablePurgeProtection: false
     createMode: 'default'
     publicNetworkAccess: 'disabled'
-  }  
+  }
   dependsOn: [
     miAppGatewayFrontend
     podmiIngressController
