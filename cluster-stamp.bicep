@@ -119,6 +119,7 @@ resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' 
     enabled: true
     description: 'All azure advisor alerts'
   }
+  dependsOn: []
 }
 
 resource ssPrometheusAll 'Microsoft.OperationalInsights/workspaces/savedSearches@2020-08-01' = {
@@ -130,6 +131,7 @@ resource ssPrometheusAll 'Microsoft.OperationalInsights/workspaces/savedSearches
     query: 'InsightsMetrics | where Namespace == "prometheus"'
     version: 1
   }
+  dependsOn: []
 }
 
 resource ssPrometheusKuredRequestedReeboot 'Microsoft.OperationalInsights/workspaces/savedSearches@2020-08-01' = {
@@ -147,6 +149,8 @@ resource sci 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
   name: 'ContainerInsights(${logAnalyticsWorkspaceName})'
   location: location
   properties: {
+    containedResources: []
+    referencedResources: []
     workspaceResourceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
   }
   plan: {
@@ -155,12 +159,14 @@ resource sci 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
     promotionCode: ''
     publisher: 'Microsoft'
   }
+  dependsOn: []
 }
 
 resource maHighNodeCPUUtilization 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Node CPU utilization high for ${clusterName} CI-1'
   location: 'global'
   properties: {
+    autoMitigate: true
     scopes: [
       mc.id
     ]
@@ -182,7 +188,7 @@ resource maHighNodeCPUUtilization 'Microsoft.Insights/metricAlerts@2018-03-01' =
           metricNamespace: 'Insights.Container/nodes'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '80'
+          threshold: 80
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -205,6 +211,7 @@ resource maHighNodeWorkingSetMemoryUtilization 'Microsoft.Insights/metricAlerts@
   name: 'Node working set memory utilization high for ${clusterName} CI-2'
   location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -223,7 +230,7 @@ resource maHighNodeWorkingSetMemoryUtilization 'Microsoft.Insights/metricAlerts@
           metricNamespace: 'Insights.Container/nodes'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '80'
+          threshold: 80
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -249,6 +256,7 @@ resource maJobsCompletedMoreThan6HoursAgo 'Microsoft.Insights/metricAlerts@2018-
   name: 'Jobs completed more than 6 hours ago for ${clusterName} CI-11'
   location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -274,7 +282,7 @@ resource maJobsCompletedMoreThan6HoursAgo 'Microsoft.Insights/metricAlerts@2018-
           metricNamespace: 'Insights.Container/pods'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '0'
+          threshold: 0
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -300,6 +308,7 @@ resource maHighContainerCPUUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = 
   name: 'Container CPU usage high for ${clusterName} CI-9'
   location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -325,7 +334,7 @@ resource maHighContainerCPUUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = 
           metricNamespace: 'Insights.Container/containers'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '90'
+          threshold: 90
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -351,6 +360,7 @@ resource maHighContainerWorkingSetMemoryUsage 'Microsoft.Insights/metricAlerts@2
   name: 'Container working set memory usage high for ${clusterName} CI-10'
   location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -376,7 +386,7 @@ resource maHighContainerWorkingSetMemoryUsage 'Microsoft.Insights/metricAlerts@2
           metricNamespace: 'Insights.Container/containers'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '90'
+          threshold: 90
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -402,6 +412,7 @@ resource maPodsInFailedState 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Pods in failed state for ${clusterName} CI-4'
   location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -420,7 +431,7 @@ resource maPodsInFailedState 'Microsoft.Insights/metricAlerts@2018-03-01' = {
           metricNamespace: 'Insights.Container/pods'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '0'
+          threshold: 0
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -446,6 +457,7 @@ resource maHighDiskUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Disk usage high for ${clusterName} CI-5'
   location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -471,7 +483,7 @@ resource maHighDiskUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
           metricNamespace: 'Insights.Container/nodes'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '80'
+          threshold: 80
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -497,6 +509,7 @@ resource maNodesInNotReadyStatus 'Microsoft.Insights/metricAlerts@2018-03-01' = 
   name: 'Nodes in not ready status for ${clusterName} CI-3'
   location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -515,7 +528,7 @@ resource maNodesInNotReadyStatus 'Microsoft.Insights/metricAlerts@2018-03-01' = 
           metricNamespace: 'Insights.Container/nodes'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '0'
+          threshold: 0
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -541,6 +554,7 @@ resource maContainersGettingKilledOOM 'Microsoft.Insights/metricAlerts@2018-03-0
   name: 'Containers getting OOM killed for ${clusterName} CI-6'
   location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -566,7 +580,7 @@ resource maContainersGettingKilledOOM 'Microsoft.Insights/metricAlerts@2018-03-0
           metricNamespace: 'Insights.Container/pods'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '0'
+          threshold: 0
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -592,6 +606,7 @@ resource maHighPersistentVolumeUsage 'Microsoft.Insights/metricAlerts@2018-03-01
   name: 'Persistent volume usage high for ${clusterName} CI-18'
   location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -617,7 +632,7 @@ resource maHighPersistentVolumeUsage 'Microsoft.Insights/metricAlerts@2018-03-01
           metricNamespace: 'Insights.Container/persistentvolumes'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '80'
+          threshold: 80
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -643,6 +658,7 @@ resource maPodsNotInReadyState 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Pods not in ready state for ${clusterName} CI-8'
   location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -668,7 +684,7 @@ resource maPodsNotInReadyState 'Microsoft.Insights/metricAlerts@2018-03-01' = {
           metricNamespace: 'Insights.Container/pods'
           name: 'Metric1'
           operator: 'LessThan'
-          threshold: '80'
+          threshold: 80
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -694,6 +710,7 @@ resource maRestartingContainerCount 'Microsoft.Insights/metricAlerts@2018-03-01'
   name: 'Restarting container count for ${clusterName} CI-7'
   location: 'global'
   properties: {
+    autoMitigate: true
     actions: []
     criteria: {
       allOf: [
@@ -719,7 +736,7 @@ resource maRestartingContainerCount 'Microsoft.Insights/metricAlerts@2018-03-01'
           metricNamespace: 'Insights.Container/pods'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: '0'
+          threshold: 0
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
@@ -745,6 +762,8 @@ resource skva 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
   name: 'KeyVaultAnalytics(${logAnalyticsWorkspaceName})'
   location: location
   properties: {
+    containedResources: []
+    referencedResources: []
     workspaceResourceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
   }
   plan: {
@@ -753,12 +772,15 @@ resource skva 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
     promotionCode: ''
     publisher: 'Microsoft'
   }
+  dependsOn: []
 }
 
 resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
   name: 'PodFailedScheduledQuery'
   location: location
   properties: {
+    autoMitigate: true
+    displayName: '[${clusterName}] Scheduled Query for Pod Failed Alert'
     description: 'Alert on pod Failed phase.'
     enabled: 'true'
     source: {
@@ -772,7 +794,7 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
     }
     action: {
       'odata.type': 'Microsoft.WindowsAzure.Management.Monitoring.Alerts.Models.Microsoft.AppInsights.Nexus.DataContracts.Resources.ScheduledQueryRules.AlertingAction'
-      severity: 3
+      severity: '3'
       trigger: {
         thresholdOperator: 'GreaterThan'
         threshold: 3
@@ -784,6 +806,7 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
       }
     }
   }
+  dependsOn: []
 }
 
 resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
@@ -806,10 +829,12 @@ resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-0
       }
     }
   }
+  dependsOn: []
 }
 
 resource paEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: policyAssignmentNameEnforceHttpsIngress
+  location: 'global'
   properties: {
     displayName: '[${clusterName}] ${reference(policyResourceIdEnforceHttpsIngress, '2020-09-01').displayName}'
     scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
@@ -823,6 +848,7 @@ resource paEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2021-0
       }
     }
   }
+  dependsOn: []
 }
 
 resource paEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
@@ -840,6 +866,7 @@ resource paEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignmen
       }
     }
   }
+  dependsOn: []
 }
 
 resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
@@ -861,10 +888,12 @@ resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-0
       }
     }
   }
+  dependsOn: []
 }
 
 resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: policyAssignmentNameEnforceResourceLimits
+  dependsOn: []
   properties: {
     displayName: '[${clusterName}] ${reference(policyResourceIdEnforceResourceLimits, '2020-09-01').displayName}'
     scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
@@ -914,6 +943,7 @@ resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2021-06
       }
     }
   }
+  dependsOn: []
 }
 
 resource paEnforceDefenderInCluster 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
@@ -929,6 +959,7 @@ resource paEnforceDefenderInCluster 'Microsoft.Authorization/policyAssignments@2
       }
     }
   }
+  dependsOn: []
 }
 
 resource miClusterControlPlane 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
@@ -967,7 +998,11 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
     enabledForDiskEncryption: false
     enabledForTemplateDeployment: false
     enableSoftDelete: true
-  }
+    softDeleteRetentionInDays: 7
+    enablePurgeProtection: false
+    createMode: 'default'
+    publicNetworkAccess: 'disabled'
+  }  
   dependsOn: [
     miAppGatewayFrontend
     podmiIngressController
@@ -1006,6 +1041,7 @@ resource kv_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
       }
     ]
   }
+  dependsOn: []
 }
 
 resource kvMiAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
@@ -1016,6 +1052,7 @@ resource kvMiAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authori
     principalId: miAppGatewayFrontend.properties.principalId
     principalType: 'ServicePrincipal'
   }
+  dependsOn: []
 }
 
 resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
@@ -1026,6 +1063,7 @@ resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authoriz
     principalId: miAppGatewayFrontend.properties.principalId
     principalType: 'ServicePrincipal'
   }
+  dependsOn: []
 }
 
 resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
@@ -1036,6 +1074,7 @@ resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Autho
     principalId: podmiIngressController.properties.principalId
     principalType: 'ServicePrincipal'
   }
+  dependsOn: []
 }
 
 resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
@@ -1046,6 +1085,7 @@ resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Author
     principalId: podmiIngressController.properties.principalId
     principalType: 'ServicePrincipal'
   }
+  dependsOn: []
 }
 
 module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'nested_EnsureClusterIdentityHasRbacToSelfManagedResources.bicep' = {
@@ -1061,7 +1101,6 @@ module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'nested_EnsureCluste
 resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: 'privatelink.vaultcore.azure.net'
   location: 'global'
-
   resource vnetlnk 'virtualNetworkLinks' = {
     name: 'to_${vnetName}'
     location: 'global'
@@ -1072,6 +1111,7 @@ resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
       registrationEnabled: false
     }
   }
+  dependsOn: []
 }
 
 resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
@@ -1093,6 +1133,7 @@ resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
       }
     ]
   }
+  dependsOn: []
 
   resource pdnszg 'privateDnsZoneGroups' = {
     name: 'default'
@@ -1112,6 +1153,7 @@ resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
 resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: aksIngressDomainName
   location: 'global'
+  dependsOn: []
 
   resource aksIngressDomainName_bu0001a0008_00 'A' = {
     name: 'bu0001a0008-00'
@@ -1293,6 +1335,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
     oidcIssuerProfile: {
       enabled: true
     }
+    enableNamespaceResources: false
   }
   identity: {
     type: 'UserAssigned'
@@ -1336,6 +1379,7 @@ resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssig
     principalId: reference(mc.id, '2020-12-01').identityProfile.kubeletidentity.objectId
     principalType: 'ServicePrincipal'
   }
+  dependsOn: []
 }
 
 resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
@@ -1346,6 +1390,7 @@ resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Auth
     principalId: reference(mc.id, '2020-12-01').addonProfiles.omsagent.identity.objectId
     principalType: 'ServicePrincipal'
   }
+  dependsOn: []
 }
 
 resource miKubeletManagedIdentityOperatorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
@@ -1356,6 +1401,7 @@ resource miKubeletManagedIdentityOperatorRole_roleAssignment 'Microsoft.Authoriz
     principalId: reference(mc.id, '2020-12-01').identityProfile.kubeletidentity.objectId
     principalType: 'ServicePrincipal'
   }
+  dependsOn: []
 }
 
 resource mcAadAdminGroupClusterAdminRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC) {
@@ -1367,6 +1413,7 @@ resource mcAadAdminGroupClusterAdminRole_roleAssignment 'Microsoft.Authorization
     principalId: clusterAdminAadGroupObjectId
     principalType: 'Group'
   }
+  dependsOn: []
 }
 
 resource mcAadAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC) {
@@ -1378,6 +1425,7 @@ resource mcAadAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authori
     principalId: clusterAdminAadGroupObjectId
     principalType: 'Group'
   }
+  dependsOn: []
 }
 
 resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
@@ -1389,6 +1437,7 @@ resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Author
     description: 'Members of this group are cluster admins of the a0008 namespace in this cluster.'
     principalType: 'Group'
   }
+  dependsOn: []
 }
 
 resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
@@ -1400,6 +1449,7 @@ resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.A
     description: 'Members of this group are cluster users of this cluster.'
     principalType: 'Group'
   }
+  dependsOn: []
 }
 
 resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -1426,6 +1476,7 @@ resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
       }
     ]
   }
+  dependsOn: []
 }
 
 resource mcFlux_extension 'Microsoft.KubernetesConfiguration/extensions@2021-09-01' = {
@@ -1501,6 +1552,7 @@ module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'nested_EnsureClusterUserA
   params: {
     kubeletidentityObjectId: reference(mc.id, '2020-03-01').identityProfile.kubeletidentity.objectId
   }
+  dependsOn: []
 }
 
 resource st 'Microsoft.EventGrid/systemTopics@2021-12-01' = {
@@ -1510,6 +1562,7 @@ resource st 'Microsoft.EventGrid/systemTopics@2021-12-01' = {
     source: mc.id
     topicType: 'Microsoft.ContainerService.ManagedClusters'
   }
+  dependsOn: []
 }
 
 resource st_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -1530,6 +1583,7 @@ resource st_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
       }
     ]
   }
+  dependsOn: []
 }
 
 resource agw 'Microsoft.Network/applicationGateways@2021-05-01' = {
@@ -1725,6 +1779,7 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
       }
     ]
   }
+  dependsOn: []
 }
 
 output aksClusterName string = clusterName
