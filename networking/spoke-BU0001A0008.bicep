@@ -322,7 +322,7 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2021-05-01' = {
       {
         name: 'snet-applicationgateway'
         properties: {
-          addressPrefix: '10.240.4.16/28'
+          addressPrefix: '10.240.5.0/24'
           networkSecurityGroup: {
             id: nsgAppGwSubnet.id
           }
