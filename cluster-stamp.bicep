@@ -998,7 +998,6 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
     enableSoftDelete: true
     softDeleteRetentionInDays: 7
     createMode: 'default'
-    publicNetworkAccess: 'disabled'
   }
   dependsOn: [
     miAppGatewayFrontend
