@@ -49,7 +49,7 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    exit
    ```
 
-   > :beetle: If you are running a version of kubectl less than 1.23, you'll receive an error from the run command below as the method to provide container limits has changed between 1.22 and 1.23. On kubectl versions less than 1.23, you'll need to run the following command instead and you can [safely ignore the message about `--limits` being deprecated](https://github.com/kubernetes/kubectl/issues/1101).
+   > :beetle: If you are running a version of kubectl less than 1.23, you'll receive an error from the run command above as the method to provide container limits has changed between 1.22 and 1.23. On kubectl versions less than 1.23, you'll need to run the following command instead and you can [safely ignore the message about `--limits` being deprecated](https://github.com/kubernetes/kubectl/issues/1101).
 
    ```bash
    kubectl run curl -n a0008 -i --tty --rm --image=mcr.microsoft.com/azure-cli --limits='cpu=200m,memory=128Mi'
