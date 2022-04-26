@@ -1,3 +1,7 @@
+targetScope = 'resourceGroup'
+
+/*** PARAMETERS ***/
+
 @description('The regional network spoke VNet Resource ID that the cluster will be joined to')
 @minLength(79)
 param targetVnetResourceId string
@@ -52,6 +56,8 @@ param gitOpsBootstrappingRepoHttpsUrl string = 'https://github.com/mspnp/aks-bas
 @minLength(1)
 param gitOpsBootstrappingRepoBranch string = 'main'
 
+/*** VARIABLES ***/
+
 var monitoringMetricsPublisherRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb'
 var acrPullRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d'
 var managedIdentityOperatorRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830'
@@ -64,13 +70,7 @@ var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resou
 
 var clusterName = 'aks-${subRgUniqueString}'
 var nodeResourceGroupName = 'rg-${clusterName}-nodepools'
-var logAnalyticsWorkspaceName = 'la-${clusterName}'
 var defaultAcrName = 'acraks${subRgUniqueString}'
-
-var vNetResourceGroup = split(targetVnetResourceId, '/')[4]
-var vnetName = last(split(targetVnetResourceId, '/'))
-var vnetNodePoolSubnetResourceId = '${targetVnetResourceId}/subnets/snet-clusternodes'
-var vnetPrivateLinkEndpointsSubnetResourceId = '${targetVnetResourceId}/subnets/snet-privatelinkendpoints'
 
 var agwName = 'apw-${clusterName}'
 
@@ -91,6 +91,38 @@ var policyAssignmentNameEnforceResourceLimits = guid(policyResourceIdEnforceReso
 var policyAssignmentNameEnforceImageSource = guid(policyResourceIdEnforceImageSource, resourceGroup().name, clusterName)
 var policyAssignmentNameEnforceDefenderInCluster = guid(policyResourceIdEnforceDefenderInCluster, resourceGroup().name, clusterName)
 var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPlaneAuthorizationTenantId)
+
+/*** EXISTING HUB RESOURCES ***/
+
+resource acr 'Microsoft.ContainerRegistry/registries@2021-12-01-preview' existing = {
+  name: defaultAcrName
+}
+
+resource targetResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
+  scope: subscription()
+  name: '${split(targetVnetResourceId,'/')[4]}'
+}
+
+resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' existing = {
+  scope: targetResourceGroup
+  name: '${last(split(targetVnetResourceId,'/'))}'
+}
+
+resource snetClusterNodes 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
+  parent: targetVirtualNetwork
+  name: 'snet-clusternodes'
+}
+
+resource snetPrivatelinkendpoints 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
+  parent: targetVirtualNetwork
+  name: 'snet-privatelinkendpoints'
+}
+
+resource la 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' existing = {
+  name: 'la-${clusterName}'
+}
+
+/*** RESOURCES ***/
 
 resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' = {
   name: 'AllAzureAdvisorAlert'
@@ -121,7 +153,8 @@ resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' 
 }
 
 resource ssPrometheusAll 'Microsoft.OperationalInsights/workspaces/savedSearches@2020-08-01' = {
-  name: '${logAnalyticsWorkspaceName}/AllPrometheus'
+  parent: la
+  name: 'AllPrometheus'
   properties: {
     etag: '*'
     category: 'Prometheus'
@@ -133,7 +166,8 @@ resource ssPrometheusAll 'Microsoft.OperationalInsights/workspaces/savedSearches
 }
 
 resource ssPrometheusKuredRequestedReeboot 'Microsoft.OperationalInsights/workspaces/savedSearches@2020-08-01' = {
-  name: '${logAnalyticsWorkspaceName}/NodeRebootRequested'
+  parent: la
+  name: 'NodeRebootRequested'
   properties: {
     etag: '*'
     category: 'Prometheus'
@@ -144,15 +178,15 @@ resource ssPrometheusKuredRequestedReeboot 'Microsoft.OperationalInsights/worksp
 }
 
 resource sci 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: 'ContainerInsights(${logAnalyticsWorkspaceName})'
+  name: 'ContainerInsights(${la.name})'
   location: location
   properties: {
     containedResources: []
     referencedResources: []
-    workspaceResourceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+    workspaceResourceId: la.id
   }
   plan: {
-    name: 'ContainerInsights(${logAnalyticsWorkspaceName})'
+    name: 'ContainerInsights(${la.name})'
     product: 'OMSGallery/ContainerInsights'
     promotionCode: ''
     publisher: 'Microsoft'
@@ -757,15 +791,15 @@ resource maRestartingContainerCount 'Microsoft.Insights/metricAlerts@2018-03-01'
 }
 
 resource skva 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: 'KeyVaultAnalytics(${logAnalyticsWorkspaceName})'
+  name: 'KeyVaultAnalytics(${la.name})'
   location: location
   properties: {
     containedResources: []
     referencedResources: []
-    workspaceResourceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+    workspaceResourceId: la.id
   }
   plan: {
-    name: 'KeyVaultAnalytics(${logAnalyticsWorkspaceName})'
+    name: 'KeyVaultAnalytics(${la.name})'
     product: 'OMSGallery/KeyVaultAnalytics'
     promotionCode: ''
     publisher: 'Microsoft'
@@ -783,7 +817,7 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
     enabled: 'true'
     source: {
       query: '//https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts \r\n let endDateTime = now(); let startDateTime = ago(1h); let trendBinSize = 1m; let clusterName = "${clusterName}"; KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | where ClusterName == clusterName | distinct ClusterName, TimeGenerated | summarize ClusterSnapshotCount = count() by bin(TimeGenerated, trendBinSize), ClusterName | join hint.strategy=broadcast ( KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | distinct ClusterName, Computer, PodUid, TimeGenerated, PodStatus | summarize TotalCount = count(), PendingCount = sumif(1, PodStatus =~ "Pending"), RunningCount = sumif(1, PodStatus =~ "Running"), SucceededCount = sumif(1, PodStatus =~ "Succeeded"), FailedCount = sumif(1, PodStatus =~ "Failed") by ClusterName, bin(TimeGenerated, trendBinSize) ) on ClusterName, TimeGenerated | extend UnknownCount = TotalCount - PendingCount - RunningCount - SucceededCount - FailedCount | project TimeGenerated, TotalCount = todouble(TotalCount) / ClusterSnapshotCount, PendingCount = todouble(PendingCount) / ClusterSnapshotCount, RunningCount = todouble(RunningCount) / ClusterSnapshotCount, SucceededCount = todouble(SucceededCount) / ClusterSnapshotCount, FailedCount = todouble(FailedCount) / ClusterSnapshotCount, UnknownCount = todouble(UnknownCount) / ClusterSnapshotCount| summarize AggregatedValue = avg(FailedCount) by bin(TimeGenerated, trendBinSize)'
-      dataSourceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+      dataSourceId: la.id
       queryType: 'ResultCount'
     }
     schedule: {
@@ -1033,7 +1067,7 @@ resource kv_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
   scope: kv
   name: 'default'
   properties: {
-    workspaceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+    workspaceId: la.id
     logs: [
       {
         category: 'AuditEvent'
@@ -1100,11 +1134,11 @@ resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Author
 
 module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'nested_EnsureClusterIdentityHasRbacToSelfManagedResources.bicep' = {
   name: 'EnsureClusterIdentityHasRbacToSelfManagedResources'
-  scope: resourceGroup(vNetResourceGroup)
+  scope: targetResourceGroup
   params: {
     miClusterControlPlanePrincipalId: miClusterControlPlane.properties.principalId
     clusterControlPlaneIdentityName: miClusterControlPlane.name
-    vnetName: vnetName
+    targetVirtualNetworkName: targetVirtualNetwork.name
   }
 }
 
@@ -1115,7 +1149,7 @@ resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
 
   // Enabling Azure Key Vault Private Link on cluster vnet.
   resource vnetlnk 'virtualNetworkLinks' = {
-    name: 'to_${vnetName}'
+    name: 'to_${targetVirtualNetwork.name}'
     location: 'global'
     properties: {
       virtualNetwork: {
@@ -1132,11 +1166,11 @@ resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
   location: location
   properties: {
     subnet: {
-      id: vnetPrivateLinkEndpointsSubnetResourceId
+      id: snetPrivatelinkendpoints.id
     }
     privateLinkServiceConnections: [
       {
-        name: 'to_${vnetName}'
+        name: 'to_${targetVirtualNetwork.name}'
         properties: {
           privateLinkServiceId: kv.id
           groupIds: [
@@ -1181,7 +1215,7 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 
   resource vnetlnk 'virtualNetworkLinks' = {
-    name: 'to_${vnetName}'
+    name: 'to_${targetVirtualNetwork.name}'
     location: 'global'
     properties: {
       virtualNetwork: {
@@ -1212,7 +1246,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
         osType: 'Linux'
         minCount: 3
         maxCount: 4
-        vnetSubnetID: vnetNodePoolSubnetResourceId
+        vnetSubnetID: snetClusterNodes.id
         enableAutoScaling: true
         type: 'VirtualMachineScaleSets'
         mode: 'System'
@@ -1242,7 +1276,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
         osType: 'Linux'
         minCount: 2
         maxCount: 5
-        vnetSubnetID: vnetNodePoolSubnetResourceId
+        vnetSubnetID: snetClusterNodes.id
         enableAutoScaling: true
         type: 'VirtualMachineScaleSets'
         mode: 'User'
@@ -1271,7 +1305,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
       omsagent: {
         enabled: true
         config: {
-          logAnalyticsWorkspaceResourceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+          logAnalyticsWorkspaceResourceId: la.id
         }
       }
       aciConnectorLinux: {
@@ -1342,7 +1376,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
     securityProfile: {
       azureDefender: {
         enabled: true
-        logAnalyticsWorkspaceResourceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+        logAnalyticsWorkspaceResourceId: la.id
       }
     }
     oidcIssuerProfile: {
@@ -1377,10 +1411,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
     kvMiAppGatewayFrontendSecretsUserRole_roleAssignment
   ]
-}
-
-resource acr 'Microsoft.ContainerRegistry/registries@2021-12-01-preview' existing = {
-  name: defaultAcrName
 }
 
 resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
@@ -1471,7 +1501,7 @@ resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
   scope: mc
   name: 'default'
   properties: {
-    workspaceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+    workspaceId: la.id
     logs: [
       {
         category: 'cluster-autoscaler'
@@ -1586,7 +1616,7 @@ resource st_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
   scope: st
   name: 'default'
   properties: {
-    workspaceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+    workspaceId: la.id
     logs: [
       {
         category: 'DeliveryFailures'
@@ -1649,7 +1679,7 @@ resource agw 'Microsoft.Network/applicationGateways@2021-05-01' = {
         name: 'apw-frontend-ip-configuration'
         properties: {
           publicIPAddress: {
-            id: resourceId(subscription().subscriptionId, vNetResourceGroup, 'Microsoft.Network/publicIpAddresses', 'pip-BU0001A0008-00')
+            id: resourceId(subscription().subscriptionId, targetResourceGroup.name, 'Microsoft.Network/publicIpAddresses', 'pip-BU0001A0008-00')
           }
         }
       }
@@ -1780,7 +1810,7 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
   scope: agw
   name: 'default'
   properties: {
-    workspaceId: resourceId('Microsoft.OperationalInsights/workspaces', logAnalyticsWorkspaceName)
+    workspaceId: la.id
     logs: [
       {
         category: 'ApplicationGatewayAccessLog'
@@ -1798,6 +1828,8 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
   }
   dependsOn: []
 }
+
+/*** OUTPUTS ***/
 
 output aksClusterName string = clusterName
 output aksIngressControllerPodManagedIdentityResourceId string = podmiIngressController.id

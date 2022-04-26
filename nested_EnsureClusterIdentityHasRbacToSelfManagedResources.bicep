@@ -1,16 +1,30 @@
+/*** PARAMETERS ***/
+
 param miClusterControlPlanePrincipalId string
 param clusterControlPlaneIdentityName string
-param vnetName string
+param targetVirtualNetworkName string
+
+/*** VARIABLES ***/
 
 var networkContributorRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7'
 
+/*** EXISTING HUB RESOURCES ***/
+
+resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' existing = {
+  name: targetVirtualNetworkName
+}
+
 resource snetClusterNodes 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
-  name: '${vnetName}/snet-clusternodes'
+  parent: targetVirtualNetwork
+  name: 'snet-clusternodes'
 }
 
 resource snetClusterIngress 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
-  name: '${vnetName}/snet-clusteringressservices'
+  parent: targetVirtualNetwork
+  name: 'snet-clusteringressservices'
 }
+
+/*** RESOURCES ***/
 
 resource snetClusterNodesMiClusterControlPlaneNetworkContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: snetClusterNodes
