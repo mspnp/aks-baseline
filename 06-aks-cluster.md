@@ -12,8 +12,6 @@ Now that your [ACR instance is deployed and ready to support cluster bootstrappi
    GITOPS_REPOURL=$(git config --get remote.origin.url)
    ```
 
-   > :warning: If you are using your own fork, please ensure this repo is reacheable as well as public accessible from your spoke vnet, and check you are assigning its web URL (`HTTPS`).
-
 1. Deploy the cluster ARM template.
   :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server. You can limit access to the API Server to a set of well-known IP addresses (i.,e. a jump box subnet (connected to by Azure Bastion), build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options. This setting will also impact traffic originating from within the cluster trying to use the API server, so you will also need to include _all_ of the public IPs used by your egress Azure Firewall. For more information, see [Secure access to the API server using authorized IP address ranges](https://docs.microsoft.com/azure/aks/api-server-authorized-ip-ranges#create-an-aks-cluster-with-api-server-authorized-ip-ranges-enabled).
 
