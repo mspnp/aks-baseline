@@ -1047,19 +1047,21 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
     miAppGatewayFrontend
     podmiIngressController
   ]
+}
 
-  resource kvsGatewayPublicCert 'secrets' = {
-    name: 'gateway-public-cert'
-    properties: {
-      value: appGatewayListenerCertificate
-    }
+resource kvsAppGwIngressInternalAksIngressTls 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
+  parent: kv
+  name: 'appgw-ingress-internal-aks-ingress-tls'
+  properties: {
+    value: aksIngressControllerCertificate
   }
+}
 
-  resource kvsAppGwIngressInternalAksIngressTls 'secrets' = {
-    name: 'appgw-ingress-internal-aks-ingress-tls'
-    properties: {
-      value: aksIngressControllerCertificate
-    }
+resource kvsGatewayPublicCert  'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
+  parent: kv
+  name: 'gateway-public-cert'
+  properties: {
+    value: appGatewayListenerCertificate
   }
 }
 
@@ -1660,7 +1662,7 @@ resource agw 'Microsoft.Network/applicationGateways@2021-05-01' = {
       {
         name: 'root-cert-wildcard-aks-ingress'
         properties: {
-          keyVaultSecretId: '${reference(kv.name).vaultUri}secrets/appgw-ingress-internal-aks-ingress-tls'
+          keyVaultSecretId: kvsAppGwIngressInternalAksIngressTls.properties.secretUri
         }
       }
     ]
@@ -1710,7 +1712,7 @@ resource agw 'Microsoft.Network/applicationGateways@2021-05-01' = {
       {
         name: '${agwName}-ssl-certificate'
         properties: {
-          keyVaultSecretId: '${reference(kv.name).vaultUri}secrets/gateway-public-cert'
+          keyVaultSecretId: kvsGatewayPublicCert.properties.secretUri
         }
       }
     ]
