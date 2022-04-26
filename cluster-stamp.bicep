@@ -68,7 +68,7 @@ var logAnalyticsWorkspaceName = 'la-${clusterName}'
 var defaultAcrName = 'acraks${subRgUniqueString}'
 
 var vNetResourceGroup = split(targetVnetResourceId, '/')[4]
-var vnetName = split(targetVnetResourceId, '/')[8]
+var vnetName = last(split(targetVnetResourceId, '/'))
 var vnetNodePoolSubnetResourceId = '${targetVnetResourceId}/subnets/snet-clusternodes'
 var vnetPrivateLinkEndpointsSubnetResourceId = '${targetVnetResourceId}/subnets/snet-privatelinkendpoints'
 
