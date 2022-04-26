@@ -2,6 +2,7 @@ targetScope = 'resourceGroup'
 
 /*** PARAMETERS ***/
 
+@description('The AKS Kubelet identity Object Id to be given with Virtual Machine Contributor Role to work with Managed Identities and aad-pod-identity')
 param kubeletidentityObjectId string
 
 /*** VARIABLES ***/
