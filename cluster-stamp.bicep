@@ -1411,7 +1411,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
 
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
-    kvMiAppGatewayFrontendSecretsUserRole_roleAssignment
+    kvPodMiIngressControllerSecretsUserRole_roleAssignment
   ]
 }
 
