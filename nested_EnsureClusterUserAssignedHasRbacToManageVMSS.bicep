@@ -1,3 +1,5 @@
+targetScope = 'resourceGroup'
+
 /*** PARAMETERS ***/
 
 param kubeletidentityObjectId string
