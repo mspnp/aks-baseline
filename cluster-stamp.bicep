@@ -841,7 +841,7 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
   dependsOn: []
 }
 
-// Applying the 'AKS Linux Restrictive' policy to the resource group
+@description('Applying the "AKS Linux Restrictive" policy to the resource group')
 resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: policyAssignmentNameAKSLinuxRestrictive
   properties: {
@@ -865,7 +865,7 @@ resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-0
   dependsOn: []
 }
 
-// Applying the 'Enforce HTTPS ingress in Kubernetes cluster' policy to the resource group.
+@description('Applying the "Enforce HTTPS ingress in Kubernetes cluster" policy to the resource group.')
 resource paEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: policyAssignmentNameEnforceHttpsIngress
   location: 'global'
@@ -885,7 +885,7 @@ resource paEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2021-0
   dependsOn: []
 }
 
-// Applying the 'Enforce internal load balancers in Kubernetes cluster' policy to the resource group.
+@description('Applying the "Enforce internal load balancers in Kubernetes cluster" policy to the resource group.')
 resource paEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: policyAssignmentNameEnforceInternalLoadBalancers
   properties: {
@@ -904,7 +904,7 @@ resource paEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignmen
   dependsOn: []
 }
 
-// Applying the 'Kubernetes cluster containers should run with a read only root file system' policy to the resource group.
+@description('// Applying the "Kubernetes cluster containers should run with a read only root file system" policy to the resource group.')
 resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: policyAssignmentNameRoRootFilesystem
   properties: {
@@ -927,7 +927,7 @@ resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-0
   dependsOn: []
 }
 
-// Applying the 'Container Images Resource Limits' policy at the resource group level.
+@description('Applying the "Container Images Resource Limits" policy at the resource group level.')
 resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: policyAssignmentNameEnforceResourceLimits
   dependsOn: []
@@ -958,7 +958,7 @@ resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021
   }
 }
 
-// Applying the 'Allowed Container Images' regex policy at the resource group level. If all images are pull into your ARC instance as described in these instructions you can remove the docker.io entries.
+@description('Applying the "Allowed Container Images" regex policy at the resource group level. If all images are pull into your ARC instance as described in these instructions you can remove the docker.io entries.')
 resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: policyAssignmentNameEnforceImageSource
   properties: {
@@ -984,7 +984,7 @@ resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2021-06
   dependsOn: []
 }
 
-// Applying the 'Azure Kubernetes Service clusters should have Defender profile enabled' policy at the resource group level.
+@description('Applying the "Azure Kubernetes Service clusters should have Defender profile enabled" policy at the resource group level.')
 resource paEnforceDefenderInCluster 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: policyAssignmentNameEnforceDefenderInCluster
   properties: {
@@ -1001,19 +1001,19 @@ resource paEnforceDefenderInCluster 'Microsoft.Authorization/policyAssignments@2
   dependsOn: []
 }
 
-// The control plane identity used by the cluster. Used for networking access (VNET joining and DNS updating)
+@description('The control plane identity used by the cluster. Used for networking access (VNET joining and DNS updating)')
 resource miClusterControlPlane 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'mi-${clusterName}-controlplane'
   location: location
 }
 
-// User Managed Identity that App Gateway is assigned. Used for Azure Key Vault Access.
+@description('User Managed Identity that App Gateway is assigned. Used for Azure Key Vault Access.')
 resource miAppGatewayFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'mi-appgateway-frontend'
   location: location
 }
 
-// User Managed Identity for the cluster's ingress controller pods. Used for Azure Key Vault Access
+@description('User Managed Identity for the cluster\'s ingress controller pods. Used for Azure Key Vault Access')
 resource podmiIngressController 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'podmi-ingress-controller'
   location: location
@@ -1084,7 +1084,7 @@ resource kv_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
   dependsOn: []
 }
 
-// Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.
+@description('Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.')
 resource kvMiAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultSecretsUserRole)
@@ -1096,7 +1096,7 @@ resource kvMiAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authori
   dependsOn: []
 }
 
-// Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.
+@description('Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.')
 resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultReader)
@@ -1108,7 +1108,7 @@ resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authoriz
   dependsOn: []
 }
 
-// Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates.
+@description('Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates.')
 resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultSecretsUserRole)
@@ -1120,7 +1120,7 @@ resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Autho
   dependsOn: []
 }
 
-// Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates
+@description('Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates')
 resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultReader)
@@ -1142,7 +1142,7 @@ module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'nested_EnsureCluste
   }
 }
 
-// Enabling Azure Key Vault Private Link support.
+@description('Enabling Azure Key Vault Private Link support.')
 resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: 'privatelink.vaultcore.azure.net'
   location: 'global'
@@ -1425,7 +1425,7 @@ resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssig
   dependsOn: []
 }
 
-// Grant the OMS Agent's Managed Identity the metrics publisher role to push alerts
+@description('Grant the OMS Agent\'s Managed Identity the metrics publisher role to push alerts')
 resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: mc
   name: guid(mc.id, 'omsagent', monitoringMetricsPublisherRole)
@@ -1437,7 +1437,7 @@ resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Auth
   dependsOn: []
 }
 
-// Grant the AKS cluster with Managed Identity Operator role permissions over the managed identity used for the ingress controller. Allows it to be assigned to the underlying VMSS.
+@description('Grant the AKS cluster with Managed Identity Operator role permissions over the managed identity used for the ingress controller. Allows it to be assigned to the underlying VMSS.')
 resource miKubeletManagedIdentityOperatorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: podmiIngressController
   name: guid(resourceGroup().id, 'podmi-ingress-controller', managedIdentityOperatorRole)
@@ -1524,7 +1524,7 @@ resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
   dependsOn: []
 }
 
-// Ensures that flux add-on (extension) is installed.
+@description('Ensures that flux add-on (extension) is installed.')
 resource mcFlux_extension 'Microsoft.KubernetesConfiguration/extensions@2021-09-01' = {
   scope: mc
   name: 'flux'
@@ -1552,7 +1552,7 @@ resource mcFlux_extension 'Microsoft.KubernetesConfiguration/extensions@2021-09-
   ]
 }
 
-// Bootstraps your cluster using content from your repo.
+@description('Bootstraps your cluster using content from your repo.')
 resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurations@2022-03-01' = {
   scope: mc
   name: 'bootstrap'
