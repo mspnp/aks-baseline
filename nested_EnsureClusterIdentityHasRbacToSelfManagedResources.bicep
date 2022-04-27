@@ -3,12 +3,17 @@ targetScope = 'resourceGroup'
 /*** PARAMETERS ***/
 
 @description('The AKS Control Plane Principal Id to be given with Network Contributor Role in different spoke subnets, so it can join VMSS and load balancers resources to them.')
+@minLength(36)
+@maxLength(36)
 param miClusterControlPlanePrincipalId string
 
 @description('The AKS Control Plane Principal Name to be used to create unique role assignments names.')
+@minLength(3)
+@maxLength(128)
 param clusterControlPlaneIdentityName string
 
 @description('The regional network spoke VNet Resource name that the cluster is being joined to, so it can be used to discover subnets during role assignments.')
+@minLength(1)
 param targetVirtualNetworkName string
 
 /*** VARIABLES ***/
