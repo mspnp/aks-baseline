@@ -1,0 +1,55 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "0.0.0.5",
+    "parameters": {
+        "clusterAdminAadGroupObjectId": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure AD Group in the identified tenant that will be granted the highly privileged cluster-admin role. If Azure RBAC is used, then this group will get a role assignment to Azure RBAC, else it will be assigned directly to the cluster's admin group."
+            }
+        },
+        "a0008NamespaceReaderAadGroupObjectId": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure AD Group in the identified tenant that will be granted the read only privileges in the a0008 namespace that exists in the cluster. This is only used when Azure RBAC is used for Kubernetes RBAC."
+            }
+        },
+        "k8sControlPlaneAuthorizationTenantId": {
+            "type": "string",
+            "metadata": {
+                "description": "Your AKS control plane Cluster API authentication tenant"
+            }
+        },
+        "clusterName": {
+            "type": "string",
+            "metadata": {
+                "description": "Your AKS Cluster name"
+            }
+        }
+    },
+    "variables": {
+        "clusterReaderRoleId": "7f6c6a51-bcf8-42ba-9220-52d62157d7db",
+
+        "isUsingAzureRBACasKubernetesRBAC": "[equals(subscription().tenantId, parameters('k8sControlPlaneAuthorizationTenantId'))]"
+    },
+    "resources": [
+        {
+            "condition": "[and(variables('isUsingAzureRBACasKubernetesRBAC'), not(equals(parameters('a0008NamespaceReaderAadGroupObjectId'), parameters('clusterAdminAadGroupObjectId'))))]",
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[guid('aad-a0008-reader-group', resourceId('Microsoft.ContainerService/managedClusters', parameters('clusterName')), parameters('a0008NamespaceReaderAadGroupObjectId'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', parameters('clusterName'))]"
+            ],
+            "scope": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', resourceGroup().name, '/providers/Microsoft.ContainerService/managedClusters/', parameters('clusterName'), '/namespaces/a0008')]",
+            "properties": {
+                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('clusterReaderRoleId'))]",
+                "principalId": "[parameters('a0008NamespaceReaderAadGroupObjectId')]",
+                "description": "Members of this group are cluster admins of the a0008 namespace in this cluster.",
+                "principalType": "Group"
+            }
+        }
+    ],
+    "outputs": {
+    }
+}

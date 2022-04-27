@@ -64,7 +64,6 @@ var managedIdentityOperatorRole = '${subscription().id}/providers/Microsoft.Auth
 var keyVaultReader = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/21090545-7ca7-4776-b22c-e363652d74d2'
 var keyVaultSecretsUserRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6'
 var clusterAdminRoleId = 'b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b'
-var clusterReaderRoleId = '7f6c6a51-bcf8-42ba-9220-52d62157d7db'
 var serviceClusterUserRoleId = '4abbcc35-e782-43d8-92c5-2d3f1bd2253f'
 var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resourceGroup().id)
 
@@ -1473,14 +1472,14 @@ resource mcAadAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authori
   dependsOn: []
 }
 
-resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
-  scope: mc // TODO: reference namespace instead
-  name: guid('aad-a0008-reader-group', mc.id, a0008NamespaceReaderAadGroupObjectId)
-  properties: {
-    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/${clusterReaderRoleId}'
-    principalId: a0008NamespaceReaderAadGroupObjectId
-    description: 'Members of this group are cluster admins of the a0008 namespace in this cluster.'
-    principalType: 'Group'
+module ndEnsureAadA0008ReaderGroupHasK8sRbac 'nested_EnsureAadA0008ReaderGroupHasK8sRbac.json' = {
+  name: 'EnsureAadA0008ReaderGroupHasK8sRbac'
+  scope: targetResourceGroup
+  params: {
+    clusterAdminAadGroupObjectId: clusterAdminAadGroupObjectId
+    a0008NamespaceReaderAadGroupObjectId: a0008NamespaceReaderAadGroupObjectId
+    k8sControlPlaneAuthorizationTenantId: k8sControlPlaneAuthorizationTenantId
+    clusterName: clusterName
   }
   dependsOn: []
 }
