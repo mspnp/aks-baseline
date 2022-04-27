@@ -1089,7 +1089,7 @@ resource kv_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
 // Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.
 resource kvMiAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
-  name: '${guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultSecretsUserRole)}'
+  name: guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultSecretsUserRole)
   properties: {
     roleDefinitionId: keyVaultSecretsUserRole
     principalId: miAppGatewayFrontend.properties.principalId
@@ -1101,7 +1101,7 @@ resource kvMiAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authori
 // Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.
 resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
-  name: '${guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultReader)}'
+  name: guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultReader)
   properties: {
     roleDefinitionId: keyVaultReader
     principalId: miAppGatewayFrontend.properties.principalId
@@ -1113,7 +1113,7 @@ resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authoriz
 // Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates.
 resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
-  name: '${guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultSecretsUserRole)}'
+  name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultSecretsUserRole)
   properties: {
     roleDefinitionId: keyVaultSecretsUserRole
     principalId: podmiIngressController.properties.principalId
@@ -1125,7 +1125,7 @@ resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Autho
 // Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates
 resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
-  name: '${guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultReader)}'
+  name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultReader)
   properties: {
     roleDefinitionId: keyVaultReader
     principalId: podmiIngressController.properties.principalId
