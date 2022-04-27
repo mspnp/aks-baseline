@@ -482,6 +482,26 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
                 '443'
               ]
             }
+            {
+              ruleType: 'NetworkRule'
+              name: 'pod-to-api-server_udp-1194'
+              description: 'This allows pods to communicate with the API server. Ensure your API server\'s allowed IP ranges support all of this firewall\'s public IPs.'
+              ipProtocols: [
+                'UDP'
+              ]
+              sourceAddresses: []
+              sourceIpGroups: [
+                ipgNodepoolSubnet.id
+              ]
+              destinationAddresses: [
+                'AzureCloud.${location}' // Ideally you'd list your AKS server endpoints in appliction rules, instead of this wide-ranged rule
+              ]
+              destinationIpGroups: []
+              destinationFqdns: []
+              destinationPorts: [
+                '1194'
+              ]
+            }
           ]
         }
       ]
