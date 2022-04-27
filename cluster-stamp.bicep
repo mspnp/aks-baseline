@@ -1419,7 +1419,7 @@ resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssig
   properties: {
     roleDefinitionId: acrPullRole
     description: 'Allows AKS to pull container images from this ACR instance.'
-    principalId: reference(mc.id, '2020-12-01').identityProfile.kubeletidentity.objectId
+    principalId: mc.properties.identityProfile.kubeletidentity.objectId
     principalType: 'ServicePrincipal'
   }
   dependsOn: []
@@ -1431,7 +1431,7 @@ resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Auth
   name: guid(mc.id, 'omsagent', monitoringMetricsPublisherRole)
   properties: {
     roleDefinitionId: monitoringMetricsPublisherRole
-    principalId: reference(mc.id, '2020-12-01').addonProfiles.omsagent.identity.objectId
+    principalId: mc.properties.addonProfiles.omsagent.identity.objectId
     principalType: 'ServicePrincipal'
   }
   dependsOn: []
@@ -1443,7 +1443,7 @@ resource miKubeletManagedIdentityOperatorRole_roleAssignment 'Microsoft.Authoriz
   name: guid(resourceGroup().id, 'podmi-ingress-controller', managedIdentityOperatorRole)
   properties: {
     roleDefinitionId: managedIdentityOperatorRole
-    principalId: reference(mc.id, '2020-12-01').identityProfile.kubeletidentity.objectId
+    principalId: mc.properties.identityProfile.kubeletidentity.objectId
     principalType: 'ServicePrincipal'
   }
   dependsOn: []
@@ -1597,7 +1597,7 @@ module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'nested_EnsureClusterUserA
   name: 'EnsureClusterUserAssignedHasRbacToManageVMSS'
   scope: resourceGroup(nodeResourceGroupName)
   params: {
-    kubeletidentityObjectId: reference(mc.id, '2020-03-01').identityProfile.kubeletidentity.objectId
+    kubeletidentityObjectId: mc.properties.identityProfile.kubeletidentity.objectId
   }
   dependsOn: []
 }
