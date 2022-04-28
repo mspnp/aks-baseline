@@ -485,7 +485,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
             {
               ruleType: 'NetworkRule'
               name: 'pod-to-api-server_udp-1194'
-              description: 'This allows pods to communicate with the API server. Ensure your API server\'s allowed IP ranges support all of this firewall\'s public IPs.'
+              description: 'This allows pods to communicate with the API server. Only needed if your cluster isn't using konnectivity.'
               ipProtocols: [
                 'UDP'
               ]
