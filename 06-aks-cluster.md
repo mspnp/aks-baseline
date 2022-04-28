@@ -10,6 +10,7 @@ Now that your [ACR instance is deployed and ready to support cluster bootstrappi
 
    ```bash
    GITOPS_REPOURL=$(git config --get remote.origin.url)
+   echo GITOPS_REPOURL: $GITOPS_REPOURL
    ```
 
 1. Deploy the cluster ARM template.
@@ -36,6 +37,7 @@ Now that your [ACR instance is deployed and ready to support cluster bootstrappi
        # Federated Identity, see https://github.com/Azure/login#configure-deployment-credentials.
        az ad sp create-for-rbac --name "github-workflow-aks-cluster" --sdk-auth --skip-assignment > sp.json
        export APP_ID=$(grep -oP '(?<="clientId": ").*?[^\\](?=",)' sp.json)
+       echo APP_ID: $APP_ID
 
        # Wait for propagation
        until az ad sp show --id ${APP_ID} &> /dev/null ; do echo "Waiting for Azure AD propagation" && sleep 5; done
