@@ -70,7 +70,15 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed as a
 
    ```bash
    sed -i "s:docker.io:${ACR_NAME_AKS_BASELINE}.azurecr.io:" ./cluster-manifests/cluster-baseline-settings/kured.yaml
+   ```
 
+   Note, that if you are on macOS, you might need to use the following command instead:
+   ```bash
+   sed -i '' 's:docker.io:'"${ACR_NAME_AKS_BASELINE}"'.azurecr.io:g' ./cluster-manifests/cluster-baseline-settings/kured.yaml
+   ```
+   Now commit changes to repository.
+
+   ```bash
    git commit -a -m "Update image source to use my ACR instance instead of a public container registry."
    git push
    ```
