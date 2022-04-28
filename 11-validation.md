@@ -15,6 +15,7 @@ This section will help you to validate the workload is exposed correctly and res
    ```bash
    # query the Azure Application Gateway Public Ip
    APPGW_PUBLIC_IP=$(az deployment group show --resource-group rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
+   echo APPGW_PUBLIC_IP: $APPGW_PUBLIC_IP
    ```
 
 1. Create `A` Record for DNS

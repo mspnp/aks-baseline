@@ -482,6 +482,27 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
                 '443'
               ]
             }
+            // NOTE: This rule is only required for for clusters not yet running in konnectivity mode and can be removed once it has been fully rolled out.
+            {
+              ruleType: 'NetworkRule'
+              name: 'pod-to-api-server_udp-1194'
+              description: 'This allows pods to communicate with the API server. Only needed if your cluster is not yet using konnectivity.'
+              ipProtocols: [
+                'UDP'
+              ]
+              sourceAddresses: []
+              sourceIpGroups: [
+                ipgNodepoolSubnet.id
+              ]
+              destinationAddresses: [
+                'AzureCloud.${location}' // Ideally you'd list your AKS server endpoints in appliction rules, instead of this wide-ranged rule
+              ]
+              destinationIpGroups: []
+              destinationFqdns: []
+              destinationPorts: [
+                '1194'
+              ]
+            }
           ]
         }
       ]

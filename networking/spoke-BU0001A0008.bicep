@@ -434,4 +434,4 @@ output clusterVnetResourceId string = vnetSpoke.id
 output nodepoolSubnetResourceIds array = [
   vnetSpoke::snetClusterNodes.id
 ]
-output appGwPublicIpAddress string = pipPrimaryClusterIp.id
+output appGwPublicIpAddress string = pipPrimaryClusterIp.properties.ipAddress

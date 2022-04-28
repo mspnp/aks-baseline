@@ -35,6 +35,7 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed as a
 
    ```bash
    export RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+   echo RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE: $RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE
    ```
 
 1. Deploy the container registry template.
@@ -51,6 +52,7 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed as a
    ```bash
    # Get your ACR instance name
    export ACR_NAME_AKS_BASELINE=$(az deployment group show -g rg-bu0001a0008 -n acr-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   echo ACR_NAME_AKS_BASELINE: $ACR_NAME_AKS_BASELINE
 
    # Import core image(s) hosted in public container registries to be used during bootstrapping
    az acr import --source docker.io/weaveworks/kured:1.9.0 -n $ACR_NAME_AKS_BASELINE
@@ -68,7 +70,15 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed as a
 
    ```bash
    sed -i "s:docker.io:${ACR_NAME_AKS_BASELINE}.azurecr.io:" ./cluster-manifests/cluster-baseline-settings/kured.yaml
+   ```
 
+   Note, that if you are on macOS, you might need to use the following command instead:
+   ```bash
+   sed -i '' 's:docker.io:'"${ACR_NAME_AKS_BASELINE}"'.azurecr.io:g' ./cluster-manifests/cluster-baseline-settings/kured.yaml
+   ```
+   Now commit changes to repository.
+
+   ```bash
    git commit -a -m "Update image source to use my ACR instance instead of a public container registry."
    git push
    ```

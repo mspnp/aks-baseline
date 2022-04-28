@@ -12,6 +12,11 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    sed -i "s/contoso.com/${DOMAIN_NAME_AKS_BASELINE}/" workload/aspnetapp-ingress-patch.yaml
    ```
 
+   Note, that if you are on macOS, you might need to use the following command instead:
+   ```bash
+   sed -i '' 's/contoso.com/'"${DOMAIN_NAME_AKS_BASELINE}"'/g' workload/aspnetapp-ingress-patch.yaml
+   ```
+
 1. Deploy the ASP.NET Core Docker sample web app
 
    > The workload definition demonstrates the inclusion of a Pod Disruption Budget rule, ingress configuration, and pod (anti-)affinity rules for your reference.
