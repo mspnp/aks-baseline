@@ -482,12 +482,11 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
                 '443'
               ]
             }
-            /* 
-            Uncomment this rule if your cluster will be deployed in a region which has not yet konnectivity rolled out for communication from worker to master nodes.
+            // NOTE: This rule is only required for for clusters not yet running in konnectivity mode and can be removed once it has been fully rolled out.
             {
               ruleType: 'NetworkRule'
               name: 'pod-to-api-server_udp-1194'
-              description: 'This allows pods to communicate with the API server. Only needed if your cluster isn't using konnectivity.'
+              description: 'This allows pods to communicate with the API server. Only needed if your cluster is not yet using konnectivity.'
               ipProtocols: [
                 'UDP'
               ]
@@ -503,7 +502,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
               destinationPorts: [
                 '1194'
               ]
-            } */
+            }
           ]
         }
       ]
