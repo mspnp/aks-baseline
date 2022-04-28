@@ -122,6 +122,11 @@ resource la 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' existi
   name: 'la-${clusterName}'
 }
 
+resource nsA0008 'Microsoft.ContainerService/managedClusters/namespaces@2022-01-02-preview' existing = {
+  parent: mc
+  name: 'a0008'
+}
+
 /*** RESOURCES ***/
 
 resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' = {
@@ -1042,7 +1047,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
     enableSoftDelete: true
     softDeleteRetentionInDays: 7
     createMode: 'default'
-  }  
+  }
   dependsOn: [
     miAppGatewayFrontend
     podmiIngressController
@@ -1054,7 +1059,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
       value: aksIngressControllerCertificate
     }
   }
-  
+
   resource kvsGatewayPublicCert  'secrets' = {
     name: 'gateway-public-cert'
     properties: {
@@ -1474,7 +1479,7 @@ resource mcAadAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authori
 }
 
 resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
-  scope: mc // TODO: reference namespace instead
+  scope: nsA0008
   name: guid('aad-a0008-reader-group', mc.id, a0008NamespaceReaderAadGroupObjectId)
   properties: {
     roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/${clusterReaderRoleId}'
