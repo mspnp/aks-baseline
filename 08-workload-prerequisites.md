@@ -20,7 +20,7 @@ The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
 
    # If you are behind a proxy or some other egress that does not provide a consistent IP, you'll need to manually adjust the
    # Azure Key Vault firewall to allow this traffic.
-   CURRENT_IP_ADDRESS=$(curl -s https://ifconfig.io)
+   CURRENT_IP_ADDRESS=$(curl -s -4 https://ifconfig.io)
    echo CURRENT_IP_ADDRESS: $CURRENT_IP_ADDRESS
    az keyvault network-rule add -n $KEYVAULT_NAME_AKS_BASELINE --ip-address ${CURRENT_IP_ADDRESS}
    ```
