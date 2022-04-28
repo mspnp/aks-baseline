@@ -482,6 +482,8 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
                 '443'
               ]
             }
+            /* 
+            Uncomment this rule if your cluster will be deployed in a region which has not yet konnectivity rolled out for communication from worker to master nodes.
             {
               ruleType: 'NetworkRule'
               name: 'pod-to-api-server_udp-1194'
@@ -501,7 +503,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
               destinationPorts: [
                 '1194'
               ]
-            }
+            } */
           ]
         }
       ]
