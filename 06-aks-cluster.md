@@ -93,7 +93,7 @@ Now that your [ACR instance is deployed and ready to support cluster bootstrappi
            sed "s#<tenant-id-with-user-admin-permissions>#${TENANTID_K8SRBAC_AKS_BASELINE}#g" | \
            sed "s#<azure-ad-aks-admin-group-object-id>#${AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE}#g" | \
            sed "s#<azure-ad-aks-a0008-group-object-id>#${AADOBJECTID_GROUP_A0008_READER_AKS_BASELINE}#g" | \
-           sed "s#<domain-name>#${DOMAIN_NAME_AKS_BASELINE}#g" \
+           sed "s#<domain-name>#${DOMAIN_NAME_AKS_BASELINE}#g" | \
            sed "s#<bootstrapping-repo-https-url>#${GITOPS_REPOURL}#g" \
            > .github/workflows/aks-deploy.yaml
        ```
