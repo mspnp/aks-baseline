@@ -9,7 +9,7 @@
 #    │   │   └── aks-deploy.yaml
 #    ├── cluster-manifests
 #    │   ├── cluster-baseline-settings/*
-#    └── cluster-stamp.json
+#    └── cluster-stamp.bicep
 #
 # 2. Ensure you have followed the prior sections before deploying this AKS cluster. This way, you will be capable of setting:
 #    - the secrets values as detailed in the next step.
@@ -25,12 +25,12 @@ name: Deploy AKS Baseline cluster stamp
 on:
   push:
     paths:
-      - 'cluster-stamp.json'
+      - 'cluster-stamp.bicep'
       - '.github/workflows/aks-deploy.yaml'
     branches: [ main ]
   pull_request:
     paths:
-      - 'cluster-stamp.json'
+      - 'cluster-stamp.bicep'
       - '.github/workflows/aks-deploy.yaml'
     branches: [ main ]
 
@@ -69,7 +69,7 @@ jobs:
          az group create --name ${{ env.RESOURCE_GROUP }} --location ${{ env.RESOURCE_GROUP_LOCATION }}
          az deployment group $([[ ${{ github.event_name }} = pull_request ]] && echo what-if --no-pretty-print || echo create) \
             --resource-group ${{ env.RESOURCE_GROUP }} \
-            --template-file "cluster-stamp.json" \
+            --template-file "cluster-stamp.bicep" \
             --name "cluster-stamp" \
             --parameters \
               location=${{ env.AKS_LOCATION }} \
