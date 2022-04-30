@@ -36,7 +36,12 @@ Following the steps below you will result in an Azure AD configuration that will
 1. Create/identify the Azure AD security group that is going to map to the [Kubernetes Cluster Admin](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) role `cluster-admin`.
 
    If you already have a security group that is appropriate for your cluster's admin service accounts, use that group and skip this step. If using your own group or your Azure AD administrator created one for you to use; you will need to update the group name and ID throughout the reference implementation.
+   ```bash
+   export AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE=[Paste your cluster admin group ID here.]
+   echo AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE: $AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE
+   ```
 
+   If you want to create a new one instead, you can use the following code:
    ```bash
    export AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE=$(az ad group create --display-name 'cluster-admins-bu0001a000800' --mail-nickname 'cluster-admins-bu0001a000800' --description "Principals in this group are cluster admins in the bu0001a000800 cluster." --query objectId -o tsv)
    echo AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE: $AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE
@@ -47,6 +52,8 @@ Following the steps below you will result in an Azure AD configuration that will
 1. Create a "break-glass" cluster administrator user for your AKS cluster.
 
    > :book: The organization knows the value of having a break-glass admin user for their critical infrastructure. The app team requests a cluster admin user and Azure AD Admin team proceeds with the creation of the user in Azure AD.
+
+    You can skip this step, if the group created in the former step already has a cluster admin assigned as member.
 
    ```bash
    TENANTDOMAIN_K8SRBAC=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
@@ -60,6 +67,8 @@ Following the steps below you will result in an Azure AD configuration that will
 1. Add the cluster admin user(s) to the cluster admin security group.
 
    > :book: The recently created break-glass admin user is added to the Kubernetes Cluster Admin group from Azure AD. After this step the Azure AD Admin team will have finished the app team's request.
+
+   You can skip this step, if the group created in the former step already has a cluster admin assigned as member.
 
    ```bash
    az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE --member-id $AADOBJECTID_USER_CLUSTERADMIN
