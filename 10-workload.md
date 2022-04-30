@@ -46,10 +46,9 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    > You should expect a `403` HTTP response from your ingress controller if you attempt to connect to it _without_ going through the App Gateway. Likewise, if any workload other than the ingress controller attempts to reach the workload, the traffic will be denied via network policies.
 
    ```bash
-   kubectl run curl -n a0008 -i --tty --rm --image=mcr.microsoft.com/azure-cli --overrides='[{"op":"add","path":"/spec/containers/0/resources","value":{"limits":{"cpu":"200m","memory":"128Mi"}}}]' --override-type json
+   kubectl run curl -n a0008 -i --tty --rm --image=mcr.microsoft.com/azure-cli --overrides='[{"op":"add","path":"/spec/containers/0/resources","value":{"limits":{"cpu":"200m","memory":"128Mi"}}}]' --override-type json  --env="DOMAIN_NAME=${DOMAIN_NAME_AKS_BASELINE}"
    
    # From within the open shell now running on a container inside your cluster
-   DOMAIN_NAME="contoso.com" # <-- Change to your custom domain value if a different one was used
    curl -kI https://bu0001a0008-00.aks-ingress.$DOMAIN_NAME -w '%{remote_ip}\n'
    exit
    ```
