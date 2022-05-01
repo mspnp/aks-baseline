@@ -63,9 +63,9 @@ var acrPullRole = '${subscription().id}/providers/Microsoft.Authorization/roleDe
 var managedIdentityOperatorRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830'
 var keyVaultReader = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/21090545-7ca7-4776-b22c-e363652d74d2'
 var keyVaultSecretsUserRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6'
-var clusterAdminRole = '${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b'
-var serviceClusterUserRole = '${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/4abbcc35-e782-43d8-92c5-2d3f1bd2253f'
-var clusterReaderRole = '${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/7f6c6a51-bcf8-42ba-9220-52d62157d7db'
+var clusterAdminRoleId = 'b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b'
+var serviceClusterUserRoleId = '4abbcc35-e782-43d8-92c5-2d3f1bd2253f'
+var clusterReaderRoleId = '7f6c6a51-bcf8-42ba-9220-52d62157d7db'
 var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resourceGroup().id)
 
 var clusterName = 'aks-${subRgUniqueString}'
@@ -1458,7 +1458,7 @@ resource mcAadAdminGroupClusterAdminRole_roleAssignment 'Microsoft.Authorization
   scope: mc
   name: guid('aad-admin-group', mc.id, clusterAdminAadGroupObjectId)
   properties: {
-    roleDefinitionId: clusterAdminRole
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', clusterAdminRoleId)
     description: 'Members of this group are cluster admins of this cluster.'
     principalId: clusterAdminAadGroupObjectId
     principalType: 'Group'
@@ -1470,7 +1470,7 @@ resource mcAadAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authori
   scope: mc
   name: guid('aad-admin-group-sc', mc.id, clusterAdminAadGroupObjectId)
   properties: {
-    roleDefinitionId: serviceClusterUserRole
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', serviceClusterUserRoleId)
     description: 'Members of this group are cluster users of this cluster.'
     principalId: clusterAdminAadGroupObjectId
     principalType: 'Group'
@@ -1482,7 +1482,7 @@ resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Author
   scope: nsA0008
   name: guid('aad-a0008-reader-group', mc.id, a0008NamespaceReaderAadGroupObjectId)
   properties: {
-    roleDefinitionId: clusterReaderRole
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', clusterReaderRoleId)
     principalId: a0008NamespaceReaderAadGroupObjectId
     description: 'Members of this group are cluster admins of the a0008 namespace in this cluster.'
     principalType: 'Group'
@@ -1494,7 +1494,7 @@ resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.A
   scope: mc
   name: guid('aad-a0008-reader-group-sc', mc.id, a0008NamespaceReaderAadGroupObjectId)
   properties: {
-    roleDefinitionId: serviceClusterUserRole
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', serviceClusterUserRoleId)
     principalId: a0008NamespaceReaderAadGroupObjectId
     description: 'Members of this group are cluster users of this cluster.'
     principalType: 'Group'
