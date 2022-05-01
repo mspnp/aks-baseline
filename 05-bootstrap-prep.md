@@ -79,7 +79,8 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed as a
    Now commit changes to repository.
 
    ```bash
-   git commit -a -m "Update image source to use my ACR instance instead of a public container registry."
+   git add ./cluster-manifests/cluster-baseline-settings/kured.yaml
+   git commit -m "Update image source to use my ACR instance instead of a public container registry."
    git push
    ```
 
