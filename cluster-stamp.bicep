@@ -1478,7 +1478,7 @@ resource mcAadAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authori
   dependsOn: []
 }
 
-resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
+resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && !(empty(a0008NamespaceReaderAadGroupObjectId)) && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
   scope: nsA0008
   name: guid('aad-a0008-reader-group', mc.id, a0008NamespaceReaderAadGroupObjectId)
   properties: {
@@ -1490,7 +1490,7 @@ resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Author
   dependsOn: []
 }
 
-resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
+resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && !(empty(a0008NamespaceReaderAadGroupObjectId)) && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
   scope: mc
   name: guid('aad-a0008-reader-group-sc', mc.id, a0008NamespaceReaderAadGroupObjectId)
   properties: {

@@ -76,7 +76,7 @@ Following the steps below you will result in an Azure AD configuration that will
    az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE --member-id $AADOBJECTID_USER_CLUSTERADMIN
    ```
 
-1. Create/identify the Azure AD security group that is going to be a namespace reader.
+1. Create/identify the Azure AD security group that is going to be a namespace reader. _Optional_
 
    ```bash
    export AADOBJECTID_GROUP_A0008_READER_AKS_BASELINE=$(az ad group create --display-name 'cluster-ns-a0008-readers-bu0001a000800' --mail-nickname 'cluster-ns-a0008-readers-bu0001a000800' --description "Principals in this group are readers of namespace a0008 in the bu0001a000800 cluster." --query objectId -o tsv)
