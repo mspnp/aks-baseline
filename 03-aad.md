@@ -56,7 +56,7 @@ Following the steps below you will result in an Azure AD configuration that will
 
    > :book: The organization knows the value of having a break-glass admin user for their critical infrastructure. The app team requests a cluster admin user and Azure AD Admin team proceeds with the creation of the user in Azure AD.
 
-    You can skip this step, if the group created in the former step already has a cluster admin assigned as member.
+   You should skip this step, if the group identified in the former step already has a cluster admin assigned as member.
 
    ```bash
    TENANTDOMAIN_K8SRBAC=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
