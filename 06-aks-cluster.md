@@ -9,10 +9,10 @@ Now that your [ACR instance is deployed and ready to support cluster bootstrappi
    > If you cloned this repo, then the value will be the original mspnp GitHub organization's repo, which will mean that your cluster will be bootstraped using public container images. If instead you forked this repo, then the GitOps repo will be your own repo, and your cluster will be bootstrapped using container images references based on the values in your repo's manifest files. On the prior instruction page you had the oppertunity to update those manifests to use your ACR instance. For guidance on using a private bootstrapping repo, see [Private bootstrapping repository](./cluster-manifests/README.md#private-bootstrapping-repository).
 
    ```bash
-   GITOPS_REPOURL_AKS_BASELINE=$(git config --get remote.origin.url)
+   export GITOPS_REPOURL_AKS_BASELINE=$(git config --get remote.origin.url)
    echo GITOPS_REPOURL_AKS_BASELINE: $GITOPS_REPOURL_AKS_BASELINE
 
-   GITOPS_CURRENT_BRANCH_NAME_AKS_BASELINE=$(git branch --show-current)
+   export GITOPS_CURRENT_BRANCH_NAME_AKS_BASELINE=$(git branch --show-current)
    echo GITOPS_CURRENT_BRANCH_NAME_AKS_BASELINE: $GITOPS_CURRENT_BRANCH_NAME_AKS_BASELINE
    ```
 
