@@ -53,7 +53,7 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
 
    > :twisted_rightwards_arrows: If you have forked this reference implementation repo, you'll be able to customize some of the files and commands for a more personalized and production-like experience; ensure references to this git repository mentioned throughout the walk-through are updated to use your own fork.
 
-   > :warning: Make sure you use https (and not ssh) to clone the repository. (The remote URL will later be used to configure GitOps using Flux which requires an https endpoint to work properly.)
+   > Make sure you use HTTPS (and not SSH) to clone the repository. (The remote URL will later be used to configure GitOps using Flux which requires an HTTPS endpoint to work properly.)
 
    ```bash
    git clone https://github.com/mspnp/aks-baseline.git
