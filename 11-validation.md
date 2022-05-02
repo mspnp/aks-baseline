@@ -26,9 +26,7 @@ This section will help you to validate the workload is exposed correctly and res
 
 1. Browse to the site (e.g. <https://bicycle.contoso.com>).
 
-   > :bulb: Remember to include the protocol prefix `https://` in the URL you type in the address bar of your browser.
-
-   > :bulb: A TLS warning will be present due to using a self-signed certificate. You can ignore it or import the self-signed cert (`appgw.pfx`) to your user's trusted root store.
+   > :bulb: Remember to include the protocol prefix `https://` in the URL you type in the address bar of your browser. A TLS warning will be present due to using a self-signed certificate. You can ignore it or import the self-signed cert (`appgw.pfx`) to your user's trusted root store.
 
    Refresh the web page a couple of times and observe the value `Host name` displayed at the bottom of the page. As the Traefik Ingress Controller balances the requests between the two pods hosting the web page, the host name will change from one pod name to the other throughtout your queries.
 
