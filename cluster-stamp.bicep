@@ -52,7 +52,7 @@ param domainName string = 'contoso.com'
 @minLength(9)
 param gitOpsBootstrappingRepoHttpsUrl string = 'https://github.com/mspnp/aks-baseline'
 
-@description('You cluster will be bootstrapped from this branch in the identifed git repo.')
+@description('You cluster will be bootstrapped from this branch in the identified git repo.')
 @minLength(1)
 param gitOpsBootstrappingRepoBranch string = 'main'
 
@@ -63,9 +63,6 @@ var acrPullRole = '${subscription().id}/providers/Microsoft.Authorization/roleDe
 var managedIdentityOperatorRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830'
 var keyVaultReader = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/21090545-7ca7-4776-b22c-e363652d74d2'
 var keyVaultSecretsUserRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6'
-var clusterAdminRole = '${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b'
-var serviceClusterUserRole = '${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/4abbcc35-e782-43d8-92c5-2d3f1bd2253f'
-var clusterReaderRole = '${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/7f6c6a51-bcf8-42ba-9220-52d62157d7db'
 var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resourceGroup().id)
 
 var clusterName = 'aks-${subRgUniqueString}'
@@ -91,6 +88,26 @@ var policyAssignmentNameEnforceResourceLimits = guid(policyResourceIdEnforceReso
 var policyAssignmentNameEnforceImageSource = guid(policyResourceIdEnforceImageSource, resourceGroup().name, clusterName)
 var policyAssignmentNameEnforceDefenderInCluster = guid(policyResourceIdEnforceDefenderInCluster, resourceGroup().name, clusterName)
 var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPlaneAuthorizationTenantId)
+
+/*** EXISTING SUBSCRIPTION RESOURCES ***/
+
+// Built-in Azure RBAC role that is applied to a cluster to indicate they can be considered a user/group of the cluster, subject to additional RBAC permissions
+resource serviceClusterUserRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: '4abbcc35-e782-43d8-92c5-2d3f1bd2253f'
+  scope: subscription()
+}
+
+// Built-in Azure RBAC role that can be applied to a cluster or a namespace to grant read and write privileges to that scope for a user or group
+resource clusterAdminRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: 'b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b'
+  scope: subscription()
+}
+
+// Built-in Azure RBAC role that can be applied to a cluster or a namespace to grant read privileges to that scope for a user or group
+resource clusterReaderRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: '7f6c6a51-bcf8-42ba-9220-52d62157d7db'
+  scope: subscription()
+}
 
 /*** EXISTING HUB RESOURCES ***/
 
@@ -1458,7 +1475,7 @@ resource mcAadAdminGroupClusterAdminRole_roleAssignment 'Microsoft.Authorization
   scope: mc
   name: guid('aad-admin-group', mc.id, clusterAdminAadGroupObjectId)
   properties: {
-    roleDefinitionId: clusterAdminRole
+    roleDefinitionId: clusterAdminRole.id
     description: 'Members of this group are cluster admins of this cluster.'
     principalId: clusterAdminAadGroupObjectId
     principalType: 'Group'
@@ -1470,7 +1487,7 @@ resource mcAadAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authori
   scope: mc
   name: guid('aad-admin-group-sc', mc.id, clusterAdminAadGroupObjectId)
   properties: {
-    roleDefinitionId: serviceClusterUserRole
+    roleDefinitionId: serviceClusterUserRole.id
     description: 'Members of this group are cluster users of this cluster.'
     principalId: clusterAdminAadGroupObjectId
     principalType: 'Group'
@@ -1482,9 +1499,9 @@ resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Author
   scope: nsA0008
   name: guid('aad-a0008-reader-group', mc.id, a0008NamespaceReaderAadGroupObjectId)
   properties: {
-    roleDefinitionId: clusterReaderRole
+    roleDefinitionId: clusterReaderRole.id
+    description: 'Members of this group are readers of the a0008 namespace in this cluster.'
     principalId: a0008NamespaceReaderAadGroupObjectId
-    description: 'Members of this group are cluster admins of the a0008 namespace in this cluster.'
     principalType: 'Group'
   }
   dependsOn: []
@@ -1494,9 +1511,9 @@ resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.A
   scope: mc
   name: guid('aad-a0008-reader-group-sc', mc.id, a0008NamespaceReaderAadGroupObjectId)
   properties: {
-    roleDefinitionId: serviceClusterUserRole
-    principalId: a0008NamespaceReaderAadGroupObjectId
+    roleDefinitionId: serviceClusterUserRole.id
     description: 'Members of this group are cluster users of this cluster.'
+    principalId: a0008NamespaceReaderAadGroupObjectId
     principalType: 'Group'
   }
   dependsOn: []
