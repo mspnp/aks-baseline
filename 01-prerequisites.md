@@ -53,9 +53,11 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
 
    > :twisted_rightwards_arrows: If you have forked this reference implementation repo, you'll be able to customize some of the files and commands for a more personalized and production-like experience; ensure references to this git repository mentioned throughout the walk-through are updated to use your own fork.
 
+   > Make sure you use HTTPS (and not SSH) to clone the repository. (The remote URL will later be used to configure GitOps using Flux which requires an HTTPS endpoint to work properly.)
+
    ```bash
-   git clone https://github.com/mspnp/aks-secure-baseline.git
-   cd aks-secure-baseline
+   git clone https://github.com/mspnp/aks-baseline.git
+   cd aks-baseline
    ```
 
    > :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://docs.microsoft.com/windows/wsl/about) to run Bash.

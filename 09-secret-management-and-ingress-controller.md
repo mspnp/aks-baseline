@@ -97,7 +97,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    :warning: Deploying the traefik `traefik.yaml` file unmodified from this repo will be deploying your workload to take dependencies on a public container registry. This is generally okay for learning/testing, but not suitable for production. Before going to production, ensure _all_ image references are from _your_ container registry or another that you feel confident relying on.
 
    ```bash
-   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik.yaml
+   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-baseline/main/workload/traefik.yaml
    ```
 
 1. Wait for Traefik to be ready.

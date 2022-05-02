@@ -26,7 +26,9 @@ This section will help you to validate the workload is exposed correctly and res
 
 1. Browse to the site (e.g. <https://bicycle.contoso.com>).
 
-   > :bulb: A TLS warning will be present due to using a self-signed certificate. You can ignore it or import the self-signed cert (`appgw.pfx`) to your user's trusted root store.
+   > :bulb: Remember to include the protocol prefix `https://` in the URL you type in the address bar of your browser. A TLS warning will be present due to using a self-signed certificate. You can ignore it or import the self-signed cert (`appgw.pfx`) to your user's trusted root store.
+
+   Refresh the web page a couple of times and observe the value `Host name` displayed at the bottom of the page. As the Traefik Ingress Controller balances the requests between the two pods hosting the web page, the host name will change from one pod name to the other throughtout your queries.
 
 ## Validate reader access to the a0008 namespace. _Optional._
 
@@ -48,7 +50,11 @@ Your workload is placed behind a Web Application Firewall (WAF), which has rules
 
 1. Browse to the site with the following appended to the URL: `?sql=DELETE%20FROM` (e.g. <https://bicycle.contoso.com/?sql=DELETE%20FROM>).
 1. Observe that your request was blocked by Application Gateway's WAF rules and your workload never saw this potentially dangerous request.
-1. Blocked requests (along with other gateway data) will be visible in the attached Log Analytics workspace. Execute the following query to show WAF logs, for example.
+1. Blocked requests (along with other gateway data) will be visible in the attached Log Analytics workspace. 
+
+   Browse to the Application Gateway in the resource group `rg-bu0001-a0008` and navigate to the _Logs_ blade. Execute the following query below to show WAF logs and see that the request was rejected due to a _SQL Injection Attack_ (field _Message_).
+
+   > :warning: Note that it may take a couple of minutes until the logs are transferred from the Application Gateway to the Log Analytics Workspace. So be a little patient if the query does not immediatly return results after sending the https request in the former step. 
 
    ```
    AzureDiagnostics
@@ -77,15 +83,14 @@ Azure Monitor is configured to [scrape Prometheus metrics](https://docs.microsof
 - [Traefik](./workload/traefik.yaml) (in the `a0008` namespace)
 - [Kured](./cluster-baseline-settings/kured.yaml) (in the `cluster-baseline-settings` namespace)
 
+ :bulb: This reference implementation ships with two saved queries (_All collected Prometheus information_ and _Nodes reboot required by kured_) as an example of how you can write your own and manage them via ARM templates. 
+
 ### Steps
 
 1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
-1. Select your Log Analytic Workspace resource.
-1. Click _Saved Searches_.
-
-   :bulb: This reference implementation ships with some saved queries as an example of how you can write your own and manage them via ARM templates.
-
-1. Type _Prometheus_ in the filter.
+1. Select your Log Analytic Workspace resource and open the _Logs_ blade.
+1. In the popup _Queries_ select _Legacy category_ in the drop down field in the upper left corner. 
+1. Select _Prometheus_ in the section list on the left.
 1. You are able to select and execute the saved query over the scraped metrics.
 
 ## Validate Workload Logs
@@ -95,7 +100,7 @@ The example workload uses the standard dotnet logger interface, which are captur
 ### Steps
 
 1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
-1. Select your Log Analytic Workspace resource.
+1. Select your Log Analytic Workspace resource and open the _Logs_ blade.
 1. Execute the following query
 
    ```
@@ -121,13 +126,13 @@ Azure will generate alerts on the health of your cluster and adjacent resources.
 An alert based on [Azure Monitor for containers information using a Kusto query](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts) was configured in this reference implementation.
 
 1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
-1. Select _Alerts_, then _Manage Rule Alerts_.
-1. There is an alert called "PodFailedScheduledQuery" that will be triggered based on the custom query response.
+1. Select _Alerts_, then _Alert Rules_.
+1. There is an alert titled "[your cluster name] Scheduled Query for Pod Failed Alert" that will be triggered based on the custom query response.
 
 An [Azure Advisor Alert](https://docs.microsoft.com/azure/advisor/advisor-overview) was configured as well in this reference implementation.
 
 1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
-1. Select _Alerts_, then _Manage Rule Alerts_.
+1. Select _Alerts_, then _Alert Rules_.
 1. There is an alert called "AllAzureAdvisorAlert" that will be triggered based on new Azure Advisor alerts.
 
 A series of metric alerts were configured as well in this reference implementation.
@@ -151,7 +156,7 @@ If you configured your third-party images to be pulled from your Azure Container
    | where OperationName == 'Pull'
    ```
 
-1. You should see logs for CSI, kured, memcached, and traefik. You'll see multiple for some as the image was pulled to multiple nodes to satisfy ReplicaSet/DaemonSet placement.
+1. You should see logs for kured. You'll see multiple for some as the image was pulled to multiple nodes to satisfy ReplicaSet/DaemonSet placement.
 
 ## Next step
 
