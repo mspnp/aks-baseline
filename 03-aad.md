@@ -39,7 +39,7 @@ Following the steps below you will result in an Azure AD configuration that will
 
    If you already have a security group that is appropriate for your cluster's admin service accounts, use that group and don't create a new one. If using your own group or your Azure AD administrator created one for you to use; you will need to update the group name and ID throughout the reference implementation.
    ```bash
-   export AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE=[Paste your cluster admin group ID here.]
+   export AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE=[Paste your existing cluster admin group Object ID here.]
    echo AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE: $AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE
    ```
 
