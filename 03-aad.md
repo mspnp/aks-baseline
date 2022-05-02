@@ -71,7 +71,7 @@ Following the steps below you will result in an Azure AD configuration that will
 
    > :book: The recently created break-glass admin user is added to the Kubernetes Cluster Admin group from Azure AD. After this step the Azure AD Admin team will have finished the app team's request.
 
-   You can skip this step, if the group created in the former step already has a cluster admin assigned as member.
+   You should skip this step, if the group identified in the former step already has a cluster admin assigned as member.
 
    ```bash
    az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE --member-id $AADOBJECTID_USER_CLUSTERADMIN
