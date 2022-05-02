@@ -34,19 +34,24 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
 
    1. [Register the OIDC Issuer preview feature = `EnableOIDCIssuerPreview`](https://docs.microsoft.com/azure/aks/cluster-configuration#oidc-issuer-preview)
 
+   TODO Add list item above.
+
    ```bash
    az feature register --namespace "Microsoft.ContainerService" -n "EventgridPreview"
    az feature register --namespace "Microsoft.ContainerService" -n "AKS-ExtensionManager"
    az feature register --namespace "Microsoft.KubernetesConfiguration" -n "fluxConfigurations"
    az feature register --namespace "Microsoft.ContainerService" -n "EnableOIDCIssuerPreview"
    az feature register --namespace "Microsoft.ContainerService" -n "AKS-AzureDefender"
+   az feature register --namespace "Microsoft.ContainerService" -n "EnableWorkloadIdentityPreview"
+   az feature register --namespace "Microsoft.ManagedIdentity" -n "FederatedIdentityCredentials"
 
    # Keep running until all say "Registered." (This may take up to 20 minutes.)
-   az feature list -o table --query "[?name=='Microsoft.ContainerService/EventgridPreview' || name=='Microsoft.ContainerService/AKS-ExtensionManager' || name=='Microsoft.ContainerService/EnableOIDCIssuerPreview' || name=='Microsoft.KubernetesConfiguration/fluxConfigurations' || name=='Microsoft.ContainerService/AKS-AzureDefender' ].{Name:name,State:properties.state}"
+   az feature list -o table --query "[?name=='Microsoft.ContainerService/EventgridPreview' || name=='Microsoft.ContainerService/AKS-ExtensionManager' || name=='Microsoft.ContainerService/EnableOIDCIssuerPreview' || name=='Microsoft.KubernetesConfiguration/fluxConfigurations' || name=='Microsoft.ContainerService/AKS-AzureDefender' || name=='Microsoft.ContainerService/EnableWorkloadIdentityPreview' || name=='Microsoft.ManagedIdentity/FederatedIdentityCredentials'].{Name:name,State:properties.state}"
 
    # When all say "Registered" then re-register the AKS and related resource providers
    az provider register --namespace Microsoft.ContainerService
    az provider register --namespace Microsoft.KubernetesConfiguration
+   az provider register --namespace Microsoft.ManagedIdentity
    ```
 
 1. Clone/download this repo locally, or even better fork this repository.
