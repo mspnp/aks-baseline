@@ -27,7 +27,7 @@ Following the steps below you will result in an Azure AD configuration that will
 
 1. Playing the role as the Contoso Bicycle Azure AD team, login into the tenant where Kubernetes Cluster API authorization will be associated with.
 
-   > :bulb: Skip the `az login` command if you want to use your current user account's Azure AD tenant for Kubernetes authorization. 
+   > :bulb: Skip the `az login` command if you plan to use your current user account's Azure AD tenant for Kubernetes authorization.
 
    ```bash
    az login -t <Replace-With-ClusterApi-AzureAD-TenantId> --allow-no-subscriptions
