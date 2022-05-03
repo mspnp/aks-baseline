@@ -55,7 +55,7 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed as a
    echo ACR_NAME_AKS_BASELINE: $ACR_NAME_AKS_BASELINE
 
    # Import core image(s) hosted in public container registries to be used during bootstrapping
-   az acr import --source docker.io/weaveworks/kured:1.9.0 -n $ACR_NAME_AKS_BASELINE
+   az acr import --source docker.io/weaveworks/kured:1.9.2 -n $ACR_NAME_AKS_BASELINE
    ```
 
    > In this walkthrough, there is only one image that is included in the bootstrapping process. It's included as an reference for this process. Your choice to use Kubernetes Reboot Daemon (Kured) or any other images, including helm charts, as part of your bootstrapping is yours to make.
