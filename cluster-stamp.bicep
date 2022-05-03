@@ -1880,5 +1880,6 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
 
 output aksClusterName string = clusterName
 output aksIngressControllerPodManagedIdentityResourceId string = podmiIngressController.id
-output aksIngressControllerPodManagedIdentityClientId string = reference(podmiIngressController.id, '2018-11-30').clientId
+output aksIngressControllerPodManagedIdentityClientId string = podmiIngressController.properties.clientId
+output aksOidcIssuerUrl string = mc.properties.oidcIssuerProfile.issuerURL
 output keyVaultName string = kv.name
