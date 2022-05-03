@@ -58,11 +58,6 @@ param gitOpsBootstrappingRepoBranch string = 'main'
 
 /*** VARIABLES ***/
 
-var monitoringMetricsPublisherRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/3913510d-42f4-4e42-8a64-420c390055eb'
-var acrPullRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d'
-var managedIdentityOperatorRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/f1a07417-d97a-45cb-824c-7a7467783830'
-var keyVaultReader = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/21090545-7ca7-4776-b22c-e363652d74d2'
-var keyVaultSecretsUserRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6'
 var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resourceGroup().id)
 
 var clusterName = 'aks-${subRgUniqueString}'
@@ -106,6 +101,36 @@ resource clusterAdminRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-pr
 // Built-in Azure RBAC role that can be applied to a cluster or a namespace to grant read privileges to that scope for a user or group
 resource clusterReaderRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   name: '7f6c6a51-bcf8-42ba-9220-52d62157d7db'
+  scope: subscription()
+}
+
+// Built-in Azure RBAC role that can be applied to a cluster or a namespace to grant read privileges to that scope for a user or group
+resource monitoringMetricsPublisherRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: '3913510d-42f4-4e42-8a64-420c390055eb'
+  scope: subscription()
+}
+
+// Built-in Azure RBAC role that can be applied to a cluster or a namespace to grant read privileges to that scope for a user or group
+resource acrPullRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: '7f951dda-4ed3-4680-a7ca-43fe172d538d'
+  scope: subscription()
+}
+
+// Built-in Azure RBAC role that can be applied to a cluster or a namespace to grant read privileges to that scope for a user or group
+resource managedIdentityOperatorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: 'f1a07417-d97a-45cb-824c-7a7467783830'
+  scope: subscription()
+}
+
+// Built-in Azure RBAC role that can be applied to a cluster or a namespace to grant read privileges to that scope for a user or group
+resource keyVaultReaderRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: '21090545-7ca7-4776-b22c-e363652d74d2'
+  scope: subscription()
+}
+
+// Built-in Azure RBAC role that can be applied to a cluster or a namespace to grant read privileges to that scope for a user or group
+resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: '4633458b-17de-408a-b874-0445c86b69e6'
   scope: subscription()
 }
 
@@ -1109,9 +1134,9 @@ resource kv_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
 // Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.
 resource kvMiAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
-  name: guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultSecretsUserRole)
+  name: guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultSecretsUserRole.id)
   properties: {
-    roleDefinitionId: keyVaultSecretsUserRole
+    roleDefinitionId: keyVaultSecretsUserRole.id
     principalId: miAppGatewayFrontend.properties.principalId
     principalType: 'ServicePrincipal'
   }
@@ -1121,9 +1146,9 @@ resource kvMiAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authori
 // Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.
 resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
-  name: guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultReader)
+  name: guid(resourceGroup().id, 'mi-appgateway-frontend', keyVaultReaderRole.id)
   properties: {
-    roleDefinitionId: keyVaultReader
+    roleDefinitionId: keyVaultReaderRole.id
     principalId: miAppGatewayFrontend.properties.principalId
     principalType: 'ServicePrincipal'
   }
@@ -1133,9 +1158,9 @@ resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authoriz
 // Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates.
 resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
-  name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultSecretsUserRole)
+  name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultSecretsUserRole.id)
   properties: {
-    roleDefinitionId: keyVaultSecretsUserRole
+    roleDefinitionId: keyVaultSecretsUserRole.id
     principalId: podmiIngressController.properties.principalId
     principalType: 'ServicePrincipal'
   }
@@ -1145,9 +1170,9 @@ resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Autho
 // Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates
 resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
-  name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultReader)
+  name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultReaderRole.id)
   properties: {
-    roleDefinitionId: keyVaultReader
+    roleDefinitionId: keyVaultReaderRole.id
     principalId: podmiIngressController.properties.principalId
     principalType: 'ServicePrincipal'
   }
@@ -1437,9 +1462,9 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
 
 resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: acr
-  name: guid(mc.id, acrPullRole)
+  name: guid(mc.id, acrPullRole.id)
   properties: {
-    roleDefinitionId: acrPullRole
+    roleDefinitionId: acrPullRole.id
     description: 'Allows AKS to pull container images from this ACR instance.'
     principalId: mc.properties.identityProfile.kubeletidentity.objectId
     principalType: 'ServicePrincipal'
@@ -1450,9 +1475,9 @@ resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssig
 // Grant the OMS Agent's Managed Identity the metrics publisher role to push alerts
 resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: mc
-  name: guid(mc.id, 'omsagent', monitoringMetricsPublisherRole)
+  name: guid(mc.id, 'omsagent', monitoringMetricsPublisherRole.id)
   properties: {
-    roleDefinitionId: monitoringMetricsPublisherRole
+    roleDefinitionId: monitoringMetricsPublisherRole.id
     principalId: mc.properties.addonProfiles.omsagent.identity.objectId
     principalType: 'ServicePrincipal'
   }
@@ -1462,9 +1487,9 @@ resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Auth
 // Grant the AKS cluster with Managed Identity Operator role permissions over the managed identity used for the ingress controller. Allows it to be assigned to the underlying VMSS.
 resource miKubeletManagedIdentityOperatorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: podmiIngressController
-  name: guid(resourceGroup().id, 'podmi-ingress-controller', managedIdentityOperatorRole)
+  name: guid(resourceGroup().id, 'podmi-ingress-controller', managedIdentityOperatorRole.id)
   properties: {
-    roleDefinitionId: managedIdentityOperatorRole
+    roleDefinitionId: managedIdentityOperatorRole.id
     principalId: mc.properties.identityProfile.kubeletidentity.objectId
     principalType: 'ServicePrincipal'
   }
