@@ -34,7 +34,7 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
 
    1. [Register the OIDC Issuer preview feature = `EnableOIDCIssuerPreview`](https://docs.microsoft.com/azure/aks/cluster-configuration#oidc-issuer-preview)
 
-   TODO Add list item above.
+   TODO: To support managed identity we need to add the following when ready. This walkthrough currently does a "bring your own Azure AD application" path.
 
    ```bash
    az feature register --namespace "Microsoft.ContainerService" -n "EventgridPreview"
@@ -42,6 +42,8 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
    az feature register --namespace "Microsoft.KubernetesConfiguration" -n "fluxConfigurations"
    az feature register --namespace "Microsoft.ContainerService" -n "EnableOIDCIssuerPreview"
    az feature register --namespace "Microsoft.ContainerService" -n "AKS-AzureDefender"
+
+   TODO: These are only needed for the managed identity flow, which this branch currently is not using.
    az feature register --namespace "Microsoft.ContainerService" -n "EnableWorkloadIdentityPreview"
    az feature register --namespace "Microsoft.ManagedIdentity" -n "FederatedIdentityCredentials"
 

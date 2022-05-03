@@ -7,10 +7,13 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 1. Get the AKS Ingress Controller Managed Identity details.
 
    ```bash
+   #TODO convert to get whatever is needed now (temp until managed identity support exists)
    TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
    TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
    echo TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
    echo TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
+
+   #TODO this identity isn't associated with Key Vault yet, that'll need to happen, managed identity support will be helpful here.
    ```
 
 1. Ensure your bootstrapping process has created the following namespace.
@@ -20,63 +23,16 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    kubectl get ns a0008 -w
    ```
 
-1. Create Traefik's Azure Managed Identity binding.
-
-   > Create the Traefik Azure Identity and the Azure Identity Binding to let Azure Active Directory Pod Identity to get tokens on behalf of the Traefik's User Assigned Identity and later on assign them to the Traefik's pod.
-
-   ```bash
-   cat <<EOF | kubectl create -f -
-   apiVersion: aadpodidentity.k8s.io/v1
-   kind: AzureIdentity
-   metadata:
-     name: podmi-ingress-controller-identity
-     namespace: a0008
-   spec:
-     type: 0
-     resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
-     clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
-   ---
-   apiVersion: aadpodidentity.k8s.io/v1
-   kind: AzureIdentityBinding
-   metadata:
-     name: podmi-ingress-controller-binding
-     namespace: a0008
-   spec:
-     azureIdentity: podmi-ingress-controller-identity
-     selector: podmi-ingress-controller
-   EOF
-   ```
-
-1. Create the Traefik's Secret Provider Class resource.
+1. Create the ingress controller's Secret Provider Class resource.
 
    > The Ingress Controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
    >
-   > Create a `SecretProviderClass` resource with with your Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
+   > Update your `SecretProviderClass` resource with with your identity and Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
 
    ```bash
-   cat <<EOF | kubectl create -f -
-   apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
-   kind: SecretProviderClass
-   metadata:
-     name: aks-ingress-tls-secret-csi-akv
-     namespace: a0008
-   spec:
-     provider: azure
-     parameters:
-       usePodIdentity: "true"
-       keyvaultName: $KEYVAULT_NAME_AKS_BASELINE
-       objects:  |
-         array:
-           - |
-             objectName: traefik-ingress-internal-aks-ingress-tls
-             objectAlias: tls.crt
-             objectType: cert
-           - |
-             objectName: traefik-ingress-internal-aks-ingress-tls
-             objectAlias: tls.key
-             objectType: secret
-       tenantId: $TENANTID_AZURERBAC_AKS_BASELINE
-   EOF
+   sed -i "s/APP_REGISTRATION_CLIENT_ID/${APP_REGISTRATION_CLIENT_ID}/" workload/secret-store-key-vault-ingress.json
+   sed -i "s/KEYVAULT_NAME_AKS_BASELINE/${KEYVAULT_NAME_AKS_BASELINE}/" workload/secret-store-key-vault-ingress.json
+   sed -i "s/TENANTID_AZURERBAC_AKS_BASELINE/${TENANTID_AZURERBAC_AKS_BASELINE}/" workload/secret-store-key-vault-ingress.json
    ```
 
 1. Import the Traefik container image to your container registry.

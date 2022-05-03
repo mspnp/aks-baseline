@@ -1,12 +1,12 @@
 # Workload Prerequisites
 
-The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping up the infrastructure focus of the [AKS Baseline reference implementation](./). Follow the steps below to import the TLS certificate that the Ingress Controller will serve for Application Gateway to connect to your web app.
+The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping up the infrastructure focus of the [AKS Baseline reference implementation](./). Follow the steps below to import the TLS certificate that the ingress controller will serve for Application Gateway to connect to your web app. Also you'll create the workload identity for your ingress controller (to access the cert from Key Vault).
 
 ## Steps
 
-## Import the wildcard certificate for the AKS Ingress Controller to Azure Key Vault
+## Import the wildcard certificate for the AKS ingress controller to Azure Key Vault
 
-> :book: Contoso Bicycle procured a CA certificate, a standard one, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing.
+> :book: Contoso Bicycle procured a CA certificate, a standard one, to be used with the AKS ingress controller. This one is not EV, as it will not be user facing.
 
 1. Obtain the Azure Key Vault details and give the current user permissions and network access to import certificates.
 
@@ -65,6 +65,18 @@ The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
    k8sazurereadonlyrootfilesystem           21m
    k8sazurevolumetypes                      21m
    ```
+
+1. Create Azure AD app registration  (temporary until managed identity support exists)
+
+```bash
+az ad app create --display-name wi-ingress-controller-ckittel
+APPLICATION_OBJECT_ID=$(az ad app show --id 91664d08-8a66-4c0b-8473-fc6c5f08529a --query objectId -o tsv) #TODO
+ISSUER_URL=$(az aks show --resource-group <resource_group> --name <cluster_name> --query "oidcIssuerProfile.issuerUrl" -o tsv)
+
+sed -i "s/ISSUER_URL/${ISSUER_URL}/" workload/federated-identity.json
+
+az rest -m put -u "https://graph.microsoft.com/beta/applications/${APPLICATION_OBJECT_ID}/federatedIdentityCredentials" -b @workload/federated-identity.json
+```
 
 ### Save your work in-progress
 

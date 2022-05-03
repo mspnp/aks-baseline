@@ -6,11 +6,10 @@ metadata:
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
-    azure.workload.identity/use: "true"
-  annotations:
-    azure.workload.identity/client-id: ${APPLICATION_CLIENT_ID_TODO}
-    azure.workload.identity/tenant-id: ${TENANT_ID_TODO}
-    
+    # azure.workload.identity/use: "true"  TODO: used with the managed identity admission hook
+  # annotations:
+    # azure.workload.identity/client-id: ${APPLICATION_CLIENT_ID_TODO}
+    # azure.workload.identity/tenant-id: ${TENANT_ID_TODO}
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
