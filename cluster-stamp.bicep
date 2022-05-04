@@ -104,31 +104,31 @@ resource clusterReaderRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-p
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied to a cluster to grant with publishing metrics and push alerts permissions from that scope for a service principal
+// Built-in Azure RBAC role that is applied to a cluster to grant its monitoring agent's identity with publishing metrics and push alerts permissions.
 resource monitoringMetricsPublisherRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   name: '3913510d-42f4-4e42-8a64-420c390055eb'
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that can be applied to an acr to grant pull container images from that scope for a service principal
+// Built-in Azure RBAC role that can be applied to an Azure Container Registry to grant the authority pull container images. Granted to the AKS cluster's kubelet identity.
 resource acrPullRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   name: '7f951dda-4ed3-4680-a7ca-43fe172d538d'
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that must be applied to a manage indentity to grant assign indentities privileges to that scope for a service principal that represents a cluster working with AAD Pod Identity configured with Managed Identities. Therefore, it can be used to attach identities to their underalying VMSS.
+// Built-in Azure RBAC role that must be applied to the kublet Managed Identity allowing it to further assign adding managed identities to the cluster's underlying VMSS.
 resource managedIdentityOperatorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   name: 'f1a07417-d97a-45cb-824c-7a7467783830'
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that can be applied to a keyvault to grant with metadata, certificates, keys and secrets read privileges to that scope for a service principal.
+// Built-in Azure RBAC role that is applied a Key Vault to grant with metadata, certificates, keys and secrets read privileges.  Granted to App Gateway's managed identity.
 resource keyVaultReaderRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   name: '21090545-7ca7-4776-b22c-e363652d74d2'
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that can be applied to a keyvault to grant with secrets content read privileges to that scope for a service principal.
+// Built-in Azure RBAC role that is applied to a Key Vault to grant with secrets content read privileges. Granted to both Key Vault and our workload's identity.
 resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   name: '4633458b-17de-408a-b874-0445c86b69e6'
   scope: subscription()
