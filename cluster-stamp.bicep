@@ -1567,6 +1567,10 @@ resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
         category: 'guard'
         enabled: true
       }
+      {
+        category: 'kube-scheduler'
+        enabled: true
+      }
     ]
   }
   dependsOn: []
