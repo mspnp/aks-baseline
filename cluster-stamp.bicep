@@ -65,6 +65,7 @@ var nodeResourceGroupName = 'rg-${clusterName}-nodepools'
 var defaultAcrName = 'acraks${subRgUniqueString}'
 
 var agwName = 'apw-${clusterName}'
+var wafPolicyName = 'waf-${clusterName}'
 
 var aksIngressDomainName = 'aks-ingress.${domainName}'
 var aksBackendDomainName = 'bu0001a0008-00.${aksIngressDomainName}'
@@ -1680,6 +1681,27 @@ resource st_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
   dependsOn: []
 }
 
+resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2021-05-01' = {
+  name: wafPolicyName
+  location: location
+  properties: {
+    policySettings: {
+        fileUploadLimitInMb: 10
+        state: 'Enabled'
+        mode: 'Prevention'
+    }
+    managedRules: {
+        managedRuleSets: [
+            {
+                ruleSetType: 'OWASP'
+                ruleSetVersion: '3.2'
+                ruleGroupOverrides: []
+            }
+        ]
+    }
+  }
+}
+
 resource agw 'Microsoft.Network/applicationGateways@2021-05-01' = {
   name: agwName
   location: location
@@ -1743,14 +1765,8 @@ resource agw 'Microsoft.Network/applicationGateways@2021-05-01' = {
       minCapacity: 0
       maxCapacity: 10
     }
-    webApplicationFirewallConfiguration: {
-      enabled: true
-      firewallMode: 'Prevention'
-      ruleSetType: 'OWASP'
-      ruleSetVersion: '3.2'
-      exclusions: []
-      fileUploadLimitInMb: 10
-      disabledRuleGroups: []
+    firewallPolicy: {
+      id: wafPolicy.id
     }
     enableHttp2: false
     sslCertificates: [
