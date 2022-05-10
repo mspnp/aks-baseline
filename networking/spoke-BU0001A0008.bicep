@@ -351,7 +351,7 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2021-05-01' = {
 
 // Peer to regional hub
 module peeringSpokeToHub 'virtualNetworkPeering.bicep' = {
-  name: substring('Peer-${vnetSpoke.name}To${hubVirtualNetwork.name}', 0, min(length('Peer-${vnetSpoke.name}To${hubVirtualNetwork.name}'), 64))
+  name: take('Peer-${vnetSpoke.name}To${hubVirtualNetwork.name}', 64)
   params: {
     remoteVirtualNetworkId: hubVirtualNetwork.id
     localVnetName: vnetSpoke.name
@@ -363,7 +363,7 @@ module peeringSpokeToHub 'virtualNetworkPeering.bicep' = {
 // may vary from organization to organization. This example simply does it in
 // the most direct way.
 module peeringHubToSpoke 'virtualNetworkPeering.bicep' = {
-  name: substring('Peer-${hubVirtualNetwork.name}To${vnetSpoke.name}', 0, min(length('Peer-${hubVirtualNetwork.name}To${vnetSpoke.name}'), 64))
+  name: take('Peer-${hubVirtualNetwork.name}To${vnetSpoke.name}', 64)
   dependsOn: [
     peeringSpokeToHub
   ]
