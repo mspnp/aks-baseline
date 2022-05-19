@@ -25,7 +25,7 @@ The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
    az keyvault network-rule add -n $KEYVAULT_NAME_AKS_BASELINE --ip-address ${CURRENT_IP_ADDRESS}
    ```
 
-1. Import the AKS Ingress Controller's Wildcard Certificate for `*.aks-ingress.contoso.com`.
+1. Import the AKS ingress controller's wildcard certificate for `*.aks-ingress.contoso.com`.
 
    :warning: If you already have access to an [appropriate certificate](https://docs.microsoft.com/azure/key-vault/certificates/certificate-scenarios#formats-of-import-we-support), or can procure one from your organization, consider using it for this step. For more information, please take a look at the [import certificate tutorial using Azure Key Vault](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate#import-a-certificate-to-key-vault).
 
@@ -69,13 +69,16 @@ The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
 1. Create Azure AD app registration  (temporary until managed identity support exists)
 
 ```bash
-az ad app create --display-name wi-ingress-controller-ckittel
-APPLICATION_OBJECT_ID=$(az ad app show --id 91664d08-8a66-4c0b-8473-fc6c5f08529a --query objectId -o tsv) #TODO
-ISSUER_URL=$(az aks show --resource-group <resource_group> --name <cluster_name> --query "oidcIssuerProfile.issuerUrl" -o tsv)
+AZUREAD_APP_OBJECT_ID=$(az ad app create --display-name wi-ingress-controller-ckittel --query objectId -o tsv)
+echo AZUREAD_APP_OBJECT_ID: $AZUREAD_APP_OBJECT_ID
+ISSUER_URL=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksOidcIssuerUrl.value -o tsv)
+echo ISSUER_URL: $ISSUER_URL
 
 sed -i "s/ISSUER_URL/${ISSUER_URL}/" workload/federated-identity.json
 
-az rest -m put -u "https://graph.microsoft.com/beta/applications/${APPLICATION_OBJECT_ID}/federatedIdentityCredentials" -b @workload/federated-identity.json
+az rest -m put -u "https://graph.microsoft.com/beta/applications/${AZUREAD_APP_OBJECT_ID}/federatedIdentityCredentials" -b @workload/federated-identity.json
+
+#TODO: Assign permission to Key Vault RBAC, like the managed identity created in cluster-stamp.  Ideally this would be the managed identity.
 ```
 
 ### Save your work in-progress
