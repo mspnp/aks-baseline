@@ -72,6 +72,16 @@ resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' exis
   }
 }
 
+// Built-in policy: Container registries should have anonymous authentication disabled.
+var pdAnonymousContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '9f2dea28-e834-476c-99c5-3507b4728395')
+
+// Built-in policy: Container registries should have repository scoped access token disabled.
+var pdAccessTokenContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'ff05e24e-195c-447e-b322-5e90c9f9f366')
+
+// Built-in policy: Container registries should have local admin account disabled.
+var pdAdminAccountContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'dc921057-6b28-4fbe-9b83-f7bec05db6c2')
+
+
 /*** RESOURCES ***/
 
 // This Log Analytics workspace will be the log sink for all resources in the cluster resource group. This includes ACR, the AKS cluster, Key Vault, etc. It also is the Container Insights log sink for the AKS cluster.
@@ -83,6 +93,60 @@ resource laAks 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
       name: 'PerGB2018'
     }
     retentionInDays: 30
+  }
+}
+
+// Ensure the container registry does not allow anon access (Azure RBAC only is allowed)
+resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(resourceGroup().id, pdAnonymousContainerRegistryAccessDisallowedId)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[acraks${subRgUniqueString}] ${reference(pdAnonymousContainerRegistryAccessDisallowedId, '2021-06-01').displayName}', 120)
+    description: reference(pdAnonymousContainerRegistryAccessDisallowedId, '2021-06-01').description
+    enforcementMode: 'Default'
+    policyDefinitionId: pdAnonymousContainerRegistryAccessDisallowedId
+    parameters: {
+      effect: {
+        value: 'Deny'
+      }
+    }
+  }
+}
+
+// Ensure the container registry does not allow sas token access (Azure RBAC only is allowed)
+resource paAccessTokenContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(resourceGroup().id, pdAccessTokenContainerRegistryAccessDisallowedId)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[acraks${subRgUniqueString}] ${reference(pdAccessTokenContainerRegistryAccessDisallowedId, '2021-06-01').displayName}', 120)
+    description: reference(pdAccessTokenContainerRegistryAccessDisallowedId, '2021-06-01').description
+    enforcementMode: 'Default'
+    policyDefinitionId: pdAccessTokenContainerRegistryAccessDisallowedId
+    parameters: {
+      effect: {
+        value: 'Deny'
+      }
+    }
+  }
+}
+
+// Ensure the container registry does not allow admin account access (Azure RBAC only is allowed)
+resource paAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(resourceGroup().id, pdAdminAccountContainerRegistryAccessDisallowedId)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[acraks${subRgUniqueString}] ${reference(pdAdminAccountContainerRegistryAccessDisallowedId, '2021-06-01').displayName}', 120)
+    description: reference(pdAdminAccountContainerRegistryAccessDisallowedId, '2021-06-01').description
+    enforcementMode: 'Default'
+    policyDefinitionId: pdAdminAccountContainerRegistryAccessDisallowedId
+    parameters: {
+      effect: {
+        value: 'Deny'
+      }
+    }
   }
 }
 
@@ -108,6 +172,11 @@ resource dnsPrivateZoneAcr 'Microsoft.Network/privateDnsZones@2020-06-01' = {
 resource acrAks 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
   name: 'acraks${subRgUniqueString}'
   location: location
+  dependsOn: [
+    paAccessTokenContainerRegistryAccessDisallowed  // These policy assignments are not true dependencies, but we want them in place before we deploy our ACR instance.
+    paAdminAccountContainerRegistryAccessDisallowed
+    paAnonymousContainerRegistryAccessDisallowed
+  ]
   sku: {
     name: 'Premium'
   }
