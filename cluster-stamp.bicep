@@ -1061,10 +1061,22 @@ resource miAppGatewayFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@
   location: location
 }
 
-// User Managed Identity for the cluster's ingress controller pods. Used for Azure Key Vault Access
+// User Managed Identity for the cluster's ingress controller pods via Workload Identity. Used for Azure Key Vault Access.
 resource podmiIngressController 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'podmi-ingress-controller'
   location: location
+
+  // Workload identity service account federation
+  resource federatedCreds 'federatedIdentityCredentials@2022-01-31-preview' = {
+    name: 'ingress-controller'
+    properties: {
+      issuer: mc.properties.oidcIssuerProfile.issuerURL
+      subject: 'system:serviceaccount:ns:svcaccount'  // TODO: This needs to be set to the correct the namespace and service account name
+      audiences: [
+        'api://AzureADTokenExchange'
+      ]
+    }
+  }
 }
 
 resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
