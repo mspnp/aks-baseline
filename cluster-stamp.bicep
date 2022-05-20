@@ -121,39 +121,6 @@ resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2018-0
   scope: subscription()
 }
 
-// Azure Resource Provider Policies for Kubernetes
-
-// Built-in policy: AKS clusters should have Defender profile enabled.
-var pdDefenderInClusterEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'a1840de2-8088-4ea8-b153-b4c723e9cb01')
-
-// Built-in policy: AKS clusters should disable Command Invoke.
-var pdCommandInvokeDisabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '89f2d532-c53c-4f8f-9afa-4927b1114a0d')
-
-// Built-in policy: AKS should enable Azure Active Directory integration
-var pdAadIntegrationEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '450d2877-ebea-41e8-b00c-e286317d21bf')
-
-// Built-in policy: AKS should have local authentication methods disabled
-var pdLocalAuthDisabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '993c2fcd-2b29-49d2-9eb0-df2c3a730c32')
-
-// Built-in policy: Azure Policy Add-on for AKS should be installed and enabled on your clusters
-var pdAzurePolicyEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '0a15ec92-a229-4763-bb14-0ea34a568f8d')
-
-// Built-in policy: Authorized IP ranges should be defined on Kubernetes Services
-var pdAuthorizedIpRangesDefinedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '0e246bcf-5f6f-4f87-bc6f-775d4712c7ea')
-
-// Built-in policy: Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version
-var pdOldKuberentesDisabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'fb893a29-21bb-418c-a157-e99480ec364c')
-
-// Built-in policy: Role-Based Access Control (RBAC) should be used on Kubernetes Services
-var pdRbacEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'ac4a19c2-fa67-49b4-8ae5-0b2e78c49457')
-
-// Built-in policy: Azure Kubernetes Service Clusters should use managed identities
-var pdManagedIdentitiesEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'da6e2401-19da-4532-9141-fb8fbde08431')
-
-// Running container images should have vulnerability findings resolved
-var pdVulnerableImagesResolvedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '0fc39691-5a3f-4e3e-94ee-2e6447309ad9')
-
-
 // Azure Policy for Kubernetes
 
 // Built-in initiative: Kubernetes cluster pod security restricted standards for Linux-based workloads
@@ -984,9 +951,14 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
   dependsOn: []
 }
 
+// Resource Group Azure Policy Assignments - Azure Policy for Kubernetes Policies
+
+// TODO None of these have been refreshed yet, nor are the new ones added.
+
 // Applying the 'AKS Linux Restrictive' policy to the resource group
 resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(psdAKSLinuxRestrictiveId, resourceGroup().id, clusterName)
+  location: 'global'
   scope: resourceGroup()
   properties: {
     displayName: take('[${clusterName}] ${reference(psdAKSLinuxRestrictiveId, '2021-06-01').displayName}', 120)
@@ -1132,8 +1104,11 @@ resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2021-06
   }
 }
 
-// Applying the 'Azure Kubernetes Service clusters should have Defender profile enabled' policy at the resource group level.
-resource paEnforceDefenderInCluster 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+// Resource Group Azure Policy Assignments - Resource Provider Policies
+
+// Applying the built-in 'Azure Kubernetes Service clusters should have Defender profile enabled' policy at the resource group level.
+var pdDefenderInClusterEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'a1840de2-8088-4ea8-b153-b4c723e9cb01')
+resource paDefenderInClusterEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdDefenderInClusterEnabledId, resourceGroup().id, clusterName)
   location: 'global'
   scope: resourceGroup()
@@ -1143,7 +1118,151 @@ resource paEnforceDefenderInCluster 'Microsoft.Authorization/policyAssignments@2
     policyDefinitionId: pdDefenderInClusterEnabledId
     parameters: {
       effect: {
-        value: 'Audit'
+        value: 'Audit' // This policy (as of 1.0.2-preview) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Azure Kubernetes Service Clusters should enable Azure Active Directory integration' policy at the resource group level.
+var pdAadIntegrationEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '450d2877-ebea-41e8-b00c-e286317d21bf')
+resource paAadIntegrationEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdAadIntegrationEnabledId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdAadIntegrationEnabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdAadIntegrationEnabledId, '2021-06-01').description
+    policyDefinitionId: pdAadIntegrationEnabledId
+    parameters: {
+      effect: {
+        value: 'Audit' // This policy (as of 1.0.0) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Azure Kubernetes Service Clusters should have local authentication methods disabled' policy at the resource group level.
+var pdLocalAuthDisabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '993c2fcd-2b29-49d2-9eb0-df2c3a730c32')
+resource paLocalAuthDisabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdLocalAuthDisabledId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdLocalAuthDisabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdLocalAuthDisabledId, '2021-06-01').description
+    policyDefinitionId: pdLocalAuthDisabledId
+    parameters: {
+      effect: {
+        value: 'Deny'
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Azure Policy Add-on for Kubernetes service (AKS) should be installed and enabled on your clusters' policy at the resource group level.
+var pdAzurePolicyEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '0a15ec92-a229-4763-bb14-0ea34a568f8d')
+resource paAzurePolicyEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdAzurePolicyEnabledId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdAzurePolicyEnabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdAzurePolicyEnabledId, '2021-06-01').description
+    policyDefinitionId: pdAzurePolicyEnabledId
+    parameters: {
+      effect: {
+        value: 'Audit'  // This policy (as of 1.0.2) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Authorized IP ranges should be defined on Kubernetes Services' policy at the resource group level.
+var pdAuthorizedIpRangesDefinedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '0e246bcf-5f6f-4f87-bc6f-775d4712c7ea')
+resource paAuthorizedIpRangesDefined 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdAuthorizedIpRangesDefinedId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdAuthorizedIpRangesDefinedId, '2021-06-01').displayName}', 120)
+    description: reference(pdAuthorizedIpRangesDefinedId, '2021-06-01').description
+    policyDefinitionId: pdAuthorizedIpRangesDefinedId
+    parameters: {
+      effect: {
+        value: 'Audit'  // This policy (as of 2.0.1) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version' policy at the resource group level.
+var pdOldKuberentesDisabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'fb893a29-21bb-418c-a157-e99480ec364c')
+resource paOldKuberentesDisabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdOldKuberentesDisabledId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdOldKuberentesDisabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdOldKuberentesDisabledId, '2021-06-01').description
+    policyDefinitionId: pdOldKuberentesDisabledId
+    parameters: {
+      effect: {
+        value: 'Audit'  // This policy (as of 1.0.2) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Role-Based Access Control (RBAC) should be used on Kubernetes Services' policy at the resource group level.
+var pdRbacEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'ac4a19c2-fa67-49b4-8ae5-0b2e78c49457')
+resource paRbacEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdRbacEnabledId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdRbacEnabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdRbacEnabledId, '2021-06-01').description
+    policyDefinitionId: pdRbacEnabledId
+    parameters: {
+      effect: {
+        value: 'Audit'  // This policy (as of 1.0.2) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Azure Kubernetes Service Clusters should use managed identities' policy at the resource group level.
+var pdManagedIdentitiesEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'da6e2401-19da-4532-9141-fb8fbde08431')
+resource paManagedIdentitiesEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdManagedIdentitiesEnabledId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdManagedIdentitiesEnabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdManagedIdentitiesEnabledId, '2021-06-01').description
+    policyDefinitionId: pdManagedIdentitiesEnabledId
+    parameters: {
+      effect: {
+        value: 'Audit'  // This policy (as of 1.0.0) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Running container images should have vulnerability findings resolved' policy at the resource group level.
+var pdVulnerableImagesResolvedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '0fc39691-5a3f-4e3e-94ee-2e6447309ad9')
+resource paVulnerableImagesResolved 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdVulnerableImagesResolvedId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdVulnerableImagesResolvedId, '2021-06-01').displayName}', 120)
+    description: reference(pdVulnerableImagesResolvedId, '2021-06-01').description
+    policyDefinitionId: pdVulnerableImagesResolvedId
+    parameters: {
+      effect: {
+        value: 'AuditIfNotExists'
       }
     }
   }
@@ -1547,13 +1666,28 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
 
     ndEnsureClusterIdentityHasRbacToSelfManagedResources
 
+    // Azure Policy for Kubernetes policies that we'd want in place before pods start showing up
+    // in the cluster.  The are not technically a depedency from the resource provider perspective,
+    // but logically they need to be in place before workloads are, so focing that here. This also
+    // ensures that the policies are applied to the cluster at bootstrapping time.
     paAKSLinuxRestrictive
     paEnforceHttpsIngress
     paEnforceInternalLoadBalancers
     paEnforceResourceLimits
     paRoRootFilesystem
     paEnforceImageSource
-    paEnforceDefenderInCluster
+
+    // Azure Resource Provider policies that we'd like to see in place before the cluster is deployed
+    // They are not technically a dependency, but logically they would have existed on the resource group
+    // prior to the existence of the cluster, so forcing that here.
+    paDefenderInClusterEnabled
+    paAadIntegrationEnabled
+    paLocalAuthDisabled
+    paAzurePolicyEnabled
+    paOldKuberentesDisabled
+    paRbacEnabled
+    paManagedIdentitiesEnabled
+    paVulnerableImagesResolved
 
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
