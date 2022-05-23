@@ -147,8 +147,7 @@ resource acrAks 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
   name: 'acraks${subRgUniqueString}'
   location: location
   dependsOn: [
-    paAccessTokenContainerRegistryAccessDisallowed  // These policy assignments are not true dependencies, but we want them in place before we deploy our ACR instance.
-    paAdminAccountContainerRegistryAccessDisallowed
+    paAdminAccountContainerRegistryAccessDisallowed // These policy assignments are not true dependencies, but we want them in place before we deploy our ACR instance.
     paAnonymousContainerRegistryAccessDisallowed
   ]
   sku: {
