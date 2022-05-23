@@ -203,6 +203,7 @@ resource ssPrometheusAll 'Microsoft.OperationalInsights/workspaces/savedSearches
   parent: la
   name: 'AllPrometheus'
   properties: {
+#disable-next-line BCP037
     etag: '*'
     category: 'Prometheus'
     displayName: 'All collected Prometheus information'
@@ -216,6 +217,7 @@ resource ssPrometheusKuredRequestedReeboot 'Microsoft.OperationalInsights/worksp
   parent: la
   name: 'NodeRebootRequested'
   properties: {
+#disable-next-line BCP037
     etag: '*'
     category: 'Prometheus'
     displayName: 'Nodes reboot required by kured'
