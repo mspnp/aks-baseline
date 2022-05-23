@@ -74,7 +74,7 @@ metadata:
   name: aspnetapp-pdb
   namespace: a0008
 spec:
-  minAvailable: 75%
+  minAvailable: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: aspnetapp
