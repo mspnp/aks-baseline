@@ -125,14 +125,14 @@ resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2018-0
 
 // Azure Container Registry
 resource acr 'Microsoft.ContainerRegistry/registries@2021-12-01-preview' existing = {
-  name: 'acraks${subRgUniqueString}'
   scope: resourceGroup()
+  name: 'acraks${subRgUniqueString}'
 }
 
 // Log Analytics Workspace
 resource la 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' existing = {
-  name: 'la-${clusterName}'
   scope: resourceGroup()
+  name: 'la-${clusterName}'
 }
 
 // Kubernetes namespace: a0008 -- this doesn't technically exist prior to deployment, but is required as a resource reference later in the template
@@ -147,8 +147,8 @@ resource nsA0008 'Microsoft.ContainerService/managedClusters/namespaces@2022-01-
 
 // Spoke resource group
 resource targetResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
-  name: '${split(targetVnetResourceId,'/')[4]}'
   scope: subscription()
+  name: '${split(targetVnetResourceId,'/')[4]}'
 }
 
 // Spoke virtual network
