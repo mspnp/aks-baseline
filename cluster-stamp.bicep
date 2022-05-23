@@ -1818,7 +1818,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
     paAllowedHostPaths
     paAuthorizedIpRangesDefined
     paAzurePolicyEnabled
-    paDisableAutomountApiCreds
     paDisallowEndpointEditPermissions
     paDisallowNamespaceUsage
     paEnforceHttpsIngress
