@@ -1162,35 +1162,6 @@ resource paAllowedExternalIPs 'Microsoft.Authorization/policyAssignments@2021-06
   }
 }
 
-// Kubernetes clusters should disable automounting API credentials' policy at the resource group level.
-// Constraint Name: K8sAzureBlockAutomountToken
-var pdDisableAutomountApiCredsId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '423dd1ba-798e-40e4-9c4d-b6902674b423')
-resource paDisableAutomountApiCreds 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  name: guid(pdDisableAutomountApiCredsId, resourceGroup().id, clusterName)
-  location: 'global'
-  scope: resourceGroup()
-  properties: {
-    displayName: take('[${clusterName}] ${reference(pdDisableAutomountApiCredsId, '2021-06-01').displayName}', 120)
-    description: reference(pdDisableAutomountApiCredsId, '2021-06-01').description
-    policyDefinitionId: pdDisableAutomountApiCredsId
-    parameters: {
-      excludedNamespaces: {
-        value: [
-          'kube-system'
-          'gatekeeper-system'
-          'azure-arc'
-          'flux-system'
-          'cluster-baseline-settings' // Kured, AAD Pod Identity
-          'a0008' // Traefik
-        ]
-      }
-      effect: {
-        value: 'Deny'
-      }
-    }
-  }
-}
-
 // Kubernetes clusters should not allow endpoint edit permissions of ClusterRole/system:aggregate-to-edit' policy at the resource group level.
 // See: CVE-2021-25740 & https://github.com/kubernetes/kubernetes/issues/103675
 // Constraint Name: K8sAzureBlockEndpointEditDefaultRole
