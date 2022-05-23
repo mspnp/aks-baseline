@@ -957,7 +957,7 @@ resource paEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2021-0
     policyDefinitionId: pdEnforceHttpsIngressId
     parameters: {
       excludedNamespaces: {
-        value: [] // None
+        value: []
       }
       effect: {
         value: 'Deny'
@@ -979,7 +979,7 @@ resource paEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignmen
     policyDefinitionId: pdEnforceInternalLoadBalancersId
     parameters: {
       excludedNamespaces: {
-        value: [] // None
+        value: []
       }
       effect: {
         value: 'Deny'
@@ -1147,7 +1147,7 @@ resource paAllowedExternalIPs 'Microsoft.Authorization/policyAssignments@2021-06
         ]
       }
       allowedExternalIPs: {
-        value: []  // None allowed.  (Load balancer IP only supported)
+        value: []  // None allowed, internal load balancer IP only supported.
       }
       effect: {
         value: 'Deny'
