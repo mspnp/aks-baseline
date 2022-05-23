@@ -72,16 +72,6 @@ resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' exis
   }
 }
 
-// Built-in policy: Container registries should have anonymous authentication disabled.
-var pdAnonymousContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '9f2dea28-e834-476c-99c5-3507b4728395')
-
-// Built-in policy: Container registries should have repository scoped access token disabled.
-var pdAccessTokenContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'ff05e24e-195c-447e-b322-5e90c9f9f366')
-
-// Built-in policy: Container registries should have local admin account disabled.
-var pdAdminAccountContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'dc921057-6b28-4fbe-9b83-f7bec05db6c2')
-
-
 /*** RESOURCES ***/
 
 // This Log Analytics workspace will be the log sink for all resources in the cluster resource group. This includes ACR, the AKS cluster, Key Vault, etc. It also is the Container Insights log sink for the AKS cluster.
@@ -96,7 +86,8 @@ resource laAks 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
   }
 }
 
-// Ensure the container registry does not allow anon access (Azure RBAC only is allowed)
+// Apply the built-in 'Container registries should have anonymous authentication disabled' policy. Azure RBAC only is allowed.
+var pdAnonymousContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '9f2dea28-e834-476c-99c5-3507b4728395')
 resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(resourceGroup().id, pdAnonymousContainerRegistryAccessDisallowedId)
   location: 'global'
@@ -114,25 +105,8 @@ resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/p
   }
 }
 
-// Ensure the container registry does not allow sas token access (Azure RBAC only is allowed)
-resource paAccessTokenContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  name: guid(resourceGroup().id, pdAccessTokenContainerRegistryAccessDisallowedId)
-  location: 'global'
-  scope: resourceGroup()
-  properties: {
-    displayName: take('[acraks${subRgUniqueString}] ${reference(pdAccessTokenContainerRegistryAccessDisallowedId, '2021-06-01').displayName}', 120)
-    description: reference(pdAccessTokenContainerRegistryAccessDisallowedId, '2021-06-01').description
-    enforcementMode: 'Default'
-    policyDefinitionId: pdAccessTokenContainerRegistryAccessDisallowedId
-    parameters: {
-      effect: {
-        value: 'Deny'
-      }
-    }
-  }
-}
-
-// Ensure the container registry does not allow admin account access (Azure RBAC only is allowed)
+// Apply the built-in 'Container registries should have local admin account disabled' policy. Azure RBAC only is allowed.
+var pdAdminAccountContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'dc921057-6b28-4fbe-9b83-f7bec05db6c2')
 resource paAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(resourceGroup().id, pdAdminAccountContainerRegistryAccessDisallowedId)
   location: 'global'
