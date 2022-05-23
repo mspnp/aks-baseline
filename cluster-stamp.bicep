@@ -196,7 +196,6 @@ resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' 
     enabled: true
     description: 'All azure advisor alerts'
   }
-  dependsOn: []
 }
 
 resource ssPrometheusAll 'Microsoft.OperationalInsights/workspaces/savedSearches@2020-08-01' = {
@@ -210,7 +209,6 @@ resource ssPrometheusAll 'Microsoft.OperationalInsights/workspaces/savedSearches
     query: 'InsightsMetrics | where Namespace == "prometheus"'
     version: 1
   }
-  dependsOn: []
 }
 
 resource ssPrometheusKuredRequestedReeboot 'Microsoft.OperationalInsights/workspaces/savedSearches@2020-08-01' = {
@@ -240,7 +238,6 @@ resource sci 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
     promotionCode: ''
     publisher: 'Microsoft'
   }
-  dependsOn: []
 }
 
 resource maHighNodeCPUUtilization 'Microsoft.Insights/metricAlerts@2018-03-01' = {
@@ -853,7 +850,6 @@ resource skva 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
     promotionCode: ''
     publisher: 'Microsoft'
   }
-  dependsOn: []
 }
 
 resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
@@ -887,7 +883,6 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
       }
     }
   }
-  dependsOn: []
 }
 
 // Resource Group Azure Policy Assignments - Azure Policy for Kubernetes Policies
@@ -947,7 +942,6 @@ resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-0
       }
     }
   }
-  dependsOn: []
 }
 
 // Applying the built-in 'Kubernetes clusters should be accessible only over HTTPS' policy at the resource group level.
@@ -1505,7 +1499,6 @@ resource kv_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
       }
     ]
   }
-  dependsOn: []
 }
 
 // Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.
@@ -1517,7 +1510,6 @@ resource kvMiAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authori
     principalId: miAppGatewayFrontend.properties.principalId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 // Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.
@@ -1529,7 +1521,6 @@ resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authoriz
     principalId: miAppGatewayFrontend.properties.principalId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 // Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates.
@@ -1541,7 +1532,6 @@ resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Autho
     principalId: podmiIngressController.properties.principalId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 // Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates
@@ -1553,7 +1543,6 @@ resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Author
     principalId: podmiIngressController.properties.principalId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'nested_EnsureClusterIdentityHasRbacToSelfManagedResources.bicep' = {
@@ -1582,7 +1571,6 @@ resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
       registrationEnabled: false
     }
   }
-  dependsOn: []
 }
 
 resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
@@ -1604,7 +1592,6 @@ resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
       }
     ]
   }
-  dependsOn: []
 
   resource pdnszg 'privateDnsZoneGroups' = {
     name: 'default'
@@ -1624,7 +1611,6 @@ resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
 resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: aksIngressDomainName
   location: 'global'
-  dependsOn: []
 
   resource aksIngressDomainName_bu0001a0008_00 'A' = {
     name: 'bu0001a0008-00'
@@ -1869,7 +1855,6 @@ resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssig
     principalId: mc.properties.identityProfile.kubeletidentity.objectId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 // Grant the OMS Agent's Managed Identity the metrics publisher role to push alerts
@@ -1881,7 +1866,6 @@ resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Auth
     principalId: mc.properties.addonProfiles.omsagent.identity.objectId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 // Grant the AKS cluster with Managed Identity Operator role permissions over the managed identity used for the ingress controller. Allows it to be assigned to the underlying VMSS.
@@ -1893,7 +1877,6 @@ resource miKubeletManagedIdentityOperatorRole_roleAssignment 'Microsoft.Authoriz
     principalId: mc.properties.identityProfile.kubeletidentity.objectId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 resource mcAadAdminGroupClusterAdminRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC) {
@@ -1905,7 +1888,6 @@ resource mcAadAdminGroupClusterAdminRole_roleAssignment 'Microsoft.Authorization
     principalId: clusterAdminAadGroupObjectId
     principalType: 'Group'
   }
-  dependsOn: []
 }
 
 resource mcAadAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC) {
@@ -1917,7 +1899,6 @@ resource mcAadAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authori
     principalId: clusterAdminAadGroupObjectId
     principalType: 'Group'
   }
-  dependsOn: []
 }
 
 resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && !(empty(a0008NamespaceReaderAadGroupObjectId)) && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
@@ -1929,7 +1910,6 @@ resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Author
     principalId: a0008NamespaceReaderAadGroupObjectId
     principalType: 'Group'
   }
-  dependsOn: []
 }
 
 resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && !(empty(a0008NamespaceReaderAadGroupObjectId)) && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
@@ -1941,7 +1921,6 @@ resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.A
     principalId: a0008NamespaceReaderAadGroupObjectId
     principalType: 'Group'
   }
-  dependsOn: []
 }
 
 resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -1968,7 +1947,6 @@ resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
       }
     ]
   }
-  dependsOn: []
 }
 
 // Ensures that flux add-on (extension) is installed.
@@ -2046,7 +2024,6 @@ module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'nested_EnsureClusterUserA
   params: {
     kubeletidentityObjectId: mc.properties.identityProfile.kubeletidentity.objectId
   }
-  dependsOn: []
 }
 
 resource st 'Microsoft.EventGrid/systemTopics@2021-12-01' = {
@@ -2056,7 +2033,6 @@ resource st 'Microsoft.EventGrid/systemTopics@2021-12-01' = {
     source: mc.id
     topicType: 'Microsoft.ContainerService.ManagedClusters'
   }
-  dependsOn: []
 }
 
 resource st_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -2077,7 +2053,6 @@ resource st_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
       }
     ]
   }
-  dependsOn: []
 }
 
 resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2021-05-01' = {
@@ -2288,7 +2263,6 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
       }
     ]
   }
-  dependsOn: []
 }
 
 /*** OUTPUTS ***/
