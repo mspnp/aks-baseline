@@ -1214,47 +1214,6 @@ resource paDisallowNamespaceUsage 'Microsoft.Authorization/policyAssignments@202
   }
 }
 
-// Built-in policy: AKS clusters should gate deployment of vulnerable images' policy at the resource group level.
-// This requires that ALL container images have been scanned by Defender for Cloud.
-// Constraint Name: K8sAzureDefenderBlockVulnerableImages
-var pdNoVulnerableImagesInClusterId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '13cd7ae3-5bc0-4ac4-a62d-4f7c120b9759')
-resource paNoVulnerableImagesInCluster 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  name: guid(pdNoVulnerableImagesInClusterId, resourceGroup().id, clusterName)
-  location: 'global'
-  scope: resourceGroup()
-  properties: {
-    displayName: take('[${clusterName}] ${reference(pdNoVulnerableImagesInClusterId, '2021-06-01').displayName}', 120)
-    description: reference(pdNoVulnerableImagesInClusterId, '2021-06-01').description
-    policyDefinitionId: pdNoVulnerableImagesInClusterId
-    parameters: {
-      excludedNamespaces: {
-        value: [
-          'kube-system'
-          'gatekeeper-system'
-          'azure-arc'
-          'flux-system'
-        ]
-      }
-      severityThresholdForExcludingNotPatchableFindings: {
-        value: 'Medium' // Ignores 'Low' and 'Medium' vulnerabilities without a patch. Use 'None' to not allow exclusions for unpatchable findings.
-      }
-      excludeFindingIDs: {
-        value: [] // Exclude none
-      }
-      severity: {
-        value: {
-          High: 0    // Allow 0 High
-          Medium: 1  // Allow 1 Medium
-          Low: 2     // Allow 2 Low
-        }
-      }
-      effect: {
-        value: 'Audit' // Or Deny to completely block non-compliant images, but all images must have been scanned by Defender for Cloud
-      }
-    }
-  }
-}
-
 // Resource Group Azure Policy Assignments - Resource Provider Policies
 
 // Applying the built-in 'Azure Kubernetes Service clusters should have Defender profile enabled' policy at the resource group level.
@@ -1396,24 +1355,6 @@ resource paManagedIdentitiesEnabled 'Microsoft.Authorization/policyAssignments@2
     parameters: {
       effect: {
         value: 'Audit'  // This policy (as of 1.0.0) does not have a Deny option, otherwise that would be set here.
-      }
-    }
-  }
-}
-
-// Applying the built-in 'Running container images should have vulnerability findings resolved' policy at the resource group level.
-var pdVulnerableImagesResolvedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '0fc39691-5a3f-4e3e-94ee-2e6447309ad9')
-resource paVulnerableImagesResolved 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  name: guid(pdVulnerableImagesResolvedId, resourceGroup().id, clusterName)
-  location: 'global'
-  scope: resourceGroup()
-  properties: {
-    displayName: take('[${clusterName}] ${reference(pdVulnerableImagesResolvedId, '2021-06-01').displayName}', 120)
-    description: reference(pdVulnerableImagesResolvedId, '2021-06-01').description
-    policyDefinitionId: pdVulnerableImagesResolvedId
-    parameters: {
-      effect: {
-        value: 'AuditIfNotExists'
       }
     }
   }
@@ -1824,7 +1765,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
     paEnforceImageSource
     paEnforceInternalLoadBalancers
     paEnforceResourceLimits
-    paNoVulnerableImagesInCluster
     paRoRootFilesystem
 
     // Azure Resource Provider policies that we'd like to see in place before the cluster is deployed
@@ -1837,7 +1777,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
     paOldKuberentesDisabled
     paRbacEnabled
     paManagedIdentitiesEnabled
-    paVulnerableImagesResolved
 
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
