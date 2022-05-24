@@ -10,7 +10,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 * AAD Pod Identity
 * the workload's namespace named `a0008`
 
-1. Install `kubectl` 1.23 or newer. (`kubctl` supports +/-1 Kubernetes version.)
+1. Install `kubectl` 1.23 or newer. (`kubectl` supports ±1 Kubernetes version.)
 
    ```bash
    sudo az aks install-cli

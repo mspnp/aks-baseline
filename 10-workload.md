@@ -46,18 +46,14 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    > You should expect a `403` HTTP response from your ingress controller if you attempt to connect to it _without_ going through the App Gateway. Likewise, if any workload other than the ingress controller attempts to reach the workload, the traffic will be denied via network policies.
 
    ```bash
-   kubectl run curl -n a0008 -i --tty --rm --image=mcr.microsoft.com/azure-cli --overrides='[{"op":"add","path":"/spec/containers/0/resources","value":{"limits":{"cpu":"200m","memory":"128Mi"}}}]' --override-type json  --env="DOMAIN_NAME=${DOMAIN_NAME_AKS_BASELINE}"
+   kubectl run curl -n a0008 -i --tty --rm --image=mcr.microsoft.com/azure-cli --overrides='[{"op":"add","path":"/spec/containers/0/resources","value":{"limits":{"cpu":"200m","memory":"128Mi"}}},{"op":"add","path":"/spec/containers/0/securityContext","value":{"readOnlyRootFilesystem": true}}]' --override-type json  --env="DOMAIN_NAME=${DOMAIN_NAME_AKS_BASELINE}"
    
    # From within the open shell now running on a container inside your cluster
    curl -kI https://bu0001a0008-00.aks-ingress.$DOMAIN_NAME -w '%{remote_ip}\n'
    exit
    ```
 
-   > :beetle: If you are running a version of kubectl less than 1.23, you'll receive an error from the run command above as the method to provide container limits has changed between 1.22 and 1.23. On kubectl versions less than 1.23, you'll need to run the following command instead and you can [safely ignore the message about `--limits` being deprecated](https://github.com/kubernetes/kubectl/issues/1101).
-
-   ```bash
-   kubectl run curl -n a0008 -i --tty --rm --image=mcr.microsoft.com/azure-cli --limits='cpu=200m,memory=128Mi'
-   ```
+   > :beetle: If you are running a version of kubectl less than 1.23 you cannot perform this step.  The Azure Policy for Kubernetes policy assignments that are deployed with this implementation requires both setting limits and also a read only root filesystem.  This isn't possible with kubectl 1.22 and lower.  It's okay to skip this step if in that situation.
 
    > From this container shell, you could also try to directly access the workload via `curl -I http://<aspnetapp-service-cluster-ip>`. Instead of getting back a `200 OK`, you'll receive a network timeout because of the [`allow-only-ingress-to-workload` network policy](./cluster-manifests/a0008/ingress-network-policy.yaml) that is in place.
 
