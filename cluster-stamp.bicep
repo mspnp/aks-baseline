@@ -960,6 +960,7 @@ resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-0
           'gatekeeper-system'
           'azure-arc'
           'flux-system'
+          'azure-workload-identity-system'
 
           // Known violations
           // K8sAzureAllowedSeccomp
@@ -1050,6 +1051,7 @@ resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-0
           'gatekeeper-system'
           'azure-arc'
           'flux-system'
+          'azure-workload-identity-system'
         ]
       }
       excludedContainers: {
@@ -1089,6 +1091,7 @@ resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021
           'gatekeeper-system'
           'azure-arc'
           'flux-system'
+          'azure-workload-identity-system'
         ]
       }
       effect: {
@@ -1143,6 +1146,7 @@ resource paAllowedHostPaths 'Microsoft.Authorization/policyAssignments@2021-06-0
           'gatekeeper-system'
           'azure-arc'
           'flux-system'
+          'azure-workload-identity-system'
         ]
       }
       allowedHostPaths: {
