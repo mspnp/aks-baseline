@@ -66,6 +66,62 @@ var aksIngressDomainName = 'aks-ingress.${domainName}'
 var aksBackendDomainName = 'bu0001a0008-00.${aksIngressDomainName}'
 var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPlaneAuthorizationTenantId)
 
+/*** EXISTING TENANT RESOURCES ***/
+
+// Built-in 'Kubernetes cluster pod security restricted standards for Linux-based workloads' Azure Policy for Kubernetes initiative definition
+var psdAKSLinuxRestrictiveId = tenantResourceId('Microsoft.Authorization/policySetDefinitions', '42b8ef37-b724-4e24-bbc8-7a7708edfe00')
+
+// Built-in 'Kubernetes clusters should be accessible only over HTTPS' Azure Policy for Kubernetes policy definition
+var pdEnforceHttpsIngressId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d')
+
+// Built-in 'Kubernetes clusters should use internal load balancers' Azure Policy for Kubernetes policy definition
+var pdEnforceInternalLoadBalancersId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e')
+
+// Built-in 'Kubernetes cluster containers should run with a read only root file system' Azure Policy for Kubernetes policy definition
+var pdRoRootFilesystemId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'df49d893-a74c-421d-bc95-c663042e5b80')
+
+// Built-in 'AKS container CPU and memory resource limits should not exceed the specified limits' Azure Policy for Kubernetes policy definition
+var pdEnforceResourceLimitsId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'e345eecc-fa47-480f-9e88-67dcc122b164')
+
+// Built-in 'AKS containers should only use allowed images' Azure Policy for Kubernetes policy definition
+var pdEnforceImageSourceId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'febd0533-8e55-448f-b837-bd0e06f16469')
+
+// Built-in 'Kubernetes cluster pod hostPath volumes should only use allowed host paths' Azure Policy for Kubernetes policy definition
+var pdAllowedHostPathsId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '098fc59e-46c7-4d99-9b16-64990e543d75')
+
+// Built-in 'Kubernetes cluster services should only use allowed external IPs' Azure Policy for Kubernetes policy definition
+var pdAllowedExternalIPsId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'd46c275d-1680-448d-b2ec-e495a3b6cc89')
+
+// Built-in 'Kubernetes clusters should not allow endpoint edit permissions of ClusterRole/system:aggregate-to-edit' Azure Policy for Kubernetes policy definition
+var pdDisallowEndpointEditPermissionsId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '1ddac26b-ed48-4c30-8cc5-3a68c79b8001')
+
+// Built-in 'Kubernetes clusters should not use the default namespace' Azure Policy for Kubernetes policy definition
+var pdDisallowNamespaceUsageId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '9f061a12-e40d-4183-a00e-171812443373')
+
+// Built-in 'Azure Kubernetes Service clusters should have Defender profile enabled' Azure Policy policy definition
+var pdDefenderInClusterEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'a1840de2-8088-4ea8-b153-b4c723e9cb01')
+
+// Built-in 'Azure Kubernetes Service Clusters should enable Azure Active Directory integration' Azure Policy policy definition
+var pdAadIntegrationEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '450d2877-ebea-41e8-b00c-e286317d21bf')
+
+// Built-in 'Azure Kubernetes Service Clusters should have local authentication methods disabled' Azure Policy policy definition
+var pdLocalAuthDisabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '993c2fcd-2b29-49d2-9eb0-df2c3a730c32')
+
+// Built-in 'Azure Policy Add-on for Kubernetes service (AKS) should be installed and enabled on your clusters' Azure Policy policy definition
+var pdAzurePolicyEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '0a15ec92-a229-4763-bb14-0ea34a568f8d')
+
+// Built-in 'Authorized IP ranges should be defined on Kubernetes Services' Azure Policy policy definition
+var pdAuthorizedIpRangesDefinedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '0e246bcf-5f6f-4f87-bc6f-775d4712c7ea')
+
+// Built-in 'Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version' Azure Policy policy definition
+var pdOldKuberentesDisabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'fb893a29-21bb-418c-a157-e99480ec364c')
+
+// Built-in 'Role-Based Access Control (RBAC) should be used on Kubernetes Services' Azure Policy policy definition
+var pdRbacEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'ac4a19c2-fa67-49b4-8ae5-0b2e78c49457')
+
+// Built-in 'Azure Kubernetes Service Clusters should use managed identities' Azure Policy policy definition
+var pdManagedIdentitiesEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'da6e2401-19da-4532-9141-fb8fbde08431')
+
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
 
 resource nodeResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
@@ -889,7 +945,6 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
 
 // Applying the built-in 'Kubernetes cluster pod security restricted standards for Linux-based workloads' initiative at the resource group level.
 // Constraint Names: K8sAzureAllowedSeccomp, K8sAzureAllowedCapabilities, K8sAzureContainerNoPrivilege, K8sAzureHostNetworkingPorts, K8sAzureVolumeTypes, K8sAzureBlockHostNamespaceV2, K8sAzureAllowedUsersGroups, K8sAzureContainerNoPrivilegeEscalation
-var psdAKSLinuxRestrictiveId = tenantResourceId('Microsoft.Authorization/policySetDefinitions', '42b8ef37-b724-4e24-bbc8-7a7708edfe00')
 resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(psdAKSLinuxRestrictiveId, resourceGroup().id, clusterName)
   location: 'global'
@@ -946,7 +1001,6 @@ resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-0
 
 // Applying the built-in 'Kubernetes clusters should be accessible only over HTTPS' policy at the resource group level.
 // Constraint Name: K8sAzureIngressHttpsOnly
-var pdEnforceHttpsIngressId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d')
 resource paEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdEnforceHttpsIngressId, resourceGroup().id, clusterName)
   location: 'global'
@@ -968,7 +1022,6 @@ resource paEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2021-0
 
 // Applying the built-in 'Kubernetes clusters should use internal load balancers' policy at the resource group level.
 // Constraint Name: K8sAzureLoadBalancerNoPublicIPs
-var pdEnforceInternalLoadBalancersId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e')
 resource paEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdEnforceInternalLoadBalancersId, resourceGroup().id, clusterName)
   location: 'global'
@@ -990,7 +1043,6 @@ resource paEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignmen
 
 // Applying the built-in 'Kubernetes cluster containers should run with a read only root file system' policy at the resource group level.
 // Constraint Name: K8sAzureReadOnlyRootFilesystem
-var pdRoRootFilesystemId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'df49d893-a74c-421d-bc95-c663042e5b80')
 resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdRoRootFilesystemId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1026,7 +1078,6 @@ resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-0
 
 // Applying the built-in 'AKS container CPU and memory resource limits should not exceed the specified limits' policy at the resource group level.
 // Constraint Name: K8sAzureContainerLimits
-var pdEnforceResourceLimitsId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'e345eecc-fa47-480f-9e88-67dcc122b164')
 resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdEnforceResourceLimitsId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1059,7 +1110,6 @@ resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021
 
 // Applying the built-in 'AKS containers should only use allowed images' policy at the resource group level.
 // Constraint Name: K8sAzureContainerAllowedImages
-var pdEnforceImageSourceId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'febd0533-8e55-448f-b837-bd0e06f16469')
 resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdEnforceImageSourceId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1087,9 +1137,7 @@ resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2021-06
   }
 }
 
-// Built-in policy: Kubernetes cluster pod hostPath volumes should only use allowed host paths' policy at the resource group level.
-// Constraint Name: K8sAzureHostFilesystem
-var pdAllowedHostPathsId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '098fc59e-46c7-4d99-9b16-64990e543d75')
+// Applying the built-in 'Kubernetes cluster pod hostPath volumes should only use allowed host paths' policy at the resource group level.
 resource paAllowedHostPaths 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdAllowedHostPathsId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1127,9 +1175,8 @@ resource paAllowedHostPaths 'Microsoft.Authorization/policyAssignments@2021-06-0
   }
 }
 
-// Built-in policy: Kubernetes cluster services should only use allowed external IPs' policy at the resource group level.
+// Applying the built-in 'Kubernetes cluster services should only use allowed external IPs' policy at the resource group level.
 // Constraint Name: K8sAzureExternalIPs
-var pdAllowedExternalIPsId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'd46c275d-1680-448d-b2ec-e495a3b6cc89')
 resource paAllowedExternalIPs 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdAllowedExternalIPsId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1156,10 +1203,9 @@ resource paAllowedExternalIPs 'Microsoft.Authorization/policyAssignments@2021-06
   }
 }
 
-// Kubernetes clusters should not allow endpoint edit permissions of ClusterRole/system:aggregate-to-edit' policy at the resource group level.
+// Applying the built-in 'Kubernetes clusters should not allow endpoint edit permissions of ClusterRole/system:aggregate-to-edit' policy at the resource group level.
 // See: CVE-2021-25740 & https://github.com/kubernetes/kubernetes/issues/103675
 // Constraint Name: K8sAzureBlockEndpointEditDefaultRole
-var pdDisallowEndpointEditPermissionsId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '1ddac26b-ed48-4c30-8cc5-3a68c79b8001')
 resource paDisallowEndpointEditPermissions 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdDisallowEndpointEditPermissionsId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1183,9 +1229,8 @@ resource paDisallowEndpointEditPermissions 'Microsoft.Authorization/policyAssign
   }
 }
 
-// Kubernetes clusters should not use the default namespace' policy at the resource group level.
+// Applying the built-in 'Kubernetes clusters should not use the default namespace' policy at the resource group level.
 // Constraint Name: K8sAzureBlockDefault
-var pdDisallowNamespaceUsageId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '9f061a12-e40d-4183-a00e-171812443373')
 resource paDisallowNamespaceUsage 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdDisallowNamespaceUsageId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1217,7 +1262,6 @@ resource paDisallowNamespaceUsage 'Microsoft.Authorization/policyAssignments@202
 // Resource Group Azure Policy Assignments - Resource Provider Policies
 
 // Applying the built-in 'Azure Kubernetes Service clusters should have Defender profile enabled' policy at the resource group level.
-var pdDefenderInClusterEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'a1840de2-8088-4ea8-b153-b4c723e9cb01')
 resource paDefenderInClusterEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdDefenderInClusterEnabledId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1235,7 +1279,6 @@ resource paDefenderInClusterEnabled 'Microsoft.Authorization/policyAssignments@2
 }
 
 // Applying the built-in 'Azure Kubernetes Service Clusters should enable Azure Active Directory integration' policy at the resource group level.
-var pdAadIntegrationEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '450d2877-ebea-41e8-b00c-e286317d21bf')
 resource paAadIntegrationEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdAadIntegrationEnabledId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1253,7 +1296,6 @@ resource paAadIntegrationEnabled 'Microsoft.Authorization/policyAssignments@2021
 }
 
 // Applying the built-in 'Azure Kubernetes Service Clusters should have local authentication methods disabled' policy at the resource group level.
-var pdLocalAuthDisabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '993c2fcd-2b29-49d2-9eb0-df2c3a730c32')
 resource paLocalAuthDisabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdLocalAuthDisabledId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1271,7 +1313,6 @@ resource paLocalAuthDisabled 'Microsoft.Authorization/policyAssignments@2021-06-
 }
 
 // Applying the built-in 'Azure Policy Add-on for Kubernetes service (AKS) should be installed and enabled on your clusters' policy at the resource group level.
-var pdAzurePolicyEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '0a15ec92-a229-4763-bb14-0ea34a568f8d')
 resource paAzurePolicyEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdAzurePolicyEnabledId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1289,7 +1330,6 @@ resource paAzurePolicyEnabled 'Microsoft.Authorization/policyAssignments@2021-06
 }
 
 // Applying the built-in 'Authorized IP ranges should be defined on Kubernetes Services' policy at the resource group level.
-var pdAuthorizedIpRangesDefinedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '0e246bcf-5f6f-4f87-bc6f-775d4712c7ea')
 resource paAuthorizedIpRangesDefined 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdAuthorizedIpRangesDefinedId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1307,7 +1347,6 @@ resource paAuthorizedIpRangesDefined 'Microsoft.Authorization/policyAssignments@
 }
 
 // Applying the built-in 'Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version' policy at the resource group level.
-var pdOldKuberentesDisabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'fb893a29-21bb-418c-a157-e99480ec364c')
 resource paOldKuberentesDisabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdOldKuberentesDisabledId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1325,7 +1364,6 @@ resource paOldKuberentesDisabled 'Microsoft.Authorization/policyAssignments@2021
 }
 
 // Applying the built-in 'Role-Based Access Control (RBAC) should be used on Kubernetes Services' policy at the resource group level.
-var pdRbacEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'ac4a19c2-fa67-49b4-8ae5-0b2e78c49457')
 resource paRbacEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdRbacEnabledId, resourceGroup().id, clusterName)
   location: 'global'
@@ -1343,7 +1381,6 @@ resource paRbacEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = 
 }
 
 // Applying the built-in 'Azure Kubernetes Service Clusters should use managed identities' policy at the resource group level.
-var pdManagedIdentitiesEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'da6e2401-19da-4532-9141-fb8fbde08431')
 resource paManagedIdentitiesEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdManagedIdentitiesEnabledId, resourceGroup().id, clusterName)
   location: 'global'
