@@ -59,33 +59,75 @@ param gitOpsBootstrappingRepoBranch string = 'main'
 /*** VARIABLES ***/
 
 var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resourceGroup().id)
-
 var clusterName = 'aks-${subRgUniqueString}'
-var nodeResourceGroupName = 'rg-${clusterName}-nodepools'
-var defaultAcrName = 'acraks${subRgUniqueString}'
-
 var agwName = 'apw-${clusterName}'
-var wafPolicyName = 'waf-${clusterName}'
 
 var aksIngressDomainName = 'aks-ingress.${domainName}'
 var aksBackendDomainName = 'bu0001a0008-00.${aksIngressDomainName}'
-var policyResourceIdAKSLinuxRestrictive = '/providers/Microsoft.Authorization/policySetDefinitions/42b8ef37-b724-4e24-bbc8-7a7708edfe00'
-var policyResourceIdEnforceHttpsIngress = '/providers/Microsoft.Authorization/policyDefinitions/1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d'
-var policyResourceIdEnforceInternalLoadBalancers = '/providers/Microsoft.Authorization/policyDefinitions/3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e'
-var policyResourceIdRoRootFilesystem = '/providers/Microsoft.Authorization/policyDefinitions/df49d893-a74c-421d-bc95-c663042e5b80'
-var policyResourceIdEnforceResourceLimits = '/providers/Microsoft.Authorization/policyDefinitions/e345eecc-fa47-480f-9e88-67dcc122b164'
-var policyResourceIdEnforceImageSource = '/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469'
-var policyResourceIdEnforceDefenderInCluster = '/providers/Microsoft.Authorization/policyDefinitions/a1840de2-8088-4ea8-b153-b4c723e9cb01'
-var policyAssignmentNameAKSLinuxRestrictive = guid(policyResourceIdAKSLinuxRestrictive, resourceGroup().name, clusterName)
-var policyAssignmentNameEnforceHttpsIngress = guid(policyResourceIdEnforceHttpsIngress, resourceGroup().name, clusterName)
-var policyAssignmentNameEnforceInternalLoadBalancers = guid(policyResourceIdEnforceInternalLoadBalancers, resourceGroup().name, clusterName)
-var policyAssignmentNameRoRootFilesystem = guid(policyResourceIdRoRootFilesystem, resourceGroup().name, clusterName)
-var policyAssignmentNameEnforceResourceLimits = guid(policyResourceIdEnforceResourceLimits, resourceGroup().name, clusterName)
-var policyAssignmentNameEnforceImageSource = guid(policyResourceIdEnforceImageSource, resourceGroup().name, clusterName)
-var policyAssignmentNameEnforceDefenderInCluster = guid(policyResourceIdEnforceDefenderInCluster, resourceGroup().name, clusterName)
 var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPlaneAuthorizationTenantId)
 
+/*** EXISTING TENANT RESOURCES ***/
+
+// Built-in 'Kubernetes cluster pod security restricted standards for Linux-based workloads' Azure Policy for Kubernetes initiative definition
+var psdAKSLinuxRestrictiveId = tenantResourceId('Microsoft.Authorization/policySetDefinitions', '42b8ef37-b724-4e24-bbc8-7a7708edfe00')
+
+// Built-in 'Kubernetes clusters should be accessible only over HTTPS' Azure Policy for Kubernetes policy definition
+var pdEnforceHttpsIngressId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d')
+
+// Built-in 'Kubernetes clusters should use internal load balancers' Azure Policy for Kubernetes policy definition
+var pdEnforceInternalLoadBalancersId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '3fc4dc25-5baf-40d8-9b05-7fe74c1bc64e')
+
+// Built-in 'Kubernetes cluster containers should run with a read only root file system' Azure Policy for Kubernetes policy definition
+var pdRoRootFilesystemId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'df49d893-a74c-421d-bc95-c663042e5b80')
+
+// Built-in 'AKS container CPU and memory resource limits should not exceed the specified limits' Azure Policy for Kubernetes policy definition
+var pdEnforceResourceLimitsId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'e345eecc-fa47-480f-9e88-67dcc122b164')
+
+// Built-in 'AKS containers should only use allowed images' Azure Policy for Kubernetes policy definition
+var pdEnforceImageSourceId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'febd0533-8e55-448f-b837-bd0e06f16469')
+
+// Built-in 'Kubernetes cluster pod hostPath volumes should only use allowed host paths' Azure Policy for Kubernetes policy definition
+var pdAllowedHostPathsId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '098fc59e-46c7-4d99-9b16-64990e543d75')
+
+// Built-in 'Kubernetes cluster services should only use allowed external IPs' Azure Policy for Kubernetes policy definition
+var pdAllowedExternalIPsId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'd46c275d-1680-448d-b2ec-e495a3b6cc89')
+
+// Built-in 'Kubernetes clusters should not allow endpoint edit permissions of ClusterRole/system:aggregate-to-edit' Azure Policy for Kubernetes policy definition
+var pdDisallowEndpointEditPermissionsId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '1ddac26b-ed48-4c30-8cc5-3a68c79b8001')
+
+// Built-in 'Kubernetes clusters should not use the default namespace' Azure Policy for Kubernetes policy definition
+var pdDisallowNamespaceUsageId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '9f061a12-e40d-4183-a00e-171812443373')
+
+// Built-in 'Azure Kubernetes Service clusters should have Defender profile enabled' Azure Policy policy definition
+var pdDefenderInClusterEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'a1840de2-8088-4ea8-b153-b4c723e9cb01')
+
+// Built-in 'Azure Kubernetes Service Clusters should enable Azure Active Directory integration' Azure Policy policy definition
+var pdAadIntegrationEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '450d2877-ebea-41e8-b00c-e286317d21bf')
+
+// Built-in 'Azure Kubernetes Service Clusters should have local authentication methods disabled' Azure Policy policy definition
+var pdLocalAuthDisabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '993c2fcd-2b29-49d2-9eb0-df2c3a730c32')
+
+// Built-in 'Azure Policy Add-on for Kubernetes service (AKS) should be installed and enabled on your clusters' Azure Policy policy definition
+var pdAzurePolicyEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '0a15ec92-a229-4763-bb14-0ea34a568f8d')
+
+// Built-in 'Authorized IP ranges should be defined on Kubernetes Services' Azure Policy policy definition
+var pdAuthorizedIpRangesDefinedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '0e246bcf-5f6f-4f87-bc6f-775d4712c7ea')
+
+// Built-in 'Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version' Azure Policy policy definition
+var pdOldKuberentesDisabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'fb893a29-21bb-418c-a157-e99480ec364c')
+
+// Built-in 'Role-Based Access Control (RBAC) should be used on Kubernetes Services' Azure Policy policy definition
+var pdRbacEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'ac4a19c2-fa67-49b4-8ae5-0b2e78c49457')
+
+// Built-in 'Azure Kubernetes Service Clusters should use managed identities' Azure Policy policy definition
+var pdManagedIdentitiesEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'da6e2401-19da-4532-9141-fb8fbde08431')
+
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
+
+resource nodeResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
+  name: 'rg-${clusterName}-nodepools'
+  scope: subscription()
+}
 
 // Built-in Azure RBAC role that is applied to a cluster to indicate they can be considered a user/group of the cluster, subject to additional RBAC permissions
 resource serviceClusterUserRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
@@ -135,39 +177,52 @@ resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2018-0
   scope: subscription()
 }
 
-/*** EXISTING HUB RESOURCES ***/
+/*** EXISTING RESOURCE GROUP RESOURCES ***/
 
+// Azure Container Registry
 resource acr 'Microsoft.ContainerRegistry/registries@2021-12-01-preview' existing = {
-  name: defaultAcrName
+  scope: resourceGroup()
+  name: 'acraks${subRgUniqueString}'
 }
 
+// Log Analytics Workspace
+resource la 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' existing = {
+  scope: resourceGroup()
+  name: 'la-${clusterName}'
+}
+
+// Kubernetes namespace: a0008 -- this doesn't technically exist prior to deployment, but is required as a resource reference later in the template
+// to support Azure RBAC-managed API Server access, scoped to the namespace level.
+#disable-next-line BCP081 // this namespaces child type doesn't have a defined bicep type yet.
+resource nsA0008 'Microsoft.ContainerService/managedClusters/namespaces@2022-01-02-preview' existing = {
+  parent: mc
+  name: 'a0008'
+}
+
+/*** EXISTING SPOKE RESOURCES ***/
+
+// Spoke resource group
 resource targetResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
   scope: subscription()
   name: '${split(targetVnetResourceId,'/')[4]}'
 }
 
+// Spoke virtual network
 resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' existing = {
   scope: targetResourceGroup
   name: '${last(split(targetVnetResourceId,'/'))}'
 }
 
+// Spoke virutual network's subnet for the cluster nodes
 resource snetClusterNodes 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
   parent: targetVirtualNetwork
   name: 'snet-clusternodes'
 }
 
+// Spoke virutual network's subnet for all private endpoints
 resource snetPrivatelinkendpoints 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
   parent: targetVirtualNetwork
   name: 'snet-privatelinkendpoints'
-}
-
-resource la 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' existing = {
-  name: 'la-${clusterName}'
-}
-
-resource nsA0008 'Microsoft.ContainerService/managedClusters/namespaces@2022-01-02-preview' existing = {
-  parent: mc
-  name: 'a0008'
 }
 
 /*** RESOURCES ***/
@@ -197,26 +252,26 @@ resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' 
     enabled: true
     description: 'All azure advisor alerts'
   }
-  dependsOn: []
 }
 
 resource ssPrometheusAll 'Microsoft.OperationalInsights/workspaces/savedSearches@2020-08-01' = {
   parent: la
   name: 'AllPrometheus'
   properties: {
+#disable-next-line BCP037
     etag: '*'
     category: 'Prometheus'
     displayName: 'All collected Prometheus information'
     query: 'InsightsMetrics | where Namespace == "prometheus"'
     version: 1
   }
-  dependsOn: []
 }
 
 resource ssPrometheusKuredRequestedReeboot 'Microsoft.OperationalInsights/workspaces/savedSearches@2020-08-01' = {
   parent: la
   name: 'NodeRebootRequested'
   properties: {
+#disable-next-line BCP037
     etag: '*'
     category: 'Prometheus'
     displayName: 'Nodes reboot required by kured'
@@ -239,7 +294,6 @@ resource sci 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
     promotionCode: ''
     publisher: 'Microsoft'
   }
-  dependsOn: []
 }
 
 resource maHighNodeCPUUtilization 'Microsoft.Insights/metricAlerts@2018-03-01' = {
@@ -852,7 +906,6 @@ resource skva 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
     promotionCode: ''
     publisher: 'Microsoft'
   }
-  dependsOn: []
 }
 
 resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
@@ -886,167 +939,462 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
       }
     }
   }
-  dependsOn: []
 }
 
-// Applying the 'AKS Linux Restrictive' policy to the resource group
+// Resource Group Azure Policy Assignments - Azure Policy for Kubernetes Policies
+
+// Applying the built-in 'Kubernetes cluster pod security restricted standards for Linux-based workloads' initiative at the resource group level.
+// Constraint Names: K8sAzureAllowedSeccomp, K8sAzureAllowedCapabilities, K8sAzureContainerNoPrivilege, K8sAzureHostNetworkingPorts, K8sAzureVolumeTypes, K8sAzureBlockHostNamespaceV2, K8sAzureAllowedUsersGroups, K8sAzureContainerNoPrivilegeEscalation
 resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  name: policyAssignmentNameAKSLinuxRestrictive
-  properties: {
-    displayName: '[${clusterName}] ${reference(policyResourceIdAKSLinuxRestrictive, '2020-09-01').displayName}'
-    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
-    policyDefinitionId: policyResourceIdAKSLinuxRestrictive
-    parameters: {
-      excludedNamespaces: {
-        value: [
-          'kube-system'
-          'gatekeeper-system'
-          'azure-arc'
-          'cluster-baseline-settings'
-        ]
-      }
-      effect: {
-        value: 'audit'
-      }
-    }
-  }
-  dependsOn: []
-}
-
-// Applying the 'Enforce HTTPS ingress in Kubernetes cluster' policy to the resource group.
-resource paEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  name: policyAssignmentNameEnforceHttpsIngress
+  name: guid(psdAKSLinuxRestrictiveId, resourceGroup().id, clusterName)
   location: 'global'
+  scope: resourceGroup()
   properties: {
-    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceHttpsIngress, '2020-09-01').displayName}'
-    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
-    policyDefinitionId: policyResourceIdEnforceHttpsIngress
-    parameters: {
-      excludedNamespaces: {
-        value: []
-      }
-      effect: {
-        value: 'deny'
-      }
-    }
-  }
-  dependsOn: []
-}
-
-// Applying the 'Enforce internal load balancers in Kubernetes cluster' policy to the resource group.
-resource paEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  name: policyAssignmentNameEnforceInternalLoadBalancers
-  properties: {
-    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceInternalLoadBalancers, '2020-09-01').displayName}'
-    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
-    policyDefinitionId: policyResourceIdEnforceInternalLoadBalancers
-    parameters: {
-      excludedNamespaces: {
-        value: []
-      }
-      effect: {
-        value: 'deny'
-      }
-    }
-  }
-  dependsOn: []
-}
-
-// Applying the 'Kubernetes cluster containers should run with a read only root file system' policy to the resource group.
-resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  name: policyAssignmentNameRoRootFilesystem
-  properties: {
-    displayName: '[${clusterName}] ${reference(policyResourceIdRoRootFilesystem, '2020-09-01').displayName}'
-    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
-    policyDefinitionId: policyResourceIdRoRootFilesystem
+    displayName: take('[${clusterName}] ${reference(psdAKSLinuxRestrictiveId, '2021-06-01').displayName}', 120)
+    description: reference(psdAKSLinuxRestrictiveId, '2021-06-01').description
+    policyDefinitionId: psdAKSLinuxRestrictiveId
     parameters: {
       excludedNamespaces: {
         value: [
           'kube-system'
           'gatekeeper-system'
           'azure-arc'
-        ]
-      }
-      effect: {
-        value: 'audit'
-      }
-    }
-  }
-  dependsOn: []
-}
-
-// Applying the 'Container Images Resource Limits' policy at the resource group level.
-resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  name: policyAssignmentNameEnforceResourceLimits
-  dependsOn: []
-  properties: {
-    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceResourceLimits, '2020-09-01').displayName}'
-    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
-    policyDefinitionId: policyResourceIdEnforceResourceLimits
-    parameters: {
-      cpuLimit: {
-        value: '1000m'
-      }
-      memoryLimit: {
-        value: '512Mi'
-      }
-      excludedNamespaces: {
-        value: [
-          'kube-system'
-          'gatekeeper-system'
-          'azure-arc'
-          'cluster-baseline-settings'
           'flux-system'
+
+          // Known violations
+          // K8sAzureAllowedSeccomp
+          //  - Kured, no profile defined
+          //  - AAD Pod Identity (nmi & mic), no profile defined
+          // K8sAzureAllowedCapabilities
+          //  - AAD Pod Identity (nmi), requests default unsupported DAC_READ_SEARCH, NET_ADMIN
+          // K8sAzureContainerNoPrivilege
+          //  - Kured, requires privileged to perform reboot
+          // K8sAzureHostNetworkingPorts
+          //  - AAD Pod Identity (nmi), hostNetwork and hostPort usage
+          // K8sAzureVolumeTypes
+          //  - AAD Pod Identity (nmi & mic), uses hostPath
+          // K8sAzureBlockHostNamespaceV2
+          //  - Kured, shared host namespace
+          // K8sAzureAllowedUsersGroups
+          //  - Kured, no runAsNonRoot, no runAsGroup, no supplementalGroups, no fsGroup
+          //  - AAD Pod Identity (nmi & mic), runAsUser=0, no runAsGroup, no supplementalGroups, no fsGroup
+          'cluster-baseline-settings'
+
+          // Known violations
+          // K8sAzureAllowedSeccomp
+          //  - Traefik, no profile defined
+          //  - aspnetapp-deployment, no profile defined
+          // K8sAzureVolumeTypes
+          //  - Traefik, uses csi
+          // K8sAzureAllowedUsersGroups
+          //  - Traefik, no supplementalGroups, no fsGroup
+          //  = aspnetapp-deployment, no supplementalGroups, no fsGroup
+          'a0008'
         ]
       }
-      effect: {
-        value: 'deny'
-      }
-    }
-  }
-}
-
-// Applying the 'Allowed Container Images' regex policy at the resource group level. If all images are pull into your ARC instance as described in these instructions you can remove the docker.io entries.
-resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  name: policyAssignmentNameEnforceImageSource
-  properties: {
-    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceImageSource, '2020-09-01').displayName}'
-    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
-    policyDefinitionId: policyResourceIdEnforceImageSource
-    parameters: {
-      allowedContainerImagesRegex: {
-        value: '${defaultAcrName}.azurecr.io/.+$|mcr.microsoft.com/.+$|azurearcfork8s.azurecr.io/azurearcflux/images/stable/.+$|docker.io/weaveworks/kured.+$|docker.io/library/.+$'
-      }
-      excludedNamespaces: {
-        value: [
-          'kube-system'
-          'gatekeeper-system'
-          'azure-arc'
-        ]
-      }
-      effect: {
-        value: 'deny'
-      }
-    }
-  }
-  dependsOn: []
-}
-
-// Applying the 'Azure Kubernetes Service clusters should have Defender profile enabled' policy at the resource group level.
-resource paEnforceDefenderInCluster 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  name: policyAssignmentNameEnforceDefenderInCluster
-  properties: {
-    displayName: '[${clusterName}] ${reference(policyResourceIdEnforceDefenderInCluster, '2020-09-01').displayName}'
-    description: 'Microsoft Defender for Containers should be enabled in the cluster.'
-    scope: subscriptionResourceId('Microsoft.Resources/resourceGroups', resourceGroup().name)
-    policyDefinitionId: policyResourceIdEnforceDefenderInCluster
-    parameters: {
       effect: {
         value: 'Audit'
       }
     }
   }
-  dependsOn: []
+}
+
+// Applying the built-in 'Kubernetes clusters should be accessible only over HTTPS' policy at the resource group level.
+// Constraint Name: K8sAzureIngressHttpsOnly
+resource paEnforceHttpsIngress 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdEnforceHttpsIngressId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdEnforceHttpsIngressId, '2021-06-01').displayName}', 120)
+    description: reference(pdEnforceHttpsIngressId, '2021-06-01').description
+    policyDefinitionId: pdEnforceHttpsIngressId
+    parameters: {
+      excludedNamespaces: {
+        value: []
+      }
+      effect: {
+        value: 'Deny'
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Kubernetes clusters should use internal load balancers' policy at the resource group level.
+// Constraint Name: K8sAzureLoadBalancerNoPublicIPs
+resource paEnforceInternalLoadBalancers 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdEnforceInternalLoadBalancersId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdEnforceInternalLoadBalancersId, '2021-06-01').displayName}', 120)
+    description: reference(pdEnforceInternalLoadBalancersId, '2021-06-01').description
+    policyDefinitionId: pdEnforceInternalLoadBalancersId
+    parameters: {
+      excludedNamespaces: {
+        value: []
+      }
+      effect: {
+        value: 'Deny'
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Kubernetes cluster containers should run with a read only root file system' policy at the resource group level.
+// Constraint Name: K8sAzureReadOnlyRootFilesystem
+resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdRoRootFilesystemId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdRoRootFilesystemId, '2021-06-01').displayName}', 120)
+    description: reference(pdRoRootFilesystemId, '2021-06-01').description
+    policyDefinitionId: pdRoRootFilesystemId
+    parameters: {
+      excludedNamespaces: {
+        value: [
+          'kube-system'
+          'gatekeeper-system'
+          'azure-arc'
+          'flux-system'
+        ]
+      }
+      excludedContainers: {
+        value: [
+          'kured'   // Kured
+          'nmi'     // AAD Pod Identity
+          'mic'     // AAD Pod Identity
+          'aspnet-webapp-sample'   // ASP.NET Core does not support read-only root
+        ]
+      }
+      effect: {
+        value: 'Deny'
+      }
+    }
+  }
+}
+
+
+// Applying the built-in 'AKS container CPU and memory resource limits should not exceed the specified limits' policy at the resource group level.
+// Constraint Name: K8sAzureContainerLimits
+resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdEnforceResourceLimitsId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdEnforceResourceLimitsId, '2021-06-01').displayName}', 120)
+    description: reference(pdEnforceResourceLimitsId, '2021-06-01').description
+    policyDefinitionId: pdEnforceResourceLimitsId
+    parameters: {
+      cpuLimit: {
+        value: '500m' // Kured = 500m, AAD Pod Identity = 200m, traefik-ingress-controller = 200m, aspnet-webapp-sample = 100m
+      }
+      memoryLimit: {
+        value: '1Gi' // AAD Pod Identity = 1Gi, aspnet-webapp-sample = 256Mi, traefik-ingress-controller = 128Mi, Kured = 48Mi
+      }
+      excludedNamespaces: {
+        value: [
+          'kube-system'
+          'gatekeeper-system'
+          'azure-arc'
+          'flux-system'
+        ]
+      }
+      effect: {
+        value: 'Deny'
+      }
+    }
+  }
+}
+
+// Applying the built-in 'AKS containers should only use allowed images' policy at the resource group level.
+// Constraint Name: K8sAzureContainerAllowedImages
+resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdEnforceImageSourceId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdEnforceImageSourceId, '2021-06-01').displayName}', 120)
+    description: reference(pdEnforceImageSourceId, '2021-06-01').description
+    policyDefinitionId: pdEnforceImageSourceId
+    parameters: {
+      allowedContainerImagesRegex: {
+        // If all images are pull into your ARC instance as described in these instructions you can remove the docker.io entries.
+        value: '${acr.name}\\.azurecr\\.io/.+$|mcr\\.microsoft\\.com/.+$|docker\\.io/weaveworks/kured.+$|docker\\.io/library/.+$'
+      }
+      excludedNamespaces: {
+        value: [
+          'kube-system'
+          'gatekeeper-system'
+          'azure-arc'
+        ]
+      }
+      effect: {
+        value: 'Deny'
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Kubernetes cluster pod hostPath volumes should only use allowed host paths' policy at the resource group level.
+resource paAllowedHostPaths 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdAllowedHostPathsId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdAllowedHostPathsId, '2021-06-01').displayName}', 120)
+    description: reference(pdAllowedHostPathsId, '2021-06-01').description
+    policyDefinitionId: pdAllowedHostPathsId
+    parameters: {
+      excludedNamespaces: {
+        value: [
+          'kube-system'
+          'gatekeeper-system'
+          'azure-arc'
+          'flux-system'
+        ]
+      }
+      allowedHostPaths: {
+        value: {
+          paths: [] // Setting to empty blocks all host paths
+        }
+      }
+      // AAD Pod Identity mounts: /run/xtables.lock, /etc/default/kubelet, and /etc/kubernetes/azure.json
+      // If not using AAD Pod Identity (OSS version), then you can remove this exclusion
+      excludedContainers: {
+        value: [
+          'nmi'
+          'mic'
+        ]
+      }
+      effect: {
+        value: 'Deny'
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Kubernetes cluster services should only use allowed external IPs' policy at the resource group level.
+// Constraint Name: K8sAzureExternalIPs
+resource paAllowedExternalIPs 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdAllowedExternalIPsId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdAllowedExternalIPsId, '2021-06-01').displayName}', 120)
+    description: reference(pdAllowedExternalIPsId, '2021-06-01').description
+    policyDefinitionId: pdAllowedExternalIPsId
+    parameters: {
+      excludedNamespaces: {
+        value: [
+          'kube-system'
+          'gatekeeper-system'
+          'azure-arc'
+        ]
+      }
+      allowedExternalIPs: {
+        value: []  // None allowed, internal load balancer IP only supported.
+      }
+      effect: {
+        value: 'Deny'
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Kubernetes clusters should not allow endpoint edit permissions of ClusterRole/system:aggregate-to-edit' policy at the resource group level.
+// See: CVE-2021-25740 & https://github.com/kubernetes/kubernetes/issues/103675
+// Constraint Name: K8sAzureBlockEndpointEditDefaultRole
+resource paDisallowEndpointEditPermissions 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdDisallowEndpointEditPermissionsId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdDisallowEndpointEditPermissionsId, '2021-06-01').displayName}', 120)
+    description: reference(pdDisallowEndpointEditPermissionsId, '2021-06-01').description
+    policyDefinitionId: pdDisallowEndpointEditPermissionsId
+    parameters: {
+      excludedNamespaces: {
+        value: [
+          'kube-system'
+          'gatekeeper-system'
+          'azure-arc'
+        ]
+      }
+      effect: {
+        value: 'Audit' // As of 1.0.1, there is no Deny.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Kubernetes clusters should not use the default namespace' policy at the resource group level.
+// Constraint Name: K8sAzureBlockDefault
+resource paDisallowNamespaceUsage 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdDisallowNamespaceUsageId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdDisallowNamespaceUsageId, '2021-06-01').displayName}', 120)
+    description: reference(pdDisallowNamespaceUsageId, '2021-06-01').description
+    policyDefinitionId: pdDisallowNamespaceUsageId
+    parameters: {
+      excludedNamespaces: {
+        value: [
+          'kube-system'
+          'gatekeeper-system'
+          'azure-arc'
+        ]
+      }
+      namespaces: {
+        value: [
+          'default' // List namespaces you'd like to disallow the usage of (typically 'default')
+        ]
+      }
+      effect: {
+        value: 'Audit' // Consider moving to Deny, this walkthrough does temporarly deploy a curl image in default, so leaving as Audit
+      }
+    }
+  }
+}
+
+// Resource Group Azure Policy Assignments - Resource Provider Policies
+
+// Applying the built-in 'Azure Kubernetes Service clusters should have Defender profile enabled' policy at the resource group level.
+resource paDefenderInClusterEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdDefenderInClusterEnabledId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdDefenderInClusterEnabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdDefenderInClusterEnabledId, '2021-06-01').description
+    policyDefinitionId: pdDefenderInClusterEnabledId
+    parameters: {
+      effect: {
+        value: 'Audit' // This policy (as of 1.0.2-preview) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Azure Kubernetes Service Clusters should enable Azure Active Directory integration' policy at the resource group level.
+resource paAadIntegrationEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdAadIntegrationEnabledId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdAadIntegrationEnabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdAadIntegrationEnabledId, '2021-06-01').description
+    policyDefinitionId: pdAadIntegrationEnabledId
+    parameters: {
+      effect: {
+        value: 'Audit' // This policy (as of 1.0.0) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Azure Kubernetes Service Clusters should have local authentication methods disabled' policy at the resource group level.
+resource paLocalAuthDisabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdLocalAuthDisabledId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdLocalAuthDisabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdLocalAuthDisabledId, '2021-06-01').description
+    policyDefinitionId: pdLocalAuthDisabledId
+    parameters: {
+      effect: {
+        value: 'Deny'
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Azure Policy Add-on for Kubernetes service (AKS) should be installed and enabled on your clusters' policy at the resource group level.
+resource paAzurePolicyEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdAzurePolicyEnabledId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdAzurePolicyEnabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdAzurePolicyEnabledId, '2021-06-01').description
+    policyDefinitionId: pdAzurePolicyEnabledId
+    parameters: {
+      effect: {
+        value: 'Audit'  // This policy (as of 1.0.2) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Authorized IP ranges should be defined on Kubernetes Services' policy at the resource group level.
+resource paAuthorizedIpRangesDefined 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdAuthorizedIpRangesDefinedId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdAuthorizedIpRangesDefinedId, '2021-06-01').displayName}', 120)
+    description: reference(pdAuthorizedIpRangesDefinedId, '2021-06-01').description
+    policyDefinitionId: pdAuthorizedIpRangesDefinedId
+    parameters: {
+      effect: {
+        value: 'Audit'  // This policy (as of 2.0.1) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version' policy at the resource group level.
+resource paOldKuberentesDisabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdOldKuberentesDisabledId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdOldKuberentesDisabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdOldKuberentesDisabledId, '2021-06-01').description
+    policyDefinitionId: pdOldKuberentesDisabledId
+    parameters: {
+      effect: {
+        value: 'Audit'  // This policy (as of 1.0.2) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Role-Based Access Control (RBAC) should be used on Kubernetes Services' policy at the resource group level.
+resource paRbacEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdRbacEnabledId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdRbacEnabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdRbacEnabledId, '2021-06-01').description
+    policyDefinitionId: pdRbacEnabledId
+    parameters: {
+      effect: {
+        value: 'Audit'  // This policy (as of 1.0.2) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
+}
+
+// Applying the built-in 'Azure Kubernetes Service Clusters should use managed identities' policy at the resource group level.
+resource paManagedIdentitiesEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdManagedIdentitiesEnabledId, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${reference(pdManagedIdentitiesEnabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdManagedIdentitiesEnabledId, '2021-06-01').description
+    policyDefinitionId: pdManagedIdentitiesEnabledId
+    parameters: {
+      effect: {
+        value: 'Audit'  // This policy (as of 1.0.0) does not have a Deny option, otherwise that would be set here.
+      }
+    }
+  }
 }
 
 // The control plane identity used by the cluster. Used for networking access (VNET joining and DNS updating)
@@ -1129,7 +1477,6 @@ resource kv_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
       }
     ]
   }
-  dependsOn: []
 }
 
 // Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.
@@ -1141,7 +1488,6 @@ resource kvMiAppGatewayFrontendSecretsUserRole_roleAssignment 'Microsoft.Authori
     principalId: miAppGatewayFrontend.properties.principalId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 // Grant the Azure Application Gateway managed identity with key vault reader role permissions; this allows pulling frontend and backend certificates.
@@ -1153,7 +1499,6 @@ resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authoriz
     principalId: miAppGatewayFrontend.properties.principalId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 // Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates.
@@ -1165,7 +1510,6 @@ resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Autho
     principalId: podmiIngressController.properties.principalId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 // Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates
@@ -1177,7 +1521,6 @@ resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Author
     principalId: podmiIngressController.properties.principalId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'nested_EnsureClusterIdentityHasRbacToSelfManagedResources.bicep' = {
@@ -1206,7 +1549,6 @@ resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
       registrationEnabled: false
     }
   }
-  dependsOn: []
 }
 
 resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
@@ -1228,7 +1570,6 @@ resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
       }
     ]
   }
-  dependsOn: []
 
   resource pdnszg 'privateDnsZoneGroups' = {
     name: 'default'
@@ -1248,7 +1589,6 @@ resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
 resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: aksIngressDomainName
   location: 'global'
-  dependsOn: []
 
   resource aksIngressDomainName_bu0001a0008_00 'A' = {
     name: 'bu0001a0008-00'
@@ -1274,7 +1614,7 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 }
 
-resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
+resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
   name: clusterName
   location: location
   tags: {
@@ -1372,10 +1712,9 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
         }
       }
     }
-    nodeResourceGroup: nodeResourceGroupName
+    nodeResourceGroup: nodeResourceGroup.name
     enableRBAC: true
     enablePodSecurityPolicy: false
-    maxAgentPools: 2
     networkProfile: {
       networkPlugin: 'azure'
       networkPolicy: 'azure'
@@ -1447,13 +1786,34 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
 
     ndEnsureClusterIdentityHasRbacToSelfManagedResources
 
+    // Azure Policy for Kubernetes policies that we'd want in place before pods start showing up
+    // in the cluster.  The are not technically a depedency from the resource provider perspective,
+    // but logically they need to be in place before workloads are, so focing that here. This also
+    // ensures that the policies are applied to the cluster at bootstrapping time.
     paAKSLinuxRestrictive
+    paAadIntegrationEnabled
+    paAllowedExternalIPs
+    paAllowedHostPaths
+    paAuthorizedIpRangesDefined
+    paAzurePolicyEnabled
+    paDisallowEndpointEditPermissions
+    paDisallowNamespaceUsage
     paEnforceHttpsIngress
+    paEnforceImageSource
     paEnforceInternalLoadBalancers
     paEnforceResourceLimits
     paRoRootFilesystem
-    paEnforceImageSource
-    paEnforceDefenderInCluster
+
+    // Azure Resource Provider policies that we'd like to see in place before the cluster is deployed
+    // They are not technically a dependency, but logically they would have existed on the resource group
+    // prior to the existence of the cluster, so forcing that here.
+    paDefenderInClusterEnabled
+    paAadIntegrationEnabled
+    paLocalAuthDisabled
+    paAzurePolicyEnabled
+    paOldKuberentesDisabled
+    paRbacEnabled
+    paManagedIdentitiesEnabled
 
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
@@ -1470,7 +1830,6 @@ resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssig
     principalId: mc.properties.identityProfile.kubeletidentity.objectId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 // Grant the OMS Agent's Managed Identity the metrics publisher role to push alerts
@@ -1482,7 +1841,6 @@ resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Auth
     principalId: mc.properties.addonProfiles.omsagent.identity.objectId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 // Grant the AKS cluster with Managed Identity Operator role permissions over the managed identity used for the ingress controller. Allows it to be assigned to the underlying VMSS.
@@ -1494,7 +1852,6 @@ resource miKubeletManagedIdentityOperatorRole_roleAssignment 'Microsoft.Authoriz
     principalId: mc.properties.identityProfile.kubeletidentity.objectId
     principalType: 'ServicePrincipal'
   }
-  dependsOn: []
 }
 
 resource mcAadAdminGroupClusterAdminRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC) {
@@ -1506,7 +1863,6 @@ resource mcAadAdminGroupClusterAdminRole_roleAssignment 'Microsoft.Authorization
     principalId: clusterAdminAadGroupObjectId
     principalType: 'Group'
   }
-  dependsOn: []
 }
 
 resource mcAadAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC) {
@@ -1518,7 +1874,6 @@ resource mcAadAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authori
     principalId: clusterAdminAadGroupObjectId
     principalType: 'Group'
   }
-  dependsOn: []
 }
 
 resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && !(empty(a0008NamespaceReaderAadGroupObjectId)) && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
@@ -1530,7 +1885,6 @@ resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Author
     principalId: a0008NamespaceReaderAadGroupObjectId
     principalType: 'Group'
   }
-  dependsOn: []
 }
 
 resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && !(empty(a0008NamespaceReaderAadGroupObjectId)) && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
@@ -1542,7 +1896,6 @@ resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.A
     principalId: a0008NamespaceReaderAadGroupObjectId
     principalType: 'Group'
   }
-  dependsOn: []
 }
 
 resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -1569,7 +1922,6 @@ resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
       }
     ]
   }
-  dependsOn: []
 }
 
 // Ensures that flux add-on (extension) is installed.
@@ -1643,11 +1995,10 @@ resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurati
 
 module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'nested_EnsureClusterUserAssignedHasRbacToManageVMSS.bicep' = {
   name: 'EnsureClusterUserAssignedHasRbacToManageVMSS'
-  scope: resourceGroup(nodeResourceGroupName)
+  scope: nodeResourceGroup
   params: {
     kubeletidentityObjectId: mc.properties.identityProfile.kubeletidentity.objectId
   }
-  dependsOn: []
 }
 
 resource st 'Microsoft.EventGrid/systemTopics@2021-12-01' = {
@@ -1657,7 +2008,6 @@ resource st 'Microsoft.EventGrid/systemTopics@2021-12-01' = {
     source: mc.id
     topicType: 'Microsoft.ContainerService.ManagedClusters'
   }
-  dependsOn: []
 }
 
 resource st_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -1678,11 +2028,10 @@ resource st_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
       }
     ]
   }
-  dependsOn: []
 }
 
 resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2021-05-01' = {
-  name: wafPolicyName
+  name: 'waf-${clusterName}'
   location: location
   properties: {
     policySettings: {
@@ -1889,7 +2238,6 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
       }
     ]
   }
-  dependsOn: []
 }
 
 /*** OUTPUTS ***/
