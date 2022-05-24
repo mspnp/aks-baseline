@@ -964,20 +964,12 @@ resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-0
           // Known violations
           // K8sAzureAllowedSeccomp
           //  - Kured, no profile defined
-          //  - AAD Pod Identity (nmi & mic), no profile defined
-          // K8sAzureAllowedCapabilities
-          //  - AAD Pod Identity (nmi), requests default unsupported DAC_READ_SEARCH, NET_ADMIN
           // K8sAzureContainerNoPrivilege
           //  - Kured, requires privileged to perform reboot
-          // K8sAzureHostNetworkingPorts
-          //  - AAD Pod Identity (nmi), hostNetwork and hostPort usage
-          // K8sAzureVolumeTypes
-          //  - AAD Pod Identity (nmi & mic), uses hostPath
           // K8sAzureBlockHostNamespaceV2
           //  - Kured, shared host namespace
           // K8sAzureAllowedUsersGroups
           //  - Kured, no runAsNonRoot, no runAsGroup, no supplementalGroups, no fsGroup
-          //  - AAD Pod Identity (nmi & mic), runAsUser=0, no runAsGroup, no supplementalGroups, no fsGroup
           'cluster-baseline-settings'
 
           // Known violations
@@ -1063,8 +1055,6 @@ resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-0
       excludedContainers: {
         value: [
           'kured'   // Kured
-          'nmi'     // AAD Pod Identity
-          'mic'     // AAD Pod Identity
           'aspnet-webapp-sample'   // ASP.NET Core does not support read-only root
         ]
       }
@@ -1088,10 +1078,10 @@ resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021
     policyDefinitionId: pdEnforceResourceLimitsId
     parameters: {
       cpuLimit: {
-        value: '500m' // Kured = 500m, AAD Pod Identity = 200m, traefik-ingress-controller = 200m, aspnet-webapp-sample = 100m
+        value: '500m' // Kured = 500m, traefik-ingress-controller = 200m, aspnet-webapp-sample = 100m
       }
       memoryLimit: {
-        value: '1Gi' // AAD Pod Identity = 1Gi, aspnet-webapp-sample = 256Mi, traefik-ingress-controller = 128Mi, Kured = 48Mi
+        value: '256Mi' // aspnet-webapp-sample = 256Mi, traefik-ingress-controller = 128Mi, Kured = 48Mi
       }
       excludedNamespaces: {
         value: [
@@ -1159,14 +1149,6 @@ resource paAllowedHostPaths 'Microsoft.Authorization/policyAssignments@2021-06-0
         value: {
           paths: [] // Setting to empty blocks all host paths
         }
-      }
-      // AAD Pod Identity mounts: /run/xtables.lock, /etc/default/kubelet, and /etc/kubernetes/azure.json
-      // If not using AAD Pod Identity (OSS version), then you can remove this exclusion
-      excludedContainers: {
-        value: [
-          'nmi'
-          'mic'
-        ]
       }
       effect: {
         value: 'Deny'
@@ -1419,7 +1401,7 @@ resource podmiIngressController 'Microsoft.ManagedIdentity/userAssignedIdentitie
     name: 'ingress-controller'
     properties: {
       issuer: mc.properties.oidcIssuerProfile.issuerURL
-      subject: 'system:serviceaccount:ns:svcaccount'  // TODO: This needs to be set to the correct the namespace and service account name
+      subject: 'system:serviceaccount:a0008:traefik-ingress-controller'
       audiences: [
         'api://AzureADTokenExchange'
       ]
@@ -1513,7 +1495,7 @@ resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authoriz
   }
 }
 
-// Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates.
+// Grant the AKS cluster ingress controller's managed workload identity with key vault reader role permissions; this allows our ingress controller to pull certificates.
 resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultSecretsUserRole.id)
@@ -1524,7 +1506,7 @@ resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Autho
   }
 }
 
-// Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates
+// Grant the AKS cluster ingress controller managed workload identity with key vault reader role permissions; this allows our ingress controller to pull certificates
 resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultReaderRole.id)
@@ -1767,12 +1749,13 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
       enablePrivateCluster: false
     }
     podIdentityProfile: {
-      enabled: false
-      userAssignedIdentities: []
-      userAssignedIdentityExceptions: []
+      enabled: false // Using workload identity for Azure AD Pod identities
     }
     disableLocalAccounts: true
     securityProfile: {
+      workloadIdentity: {
+        enabled: true
+      }
       azureDefender: {
         enabled: true
         logAnalyticsWorkspaceResourceId: la.id

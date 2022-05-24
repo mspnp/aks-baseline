@@ -1,9 +1,0 @@
-{
-    "name": "kubernetes-federated-identity",
-    "issuer": "ISSUER_URL",
-    "subject": "system:serviceaccount:a0008:traefik-ingress-controller",
-    "description": "AKS ingress controller identity",
-    "audiences": [
-       "api://AzureADTokenExchange"
-    ]
-  }
