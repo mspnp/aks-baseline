@@ -13,6 +13,7 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    ```
 
    Note, that if you are on macOS, you might need to use the following command instead:
+
    ```bash
    sed -i '' 's/contoso.com/'"${DOMAIN_NAME_AKS_BASELINE}"'/g' workload/aspnetapp-ingress-patch.yaml
    ```
@@ -53,7 +54,7 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    exit
    ```
 
-   > :beetle: If you are running a version of kubectl less than 1.23 you cannot perform this step.  The Azure Policy for Kubernetes policy assignments that are deployed with this implementation requires both setting limits and also a read only root filesystem.  This isn't possible with kubectl 1.22 and lower.  It's okay to skip this step if in that situation.
+   > :beetle: If you are running a version of kubectl less than 1.23 you cannot perform this step.  The Azure Policy for Kubernetes assignments that are deployed with this implementation requires both setting limits and also a read-only root filesystem. This isn't possible with kubectl 1.22 and lower. It's okay to skip this step if in that situation.
 
    > From this container shell, you could also try to directly access the workload via `curl -I http://<aspnetapp-service-cluster-ip>`. Instead of getting back a `200 OK`, you'll receive a network timeout because of the [`allow-only-ingress-to-workload` network policy](./cluster-manifests/a0008/ingress-network-policy.yaml) that is in place.
 
