@@ -19,6 +19,8 @@ Now that your [ACR instance is deployed and ready to support cluster bootstrappi
 1. Deploy the cluster ARM template.
   :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server. You can limit access to the API Server to a set of well-known IP addresses (i.,e. a jump box subnet (connected to by Azure Bastion), build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options. This setting will also impact traffic originating from within the cluster trying to use the API server, so you will also need to include _all_ of the public IPs used by your egress Azure Firewall. For more information, see [Secure access to the API server using authorized IP address ranges](https://docs.microsoft.com/azure/aks/api-server-authorized-ip-ranges#create-an-aks-cluster-with-api-server-authorized-ip-ranges-enabled).
 
+   :bulb: The cluster will send [diagnostic information](https://docs.microsoft.com/en-us/azure/aks/monitor-aks) of categories _cluster-autoscaler_, _kube-controller-manager_, _kube-audit-admin_ and _guard_ to the Log Analytics Workspace deployed as part of the [bootstrapping step](./05-bootstrap-prep.md). If you plan to inspect the behavior of the scheduler, you might want to also enable the log category _kube-scheduler_ in `cluster-stamp.bicep`. :exclamation: Note that this category is quite verbose and might impact the cost of your workspace.
+
     **Option 1 - Deploy from the command line**
 
    ```bash
