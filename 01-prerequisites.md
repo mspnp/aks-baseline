@@ -28,15 +28,13 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
 
    1. [Register the Azure Event Grid preview feature - `EventgridPreview`](https://docs.microsoft.com/azure/aks/quickstart-event-grid#register-the-eventgridpreview-preview-feature)
 
-   1. [Register the AKS Extensions preview feature - `AKS-ExtensionManager`](https://docs.microsoft.com/azure/aks/cluster-extensions?tabs=azure-cli#register-the-aks-extensionmanager-preview-features)
-
-   1. [Register the Kubernetes Configuration preview feature = `fluxConfigurations`](https://docs.microsoft.com/azure/azure-arc/kubernetes/tutorial-use-gitops-flux2#for-azure-kubernetes-service-clusters)
+   1. [Register the Kubernetes Configuration preview feature - `fluxConfigurations`](https://docs.microsoft.com/azure/azure-arc/kubernetes/tutorial-use-gitops-flux2#for-azure-kubernetes-service-clusters)
 
    1. [Register the OIDC Issuer preview feature = `EnableOIDCIssuerPreview`](https://docs.microsoft.com/azure/aks/cluster-configuration#oidc-issuer-preview)
 
-   1. [Register the Workload Identity preview feature = `EnableWorkloadIdentityPreview`](https://TODO)
-
    1. [Register the Federated Identity Credentials preview feature = `FederatedIdentityCredentials`](https://TODO)
+
+   1. [Register the Workload Identity preview feature = `EnableWorkloadIdentityPreview`](https://TODO)
 
    ```bash
    az feature register --namespace "Microsoft.ContainerService" -n "EventgridPreview"
@@ -44,11 +42,11 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
    az feature register --namespace "Microsoft.KubernetesConfiguration" -n "fluxConfigurations"
    az feature register --namespace "Microsoft.ContainerService" -n "EnableOIDCIssuerPreview"
    az feature register --namespace "Microsoft.ContainerService" -n "AKS-AzureDefender"
-   az feature register --namespace "Microsoft.ContainerService" -n "EnableWorkloadIdentityPreview"
    az feature register --namespace "Microsoft.ManagedIdentity" -n "FederatedIdentityCredentials"
+   az feature register --namespace "Microsoft.ContainerService" -n "EnableWorkloadIdentityPreview"
 
    # Keep running until all say "Registered." (This may take up to 20 minutes.)
-   az feature list -o table --query "[?name=='Microsoft.ContainerService/EventgridPreview' || name=='Microsoft.ContainerService/AKS-ExtensionManager' || name=='Microsoft.ContainerService/EnableOIDCIssuerPreview' || name=='Microsoft.KubernetesConfiguration/fluxConfigurations' || name=='Microsoft.ContainerService/AKS-AzureDefender' || name=='Microsoft.ContainerService/EnableWorkloadIdentityPreview' || name=='Microsoft.ManagedIdentity/FederatedIdentityCredentials'].{Name:name,State:properties.state}"
+   az feature list -o table --query "[?name=='Microsoft.ContainerService/EventgridPreview' || name=='Microsoft.ContainerService/AKS-ExtensionManager' || name=='Microsoft.ContainerService/EnableOIDCIssuerPreview' || name=='Microsoft.KubernetesConfiguration/fluxConfigurations' || name=='Microsoft.ContainerService/AKS-AzureDefender' || name=='Microsoft.ManagedIdentity/FederatedIdentityCredentials' || name=='Microsoft.ContainerService/EnableWorkloadIdentityPreview'].{Name:name,State:properties.state}"
 
    # When all say "Registered" then re-register the AKS and related resource providers
    az provider register --namespace Microsoft.ContainerService
