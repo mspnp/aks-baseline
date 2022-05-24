@@ -66,21 +66,6 @@ The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
    k8sazurevolumetypes                      21m
    ```
 
-1. Create Azure AD app registration  (temporary until managed identity support exists)
-
-```bash
-AZUREAD_APP_OBJECT_ID=$(az ad app create --display-name wi-ingress-controller-ckittel --query objectId -o tsv)
-echo AZUREAD_APP_OBJECT_ID: $AZUREAD_APP_OBJECT_ID
-ISSUER_URL=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksOidcIssuerUrl.value -o tsv)
-echo ISSUER_URL: $ISSUER_URL
-
-sed -i "s/ISSUER_URL/${ISSUER_URL}/" workload/federated-identity.json
-
-az rest -m put -u "https://graph.microsoft.com/beta/applications/${AZUREAD_APP_OBJECT_ID}/federatedIdentityCredentials" -b @workload/federated-identity.json
-
-#TODO: Assign permission to Key Vault RBAC, like the managed identity created in cluster-stamp.  Ideally this would be the managed identity.
-```
-
 ### Save your work in-progress
 
 ```bash

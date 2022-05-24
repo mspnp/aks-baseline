@@ -6,10 +6,6 @@ metadata:
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
-    azure.workload.identity/use: "true"
-  annotations:
-    azure.workload.identity/client-id: APP_REGISTRATION_CLIENT_ID
-    azure.workload.identity/tenant-id: TENANTID_AZURERBAC_AKS_BASELINE
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
