@@ -81,12 +81,6 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    kubectl wait -n a0008 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s
    ```
 
-## Workload identities
-
-This reference implementation uses the Azure AD Pod Identities feature to allow Azure Managed Identities to be associated with the cluster and then associated with pods via the `AzureIdentity` CRD. This feature is in preview and will eventually be replaced with [Azure AD Workload Identities](https://azure.github.io/azure-workload-identity) which approaches the relationship between workloads and their Azure AD identities differently. This Workload Identity feature is also still in preview and will be having additional capabilities built out, such as supporting Azure Managed Identities, to reach a similar feature state as Azure AD Pod Identities. Components like Azure Key Vault Provider for Secrets Store CSI driver will be supporting Workload Identities as an alternative to the original Azure AD Pod Identities feature over time.
-
-This reference implementation does enable the required OIDC Issuer Profile so that you can [begin to use](https://azure.github.io/azure-workload-identity/docs/quick-start.html) the workload identity feature for your applications that can be written to support the new model. Expect updates to this reference implementation as the features and the integration of Azure AD Workload Identities evolve.
-
 ### Next step
 
 :arrow_forward: [Deploy the Workload](./10-workload.md)

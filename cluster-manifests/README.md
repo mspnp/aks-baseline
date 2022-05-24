@@ -11,7 +11,6 @@ This is the root of the GitOps configuration directory. These Kubernetes object 
 * [Kured](#kured)
 * Ingress Network Policy
 * Azure Monitor Prometheus Scraping
-* Azure AD Pod Identity
 
 ### Kured
 

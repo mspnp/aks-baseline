@@ -38,10 +38,9 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 #### In-cluster OSS components
 
-- [Flux GitOps Operator](https://fluxcd.io)
+- [Flux GitOps Operator](https://fluxcd.io) [via AKS extension]
 - [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.5/routing/providers/kubernetes-ingress/)
-- [Azure AD Pod Identity](https://docs.microsoft.com/azure/aks/use-azure-ad-pod-identity)
-- [Secrets Store CSI Driver for Kubernetes](https://docs.microsoft.com/azure/aks/csi-secrets-store-driver)
+- [Secrets Store CSI Driver for Kubernetes](https://docs.microsoft.com/azure/aks/csi-secrets-store-driver) [via AKS addon]
 - [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
 
 ![Network diagram depicting a hub-spoke network with two peered VNets and main Azure resources used in the architecture.](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)
@@ -106,7 +105,6 @@ Consider trying out and providing feedback on the following:
 - [Host-based encryption](https://docs.microsoft.com/azure/aks/enable-host-encryption) - Leverages added data encryption on your VMs' temp and OS disks.
 - [Generation 2 VM support](https://docs.microsoft.com/azure/aks/cluster-configuration#generation-2-virtual-machines-preview) - Increased memory options, Intel SGX support, and UEFI-based boot architectures.
 - [Customizable Node & Kublet config](https://github.com/Azure/AKS/issues/323)
-- [Azure AD Pod Identity as an add-on](https://docs.microsoft.com/azure/aks/use-azure-ad-pod-identity)
 
 ## Related Reference Implementations
 
