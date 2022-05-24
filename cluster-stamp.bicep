@@ -2035,18 +2035,23 @@ resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPo
   location: location
   properties: {
     policySettings: {
-        fileUploadLimitInMb: 10
-        state: 'Enabled'
-        mode: 'Prevention'
+      fileUploadLimitInMb: 10
+      state: 'Enabled'
+      mode: 'Prevention'
     }
     managedRules: {
-        managedRuleSets: [
-            {
-                ruleSetType: 'OWASP'
-                ruleSetVersion: '3.2'
-                ruleGroupOverrides: []
-            }
-        ]
+      managedRuleSets: [
+        {
+            ruleSetType: 'OWASP'
+            ruleSetVersion: '3.2'
+            ruleGroupOverrides: []
+        }
+        {
+          ruleSetType: 'Microsoft_BotManagerRuleSet'
+          ruleSetVersion: '0.1'
+          ruleGroupOverrides: []
+        }
+      ]
     }
   }
 }
