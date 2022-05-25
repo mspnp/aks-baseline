@@ -254,29 +254,43 @@ resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' 
   }
 }
 
-resource ssPrometheusAll 'Microsoft.OperationalInsights/workspaces/savedSearches@2020-08-01' = {
-  parent: la
-  name: 'AllPrometheus'
+// A query pack to hold any custom quries you may want to write to monitor your cluster or workloads
+resource qpBaselineQueryPack 'Microsoft.OperationalInsights/queryPacks@2019-09-01' = {
+  location: location
+  name: 'AKS baseline bundled queries'
+  properties: {}
+}
+
+// Example query that shows all scraped Prometheus metrics
+resource qPrometheusAll 'Microsoft.OperationalInsights/queryPacks/queries@2019-09-01' = {
+  parent: qpBaselineQueryPack
+  name: guid(resourceGroup().id, 'PrometheusAll', clusterName)
   properties: {
-#disable-next-line BCP037
-    etag: '*'
-    category: 'Prometheus'
     displayName: 'All collected Prometheus information'
-    query: 'InsightsMetrics | where Namespace == "prometheus"'
-    version: 1
+    description: 'This is all collected Prometheus metrics'
+    body: 'InsightsMetrics | where Namespace == "prometheus"'
+    related: {
+      categories: [
+        'container'
+      ]
+    }
   }
 }
 
-resource ssPrometheusKuredRequestedReeboot 'Microsoft.OperationalInsights/workspaces/savedSearches@2020-08-01' = {
-  parent: la
-  name: 'NodeRebootRequested'
+// Example query that shows the usage of a specific Prometheus metric emitted by Kured
+resource qNodeReboots 'Microsoft.OperationalInsights/queryPacks/queries@2019-09-01' = {
+  parent: qpBaselineQueryPack
+  name: guid(resourceGroup().id, 'KuredNodeReboot', clusterName)
   properties: {
-#disable-next-line BCP037
-    etag: '*'
-    category: 'Prometheus'
-    displayName: 'Nodes reboot required by kured'
-    query: 'InsightsMetrics | where Namespace == "prometheus" and Name == "kured_reboot_required" | where Val > 0'
-    version: 1
+    displayName: 'Kubenertes node reboot requested'
+    description: 'Which Kubernetes nodes are flagged for reboot (based on Prometheus metrics).'
+    body: 'InsightsMetrics | where Namespace == "prometheus" and Name == "kured_reboot_required" | where Val > 0'
+    related: {
+      categories: [
+        'container'
+        'management'
+      ]
+    }
   }
 }
 

@@ -83,14 +83,13 @@ Azure Monitor is configured to [scrape Prometheus metrics](https://docs.microsof
 - [Traefik](./workload/traefik.yaml) (in the `a0008` namespace)
 - [Kured](./cluster-baseline-settings/kured.yaml) (in the `cluster-baseline-settings` namespace)
 
- :bulb: This reference implementation ships with two saved queries (_All collected Prometheus information_ and _Nodes reboot required by kured_) as an example of how you can write your own and manage them via ARM templates. 
+ :bulb: This reference implementation ships with two saved queries (_All collected Prometheus information_ and _Kubenertes node reboot requested_) in a Log Analytics Query Pack as an example of how you can write your own and manage them via ARM templates.
 
 ### Steps
 
 1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
 1. Select your Log Analytic Workspace resource and open the _Logs_ blade.
-1. In the popup _Queries_ select _Legacy category_ in the drop down field in the upper left corner. 
-1. Select _Prometheus_ in the section list on the left.
+1. Find the one of the above queries in the _Containers_ category.
 1. You are able to select and execute the saved query over the scraped metrics.
 
 ## Validate Workload Logs
