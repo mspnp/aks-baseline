@@ -1398,7 +1398,7 @@ resource miAppGatewayFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@
 // User Managed Identity for the cluster's ingress controller pods via Workload Identity. Used for Azure Key Vault Access.
 resource podmiIngressController 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'podmi-ingress-controller'
-  location: 'westcentralUS'  // This is the only region currently supported.  TODO: Update to $location once in public preview.
+  location: 'westcentralUS'  // This is the only region currently supported.  TODO: Update to location once in public preview.
 
   // Workload identity service account federation
   resource federatedCreds 'federatedIdentityCredentials@2022-01-31-preview' = {
@@ -1753,7 +1753,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
       enablePrivateCluster: false
     }
     podIdentityProfile: {
-      enabled: false // Using workload identity for Azure AD Pod identities
+      enabled: false // Using federated workload identity for Azure AD Pod identities, not the deprecated AAD Pod Identity
     }
     disableLocalAccounts: true
     securityProfile: {
@@ -1841,17 +1841,6 @@ resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Auth
     principalType: 'ServicePrincipal'
   }
 }
-
-// Grant the AKS cluster with Managed Identity Operator role permissions over the managed identity used for the ingress controller. Allows it to be assigned to the underlying VMSS.
-/* resource miKubeletManagedIdentityOperatorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  scope: podmiIngressController
-  name: guid(resourceGroup().id, 'podmi-ingress-controller', managedIdentityOperatorRole.id)
-  properties: {
-    roleDefinitionId: managedIdentityOperatorRole.id
-    principalId: mc.properties.identityProfile.kubeletidentity.objectId
-    principalType: 'ServicePrincipal'
-  }
-}*/
 
 resource mcAadAdminGroupClusterAdminRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC) {
   scope: mc
@@ -2247,7 +2236,5 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
 /*** OUTPUTS ***/
 
 output aksClusterName string = clusterName
-output aksIngressControllerPodManagedIdentityResourceId string = podmiIngressController.id
 output aksIngressControllerPodManagedIdentityClientId string = podmiIngressController.properties.clientId
-output aksOidcIssuerUrl string = mc.properties.oidcIssuerProfile.issuerURL
 output keyVaultName string = kv.name
