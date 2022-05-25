@@ -29,26 +29,26 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    apiVersion: secrets-store.csi.x-k8s.io/v1
    kind: SecretProviderClass
    metadata:
-      name: aks-ingress-tls-secret-csi-akv
-      namespace: a0008
+     name: aks-ingress-tls-secret-csi-akv
+     namespace: a0008
    spec:
-      provider: azure
-      parameters:
-         clientID: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID
-         usePodIdentity: "false"
-         useVMManagedIdentity: "false"
-         keyvaultName: $KEYVAULT_NAME_AKS_BASELINE
-         objects:  |
-            array:
-            - |
-               objectName: traefik-ingress-internal-aks-ingress-tls
-               objectAlias: tls.crt
-               objectType: cert
-            - |
-               objectName: traefik-ingress-internal-aks-ingress-tls
-               objectAlias: tls.key
-               objectType: secret
-         tenantId: $TENANTID_AZURERBAC_AKS_BASELINE
+     provider: azure
+     parameters:
+       clientID: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID
+       usePodIdentity: "false"
+       useVMManagedIdentity: "false"
+       keyvaultName: $KEYVAULT_NAME_AKS_BASELINE
+       objects:  |
+          array:
+          - |
+            objectName: traefik-ingress-internal-aks-ingress-tls
+            objectAlias: tls.crt
+            objectType: cert
+         - |
+           objectName: traefik-ingress-internal-aks-ingress-tls
+           objectAlias: tls.key
+           objectType: secret
+       tenantId: $TENANTID_AZURERBAC_AKS_BASELINE
    EOF
    ```
 
