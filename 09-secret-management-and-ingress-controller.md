@@ -39,15 +39,15 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
        useVMManagedIdentity: "false"
        keyvaultName: $KEYVAULT_NAME_AKS_BASELINE
        objects:  |
-          array:
-          - |
-            objectName: traefik-ingress-internal-aks-ingress-tls
-            objectAlias: tls.crt
-            objectType: cert
-         - |
-           objectName: traefik-ingress-internal-aks-ingress-tls
-           objectAlias: tls.key
-           objectType: secret
+         array:
+           - |
+             objectName: traefik-ingress-internal-aks-ingress-tls
+             objectAlias: tls.crt
+             objectType: cert
+           - |
+             objectName: traefik-ingress-internal-aks-ingress-tls
+             objectAlias: tls.key
+             objectType: secret
        tenantId: $TENANTID_AZURERBAC_AKS_BASELINE
    EOF
    ```
