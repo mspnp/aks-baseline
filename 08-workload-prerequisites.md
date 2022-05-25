@@ -4,9 +4,9 @@ The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
 
 ## Steps
 
-## Import the wildcard certificate for the AKS Ingress Controller to Azure Key Vault
+## Import the wildcard certificate for the AKS ingress controller to Azure Key Vault
 
-> :book: Contoso Bicycle procured a CA certificate, a standard one, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing.
+> :book: Contoso Bicycle procured a CA certificate, a standard one, to be used with the AKS ingress controller. This one is not EV, as it will not be user facing.
 
 1. Obtain the Azure Key Vault details and give the current user permissions and network access to import certificates.
 
@@ -25,7 +25,7 @@ The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
    az keyvault network-rule add -n $KEYVAULT_NAME_AKS_BASELINE --ip-address ${CURRENT_IP_ADDRESS}
    ```
 
-1. Import the AKS Ingress Controller's Wildcard Certificate for `*.aks-ingress.contoso.com`.
+1. Import the AKS ingress controller's wildcard certificate for `*.aks-ingress.contoso.com`.
 
    :warning: If you already have access to an [appropriate certificate](https://docs.microsoft.com/azure/key-vault/certificates/certificate-scenarios#formats-of-import-we-support), or can procure one from your organization, consider using it for this step. For more information, please take a look at the [import certificate tutorial using Azure Key Vault](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate#import-a-certificate-to-key-vault).
 
