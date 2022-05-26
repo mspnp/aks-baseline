@@ -55,7 +55,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
    ```bash
    cat <<EOF | kubectl create -f -
-   apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+   apiVersion: secrets-store.csi.x-k8s.io/v1
    kind: SecretProviderClass
    metadata:
      name: aks-ingress-tls-secret-csi-akv
@@ -64,6 +64,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
      provider: azure
      parameters:
        usePodIdentity: "true"
+       useVMManagedIdentity: "false"
        keyvaultName: $KEYVAULT_NAME_AKS_BASELINE
        objects:  |
          array:
