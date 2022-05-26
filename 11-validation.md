@@ -83,7 +83,7 @@ Azure Monitor is configured to [scrape Prometheus metrics](https://docs.microsof
 - [Traefik](./workload/traefik.yaml) (in the `a0008` namespace)
 - [Kured](./cluster-baseline-settings/kured.yaml) (in the `cluster-baseline-settings` namespace)
 
- :bulb: This reference implementation ships with two saved queries (_All collected Prometheus information_ and _Kubenertes node reboot requested_) in a Log Analytics Query Pack as an example of how you can write your own and manage them via ARM templates.
+ :bulb: This reference implementation ships with two queries (_All collected Prometheus information_ and _Kubenertes node reboot requested_) in a Log Analytics Query Pack as an example of how you can write your own and manage them via ARM templates.
 
 ### Steps
 
