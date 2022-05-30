@@ -63,7 +63,9 @@ Your workload is placed behind a Web Application Firewall (WAF), which has rules
 
 ## Validate Cluster Azure Monitor Insights and Logs
 
-Monitoring your cluster is critical, especially when you're running a production cluster. Azure Monitor is configured to surface cluster logs, here you can see those logs as they are generated. [Azure Monitor for containers](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-overview) is configured on this cluster for this purpose.
+Monitoring your cluster is critical, especially when you're running a production cluster. Therefore, your AKS cluster is configured to send [diagnostic information](https://docs.microsoft.com/azure/aks/monitor-aks) of categories _cluster-autoscaler_, _kube-controller-manager_, _kube-audit-admin_ and _guard_ to the Log Analytics Workspace deployed as part of the [bootstrapping step](./05-bootstrap-prep.md). Additionally, [Azure Monitor for containers](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-overview) is configured on your cluster to capture metrics and logs from your workload containers. Azure Monitor is configured to surface cluster logs, here you can see those logs as they are generated. 
+
+:bulb: If you need to inspect the behavior of the Kubernetes scheduler, enable the log category _kube-scheduler_ (either through the _Diagnostic Settings_ blade of your AKS cluster or by enabling the category in your `cluster-stamp.bicep` template). Note that this category is quite verbose and will impact the cost of your Log Analytics Workspace.
 
 ### Steps
 
