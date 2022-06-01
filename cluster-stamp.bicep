@@ -1934,6 +1934,10 @@ resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-0
         category: 'guard'
         enabled: true
       }
+      {
+        category: 'kube-scheduler'
+        enabled: false // Only enable while tuning or triaging issues with scheduling. On a normally operating cluster there is minimal value, relative to the log capture cost, to keeping this always enabled.
+      }
     ]
   }
 }
