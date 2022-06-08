@@ -17,6 +17,8 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    kubectl version --client
    ```
 
+   > Starting with `kubectl` 1.24, you must also have the `kubelogin` credential (exec) plugin available for Azure AD authentication. Installing `kubectl` via `az aks install-cli` does this already, but if you install `kubectl` in a different way, please also make sure `kubelogin` is also [installed](https://github.com/Azure/kubelogin#getting-started).
+
 1. Get the cluster name.
 
    ```bash
