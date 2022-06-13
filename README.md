@@ -24,7 +24,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 #### Azure platform
 
-- AKS v1.22
+- AKS v1.23
   - System and User [node pool separation](https://docs.microsoft.com/azure/aks/use-system-pools)
   - [AKS-managed Azure AD](https://docs.microsoft.com/azure/aks/managed-aad)
   - Azure AD-backed Kubernetes RBAC (_local user accounts disabled_)
@@ -38,10 +38,10 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 #### In-cluster OSS components
 
-- [Flux GitOps Operator](https://fluxcd.io)
+- [Flux GitOps Operator](https://fluxcd.io) _[AKS-managed extension]_
 - [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.5/routing/providers/kubernetes-ingress/)
 - [Azure AD Pod Identity](https://docs.microsoft.com/azure/aks/use-azure-ad-pod-identity)
-- [Secrets Store CSI Driver for Kubernetes](https://docs.microsoft.com/azure/aks/csi-secrets-store-driver)
+- [Secrets Store CSI Driver for Kubernetes](https://docs.microsoft.com/azure/aks/csi-secrets-store-driver) _[AKS-managed add-on]_
 - [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
 
 ![Network diagram depicting a hub-spoke network with two peered VNets and main Azure resources used in the architecture.](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)
@@ -98,19 +98,19 @@ Most of the Azure resources deployed in the prior steps will incur ongoing charg
 
 ## Preview features
 
-While this reference implementation tends to avoid _preview_ features of AKS to ensure you have the best customer support experience; there are some features you may wish to evaluate in pre-production clusters that augment your posture around security, manageability, etc. As these features come out of preview, this reference implementation may be updated to incorporate them.
+Kubernetes and, by extension, AKS are fast-evolving products. The [AKS roadmap](https://aka.ms/AKS/Roadmap) shows how quick the product is changing. This reference implementation does take dependencies on select preview features which the AKS team describes as "Shipped & Improving." The rational behind that is that many of the preview features stay in that state for only a few months before entering GA. If you are just artchitecting your cluster today, by the time you're ready for production, there is a good chance that many of the preview features are nearing or will have hit GA.
 
-Consider trying out and providing feedback on the following:
+This implementation will not include every preview feature, but instead only those that add significant value to a general-purpose cluster. There are some additional preview features you may wish to evaluate in pre-production clusters that augment your posture around security, manageability, etc. As these features come out of preview, this reference implementation may be updated to incorporate them. Consider trying out and providing feedback on the following:
 
-- [Automatic Node Upgrade](https://github.com/Azure/AKS/issues/1486)
-- [Host-based encryption](https://docs.microsoft.com/azure/aks/enable-host-encryption) - Leverages added data encryption on your VMs' temp and OS disks.
-- [Generation 2 VM support](https://docs.microsoft.com/azure/aks/cluster-configuration#generation-2-virtual-machines-preview) - Increased memory options, Intel SGX support, and UEFI-based boot architectures.
-- [Customizable Node & Kublet config](https://github.com/Azure/AKS/issues/323)
-- [Azure AD Pod Identity as an add-on](https://docs.microsoft.com/azure/aks/use-azure-ad-pod-identity)
+- [BYO Kubelet Identity](https://docs.microsoft.com/azure/aks/use-managed-identity#bring-your-own-kubelet-mi)
+- [Custom Azure Policy for Kubernetes support](https://techcommunity.microsoft.com/t5/azure-governance-and-management/azure-policy-for-kubernetes-releases-support-for-custom-policy/ba-p/2699466)
+- [Planned maintenance window](https://docs.microsoft.com/azure/aks/planned-maintenance)
+- [BYO CNI (`--network-plugin none`)](https://docs.microsoft.com/azure/aks/use-byo-cni)
+- [Simplified application autoscaling with Kubernetes Event-driven Autoscaling (KEDA) add-on](https://docs.microsoft.com/azure/aks/keda)
 
 ## Related Reference Implementations
 
-The AKS Baseline was used as the foundation for the following additional reference implementations. These build on the learnins of the AKS Baseline and applies a specific lens to the cluster to align a specific topology, requirement, and/or workload type.
+The AKS Baseline was used as the foundation for the following additional reference implementations. These build on the learnings of the AKS baseline and applies a specific lens to the cluster to align a specific topology, requirement, and/or workload type.
 
 - [AKS Baseline for Multi-Region Clusters](https://github.com/mspnp/aks-baseline-multi-region)
 - [AKS Baseline for Regulated Workloads](https://github.com/mspnp/aks-baseline-regulated)
@@ -122,7 +122,7 @@ The AKS Baseline was used as the foundation for the following additional referen
 This reference implementation intentionally does not cover more advanced scenarios. For example topics like the following are not addressed:
 
 - Cluster lifecycle management with regard to SDLC and GitOps
-- Workload SDLC integration (including concepts like [Bridge to Kubernetes](https://docs.microsoft.com/visualstudio/containers/bridge-to-kubernetes?view=vs-2019), advanced deployment techniques, etc)
+- Workload SDLC integration (including concepts like [Bridge to Kubernetes](https://docs.microsoft.com/visualstudio/containers/bridge-to-kubernetes), advanced deployment techniques, [Draft](https://docs.microsoft.com/azure/aks/draft), etc)
 - Container security
 - Multiple (related or unrelated) workloads owned by the same team
 - Multiple workloads owned by disparate teams (AKS as a shared platform in your organization)

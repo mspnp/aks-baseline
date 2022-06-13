@@ -43,13 +43,13 @@ If your issue appears to be a bug, and hasn't been reported, open a new issue. H
 * **Related Issues** - has a similar issue been reported before?
 * **Suggest a Fix** - if you can't fix the bug yourself, perhaps you can point to what might be causing the problem (line of code or commit)
 
-You can file new issues by providing the above information at the corresponding repository's issues link: https://github.com/mspnp/aks-secure-baseline/issues/new].
+You can file new issues by providing the above information at the corresponding repository's issues link: https://github.com/mspnp/aks-baseline/issues/new].
 
 ### <a name="submit-pr"></a> Submitting a Pull Request (PR)
 
 Before you submit your Pull Request (PR) consider the following guidelines:
 
-* Search the repository (<https://github.com/mspnp/aks-secure-baseline/pulls>) for an open or closed PR
+* Search the repository (<https://github.com/mspnp/aks-baseline/pulls>) for an open or closed PR
   that relates to your submission. You don't want to duplicate effort.
 
 * Make your changes in a new git fork:

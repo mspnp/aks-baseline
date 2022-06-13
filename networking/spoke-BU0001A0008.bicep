@@ -322,7 +322,7 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2021-05-01' = {
       {
         name: 'snet-applicationgateway'
         properties: {
-          addressPrefix: '10.240.4.16/28'
+          addressPrefix: '10.240.5.0/24'
           networkSecurityGroup: {
             id: nsgAppGwSubnet.id
           }
@@ -351,7 +351,7 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2021-05-01' = {
 
 // Peer to regional hub
 module peeringSpokeToHub 'virtualNetworkPeering.bicep' = {
-  name: 'Peer-${vnetSpoke.name}To${hubVirtualNetwork.name}'
+  name: take('Peer-${vnetSpoke.name}To${hubVirtualNetwork.name}', 64)
   params: {
     remoteVirtualNetworkId: hubVirtualNetwork.id
     localVnetName: vnetSpoke.name
@@ -363,7 +363,7 @@ module peeringSpokeToHub 'virtualNetworkPeering.bicep' = {
 // may vary from organization to organization. This example simply does it in
 // the most direct way.
 module peeringHubToSpoke 'virtualNetworkPeering.bicep' = {
-  name: 'Peer-${hubVirtualNetwork.name}To${vnetSpoke.name}'
+  name: take('Peer-${hubVirtualNetwork.name}To${vnetSpoke.name}', 64)
   dependsOn: [
     peeringSpokeToHub
   ]
@@ -434,4 +434,4 @@ output clusterVnetResourceId string = vnetSpoke.id
 output nodepoolSubnetResourceIds array = [
   vnetSpoke::snetClusterNodes.id
 ]
-output appGwPublicIpAddress string = pipPrimaryClusterIp.id
+output appGwPublicIpAddress string = pipPrimaryClusterIp.properties.ipAddress

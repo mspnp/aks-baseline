@@ -9,6 +9,8 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    ```bash
    TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
    TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
+   echo TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
+   echo TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
    ```
 
 1. Ensure your bootstrapping process has created the following namespace.
@@ -53,7 +55,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
    ```bash
    cat <<EOF | kubectl create -f -
-   apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+   apiVersion: secrets-store.csi.x-k8s.io/v1
    kind: SecretProviderClass
    metadata:
      name: aks-ingress-tls-secret-csi-akv
@@ -62,6 +64,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
      provider: azure
      parameters:
        usePodIdentity: "true"
+       useVMManagedIdentity: "false"
        keyvaultName: $KEYVAULT_NAME_AKS_BASELINE
        objects:  |
          array:
@@ -95,7 +98,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    :warning: Deploying the traefik `traefik.yaml` file unmodified from this repo will be deploying your workload to take dependencies on a public container registry. This is generally okay for learning/testing, but not suitable for production. Before going to production, ensure _all_ image references are from _your_ container registry or another that you feel confident relying on.
 
    ```bash
-   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-secure-baseline/main/workload/traefik.yaml
+   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-baseline/main/workload/traefik.yaml
    ```
 
 1. Wait for Traefik to be ready.

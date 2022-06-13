@@ -10,17 +10,20 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 * AAD Pod Identity
 * the workload's namespace named `a0008`
 
-1. Install `kubectl` 1.23 or newer. (`kubctl` supports +/-1 Kubernetes version.)
+1. Install `kubectl` 1.23 or newer. (`kubectl` supports ±1 Kubernetes version.)
 
    ```bash
    sudo az aks install-cli
    kubectl version --client
    ```
 
+   > Starting with `kubectl` 1.24, you must also have the `kubelogin` credential (exec) plugin available for Azure AD authentication. Installing `kubectl` via `az aks install-cli` does this already, but if you install `kubectl` in a different way, please make sure `kubelogin` is [installed](https://github.com/Azure/kubelogin#getting-started).
+
 1. Get the cluster name.
 
    ```bash
    AKS_CLUSTER_NAME=$(az aks list -g rg-bu0001a0008 --query '[0].name' -o tsv)
+   echo AKS_CLUSTER_NAME: $AKS_CLUSTER_NAME
    ```
 
 1. Get AKS `kubectl` credentials.
