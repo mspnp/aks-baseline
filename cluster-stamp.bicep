@@ -2011,6 +2011,60 @@ resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurati
   ]
 }
 
+//Custom maintenance configuration - Off-business hours (Mon-Thu 7:00 pm-11:00 pm eastern time).
+resource mc_maintenanceConfigurations 'Microsoft.ContainerService/managedClusters/maintenanceConfigurations@2022-03-02-preview' = {
+  parent: mc
+  name: 'default'
+  properties: {
+    notAllowedTime: [
+      {
+        // Thanksgiving
+        start: '2022-11-24T00:00:00-04:00'
+        end: '2022-11-25T23:59:59-04:00'
+      }
+    ]
+    timeInWeek: [
+      // All times UTC
+      {
+        day: 'Monday'
+        hourSlots: [
+          23
+          0
+          1
+          2
+        ]
+      }
+      {
+        day: 'Tuesday'
+        hourSlots: [
+          23
+          0
+          1
+          2
+        ]
+      }
+      {
+        day: 'Wednesday'
+        hourSlots: [
+          23
+          0
+          1
+          2
+        ]
+      }
+      {
+        day: 'Thursday'
+        hourSlots: [
+          23
+          0
+          1
+          2
+        ]
+      }
+    ]
+  }
+}
+
 module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'nested_EnsureClusterUserAssignedHasRbacToManageVMSS.bicep' = {
   name: 'EnsureClusterUserAssignedHasRbacToManageVMSS'
   scope: nodeResourceGroup

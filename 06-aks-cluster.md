@@ -17,7 +17,10 @@ Now that your [ACR instance is deployed and ready to support cluster bootstrappi
    ```
 
 1. Deploy the cluster ARM template.
-  :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server. You can limit access to the API Server to a set of well-known IP addresses (i.,e. a jump box subnet (connected to by Azure Bastion), build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options. This setting will also impact traffic originating from within the cluster trying to use the API server, so you will also need to include _all_ of the public IPs used by your egress Azure Firewall. For more information, see [Secure access to the API server using authorized IP address ranges](https://docs.microsoft.com/azure/aks/api-server-authorized-ip-ranges#create-an-aks-cluster-with-api-server-authorized-ip-ranges-enabled).
+
+    :exclamation: By default, this deployment will allow unrestricted access to your cluster's API Server. You can limit access to the API Server to a set of well-known IP addresses (i.,e. a jump box subnet (connected to by Azure Bastion), build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options. This setting will also impact traffic originating from within the cluster trying to use the API server, so you will also need to include _all_ of the public IPs used by your egress Azure Firewall. For more information, see [Secure access to the API server using authorized IP address ranges](https://docs.microsoft.com/azure/aks/api-server-authorized-ip-ranges#create-an-aks-cluster-with-api-server-authorized-ip-ranges-enabled).
+
+    The deployment template contains a custom [Planned Maintenance](https://docs.microsoft.com/azure/aks/planned-maintenance) configuration. The given configuration allows planned maintenance windows after business hours on four days of the week. This avoids maintenance from happening during peek hours. Additionally, it ensures operations staff is still available to observe and fix potential issues. You can adjust the `mc_maintenanceConfigurations` resource based on your time zone and operational requirements.
 
     **Option 1 - Deploy from the command line**
 
