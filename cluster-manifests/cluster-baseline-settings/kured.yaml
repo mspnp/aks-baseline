@@ -1,4 +1,4 @@
-# Source: https://github.com/weaveworks/kured/releases/download/1.9.2/kured-1.9.2-dockerhub.yaml
+# Source: https://github.com/weaveworks/kured/releases/download/1.10.1/kured-1.10.1-dockerhub.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -15,7 +15,7 @@ rules:
   verbs:     ["get", "patch"]
 - apiGroups: [""]
   resources: ["pods"]
-  verbs:     ["list", "delete", "get"]
+  verbs:     ["list","delete","get"]
 - apiGroups: ["apps"]
   resources: ["daemonsets"]
   verbs:     ["get"]
@@ -106,11 +106,13 @@ spec:
           # PRODUCTION READINESS CHANGE REQUIRED
           # This image should be sourced from a non-public container registry, such as the
           # one deployed along side of this reference implementation.
-          # az acr import --source docker.io/weaveworks/kured:1.9.2 -n <your-acr-instance-name>
+          # az acr import --source docker.io/weaveworks/kured:1.10.1 -n <your-acr-instance-name>
           # and then set this to
-          # image: <your-acr-instance-name>.azurecr.io/weaveworks/kured:1.9.2
-          image: docker.io/weaveworks/kured:1.9.2
+          # image: <your-acr-instance-name>.azurecr.io/weaveworks/kured:1.10.1
+          image: docker.io/weaveworks/kured:1.10.1
           imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true # Give permission to nsenter /proc/1/ns/mnt
           resources:
             limits:
               cpu: 500m
@@ -118,8 +120,6 @@ spec:
             requests:
               cpu: 200m
               memory: 16Mi
-          securityContext:
-            privileged: true # Give permission to nsenter /proc/1/ns/mnt
           env:
             - name: KURED_NODE_ID
               valueFrom:
