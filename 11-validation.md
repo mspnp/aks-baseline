@@ -70,7 +70,7 @@ Monitoring your cluster is critical, especially when you're running a production
 ### Steps
 
 1. In the Azure Portal, navigate to your AKS cluster resource.
-1. Click _Insights_ to see see captured data.
+1. Click _Insights_ to see captured data.
 
 You can also execute [queries](https://docs.microsoft.com/azure/azure-monitor/log-query/get-started-portal) on the [cluster logs captured](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-log-search).
 
