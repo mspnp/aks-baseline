@@ -28,19 +28,16 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
 
    1. [Register the Azure Event Grid preview feature - `EventgridPreview`](https://docs.microsoft.com/azure/aks/quickstart-event-grid#register-the-eventgridpreview-preview-feature)
 
-   1. [Register the Kubernetes Configuration preview feature - `fluxConfigurations`](https://docs.microsoft.com/azure/azure-arc/kubernetes/tutorial-use-gitops-flux2#for-azure-kubernetes-service-clusters)
-
    1. [Register the OIDC Issuer preview feature = `EnableOIDCIssuerPreview`](https://docs.microsoft.com/azure/aks/cluster-configuration#oidc-issuer-preview)
 
    ```bash
    az feature register --namespace "Microsoft.ContainerService" -n "EventgridPreview"
    az feature register --namespace "Microsoft.ContainerService" -n "AKS-ExtensionManager"
-   az feature register --namespace "Microsoft.KubernetesConfiguration" -n "fluxConfigurations"
    az feature register --namespace "Microsoft.ContainerService" -n "EnableOIDCIssuerPreview"
    az feature register --namespace "Microsoft.ContainerService" -n "AKS-AzureDefender"
 
    # Keep running until all say "Registered." (This may take up to 20 minutes.)
-   az feature list -o table --query "[?name=='Microsoft.ContainerService/EventgridPreview' || name=='Microsoft.ContainerService/AKS-ExtensionManager' || name=='Microsoft.ContainerService/EnableOIDCIssuerPreview' || name=='Microsoft.KubernetesConfiguration/fluxConfigurations' || name=='Microsoft.ContainerService/AKS-AzureDefender' ].{Name:name,State:properties.state}"
+   az feature list -o table --query "[?name=='Microsoft.ContainerService/EventgridPreview' || name=='Microsoft.ContainerService/AKS-ExtensionManager' || name=='Microsoft.ContainerService/EnableOIDCIssuerPreview' || name=='Microsoft.ContainerService/AKS-AzureDefender' ].{Name:name,State:properties.state}"
 
    # When all say "Registered" then re-register the AKS and related resource providers
    az provider register --namespace Microsoft.ContainerService
