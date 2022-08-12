@@ -1,5 +1,8 @@
 kind: ConfigMap
 apiVersion: v1
+metadata:
+  name: container-azm-ms-agentconfig
+  namespace: kube-system
 data:
   # https://raw.githubusercontent.com/microsoft/Docker-Provider/ci_prod/kubernetes/container-azm-ms-agentconfig.yaml
   # https://docs.microsoft.com/azure/azure-monitor/containers/container-insights-agent-config
@@ -159,6 +162,4 @@ data:
     #   tail_buf_chunksize_megabytes = "1"            # default value is 32kb (comment out this line for default)
     #   tail_buf_maxsize_megabytes = "1"              # defautl value is 32kb (comment out this line for default)
     #   tail_ignore_older = "5m"                      # default value same as fluent-bit default i.e.0m
-metadata:
-  name: container-azm-ms-agentconfig
-  namespace: kube-system
+
