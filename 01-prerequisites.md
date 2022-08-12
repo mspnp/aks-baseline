@@ -28,14 +28,11 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
 
    1. [Register the Azure Event Grid preview feature - `EventgridPreview`](https://docs.microsoft.com/azure/aks/quickstart-event-grid#register-the-eventgridpreview-preview-feature)
 
-   1. [Register the Kubernetes Configuration preview feature - `fluxConfigurations`](https://docs.microsoft.com/azure/azure-arc/kubernetes/tutorial-use-gitops-flux2#for-azure-kubernetes-service-clusters)
-
    1. [Register the OIDC Issuer preview feature = `EnableOIDCIssuerPreview`](https://docs.microsoft.com/azure/aks/cluster-configuration#oidc-issuer-preview)
 
    ```bash
    az feature register --namespace "Microsoft.ContainerService" -n "EventgridPreview"
    az feature register --namespace "Microsoft.ContainerService" -n "AKS-ExtensionManager"
-   az feature register --namespace "Microsoft.KubernetesConfiguration" -n "fluxConfigurations"
    az feature register --namespace "Microsoft.ContainerService" -n "EnableOIDCIssuerPreview"
    az feature register --namespace "Microsoft.ContainerService" -n "AKS-AzureDefender"
 

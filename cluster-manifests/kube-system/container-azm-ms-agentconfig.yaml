@@ -2,6 +2,7 @@ kind: ConfigMap
 apiVersion: v1
 data:
   # https://raw.githubusercontent.com/microsoft/Docker-Provider/ci_prod/kubernetes/container-azm-ms-agentconfig.yaml
+  # https://docs.microsoft.com/azure/azure-monitor/containers/container-insights-agent-config
   schema-version:
     #string.used by agent to parse config. supported versions are {v1}. Configs with other schema versions will be rejected by the agent.
     v1
