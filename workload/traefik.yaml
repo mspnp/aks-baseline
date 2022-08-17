@@ -227,10 +227,10 @@ spec:
         # PRODUCTION READINESS CHANGE REQUIRED
         # This image should be sourced from a non-public container registry, such as the
         # one deployed along side of this reference implementation.
-        # az acr import --source docker.io/library/traefik:v2.5.3 -n <your-acr-instance-name>
+        # az acr import --source docker.io/library/traefik:v2.8.1 -n <your-acr-instance-name>
         # and then set this to
-        # image: <your-acr-instance-name>.azurecr.io/library/traefik:v2.5.3
-      - image: docker.io/library/traefik:v2.5.3
+        # image: <your-acr-instance-name>.azurecr.io/library/traefik:v2.8.1
+      - image: docker.io/library/traefik:v2.8.1
         name: traefik-ingress-controller
         resources:
           requests:
