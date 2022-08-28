@@ -106,10 +106,10 @@ spec:
           # PRODUCTION READINESS CHANGE REQUIRED
           # This image should be sourced from a non-public container registry, such as the
           # one deployed along side of this reference implementation.
-          # az acr import --source docker.io/weaveworks/kured:1.10.1 -n <your-acr-instance-name>
+          # az acr import --source acrakszm7lsuhxmymos.azurecr.io/weaveworks/kured:1.10.1 -n <your-acr-instance-name>
           # and then set this to
           # image: <your-acr-instance-name>.azurecr.io/weaveworks/kured:1.10.1
-          image: docker.io/weaveworks/kured:1.10.1
+          image: acrakszm7lsuhxmymos.azurecr.io/weaveworks/kured:1.10.1
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true # Give permission to nsenter /proc/1/ns/mnt
