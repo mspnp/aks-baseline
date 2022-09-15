@@ -12,6 +12,8 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
    >
    > * [Contributor role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#contributor) is _required_ at the subscription level to have the ability to create resource groups and perform deployments.
    > * [User Access Administrator role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#user-access-administrator) is _required_ at the subscription level since you'll be performing role assignments to managed identities across various resource groups.
+   > * [Resource Policy Contributor role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#resource-policy-contributor) is _required_ at the subscription level since you'll be creating custom Azure policy definitions to govern resources in your AKS cluster.
+
 
 1. An Azure AD tenant to associate your Kubernetes RBAC Cluster API authentication to.
 

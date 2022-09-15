@@ -103,7 +103,6 @@ Kubernetes and, by extension, AKS are fast-evolving products. The [AKS roadmap](
 This implementation will not include every preview feature, but instead only those that add significant value to a general-purpose cluster. There are some additional preview features you may wish to evaluate in pre-production clusters that augment your posture around security, manageability, etc. As these features come out of preview, this reference implementation may be updated to incorporate them. Consider trying out and providing feedback on the following:
 
 - [BYO Kubelet Identity](https://docs.microsoft.com/azure/aks/use-managed-identity#bring-your-own-kubelet-mi)
-- [Custom Azure Policy for Kubernetes support](https://techcommunity.microsoft.com/t5/azure-governance-and-management/azure-policy-for-kubernetes-releases-support-for-custom-policy/ba-p/2699466)
 - [Planned maintenance window](https://docs.microsoft.com/azure/aks/planned-maintenance)
 - [BYO CNI (`--network-plugin none`)](https://docs.microsoft.com/azure/aks/use-byo-cni)
 - [Simplified application autoscaling with Kubernetes Event-driven Autoscaling (KEDA) add-on](https://docs.microsoft.com/azure/aks/keda)

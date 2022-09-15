@@ -66,6 +66,8 @@ var aksIngressDomainName = 'aks-ingress.${domainName}'
 var aksBackendDomainName = 'bu0001a0008-00.${aksIngressDomainName}'
 var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPlaneAuthorizationTenantId)
 
+var policyNameIngressTlsHostsSuffix = 'K8sCustomIngressTlsHostsHaveDefinedDomainSuffix'
+
 /*** EXISTING TENANT RESOURCES ***/
 
 // Built-in 'Kubernetes cluster pod security restricted standards for Linux-based workloads' Azure Policy for Kubernetes initiative definition
@@ -1411,6 +1413,44 @@ resource paManagedIdentitiesEnabled 'Microsoft.Authorization/policyAssignments@2
   }
 }
 
+// Deploying and applying the custon policy 'Kubernetes cluster ingress TLS hosts must have defined domain suffix' as defined in 'custom-policy_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep'
+// Note: Policy definition must be deployed as module since policy definitions require a targetScope of 'subscription'.
+
+module modK8sIngressTlsHostsHaveDefinedDomainSuffix 'custom-policy_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep' = {
+  name: 'modK8sIngressTlsHostsHaveDefinedDomainSuffix'
+  scope: subscription()
+  params: {
+    policyName: policyNameIngressTlsHostsSuffix
+  }
+}
+
+resource paK8sIngressTlsHostsHaveSpecificDomainSuffix 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  dependsOn: [
+    modK8sIngressTlsHostsHaveDefinedDomainSuffix
+  ]
+  name: guid(policyNameIngressTlsHostsSuffix, resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.poliyName}', 120)
+    description: modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.poliyDescription
+    policyDefinitionId: modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.poliyId
+    parameters: {
+      excludedNamespaces: {
+        value: []
+      }
+      effect: {
+        value: 'deny'
+      }
+      allowedDomainSuffixes: {
+        value: [
+          domainName
+        ]
+      }
+    }
+  }
+}
+
 // The control plane identity used by the cluster. Used for networking access (VNET joining and DNS updating)
 resource miClusterControlPlane 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'mi-${clusterName}-controlplane'
@@ -1817,6 +1857,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
     paEnforceInternalLoadBalancers
     paEnforceResourceLimits
     paRoRootFilesystem
+    paK8sIngressTlsHostsHaveSpecificDomainSuffix
 
     // Azure Resource Provider policies that we'd like to see in place before the cluster is deployed
     // They are not technically a dependency, but logically they would have existed on the resource group
@@ -1828,6 +1869,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
     paOldKuberentesDisabled
     paRbacEnabled
     paManagedIdentitiesEnabled
+    
 
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
