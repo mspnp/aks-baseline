@@ -53,23 +53,23 @@ Built-in as well as custom policies are applied to the cluster as part of the [c
    apiVersion: networking.k8s.io/v1
    kind: Ingress
    metadata:
-   name: aspnetapp-ingress-violating
-   namespace: a0008
+     name: aspnetapp-ingress-violating
+     namespace: a0008
    spec:
-   tls:
-   - hosts:
-         - bu0001a0008-00.aks-ingress.invalid-domain.com
-   rules:
-   - host: bu0001a0008-00.aks-ingress.invalid-domain.com
-      http:
+     tls:
+     - hosts:
+       - bu0001a0008-00.aks-ingress.invalid-domain.com
+     rules:
+     - host: bu0001a0008-00.aks-ingress.invalid-domain.com
+       http:
          paths:
          - path: /
-         pathType: Prefix
-         backend:
-            service:
+           pathType: Prefix
+           backend:
+             service:
                name: aspnetapp-service
                port:
-               number: 80
+                 number: 80
    EOF
    ```
 
