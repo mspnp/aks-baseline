@@ -74,7 +74,7 @@ This is the heart of the guidance in this reference implementation; paired with 
 - [ ] [Deploy the AKS cluster and supporting services](./06-aks-cluster.md)
 - [ ] [Validate cluster bootsrapping](./07-bootstrap-validation.md)
 
-We perform the prior steps manually here for you to understand the involved components, but we advocate for an automated DevOps process. Therefore, incorporate the prior steps into your CI/CD pipeline, as you would any infrastructure as code (IaC). We have included [a starter GitHub workflow](./github-workflow/aks-deploy.yaml) that demonstrates this.
+We perform the prior steps manually here for you to understand the involved components, but we advocate for an automated DevOps process. Therefore, incorporate the prior steps into your CI/CD pipeline, as you would any infrastructure as code (IaC). See the dedicated [AKS baseline automation guidance](https://github.com/Azure/aks-baseline-automation#aks-baseline-automation) for additional details.
 
 ### 4. Deploy your workload
 
