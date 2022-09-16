@@ -3,5 +3,4 @@
 *.key
 *.pfx
 *.pem
-sp.json
 aks_baseline.env

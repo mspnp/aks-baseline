@@ -2,6 +2,9 @@
 
 This is the starting point for the instructions on deploying the [AKS Baseline reference implementation](./README.md). There is required access and tooling you'll need in order to accomplish this. Follow the instructions below and on the subsequent pages so that you can get your environment ready to proceed with the AKS cluster creation.
 
+| :clock10: | These steps are intentionally verbose, intermixed with context, narrative, and guidance. The deployments are all conducted via [Bicep templates](https://learn.microsoft.com/azure/azure-resource-manager/bicep/overview), but they are executed manually via `az cli` commands. We strongly encourage you to dedicate time to walk through these instructions, with a focus on learning. We do not provide any "one click" method to complete all deployments.<br><br>Once you understand the components involved and have identified the shared responsibilities between your team and your greater organization, you are encouraged to build suitable, repeatable deployment processes around your final infrastructure and cluster bootstrapping. The [AKS baseline automation guidance](https://github.com/Azure/aks-baseline-automation#aks-baseline-automation) is a great place to learn how to build your own automation pipelines. That guidance is based on the same architecture foundations presented here in the AKS baseline, and illustrates GitHub Actions based deployments for all components, including workloads. |
+|-----------|:--------------------------|
+
 ## Steps
 
 1. An Azure subscription.
