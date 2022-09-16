@@ -23,4 +23,4 @@ Review the yaml file to see the types of steps you'd need to perform. Also consi
 ## See also
 
 * [GitHub Actions](https://help.github.com/actions)
-* [GitHub Actions with Azure Kubernetes Service](https://docs.microsoft.com/azure/aks/kubernetes-action)
+* [GitHub Actions with Azure Kubernetes Service](https://learn.microsoft.com/azure/aks/kubernetes-action)
