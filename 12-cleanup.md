@@ -34,7 +34,7 @@ Before you can automate a process, it's important to experience the process in a
 
 Now that you understood the components involved and identified the shared responsibilities between your team and your greater organization, it is encouraged that you build a repetable deployment processes around your final infrastructure and cluster bootstrapping. Please refer to the [AKS baseline automation guidance](https://github.com/Azure/aks-baseline-automation#aks-baseline-automation) to learn how GitHub Actions combined with Infastructure as Code can be used to facilitate this automation. That guidance is based off of the same architecture foundations you've walked through here.
 
-> That implementation strives to stay in sync with this repo, but may slightly deviate in various decisions made, may introduce a few new features, or not yet have a feature implemented from this repo. The are functionally aligned by design, but not necessarily identical. Use that repo to explore the automation potential, while this repo is used for the core architectural guidance.
+> Note: The [AKS baseline automation guidance](https://github.com/Azure/aks-baseline-automation#aks-baseline-automation) implementation strives to stay in sync with this repo, but may slightly deviate in various decisions made, may introduce new features, or not yet have a feature that is used in this repo. The are functionally aligned by design, but not necessarily identical. Use that repo to explore the automation potential, while this repo is used for the core architectural guidance.
 
 ### Next step
 
