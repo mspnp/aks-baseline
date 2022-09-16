@@ -25,12 +25,12 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 #### Azure platform
 
 - AKS v1.24
-  - System and User [node pool separation](https://docs.microsoft.com/azure/aks/use-system-pools)
-  - [AKS-managed Azure AD](https://docs.microsoft.com/azure/aks/managed-aad)
+  - System and User [node pool separation](https://learn.microsoft.com/azure/aks/use-system-pools)
+  - [AKS-managed Azure AD](https://learn.microsoft.com/azure/aks/managed-aad)
   - Azure AD-backed Kubernetes RBAC (_local user accounts disabled_)
   - Managed Identities
   - Azure CNI
-  - [Azure Monitor for containers](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-overview)
+  - [Azure Monitor for containers](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-overview)
 - Azure Virtual Networks (hub-spoke)
   - Azure Firewall managed egress
 - Azure Application Gateway (WAF)
@@ -40,11 +40,11 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 - [Flux GitOps Operator](https://fluxcd.io) _[AKS-managed extension]_
 - [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.5/routing/providers/kubernetes-ingress/)
-- [Azure AD Pod Identity](https://docs.microsoft.com/azure/aks/use-azure-ad-pod-identity)
-- [Secrets Store CSI Driver for Kubernetes](https://docs.microsoft.com/azure/aks/csi-secrets-store-driver) _[AKS-managed add-on]_
-- [Kured](https://docs.microsoft.com/azure/aks/node-updates-kured)
+- [Azure AD Pod Identity](https://learn.microsoft.com/azure/aks/use-azure-ad-pod-identity)
+- [Secrets Store CSI Driver for Kubernetes](https://learn.microsoft.com/azure/aks/csi-secrets-store-driver) _[AKS-managed add-on]_
+- [Kured](https://learn.microsoft.com/azure/aks/node-updates-kured)
 
-![Network diagram depicting a hub-spoke network with two peered VNets and main Azure resources used in the architecture.](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)
+![Network diagram depicting a hub-spoke network with two peered VNets and main Azure resources used in the architecture.](https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)
 
 ## Deploy the reference implementation
 
@@ -102,11 +102,11 @@ Kubernetes and, by extension, AKS are fast-evolving products. The [AKS roadmap](
 
 This implementation will not include every preview feature, but instead only those that add significant value to a general-purpose cluster. There are some additional preview features you may wish to evaluate in pre-production clusters that augment your posture around security, manageability, etc. As these features come out of preview, this reference implementation may be updated to incorporate them. Consider trying out and providing feedback on the following:
 
-- [BYO Kubelet Identity](https://docs.microsoft.com/azure/aks/use-managed-identity#bring-your-own-kubelet-mi)
+- [BYO Kubelet Identity](https://learn.microsoft.com/azure/aks/use-managed-identity#bring-your-own-kubelet-mi)
 - [Custom Azure Policy for Kubernetes support](https://techcommunity.microsoft.com/t5/azure-governance-and-management/azure-policy-for-kubernetes-releases-support-for-custom-policy/ba-p/2699466)
-- [Planned maintenance window](https://docs.microsoft.com/azure/aks/planned-maintenance)
-- [BYO CNI (`--network-plugin none`)](https://docs.microsoft.com/azure/aks/use-byo-cni)
-- [Simplified application autoscaling with Kubernetes Event-driven Autoscaling (KEDA) add-on](https://docs.microsoft.com/azure/aks/keda)
+- [Planned maintenance window](https://learn.microsoft.com/azure/aks/planned-maintenance)
+- [BYO CNI (`--network-plugin none`)](https://learn.microsoft.com/azure/aks/use-byo-cni)
+- [Simplified application autoscaling with Kubernetes Event-driven Autoscaling (KEDA) add-on](https://learn.microsoft.com/azure/aks/keda)
 
 ## Related Reference Implementations
 
@@ -122,14 +122,14 @@ The AKS Baseline was used as the foundation for the following additional referen
 This reference implementation intentionally does not cover more advanced scenarios. For example topics like the following are not addressed:
 
 - Cluster lifecycle management with regard to SDLC and GitOps
-- Workload SDLC integration (including concepts like [Bridge to Kubernetes](https://docs.microsoft.com/visualstudio/containers/bridge-to-kubernetes), advanced deployment techniques, [Draft](https://docs.microsoft.com/azure/aks/draft), etc)
+- Workload SDLC integration (including concepts like [Bridge to Kubernetes](https://learn.microsoft.com/visualstudio/containers/bridge-to-kubernetes), advanced deployment techniques, [Draft](https://learn.microsoft.com/azure/aks/draft), etc)
 - Container security
 - Multiple (related or unrelated) workloads owned by the same team
 - Multiple workloads owned by disparate teams (AKS as a shared platform in your organization)
 - Cluster-contained state (PVC, etc)
 - Windows node pools
 - Scale-to-zero node pools and event-based scaling (KEDA)
-- [Terraform](https://docs.microsoft.com/azure/developer/terraform/create-k8s-cluster-with-tf-and-aks)
+- [Terraform](https://learn.microsoft.com/azure/developer/terraform/create-k8s-cluster-with-tf-and-aks)
 - [dapr](https://github.com/dapr/dapr)
 
 Keep watching this space, as we build out reference implementation guidance on topics such as these. Further guidance delivered will use this baseline AKS implementation as their starting point. If you would like to contribute or suggest a pattern built on this baseline, [please get in touch](./CONTRIBUTING.md).
@@ -140,9 +140,9 @@ Kubernetes is a very flexible platform, giving infrastructure and application op
 
 ## Related documentation
 
-- [Azure Kubernetes Service Documentation](https://docs.microsoft.com/azure/aks/)
-- [Microsoft Azure Well-Architected Framework](https://docs.microsoft.com/azure/architecture/framework/)
-- [Microservices architecture on AKS](https://docs.microsoft.com/azure/architecture/reference-architectures/containers/aks-microservices/aks-microservices)
+- [Azure Kubernetes Service Documentation](https://learn.microsoft.com/azure/aks/)
+- [Microsoft Azure Well-Architected Framework](https://learn.microsoft.com/azure/architecture/framework/)
+- [Microservices architecture on AKS](https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks-microservices/aks-microservices)
 
 ## Contributions
 

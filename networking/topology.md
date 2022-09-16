@@ -46,27 +46,27 @@ In the future, this VNet might hold more subnets like [ACI Provider instance] su
 2. [AKS Internal Load Balancer subnet]: Multi-tenant, multiple SSL termination rules, single PPE supporting dev/QA/UAT, etc could lead to needing more ingress controllers, but for baseline, we should start with one.
 3. [Private Endpoints] subnet: Private Links are created for Azure Container Registry and Azure Key Vault, so these Azure services can be accessed using Private Endpoints within the spoke virtual network. There are multiple [Private Link deployment options]; in this implementation they are deployed to a dedicated subnet within the spoke virtual network.
 
-[27<sup>1</sup>]: https://docs.microsoft.com/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gwsub
-[251]: https://docs.microsoft.com/azure/application-gateway/configuration-overview#size-of-the-subnet
-[59]: https://docs.microsoft.com/azure/firewall/firewall-faq#does-the-firewall-subnet-size-need-to-change-as-the-service-scales
-[27<sup>2</sup>]: https://docs.microsoft.com/azure/bastion/bastion-create-host-portal#createhost
-[30]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
+[27<sup>1</sup>]: https://learn.microsoft.com/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gwsub
+[251]: https://learn.microsoft.com/azure/application-gateway/configuration-overview#size-of-the-subnet
+[59]: https://learn.microsoft.com/azure/firewall/firewall-faq#does-the-firewall-subnet-size-need-to-change-as-the-service-scales
+[27<sup>2</sup>]: https://learn.microsoft.com/azure/bastion/bastion-create-host-portal#createhost
+[30]: https://learn.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
 [% Max Surge]: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#max-surge
 [% Max Unavailable]: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#max-unavailable
 [Add Ips/Pods]: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment
-[Azure Subnet not assignable Ips factor]: https://docs.microsoft.com/azure/virtual-network/virtual-network-ip-addresses-overview-arm#allocation-method-1
-[Private Endpoints]: https://docs.microsoft.com/azure/private-link/private-endpoint-overview#private-endpoint-properties
-[Minimum Subnet size]: https://docs.microsoft.com/azure/aks/configure-azure-cni#plan-ip-addressing-for-your-cluster
-[Subnet Mask bits]: https://docs.microsoft.com/azure/virtual-network/virtual-networks-faq#how-small-and-how-large-can-vnets-and-subnets-be
-[Azure Hub-Spoke topology]: https://docs.microsoft.com/azure/architecture/reference-architectures/hybrid-networking/hub-spoke
-[Azure Firewall subnet]: https://docs.microsoft.com/azure/firewall/firewall-faq#does-the-firewall-subnet-size-need-to-change-as-the-service-scales
-[Gateway subnet]: https://docs.microsoft.com/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gwsub
-[Azure Application Gateway subnet]: https://docs.microsoft.com/azure/application-gateway/configuration-infrastructure#virtual-network-and-dedicated-subnet
-[Private Link Endpoint subnet]: https://docs.microsoft.com/azure/architecture/guide/networking/private-link-hub-spoke-network#networking
-[Private Link deployment options]: https://docs.microsoft.com/azure/architecture/guide/networking/private-link-hub-spoke-network#decision-tree-for-private-link-deployment
-[Azure Bastion subnet]: https://docs.microsoft.com/azure/bastion/bastion-create-host-portal#createhost
-[AKS System Nodepool]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
-[AKS User Nodepool]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
-[AKS Internal Load Balancer subnet]: https://docs.microsoft.com/azure/aks/internal-lb#specify-a-different-subnet
-[ACI Provider Instance]: https://docs.microsoft.com/azure/container-instances/container-instances-vnet
-[AKS Nodepools subnets]: https://docs.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
+[Azure Subnet not assignable Ips factor]: https://learn.microsoft.com/azure/virtual-network/virtual-network-ip-addresses-overview-arm#allocation-method-1
+[Private Endpoints]: https://learn.microsoft.com/azure/private-link/private-endpoint-overview#private-endpoint-properties
+[Minimum Subnet size]: https://learn.microsoft.com/azure/aks/configure-azure-cni#plan-ip-addressing-for-your-cluster
+[Subnet Mask bits]: https://learn.microsoft.com/azure/virtual-network/virtual-networks-faq#how-small-and-how-large-can-vnets-and-subnets-be
+[Azure Hub-Spoke topology]: https://learn.microsoft.com/azure/architecture/reference-architectures/hybrid-networking/hub-spoke
+[Azure Firewall subnet]: https://learn.microsoft.com/azure/firewall/firewall-faq#does-the-firewall-subnet-size-need-to-change-as-the-service-scales
+[Gateway subnet]: https://learn.microsoft.com/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gwsub
+[Azure Application Gateway subnet]: https://learn.microsoft.com/azure/application-gateway/configuration-infrastructure#virtual-network-and-dedicated-subnet
+[Private Link Endpoint subnet]: https://learn.microsoft.com/azure/architecture/guide/networking/private-link-hub-spoke-network#networking
+[Private Link deployment options]: https://learn.microsoft.com/azure/architecture/guide/networking/private-link-hub-spoke-network#decision-tree-for-private-link-deployment
+[Azure Bastion subnet]: https://learn.microsoft.com/azure/bastion/bastion-create-host-portal#createhost
+[AKS System Nodepool]: https://learn.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
+[AKS User Nodepool]: https://learn.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
+[AKS Internal Load Balancer subnet]: https://learn.microsoft.com/azure/aks/internal-lb#specify-a-different-subnet
+[ACI Provider Instance]: https://learn.microsoft.com/azure/container-instances/container-instances-vnet
+[AKS Nodepools subnets]: https://learn.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
