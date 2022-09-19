@@ -1411,6 +1411,38 @@ resource paManagedIdentitiesEnabled 'Microsoft.Authorization/policyAssignments@2
   }
 }
 
+// Deploying and applying the custom policy 'Kubernetes cluster ingress TLS hosts must have defined domain suffix' as defined in nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep
+// Note: Policy definition must be deployed as module since policy definitions require a targetScope of 'subscription'.
+
+module modK8sIngressTlsHostsHaveDefinedDomainSuffix 'nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep' = {
+  name: 'modK8sIngressTlsHostsHaveDefinedDomainSuffix'
+  scope: subscription()
+}
+
+resource paK8sIngressTlsHostsHaveSpecificDomainSuffix 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid('K8sCustomIngressTlsHostsHaveDefinedDomainSuffix', resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.policyName}', 120)
+    description: modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.policyDescription
+    policyDefinitionId: modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.policyId
+    parameters: {
+      excludedNamespaces: {
+        value: []
+      }
+      effect: {
+        value: 'deny'
+      }
+      allowedDomainSuffixes: {
+        value: [
+          domainName
+        ]
+      }
+    }
+  }
+}
+
 // The control plane identity used by the cluster. Used for networking access (VNET joining and DNS updating)
 resource miClusterControlPlane 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'mi-${clusterName}-controlplane'
@@ -1817,6 +1849,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
     paEnforceInternalLoadBalancers
     paEnforceResourceLimits
     paRoRootFilesystem
+    paK8sIngressTlsHostsHaveSpecificDomainSuffix
 
     // Azure Resource Provider policies that we'd like to see in place before the cluster is deployed
     // They are not technically a dependency, but logically they would have existed on the resource group
