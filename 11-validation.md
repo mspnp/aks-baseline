@@ -44,6 +44,8 @@ No matter which backing store you use, the user assigned to the group will then 
 
 Built-in as well as custom policies are applied to the cluster as part of the [cluster deployment step](./06-aks-cluster.md) to ensure that workloads deployed to the cluster comply with the team's governance rules. Policy assignments with effect [`audit`](https://learn.microsoft.com/azure/governance/policy/concepts/effects#audit) will create a warning in the activity log and show violations in the Azure Policy blade in the portal, providing an aggregated view of the compliance state and the option to identify violating resources. Policy assignments with effect [`deny`](https://learn.microsoft.com/azure/governance/policy/concepts/effects#deny) will be enforced with the help of [Gatekeeper's admission controller webhook](https://open-policy-agent.github.io/gatekeeper/website/docs/) by denying API requests that would violate a policy otherwise.
 
+:bulb: Gatekeeper policies are implemented in the [policy language 'Rego'](https://learn.microsoft.com/azure/governance/policy/concepts/policy-for-kubernetes#policy-language). To deploy the policy of this reference architecture with the Azure platform, the Rego specification is Base64-encoded and stored in a field of the Azure Policy resource defined in `nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep`. It might be insightful to decode the string with an Base64 decoder of your choice and investigate the declarative implementation. 
+
 ### Steps
 
 1. Try to add a second `Ingress` resource to your workload namespace with the following command.
