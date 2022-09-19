@@ -18,4 +18,4 @@ See the [AKS Baseline Network Topology](./topology.md) for specifics on how this
 
 ## See also
 
-* [Hub-spoke network topology in Azure](https://docs.microsoft.com/azure/architecture/reference-architectures/hybrid-networking/hub-spoke)
+* [Hub-spoke network topology in Azure](https://learn.microsoft.com/azure/architecture/reference-architectures/hybrid-networking/hub-spoke)

@@ -680,7 +680,7 @@ resource hubFirewall 'Microsoft.Network/azureFirewalls@2021-05-01' = {
   ]
   dependsOn: [
     // This helps prevent multiple PUT updates happening to the firewall causing a CONFLICT race condition
-    // Ref: https://docs.microsoft.com/azure/firewall-manager/quick-firewall-policy
+    // Ref: https://learn.microsoft.com/azure/firewall-manager/quick-firewall-policy
     fwPolicy::defaultApplicationRuleCollectionGroup
     fwPolicy::defaultNetworkRuleCollectionGroup
     ipgNodepoolSubnet
