@@ -10,7 +10,7 @@ param policyName string = 'K8sCustomIngressTlsHostsHaveDefinedDomainSuffix'
 
 resource pdK8sCustomIngressTlsHostsHaveDefinedDomainSuffix 'Microsoft.Authorization/policyDefinitions@2021-06-01' = {
   scope: subscription()
-  name: policyName
+  name: 'K8sCustomIngressTlsHostsHaveDefinedDomainSuffix'
   properties: {
     policyType: 'Custom'
     mode: 'Microsoft.Kubernetes.Data'
@@ -154,6 +154,6 @@ resource pdK8sCustomIngressTlsHostsHaveDefinedDomainSuffix 'Microsoft.Authorizat
 }
 
 
-output poliyId string = pdK8sCustomIngressTlsHostsHaveDefinedDomainSuffix.id
-output poliyName string = pdK8sCustomIngressTlsHostsHaveDefinedDomainSuffix.properties.displayName
-output poliyDescription string = pdK8sCustomIngressTlsHostsHaveDefinedDomainSuffix.properties.description
+output policyId string = pdK8sCustomIngressTlsHostsHaveDefinedDomainSuffix.id
+output policyName string = pdK8sCustomIngressTlsHostsHaveDefinedDomainSuffix.properties.displayName
+output policyDescription string = pdK8sCustomIngressTlsHostsHaveDefinedDomainSuffix.properties.description

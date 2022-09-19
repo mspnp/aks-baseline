@@ -66,8 +66,6 @@ var aksIngressDomainName = 'aks-ingress.${domainName}'
 var aksBackendDomainName = 'bu0001a0008-00.${aksIngressDomainName}'
 var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPlaneAuthorizationTenantId)
 
-var policyNameIngressTlsHostsSuffix = 'K8sCustomIngressTlsHostsHaveDefinedDomainSuffix'
-
 /*** EXISTING TENANT RESOURCES ***/
 
 // Built-in 'Kubernetes cluster pod security restricted standards for Linux-based workloads' Azure Policy for Kubernetes initiative definition
@@ -1419,22 +1417,16 @@ resource paManagedIdentitiesEnabled 'Microsoft.Authorization/policyAssignments@2
 module modK8sIngressTlsHostsHaveDefinedDomainSuffix 'nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep' = {
   name: 'modK8sIngressTlsHostsHaveDefinedDomainSuffix'
   scope: subscription()
-  params: {
-    policyName: policyNameIngressTlsHostsSuffix
-  }
 }
 
 resource paK8sIngressTlsHostsHaveSpecificDomainSuffix 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  dependsOn: [
-    modK8sIngressTlsHostsHaveDefinedDomainSuffix
-  ]
-  name: guid(policyNameIngressTlsHostsSuffix, resourceGroup().id, clusterName)
+  name: guid(modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.policyId, resourceGroup().id, clusterName)
   location: 'global'
   scope: resourceGroup()
   properties: {
     displayName: take('[${clusterName}] ${modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.poliyName}', 120)
-    description: modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.poliyDescription
-    policyDefinitionId: modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.poliyId
+    description: modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.policyDescription
+    policyDefinitionId: modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.policyId
     parameters: {
       excludedNamespaces: {
         value: []
@@ -1869,7 +1861,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
     paOldKuberentesDisabled
     paRbacEnabled
     paManagedIdentitiesEnabled
-    
 
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
