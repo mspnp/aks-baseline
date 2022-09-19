@@ -1424,7 +1424,7 @@ resource paK8sIngressTlsHostsHaveSpecificDomainSuffix 'Microsoft.Authorization/p
   location: 'global'
   scope: resourceGroup()
   properties: {
-    displayName: take('[${clusterName}] ${modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.poliyName}', 120)
+    displayName: take('[${clusterName}] ${modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.policyName}', 120)
     description: modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.policyDescription
     policyDefinitionId: modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.policyId
     parameters: {
