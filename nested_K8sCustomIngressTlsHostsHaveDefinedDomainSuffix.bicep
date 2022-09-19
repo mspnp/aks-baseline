@@ -1,11 +1,5 @@
 targetScope = 'subscription'
 
-/*** PARAMETERS ***/
-
-@description('The identifying name this custom policy is deployed with.')
-@minLength(1)
-param policyName string = 'K8sCustomIngressTlsHostsHaveDefinedDomainSuffix' 
-
 /*** RESOURCES ***/
 
 resource pdK8sCustomIngressTlsHostsHaveDefinedDomainSuffix 'Microsoft.Authorization/policyDefinitions@2021-06-01' = {
