@@ -42,11 +42,13 @@ No matter which backing store you use, the user assigned to the group will then 
 
 ## Validate Azure Policy
 
-Built-in as well as custom policies are applied to the cluster as part of the [cluster deployment step](./06-aks-cluster.md) to ensure that workloads deployed to the cluster comply with the team's governance rules. Policy assignments with effect [`audit`](https://docs.microsoft.com/en-us/azure/governance/policy/concepts/effects#audit) will create a warning in the activity log and show violations in the Azure Policy blade in the portal, providing an aggregated view of the compliance state and the option to identify violating resources. Policy assignments with effect [`deny`](https://docs.microsoft.com/en-us/azure/governance/policy/concepts/effects#deny) will be enforced with the help of [Gatekeeper's admission controller webhook](https://open-policy-agent.github.io/gatekeeper/website/docs/) by denying API requests that would violate a policy otherwise.
+Built-in as well as custom policies are applied to the cluster as part of the [cluster deployment step](./06-aks-cluster.md) to ensure that workloads deployed to the cluster comply with the team's governance rules. Policy assignments with effect [`audit`](https://learn.microsoft.com/azure/governance/policy/concepts/effects#audit) will create a warning in the activity log and show violations in the Azure Policy blade in the portal, providing an aggregated view of the compliance state and the option to identify violating resources. Policy assignments with effect [`deny`](https://learn.microsoft.com/azure/governance/policy/concepts/effects#deny) will be enforced with the help of [Gatekeeper's admission controller webhook](https://open-policy-agent.github.io/gatekeeper/website/docs/) by denying API requests that would violate a policy otherwise.
 
 ### Steps
 
-1. Try to add a second `Ingress` resource to your workload namespace with the following command (note, that the host specified in the `rules` and the `tls` sections defines a domain name with suffix `invalid-domain.com` rather than the domain suffix you defined for your setup when you [created your certificates](./02-ca-certificates.md)).
+1. Try to add a second `Ingress` resource to your workload namespace with the following command.
+
+    Notice that the host value specified in the `rules` and the `tls` sections defines a domain name with suffix `invalid-domain.com` rather than the domain suffix you defined for your setup when you [created your certificates](./02-ca-certificates.md)).
 
    ```bash
    cat <<EOF | kubectl create -f -
@@ -73,9 +75,9 @@ Built-in as well as custom policies are applied to the cluster as part of the [c
    EOF
    ```
 
-2. Inspect the error message and remark that Gatekeepers admission webhook rejects `bu0001a0008-00.aks-ingress.invalid-domain.com` as incompliant host.
+2. Inspect the error message and remark that Gatekeeper's admission webhook rejects `bu0001a0008-00.aks-ingress.invalid-domain.com` as incompliant host.
 
-   ```bash
+   ```output
    Error from server (Forbidden): error when creating "STDIN": admission webhook "validation.gatekeeper.sh" denied the request: [azurepolicy-k8scustomingresstlshostshavede-e64871e795ce3239cd99] TLS host must have one of defined domain suffixes. Valid domain names are ["contoso.com"]; defined TLS hosts are {"bu0001a0008-00.aks-ingress.invalid-domain.com"}; incompliant hosts are {"bu0001a0008-00.aks-ingress.invalid-domain.com"}.
    ```
 
