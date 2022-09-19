@@ -1420,7 +1420,7 @@ module modK8sIngressTlsHostsHaveDefinedDomainSuffix 'nested_K8sCustomIngressTlsH
 }
 
 resource paK8sIngressTlsHostsHaveSpecificDomainSuffix 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  name: guid(modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.policyId, resourceGroup().id, clusterName)
+  name: guid('K8sCustomIngressTlsHostsHaveDefinedDomainSuffix', resourceGroup().id, clusterName)
   location: 'global'
   scope: resourceGroup()
   properties: {
