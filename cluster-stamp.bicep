@@ -202,21 +202,24 @@ resource targetResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' exi
 }
 
 // Spoke virtual network
-resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' existing = {
+resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2022-05-01' existing = {
   scope: targetResourceGroup
   name: '${last(split(targetVnetResourceId,'/'))}'
-}
 
-// Spoke virutual network's subnet for the cluster nodes
-resource snetClusterNodes 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
-  parent: targetVirtualNetwork
-  name: 'snet-clusternodes'
-}
+  // Spoke virutual network's subnet for the cluster nodes
+  resource snetClusterNodes 'subnets' existing = {
+    name: 'snet-clusternodes'
+  }
 
-// Spoke virutual network's subnet for all private endpoints
-resource snetPrivatelinkendpoints 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
-  parent: targetVirtualNetwork
-  name: 'snet-privatelinkendpoints'
+  // Spoke virutual network's subnet for all private endpoints
+  resource snetPrivatelinkendpoints 'subnets' existing = {
+    name: 'snet-privatelinkendpoints'
+  }
+
+  // Spoke virutual network's subnet for application gateway
+  resource snetApplicationGateway 'subnets' existing = {
+    name: 'snet-applicationgateway'
+  }
 }
 
 /*** RESOURCES ***/
@@ -1535,7 +1538,7 @@ resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authoriz
   }
 }
 
-// Grant the AKS cluster ingress controller's managed workload identity with key vault reader role permissions; this allows our ingress controller to pull certificates.
+// Grant the AKS cluster ingress controller's managed workload identity with Key Vault reader role permissions; this allows our ingress controller to pull certificates.
 resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultSecretsUserRole.id)
@@ -1546,7 +1549,7 @@ resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Autho
   }
 }
 
-// Grant the AKS cluster ingress controller managed workload identity with key vault reader role permissions; this allows our ingress controller to pull certificates
+// Grant the AKS cluster ingress controller's managed workload identity with Key Vault reader role permissions; this allows our ingress controller to pull certificates
 resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultReaderRole.id)
@@ -1578,7 +1581,7 @@ resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
     location: 'global'
     properties: {
       virtualNetwork: {
-        id: targetVnetResourceId
+        id: targetVirtualNetwork.id
       }
       registrationEnabled: false
     }
@@ -1590,7 +1593,7 @@ resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
   location: location
   properties: {
     subnet: {
-      id: snetPrivatelinkendpoints.id
+      id: targetVirtualNetwork::snetPrivatelinkendpoints.id
     }
     privateLinkServiceConnections: [
       {
@@ -1641,7 +1644,7 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
     location: 'global'
     properties: {
       virtualNetwork: {
-        id: targetVnetResourceId
+        id: targetVirtualNetwork.id
       }
       registrationEnabled: false
     }
@@ -1668,7 +1671,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
         osType: 'Linux'
         minCount: 3
         maxCount: 4
-        vnetSubnetID: snetClusterNodes.id
+        vnetSubnetID: targetVirtualNetwork::snetClusterNodes.id
         enableAutoScaling: true
         type: 'VirtualMachineScaleSets'
         mode: 'System'
@@ -1698,7 +1701,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
         osType: 'Linux'
         minCount: 2
         maxCount: 5
-        vnetSubnetID: snetClusterNodes.id
+        vnetSubnetID: targetVirtualNetwork::snetClusterNodes.id
         enableAutoScaling: true
         type: 'VirtualMachineScaleSets'
         mode: 'User'
@@ -2121,7 +2124,7 @@ resource agw 'Microsoft.Network/applicationGateways@2021-05-01' = {
         name: 'apw-ip-configuration'
         properties: {
           subnet: {
-            id: '${targetVnetResourceId}/subnets/snet-applicationgateway'
+            id: targetVirtualNetwork::snetApplicationGateway.id
           }
         }
       }

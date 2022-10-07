@@ -16,9 +16,12 @@ param clusterControlPlaneIdentityName string
 @minLength(1)
 param targetVirtualNetworkName string
 
-/*** VARIABLES ***/
+/*** EXISTING SUBSCRIPTION RESOURCES ***/
 
-var networkContributorRole = '${subscription().id}/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7'
+resource networkContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: '4d97b98b-1d4f-4787-a291-c67834d212e7'
+  scope: subscription()
+}
 
 /*** EXISTING HUB RESOURCES ***/
 
@@ -40,9 +43,9 @@ resource snetClusterIngress 'Microsoft.Network/virtualNetworks/subnets@2021-05-0
 
 resource snetClusterNodesMiClusterControlPlaneNetworkContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: snetClusterNodes
-  name: guid(snetClusterNodes.id, networkContributorRole, clusterControlPlaneIdentityName)
+  name: guid(snetClusterNodes.id, networkContributorRole.id, clusterControlPlaneIdentityName)
   properties: {
-    roleDefinitionId: networkContributorRole
+    roleDefinitionId: networkContributorRole.id
     description: 'Allows cluster identity to join the nodepool vmss resources to this subnet.'
     principalId: miClusterControlPlanePrincipalId
     principalType: 'ServicePrincipal'
@@ -51,9 +54,9 @@ resource snetClusterNodesMiClusterControlPlaneNetworkContributorRole_roleAssignm
 
 resource snetClusterIngressServicesMiClusterControlPlaneSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: snetClusterIngress
-  name: guid(snetClusterIngress.id, networkContributorRole, clusterControlPlaneIdentityName)
+  name: guid(snetClusterIngress.id, networkContributorRole.id, clusterControlPlaneIdentityName)
   properties: {
-    roleDefinitionId: networkContributorRole
+    roleDefinitionId: networkContributorRole.id
     description: 'Allows cluster identity to join load balancers (ingress resources) to this subnet.'
     principalId: miClusterControlPlanePrincipalId
     principalType: 'ServicePrincipal'
