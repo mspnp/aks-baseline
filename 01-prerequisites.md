@@ -30,21 +30,18 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
 
 1. While the following feature(s) are still in _preview_, please enable them in your target subscription.
 
-   1. [Register the OIDC Issuer preview feature = `EnableOIDCIssuerPreview`](https://learn.microsoft.com/azure/aks/cluster-configuration#oidc-issuer-preview)
-
    1. [Register the Federated Identity Credentials preview feature = `FederatedIdentityCredentials`](https://TODO)
 
-   1. [Register the Workload Identity preview feature = `EnableWorkloadIdentityPreview`](https://TODO)
+   1. [Register the Workload Identity preview feature = `EnableWorkloadIdentityPreview`](https://learn.microsoft.com/en-us/azure/aks/workload-identity-deploy-cluster#register-the-enableworkloadidentitypreview-feature-flag)
 
    ```bash
    az feature register --namespace "Microsoft.ContainerService" -n "AKS-ExtensionManager"
-   az feature register --namespace "Microsoft.ContainerService" -n "EnableOIDCIssuerPreview"
    az feature register --namespace "Microsoft.ContainerService" -n "AKS-AzureDefender"
    az feature register --namespace "Microsoft.ManagedIdentity" -n "FederatedIdentityCredentials"
    az feature register --namespace "Microsoft.ContainerService" -n "EnableWorkloadIdentityPreview"
 
    # Keep running until all say "Registered." (This may take up to 20 minutes.)
-   az feature list -o table --query "[?name=='Microsoft.ContainerService/AKS-ExtensionManager' || name=='Microsoft.ContainerService/EnableOIDCIssuerPreview' || name=='Microsoft.ContainerService/AKS-AzureDefender' || name=='Microsoft.ManagedIdentity/FederatedIdentityCredentials' || name=='Microsoft.ContainerService/EnableWorkloadIdentityPreview'].{Name:name,State:properties.state}"
+   az feature list -o table --query "[?name=='Microsoft.ContainerService/AKS-ExtensionManager' || name=='Microsoft.ContainerService/AKS-AzureDefender' || name=='Microsoft.ManagedIdentity/FederatedIdentityCredentials' || name=='Microsoft.ContainerService/EnableWorkloadIdentityPreview'].{Name:name,State:properties.state}"
 
    # When all say "Registered" then re-register the AKS and related resource providers
    az provider register --namespace Microsoft.ContainerService
