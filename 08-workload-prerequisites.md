@@ -61,11 +61,11 @@ The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
 
    ```output
    NAME                                                 AGE
-   k8sazureallowedcapabilities                          21m
-   k8sazureallowedseccomp                               21m
+   k8sazurev1blockdefault                               21m
+   k8sazurev1blockendpointeditdefaultrole               21m
    … more …            
-   k8sazurereadonlyrootfilesystem                       21m
-   k8sazurevolumetypes                                  21m
+   k8sazurev3noprivilegeescalation                      21m
+   k8sazurev3readonlyrootfilesystem                     21m
    k8scustomingresstlshostshavedefineddomainsuffix      21m
    ```
 

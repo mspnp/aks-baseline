@@ -43,7 +43,7 @@ param clusterAuthorizedIPRanges array = []
   'southeastasia'
 ])
 param location string = 'eastus2'
-param kubernetesVersion string = '1.24.0'
+param kubernetesVersion string = '1.24.6'
 
 @description('Domain name to use for App Gateway and AKS ingress.')
 param domainName string = 'contoso.com'
@@ -156,12 +156,6 @@ resource monitoringMetricsPublisherRole 'Microsoft.Authorization/roleDefinitions
 // Built-in Azure RBAC role that can be applied to an Azure Container Registry to grant the authority pull container images. Granted to the AKS cluster's kubelet identity.
 resource acrPullRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   name: '7f951dda-4ed3-4680-a7ca-43fe172d538d'
-  scope: subscription()
-}
-
-// Built-in Azure RBAC role that must be applied to the kublet Managed Identity allowing it to further assign adding managed identities to the cluster's underlying VMSS.
-resource managedIdentityOperatorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
-  name: 'f1a07417-d97a-45cb-824c-7a7467783830'
   scope: subscription()
 }
 
