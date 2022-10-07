@@ -89,6 +89,7 @@ data:
         ## This will take effect when monitor_kubernetes_pods is set to true
         ## Reference the docs at https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
         # kubernetes_label_selector = "env=dev,app=nginx"
+
         ## Field selector to target pods which have the specified field
         ## This will take effect when monitor_kubernetes_pods is set to true
         ## Reference the docs at https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/
