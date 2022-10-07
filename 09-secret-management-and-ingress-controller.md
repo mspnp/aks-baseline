@@ -7,10 +7,8 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 1. Get the AKS Ingress Controller Managed Identity details.
 
    ```bash
-   TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityResourceId.value -o tsv)
-   TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
-   echo TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
-   echo TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
+   INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
+   echo INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID
    ```
 
 1. Ensure your bootstrapping process has created the following namespace.
@@ -20,38 +18,11 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    kubectl get ns a0008 -w
    ```
 
-1. Create Traefik's Azure Managed Identity binding.
+1. Create the ingress controller's Secret Provider Class resource.
 
-   > Create the Traefik Azure Identity and the Azure Identity Binding to let Azure Active Directory Pod Identity to get tokens on behalf of the Traefik's User Assigned Identity and later on assign them to the Traefik's pod.
-
-   ```bash
-   cat <<EOF | kubectl create -f -
-   apiVersion: aadpodidentity.k8s.io/v1
-   kind: AzureIdentity
-   metadata:
-     name: podmi-ingress-controller-identity
-     namespace: a0008
-   spec:
-     type: 0
-     resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
-     clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
-   ---
-   apiVersion: aadpodidentity.k8s.io/v1
-   kind: AzureIdentityBinding
-   metadata:
-     name: podmi-ingress-controller-binding
-     namespace: a0008
-   spec:
-     azureIdentity: podmi-ingress-controller-identity
-     selector: podmi-ingress-controller
-   EOF
-   ```
-
-1. Create the Traefik's Secret Provider Class resource.
-
-   > The Ingress Controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
+   > The ingress controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
    >
-   > Create a `SecretProviderClass` resource with with your Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
+   > Create a `SecretProviderClass` resource with with your federated identity and Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
 
    ```bash
    cat <<EOF | kubectl create -f -
@@ -63,7 +34,8 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    spec:
      provider: azure
      parameters:
-       usePodIdentity: "true"
+       clientID: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID
+       usePodIdentity: "false"
        useVMManagedIdentity: "false"
        keyvaultName: $KEYVAULT_NAME_AKS_BASELINE
        objects:  |
@@ -103,17 +75,11 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
 1. Wait for Traefik to be ready.
 
-   > During Traefik's pod creation process, AAD Pod Identity will need to retrieve a token for Azure Key Vault. This process can take time to complete and it's possible for the pod volume mount to fail during this time but the volume mount will eventually succeed. For more information, please refer to the [Pod Identity documentation](https://azure.github.io/secrets-store-csi-driver-provider-azure/configurations/identity-access-modes/pod-identity-mode/).
+   > During Traefik's pod creation process, Azure Key Vault will be accessed to get the required certs needed for pod volume mount (csi). This sometimes takes a bit of time, but will eventually succeed if properly configured.
 
    ```bash
    kubectl wait -n a0008 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s
    ```
-
-## Workload identities
-
-This reference implementation uses the Azure AD Pod Identities feature to allow Azure Managed Identities to be associated with the cluster and then associated with pods via the `AzureIdentity` CRD. This feature is in preview and will eventually be replaced with [Azure AD Workload Identities](https://azure.github.io/azure-workload-identity) which approaches the relationship between workloads and their Azure AD identities differently. This Workload Identity feature is also still in preview and will be having additional capabilities built out, such as supporting Azure Managed Identities, to reach a similar feature state as Azure AD Pod Identities. Components like Azure Key Vault Provider for Secrets Store CSI driver will be supporting Workload Identities as an alternative to the original Azure AD Pod Identities feature over time.
-
-This reference implementation does enable the required OIDC Issuer Profile so that you can [begin to use](https://azure.github.io/azure-workload-identity/docs/quick-start.html) the workload identity feature for your applications that can be written to support the new model. Expect updates to this reference implementation as the features and the integration of Azure AD Workload Identities evolve.
 
 ### Next step
 

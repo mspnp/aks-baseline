@@ -14,6 +14,8 @@ Following the steps below you will result in an Azure AD configuration that will
 | A Namespace Reader Security Group  | Represents users that will have read-only access to a specific namespace in the cluster. |
 | _Additional Security Groups_       | _Optional._ A security group (and its memberships) for the other built-in and custom Kubernetes roles you plan on using. |
 
+This does not configure anything related to workload identity. This configuration is exclusively to set up RBAC access to perform cluster management.
+
 ## Steps
 
 > :book: The Contoso Bicycle Azure AD team requires all admin access to AKS clusters be security-group based. This applies to the new AKS cluster that is being built for Application ID a0008 under the BU0001 business unit. Kubernetes RBAC will be AAD-backed and access granted based on users' AAD group membership(s).

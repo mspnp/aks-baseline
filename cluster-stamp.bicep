@@ -43,7 +43,7 @@ param clusterAuthorizedIPRanges array = []
   'southeastasia'
 ])
 param location string = 'eastus2'
-param kubernetesVersion string = '1.24.0'
+param kubernetesVersion string = '1.24.6'
 
 @description('Domain name to use for App Gateway and AKS ingress.')
 param domainName string = 'contoso.com'
@@ -159,12 +159,6 @@ resource acrPullRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that must be applied to the kublet Managed Identity allowing it to further assign adding managed identities to the cluster's underlying VMSS.
-resource managedIdentityOperatorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
-  name: 'f1a07417-d97a-45cb-824c-7a7467783830'
-  scope: subscription()
-}
-
 // Built-in Azure RBAC role that is applied a Key Vault to grant with metadata, certificates, keys and secrets read privileges.  Granted to App Gateway's managed identity.
 resource keyVaultReaderRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   name: '21090545-7ca7-4776-b22c-e363652d74d2'
@@ -208,21 +202,24 @@ resource targetResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' exi
 }
 
 // Spoke virtual network
-resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' existing = {
+resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2022-05-01' existing = {
   scope: targetResourceGroup
   name: '${last(split(targetVnetResourceId,'/'))}'
-}
 
-// Spoke virutual network's subnet for the cluster nodes
-resource snetClusterNodes 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
-  parent: targetVirtualNetwork
-  name: 'snet-clusternodes'
-}
+  // Spoke virutual network's subnet for the cluster nodes
+  resource snetClusterNodes 'subnets' existing = {
+    name: 'snet-clusternodes'
+  }
 
-// Spoke virutual network's subnet for all private endpoints
-resource snetPrivatelinkendpoints 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
-  parent: targetVirtualNetwork
-  name: 'snet-privatelinkendpoints'
+  // Spoke virutual network's subnet for all private endpoints
+  resource snetPrivatelinkendpoints 'subnets' existing = {
+    name: 'snet-privatelinkendpoints'
+  }
+
+  // Spoke virutual network's subnet for application gateway
+  resource snetApplicationGateway 'subnets' existing = {
+    name: 'snet-applicationgateway'
+  }
 }
 
 /*** RESOURCES ***/
@@ -978,20 +975,12 @@ resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-0
           // Known violations
           // K8sAzureAllowedSeccomp
           //  - Kured, no profile defined
-          //  - AAD Pod Identity (nmi & mic), no profile defined
-          // K8sAzureAllowedCapabilities
-          //  - AAD Pod Identity (nmi), requests default unsupported DAC_READ_SEARCH, NET_ADMIN
           // K8sAzureContainerNoPrivilege
           //  - Kured, requires privileged to perform reboot
-          // K8sAzureHostNetworkingPorts
-          //  - AAD Pod Identity (nmi), hostNetwork and hostPort usage
-          // K8sAzureVolumeTypes
-          //  - AAD Pod Identity (nmi & mic), uses hostPath
           // K8sAzureBlockHostNamespaceV2
           //  - Kured, shared host namespace
           // K8sAzureAllowedUsersGroups
           //  - Kured, no runAsNonRoot, no runAsGroup, no supplementalGroups, no fsGroup
-          //  - AAD Pod Identity (nmi & mic), runAsUser=0, no runAsGroup, no supplementalGroups, no fsGroup
           'cluster-baseline-settings'
 
           // Known violations
@@ -1077,8 +1066,6 @@ resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-0
       excludedContainers: {
         value: [
           'kured'   // Kured
-          'nmi'     // AAD Pod Identity
-          'mic'     // AAD Pod Identity
           'aspnet-webapp-sample'   // ASP.NET Core does not support read-only root
         ]
       }
@@ -1102,10 +1089,10 @@ resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021
     policyDefinitionId: pdEnforceResourceLimitsId
     parameters: {
       cpuLimit: {
-        value: '500m' // Kured = 500m, AAD Pod Identity = 200m, traefik-ingress-controller = 200m, aspnet-webapp-sample = 100m
+        value: '500m' // Kured = 500m, traefik-ingress-controller = 200m, aspnet-webapp-sample = 100m
       }
       memoryLimit: {
-        value: '1Gi' // AAD Pod Identity = 1Gi, aspnet-webapp-sample = 256Mi, traefik-ingress-controller = 128Mi, Kured = 48Mi
+        value: '256Mi' // aspnet-webapp-sample = 256Mi, traefik-ingress-controller = 128Mi, Kured = 48Mi
       }
       excludedNamespaces: {
         value: [
@@ -1173,14 +1160,6 @@ resource paAllowedHostPaths 'Microsoft.Authorization/policyAssignments@2021-06-0
         value: {
           paths: [] // Setting to empty blocks all host paths
         }
-      }
-      // AAD Pod Identity mounts: /run/xtables.lock, /etc/default/kubelet, and /etc/kubernetes/azure.json
-      // If not using AAD Pod Identity (OSS version), then you can remove this exclusion
-      excludedContainers: {
-        value: [
-          'nmi'
-          'mic'
-        ]
       }
       effect: {
         value: 'Deny'
@@ -1455,10 +1434,22 @@ resource miAppGatewayFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@
   location: location
 }
 
-// User Managed Identity for the cluster's ingress controller pods. Used for Azure Key Vault Access
-resource podmiIngressController 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+// User Managed Identity for the cluster's ingress controller pods via Workload Identity. Used for Azure Key Vault Access.
+resource podmiIngressController 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
   name: 'podmi-ingress-controller'
   location: location
+
+  // Workload identity service account federation
+  resource federatedCreds 'federatedIdentityCredentials@2022-01-31-preview' = {
+    name: 'ingress-controller'
+    properties: {
+      issuer: mc.properties.oidcIssuerProfile.issuerURL
+      subject: 'system:serviceaccount:a0008:traefik-ingress-controller'
+      audiences: [
+        'api://AzureADTokenExchange'
+      ]
+    }
+  }
 }
 
 resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
@@ -1547,7 +1538,7 @@ resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authoriz
   }
 }
 
-// Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates.
+// Grant the AKS cluster ingress controller's managed workload identity with Key Vault reader role permissions; this allows our ingress controller to pull certificates.
 resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultSecretsUserRole.id)
@@ -1558,7 +1549,7 @@ resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Autho
   }
 }
 
-// Grant the AKS cluster ingress controller pod managed identity with key vault reader role permissions; this allows our ingress controller to pull certificates
+// Grant the AKS cluster ingress controller's managed workload identity with Key Vault reader role permissions; this allows our ingress controller to pull certificates
 resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: kv
   name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultReaderRole.id)
@@ -1590,7 +1581,7 @@ resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
     location: 'global'
     properties: {
       virtualNetwork: {
-        id: targetVnetResourceId
+        id: targetVirtualNetwork.id
       }
       registrationEnabled: false
     }
@@ -1602,7 +1593,7 @@ resource peKv 'Microsoft.Network/privateEndpoints@2021-05-01' = {
   location: location
   properties: {
     subnet: {
-      id: snetPrivatelinkendpoints.id
+      id: targetVirtualNetwork::snetPrivatelinkendpoints.id
     }
     privateLinkServiceConnections: [
       {
@@ -1653,7 +1644,7 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
     location: 'global'
     properties: {
       virtualNetwork: {
-        id: targetVnetResourceId
+        id: targetVirtualNetwork.id
       }
       registrationEnabled: false
     }
@@ -1680,7 +1671,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
         osType: 'Linux'
         minCount: 3
         maxCount: 4
-        vnetSubnetID: snetClusterNodes.id
+        vnetSubnetID: targetVirtualNetwork::snetClusterNodes.id
         enableAutoScaling: true
         type: 'VirtualMachineScaleSets'
         mode: 'System'
@@ -1710,7 +1701,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
         osType: 'Linux'
         minCount: 2
         maxCount: 5
-        vnetSubnetID: snetClusterNodes.id
+        vnetSubnetID: targetVirtualNetwork::snetClusterNodes.id
         enableAutoScaling: true
         type: 'VirtualMachineScaleSets'
         mode: 'User'
@@ -1801,12 +1792,13 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
       enablePrivateCluster: false
     }
     podIdentityProfile: {
-      enabled: false
-      userAssignedIdentities: []
-      userAssignedIdentityExceptions: []
+      enabled: false // Using federated workload identity for Azure AD Pod identities, not the deprecated AAD Pod Identity
     }
     disableLocalAccounts: true
     securityProfile: {
+      workloadIdentity: {
+        enabled: true
+      }
       azureDefender: {
         enabled: true
         logAnalyticsWorkspaceResourceId: la.id
@@ -1886,17 +1878,6 @@ resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Auth
   properties: {
     roleDefinitionId: monitoringMetricsPublisherRole.id
     principalId: mc.properties.addonProfiles.omsagent.identity.objectId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// Grant the AKS cluster with Managed Identity Operator role permissions over the managed identity used for the ingress controller. Allows it to be assigned to the underlying VMSS.
-resource miKubeletManagedIdentityOperatorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  scope: podmiIngressController
-  name: guid(resourceGroup().id, 'podmi-ingress-controller', managedIdentityOperatorRole.id)
-  properties: {
-    roleDefinitionId: managedIdentityOperatorRole.id
-    principalId: mc.properties.identityProfile.kubeletidentity.objectId
     principalType: 'ServicePrincipal'
   }
 }
@@ -2143,7 +2124,7 @@ resource agw 'Microsoft.Network/applicationGateways@2021-05-01' = {
         name: 'apw-ip-configuration'
         properties: {
           subnet: {
-            id: '${targetVnetResourceId}/subnets/snet-applicationgateway'
+            id: targetVirtualNetwork::snetApplicationGateway.id
           }
         }
       }
@@ -2299,7 +2280,5 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
 /*** OUTPUTS ***/
 
 output aksClusterName string = clusterName
-output aksIngressControllerPodManagedIdentityResourceId string = podmiIngressController.id
 output aksIngressControllerPodManagedIdentityClientId string = podmiIngressController.properties.clientId
-output aksOidcIssuerUrl string = mc.properties.oidcIssuerProfile.issuerURL
 output keyVaultName string = kv.name

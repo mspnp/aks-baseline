@@ -7,7 +7,7 @@ Now that [the AKS cluster](./06-aks-cluster.md) has been deployed, the next step
 GitOps allows a team to author Kubernetes manifest files, persist them in their git repo, and have them automatically apply to their cluster as changes occur. This reference implementation is focused on the baseline cluster, so Flux is managing cluster-level concerns. This is distinct from workload-level concerns, which would be possible as well to manage via Flux, and would typically be done by additional Flux configuration in the cluster. The namespace `cluster-baseline-settings` will be used to provide a logical division of the cluster bootstrap configuration from workload configuration. Examples of manifests that are applied:
 
 * Cluster Role Bindings for the AKS-managed Azure AD integration
-* AAD Pod Identity
+* Cluster-wide configuration of Azure Monitor for Containers
 * the workload's namespace named `a0008`
 
 1. Install `kubectl` 1.24 or newer. (`kubectl` supports ±1 Kubernetes version.)
@@ -51,7 +51,6 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    The bootstrapping process that already happened due to the usage of the Flux extension for AKS has set up the following, amoung other things
 
-   * AAD Pod Identity
    * the workload's namespace named `a0008`
    * Installed kured
 
