@@ -79,7 +79,7 @@ data:
         # - prometheus.io/path: If the metrics path is not /metrics, define it with this annotation.
         # - prometheus.io/port: If port is not 9102 use this annotation
         monitor_kubernetes_pods = true
-        monitor_kubernetes_pods_namespaces = ["a0008","cluster-baseline-settings","azure-workload-identity-system"]
+        monitor_kubernetes_pods_namespaces = ["a0008","cluster-baseline-settings"]
     [prometheus_data_collection_settings.node]
         # Node level scrape endpoint(s). These metrics will be scraped from agent's DaemonSet running in every node in the cluster
         # Any errors related to prometheus scraping can be found in the KubeMonAgentEvents table in the Log Analytics workspace that the cluster is sending data to.
