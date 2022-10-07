@@ -80,19 +80,19 @@ data:
         # - prometheus.io/port: If port is not 9102 use this annotation
         monitor_kubernetes_pods = true
 
-        ## Restricts Kubernetes monitoring to namespaces for pods that have annotations set and are scraped using the monitor_kubernetes_pods setting.	
-        ## This will take effect when monitor_kubernetes_pods is set to true	
+        ## Restricts Kubernetes monitoring to namespaces for pods that have annotations set and are scraped using the monitor_kubernetes_pods setting.
+        ## This will take effect when monitor_kubernetes_pods is set to true
         ##   ex: monitor_kubernetes_pods_namespaces = ["default1", "default2", "default3"]
         monitor_kubernetes_pods_namespaces = ["a0008","cluster-baseline-settings"]
 
-        ## Label selector to target pods which have the specified label	
-        ## This will take effect when monitor_kubernetes_pods is set to true	
-        ## Reference the docs at https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors	
-        # kubernetes_label_selector = "env=dev,app=nginx"	
-        ## Field selector to target pods which have the specified field	
-        ## This will take effect when monitor_kubernetes_pods is set to true	
-        ## Reference the docs at https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/	
-        ## eg. To scrape pods on a specific node	
+        ## Label selector to target pods which have the specified label
+        ## This will take effect when monitor_kubernetes_pods is set to true
+        ## Reference the docs at https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+        # kubernetes_label_selector = "env=dev,app=nginx"
+        ## Field selector to target pods which have the specified field
+        ## This will take effect when monitor_kubernetes_pods is set to true
+        ## Reference the docs at https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/
+        ## eg. To scrape pods on a specific node
         # kubernetes_field_selector = "spec.nodeName=$HOSTNAME"
     [prometheus_data_collection_settings.node]
         # Node level scrape endpoint(s). These metrics will be scraped from agent's DaemonSet running in every node in the cluster
