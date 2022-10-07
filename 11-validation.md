@@ -40,6 +40,49 @@ If instead Kubernetes RBAC is backed directly by Azure AD, then you'll need to e
 
 No matter which backing store you use, the user assigned to the group will then be able to `az aks get-credentials` to the cluster and you can validate that user is limited to a _read only_ view of the a0008 namespace.
 
+## Validate Azure Policy
+
+Built-in as well as custom policies are applied to the cluster as part of the [cluster deployment step](./06-aks-cluster.md) to ensure that workloads deployed to the cluster comply with the team's governance rules. Policy assignments with effect [`audit`](https://learn.microsoft.com/azure/governance/policy/concepts/effects#audit) will create a warning in the activity log and show violations in the Azure Policy blade in the portal, providing an aggregated view of the compliance state and the option to identify violating resources. Policy assignments with effect [`deny`](https://learn.microsoft.com/azure/governance/policy/concepts/effects#deny) will be enforced with the help of [Gatekeeper's admission controller webhook](https://open-policy-agent.github.io/gatekeeper/website/docs/) by denying API requests that would violate a policy otherwise.
+
+:bulb: Gatekeeper policies are implemented in the [policy language 'Rego'](https://learn.microsoft.com/azure/governance/policy/concepts/policy-for-kubernetes#policy-language). To deploy the policy of this reference architecture with the Azure platform, the Rego specification is Base64-encoded and stored in a field of the Azure Policy resource defined in `nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep`. It might be insightful to decode the string with an Base64 decoder of your choice and investigate the declarative implementation. 
+
+### Steps
+
+1. Try to add a second `Ingress` resource to your workload namespace with the following command.
+
+    Notice that the host value specified in the `rules` and the `tls` sections defines a domain name with suffix `invalid-domain.com` rather than the domain suffix you defined for your setup when you [created your certificates](./02-ca-certificates.md)).
+
+   ```bash
+   cat <<EOF | kubectl create -f -
+   apiVersion: networking.k8s.io/v1
+   kind: Ingress
+   metadata:
+     name: aspnetapp-ingress-violating
+     namespace: a0008
+   spec:
+     tls:
+     - hosts:
+       - bu0001a0008-00.aks-ingress.invalid-domain.com
+     rules:
+     - host: bu0001a0008-00.aks-ingress.invalid-domain.com
+       http:
+         paths:
+         - path: /
+           pathType: Prefix
+           backend:
+             service:
+               name: aspnetapp-service
+               port:
+                 number: 80
+   EOF
+   ```
+
+2. Inspect the error message and remark that Gatekeeper's admission webhook rejects `bu0001a0008-00.aks-ingress.invalid-domain.com` as incompliant host.
+
+   ```output
+   Error from server (Forbidden): error when creating "STDIN": admission webhook "validation.gatekeeper.sh" denied the request: [azurepolicy-k8scustomingresstlshostshavede-e64871e795ce3239cd99] TLS host must have one of defined domain suffixes. Valid domain names are ["contoso.com"]; defined TLS hosts are {"bu0001a0008-00.aks-ingress.invalid-domain.com"}; incompliant hosts are {"bu0001a0008-00.aks-ingress.invalid-domain.com"}.
+   ```
+
 ## Validate Web Application Firewall functionality
 
 Your workload is placed behind a Web Application Firewall (WAF), which has rules designed to stop intentionally malicious activity. You can test this by triggering one of the built-in rules with a request that looks malicious.
@@ -63,7 +106,7 @@ Your workload is placed behind a Web Application Firewall (WAF), which has rules
 
 ## Validate Cluster Azure Monitor Insights and Logs
 
-Monitoring your cluster is critical, especially when you're running a production cluster. Therefore, your AKS cluster is configured to send [diagnostic information](https://docs.microsoft.com/azure/aks/monitor-aks) of categories _cluster-autoscaler_, _kube-controller-manager_, _kube-audit-admin_ and _guard_ to the Log Analytics Workspace deployed as part of the [bootstrapping step](./05-bootstrap-prep.md). Additionally, [Azure Monitor for containers](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-overview) is configured on your cluster to capture metrics and logs from your workload containers. Azure Monitor is configured to surface cluster logs, here you can see those logs as they are generated. 
+Monitoring your cluster is critical, especially when you're running a production cluster. Therefore, your AKS cluster is configured to send [diagnostic information](https://learn.microsoft.com/azure/aks/monitor-aks) of categories _cluster-autoscaler_, _kube-controller-manager_, _kube-audit-admin_ and _guard_ to the Log Analytics Workspace deployed as part of the [bootstrapping step](./05-bootstrap-prep.md). Additionally, [Azure Monitor for containers](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-overview) is configured on your cluster to capture metrics and logs from your workload containers. Azure Monitor is configured to surface cluster logs, here you can see those logs as they are generated. 
 
 :bulb: If you need to inspect the behavior of the Kubernetes scheduler, enable the log category _kube-scheduler_ (either through the _Diagnostic Settings_ blade of your AKS cluster or by enabling the category in your `cluster-stamp.bicep` template). Note that this category is quite verbose and will impact the cost of your Log Analytics Workspace.
 
@@ -72,7 +115,7 @@ Monitoring your cluster is critical, especially when you're running a production
 1. In the Azure Portal, navigate to your AKS cluster resource.
 1. Click _Insights_ to see captured data.
 
-You can also execute [queries](https://docs.microsoft.com/azure/azure-monitor/log-query/get-started-portal) on the [cluster logs captured](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-log-search).
+You can also execute [queries](https://learn.microsoft.com/azure/azure-monitor/log-query/get-started-portal) on the [cluster logs captured](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-log-search).
 
 1. In the Azure Portal, navigate to your AKS cluster resource.
 1. Click _Logs_ to see and query log data.
@@ -80,7 +123,7 @@ You can also execute [queries](https://docs.microsoft.com/azure/azure-monitor/lo
 
 ## Validate Azure Monitor for containers (Prometheus Metrics)
 
-Azure Monitor is configured to [scrape Prometheus metrics](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-prometheus-integration) in your cluster. This reference implementation is configured to collect Prometheus metrics from two namespaces, as configured in [`container-azm-ms-agentconfig.yaml`](./cluster-baseline-settings/container-azm-ms-agentconfig.yaml). There are two pods configured to emit Prometheus metrics:
+Azure Monitor is configured to [scrape Prometheus metrics](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-prometheus-integration) in your cluster. This reference implementation is configured to collect Prometheus metrics from two namespaces, as configured in [`container-azm-ms-agentconfig.yaml`](./cluster-baseline-settings/container-azm-ms-agentconfig.yaml). There are two pods configured to emit Prometheus metrics:
 
 - [Traefik](./workload/traefik.yaml) (in the `a0008` namespace)
 - [Kured](./cluster-baseline-settings/kured.yaml) (in the `cluster-baseline-settings` namespace)
@@ -124,13 +167,13 @@ Azure will generate alerts on the health of your cluster and adjacent resources.
 
 ### Steps
 
-An alert based on [Azure Monitor for containers information using a Kusto query](https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts) was configured in this reference implementation.
+An alert based on [Azure Monitor for containers information using a Kusto query](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-alerts) was configured in this reference implementation.
 
 1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
 1. Select _Alerts_, then _Alert Rules_.
 1. There is an alert titled "[your cluster name] Scheduled Query for Pod Failed Alert" that will be triggered based on the custom query response.
 
-An [Azure Advisor Alert](https://docs.microsoft.com/azure/advisor/advisor-overview) was configured as well in this reference implementation.
+An [Azure Advisor Alert](https://learn.microsoft.com/azure/advisor/advisor-overview) was configured as well in this reference implementation.
 
 1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
 1. Select _Alerts_, then _Alert Rules_.

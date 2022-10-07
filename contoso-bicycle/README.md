@@ -44,7 +44,7 @@ Responsible for the infrastructure deployment and day-to-day operations of the A
 
 ## Business requirements
 
-Here are the requirements based on an initial [Well-Architected Framework review](https://docs.microsoft.com/assessments/?id=azure-architecture-review).
+Here are the requirements based on an initial [Well-Architected Framework review](https://learn.microsoft.com/assessments/?id=azure-architecture-review).
 
 ### Reliability
 

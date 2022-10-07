@@ -931,7 +931,7 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
     description: 'Alert on pod Failed phase.'
     enabled: 'true'
     source: {
-      query: '//https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts \r\n let endDateTime = now(); let startDateTime = ago(1h); let trendBinSize = 1m; let clusterName = "${clusterName}"; KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | where ClusterName == clusterName | distinct ClusterName, TimeGenerated | summarize ClusterSnapshotCount = count() by bin(TimeGenerated, trendBinSize), ClusterName | join hint.strategy=broadcast ( KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | distinct ClusterName, Computer, PodUid, TimeGenerated, PodStatus | summarize TotalCount = count(), PendingCount = sumif(1, PodStatus =~ "Pending"), RunningCount = sumif(1, PodStatus =~ "Running"), SucceededCount = sumif(1, PodStatus =~ "Succeeded"), FailedCount = sumif(1, PodStatus =~ "Failed") by ClusterName, bin(TimeGenerated, trendBinSize) ) on ClusterName, TimeGenerated | extend UnknownCount = TotalCount - PendingCount - RunningCount - SucceededCount - FailedCount | project TimeGenerated, TotalCount = todouble(TotalCount) / ClusterSnapshotCount, PendingCount = todouble(PendingCount) / ClusterSnapshotCount, RunningCount = todouble(RunningCount) / ClusterSnapshotCount, SucceededCount = todouble(SucceededCount) / ClusterSnapshotCount, FailedCount = todouble(FailedCount) / ClusterSnapshotCount, UnknownCount = todouble(UnknownCount) / ClusterSnapshotCount| summarize AggregatedValue = avg(FailedCount) by bin(TimeGenerated, trendBinSize)'
+      query: '//https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-alerts \r\n let endDateTime = now(); let startDateTime = ago(1h); let trendBinSize = 1m; let clusterName = "${clusterName}"; KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | where ClusterName == clusterName | distinct ClusterName, TimeGenerated | summarize ClusterSnapshotCount = count() by bin(TimeGenerated, trendBinSize), ClusterName | join hint.strategy=broadcast ( KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | distinct ClusterName, Computer, PodUid, TimeGenerated, PodStatus | summarize TotalCount = count(), PendingCount = sumif(1, PodStatus =~ "Pending"), RunningCount = sumif(1, PodStatus =~ "Running"), SucceededCount = sumif(1, PodStatus =~ "Succeeded"), FailedCount = sumif(1, PodStatus =~ "Failed") by ClusterName, bin(TimeGenerated, trendBinSize) ) on ClusterName, TimeGenerated | extend UnknownCount = TotalCount - PendingCount - RunningCount - SucceededCount - FailedCount | project TimeGenerated, TotalCount = todouble(TotalCount) / ClusterSnapshotCount, PendingCount = todouble(PendingCount) / ClusterSnapshotCount, RunningCount = todouble(RunningCount) / ClusterSnapshotCount, SucceededCount = todouble(SucceededCount) / ClusterSnapshotCount, FailedCount = todouble(FailedCount) / ClusterSnapshotCount, UnknownCount = todouble(UnknownCount) / ClusterSnapshotCount| summarize AggregatedValue = avg(FailedCount) by bin(TimeGenerated, trendBinSize)'
       dataSourceId: la.id
       queryType: 'ResultCount'
     }
@@ -1397,6 +1397,38 @@ resource paManagedIdentitiesEnabled 'Microsoft.Authorization/policyAssignments@2
   }
 }
 
+// Deploying and applying the custom policy 'Kubernetes cluster ingress TLS hosts must have defined domain suffix' as defined in nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep
+// Note: Policy definition must be deployed as module since policy definitions require a targetScope of 'subscription'.
+
+module modK8sIngressTlsHostsHaveDefinedDomainSuffix 'nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep' = {
+  name: 'modK8sIngressTlsHostsHaveDefinedDomainSuffix'
+  scope: subscription()
+}
+
+resource paK8sIngressTlsHostsHaveSpecificDomainSuffix 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid('K8sCustomIngressTlsHostsHaveDefinedDomainSuffix', resourceGroup().id, clusterName)
+  location: 'global'
+  scope: resourceGroup()
+  properties: {
+    displayName: take('[${clusterName}] ${modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.policyName}', 120)
+    description: modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.policyDescription
+    policyDefinitionId: modK8sIngressTlsHostsHaveDefinedDomainSuffix.outputs.policyId
+    parameters: {
+      excludedNamespaces: {
+        value: []
+      }
+      effect: {
+        value: 'deny'
+      }
+      allowedDomainSuffixes: {
+        value: [
+          domainName
+        ]
+      }
+    }
+  }
+}
+
 // The control plane identity used by the cluster. Used for networking access (VNET joining and DNS updating)
 resource miClusterControlPlane 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'mi-${clusterName}-controlplane'
@@ -1816,6 +1848,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
     paEnforceInternalLoadBalancers
     paEnforceResourceLimits
     paRoRootFilesystem
+    paK8sIngressTlsHostsHaveSpecificDomainSuffix
 
     // Azure Resource Provider policies that we'd like to see in place before the cluster is deployed
     // They are not technically a dependency, but logically they would have existed on the resource group
