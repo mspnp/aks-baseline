@@ -30,7 +30,7 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
 
 1. While the following feature(s) are still in _preview_, please enable them in your target subscription.
 
-   1. [Register the Defender for Containers preview feature = `AKS-AzureDefender`](https://learn.microsoft.com/azure/defender-for-cloud/defender-for-containers-enable?tabs=k8s-deploy-cli%2Ck8s-deploy-asc%2Ck8s-verify-asc%2Ck8s-remove-arc%2Caks-removeprofile-api&pivots=defender-for-container-aks#use-azure-cli-to-deploy-the-defender-extension)
+   1. [Register the Defender for Containers preview feature = `AKS-AzureDefender`](https://learn.microsoft.com/azure/defender-for-cloud/defender-for-containers-enable?pivots=defender-for-container-aks&tabs=k8s-deploy-cli%2Ck8s-deploy-asc%2Ck8s-verify-asc%2Ck8s-remove-arc%2Caks-removeprofile-api#deploy-the-defender-profile)
 
    1. [Register the Federated Identity Credentials preview feature = `FederatedIdentityCredentials`](https://TODO)
 
