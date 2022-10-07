@@ -30,20 +30,22 @@ This is the starting point for the instructions on deploying the [AKS Baseline r
 
 1. While the following feature(s) are still in _preview_, please enable them in your target subscription.
 
+   1. [Register the Defender for Containers preview feature = `AKS-AzureDefender`](https://learn.microsoft.com/azure/defender-for-cloud/defender-for-containers-enable?tabs=k8s-deploy-cli%2Ck8s-deploy-asc%2Ck8s-verify-asc%2Ck8s-remove-arc%2Caks-removeprofile-api&pivots=defender-for-container-aks#use-azure-cli-to-deploy-the-defender-extension)
+
    1. [Register the Federated Identity Credentials preview feature = `FederatedIdentityCredentials`](https://TODO)
 
    1. [Register the Workload Identity preview feature = `EnableWorkloadIdentityPreview`](https://learn.microsoft.com/en-us/azure/aks/workload-identity-deploy-cluster#register-the-enableworkloadidentitypreview-feature-flag)
 
    ```bash
+   az feature register --namespace "Microsoft.ContainerService" -n "AKS-AzureDefender"
    az feature register --namespace "Microsoft.ManagedIdentity" -n "FederatedIdentityCredentials"
    az feature register --namespace "Microsoft.ContainerService" -n "EnableWorkloadIdentityPreview"
 
    # Keep running until all say "Registered." (This may take up to 20 minutes.)
-   az feature list -o table --query "[?name=='Microsoft.ManagedIdentity/FederatedIdentityCredentials' || name=='Microsoft.ContainerService/EnableWorkloadIdentityPreview'].{Name:name,State:properties.state}"
+   az feature list -o table --query "[?name=='Microsoft.ContainerService/AKS-AzureDefender' || name=='Microsoft.ManagedIdentity/FederatedIdentityCredentials' || name=='Microsoft.ContainerService/EnableWorkloadIdentityPreview'].{Name:name,State:properties.state}"
 
    # When all say "Registered" then re-register the AKS and related resource providers
    az provider register --namespace Microsoft.ContainerService
-   az provider register --namespace Microsoft.KubernetesConfiguration
    az provider register --namespace Microsoft.ManagedIdentity
    ```
 
