@@ -2013,7 +2013,7 @@ resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurati
         dependsOn: []
         timeoutInSeconds: 300
         syncIntervalInSeconds: 300
-        retryIntervalInSeconds: null
+        retryIntervalInSeconds: 300
         prune: true
         force: false
       }
