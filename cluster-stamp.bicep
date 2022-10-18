@@ -1825,8 +1825,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
     ndEnsureClusterIdentityHasRbacToSelfManagedResources
 
     // Azure Policy for Kubernetes policies that we'd want in place before pods start showing up
-    // in the cluster.  The are not technically a depedency from the resource provider perspective,
-    // but logically they need to be in place before workloads are, so focing that here. This also
+    // in the cluster.  The are not technically a dependency from the resource provider perspective,
+    // but logically they need to be in place before workloads are, so forcing that here. This also
     // ensures that the policies are applied to the cluster at bootstrapping time.
     paAKSLinuxRestrictive
     paAadIntegrationEnabled
