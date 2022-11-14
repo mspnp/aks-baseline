@@ -40,7 +40,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 - [Azure Workload Identity](https://learn.microsoft.com/azure/aks/workload-identity-overview) _[AKS-managed add-on]_
 - [Flux GitOps Operator](https://fluxcd.io) _[AKS-managed extension]_
-- [ImageCleaner (Eraser)](https://learn.microsoft.com/azure/aks/image-cleaner)
+- [ImageCleaner (Eraser)](https://learn.microsoft.com/azure/aks/image-cleaner) _[AKS-managed add-on]_
 - [Kubernetes Reboot Daemon](https://learn.microsoft.com/azure/aks/node-updates-kured)
 - [Secrets Store CSI Driver for Kubernetes](https://learn.microsoft.com/azure/aks/csi-secrets-store-driver) _[AKS-managed add-on]_
 - [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.5/routing/providers/kubernetes-ingress/)
