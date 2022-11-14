@@ -1839,7 +1839,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
         enabled: false // Not enabled in the this deployment, as it is not used. Enable as needed.
       }
       nodeRestriction: {
-        enabled: false // Not enabled in this deployment; consider if you need it: https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#noderestriction
+        enabled: true // https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#noderestriction
       }
       customCATrustCertificates: [] // Empty
       defender: {
