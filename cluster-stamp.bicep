@@ -1812,16 +1812,16 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
     }
     storageProfile: { // By default, do not support native state storage, enable as needed to support workloads that require state
       blobCSIDriver: {
-        enabled: false
+        enabled: false // Azure Blobs
       }
       diskCSIDriver: {
-        enabled: false
+        enabled: false  // Azure Disk
       }
       fileCSIDriver: {
-        enabled: false
+        enabled: false  // Azure Files
       }
       snapshotController: {
-        enabled: false
+        enabled: false // CSI Snapshotter: https://github.com/kubernetes-csi/external-snapshotter
       }
     }
     workloadAutoScalerProfile: {

@@ -48,7 +48,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
              objectName: traefik-ingress-internal-aks-ingress-tls
              objectAlias: tls.key
              objectType: secret
-       tenantId: $TENANTID_AZURERBAC_AKS_BASELINE
+       tenantID: $TENANTID_AZURERBAC_AKS_BASELINE
    EOF
    ```
 
