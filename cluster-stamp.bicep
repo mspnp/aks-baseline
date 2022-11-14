@@ -1669,10 +1669,14 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
         osDiskSizeGB: 80
         osDiskType: 'Ephemeral'
         osType: 'Linux'
+        osSKU: 'Ubuntu'
         minCount: 3
         maxCount: 4
         vnetSubnetID: targetVirtualNetwork::snetClusterNodes.id
         enableAutoScaling: true
+        enableCustomCATrust: false
+        enableFIPS: false
+        enableEncryptionAtHost: false
         type: 'VirtualMachineScaleSets'
         mode: 'System'
         scaleSetPriority: 'Regular'
@@ -1699,10 +1703,14 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
         osDiskSizeGB: 120
         osDiskType: 'Ephemeral'
         osType: 'Linux'
+        osSKU: 'Ubuntu'
         minCount: 2
         maxCount: 5
         vnetSubnetID: targetVirtualNetwork::snetClusterNodes.id
         enableAutoScaling: true
+        enableCustomCATrust: false
+        enableFIPS: false
+        enableEncryptionAtHost: false
         type: 'VirtualMachineScaleSets'
         mode: 'User'
         scaleSetPriority: 'Regular'
