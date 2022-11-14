@@ -1,4 +1,4 @@
-# Source: https://github.com/weaveworks/kured/releases/download/1.10.1/kured-1.10.1-dockerhub.yaml
+# Source: https://github.com/kubereboot/charts/tree/kured-4.1.0/charts/kured (1.11.0)
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -16,6 +16,9 @@ rules:
 - apiGroups: [""]
   resources: ["pods"]
   verbs:     ["list","delete","get"]
+- apiGroups: ["extensions"]
+  resources: ["daemonsets"]
+  verbs:     ["get"]
 - apiGroups: ["apps"]
   resources: ["daemonsets"]
   verbs:     ["get"]
@@ -42,11 +45,15 @@ metadata:
   namespace: cluster-baseline-settings
   name: kured
 rules:
-# Allow kured to lock/unlock itself
-- apiGroups:     ["apps"]
-  resources:     ["daemonsets"]
-  resourceNames: ["kured"]
-  verbs:         ["update"]
+  # Allow kured to lock/unlock itself
+  - apiGroups:     ["extensions"]
+    resources:     ["daemonsets"]
+    resourceNames: ["n-kured"]
+    verbs:         ["update", "patch"]
+  - apiGroups:     ["apps"]
+    resources:     ["daemonsets"]
+    resourceNames: ["kured"]
+    verbs:         ["update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -76,13 +83,15 @@ metadata:
 spec:
   selector:
     matchLabels:
-      name: kured
+      app.kubernetes.io/name: kured
   updateStrategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
   template:
     metadata:
       labels:
-        name: kured
+        app.kubernetes.io/name: kured
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/path: "/metrics"
@@ -90,12 +99,15 @@ spec:
     spec:
       serviceAccountName: kured
       tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
-        - effect: NoSchedule
-          key: CriticalAddonsOnly
+        - key: CriticalAddonsOnly
+          effect: NoSchedule
           operator: Equal
           value: "true"
+      hostNetwork: true
       hostPID: true # Facilitate entering the host mount namespace via init
       restartPolicy: Always
       nodeSelector:
@@ -106,10 +118,10 @@ spec:
           # PRODUCTION READINESS CHANGE REQUIRED
           # This image should be sourced from a non-public container registry, such as the
           # one deployed along side of this reference implementation.
-          # az acr import --source docker.io/weaveworks/kured:1.10.1 -n <your-acr-instance-name>
+          # az acr import --source ghcr.io/kubereboot/kured:1.11.0 -n <your-acr-instance-name>
           # and then set this to
-          # image: <your-acr-instance-name>.azurecr.io/weaveworks/kured:1.10.1
-          image: docker.io/weaveworks/kured:1.10.1
+          # image: <your-acr-instance-name>.azurecr.io/kubereboot/kured:1.10.1
+          image: ghcr.io/kubereboot/kured:1.11.0
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true # Give permission to nsenter /proc/1/ns/mnt
@@ -120,14 +132,22 @@ spec:
             requests:
               cpu: 200m
               memory: 16Mi
+          ports:
+            - containerPort: 8080
+              name: metrics
           env:
+            # Pass in the name of the node on which this pod is scheduled
+            # for use with drain/uncordon operations and lock acquisition
             - name: KURED_NODE_ID
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
           command:
             - /usr/bin/kured
+          args:
             - --ds-namespace=cluster-baseline-settings
+#            - --ds-name=kured
+#            - --reboot-command=/bin/systemctl reboot
 #            - --force-reboot=false
 #            - --drain-grace-period=-1
 #            - --skip-wait-for-delete-timeout=0

@@ -43,7 +43,7 @@ param clusterAuthorizedIPRanges array = []
   'southeastasia'
 ])
 param location string = 'eastus2'
-param kubernetesVersion string = '1.24.6'
+param kubernetesVersion string = '1.25.2'
 
 @description('Domain name to use for App Gateway and AKS ingress.')
 param domainName string = 'contoso.com'
@@ -1121,8 +1121,8 @@ resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2021-06
     policyDefinitionId: pdEnforceImageSourceId
     parameters: {
       allowedContainerImagesRegex: {
-        // If all images are pull into your ARC instance as described in these instructions you can remove the docker.io entries.
-        value: '${acr.name}\\.azurecr\\.io/.+$|mcr\\.microsoft\\.com/.+$|docker\\.io/weaveworks/kured.+$|docker\\.io/library/.+$'
+        // If all images are pull into your ARC instance as described in these instructions you can remove the docker.io & ghcr.io entries.
+        value: '${acr.name}\\.azurecr\\.io/.+$|mcr\\.microsoft\\.com/.+$|ghcr\\.io/kubereboot/kured.+$|docker\\.io/library/.+$'
       }
       excludedNamespaces: {
         value: [
@@ -1651,7 +1651,7 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 }
 
-resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
+resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
   name: clusterName
   location: location
   tags: {
@@ -1794,14 +1794,59 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-03-02-preview' = {
     podIdentityProfile: {
       enabled: false // Using federated workload identity for Azure AD Pod identities, not the deprecated AAD Pod Identity
     }
+    autoUpgradeProfile: {
+      upgradeChannel: 'stable'
+    }
+    azureMonitorProfile: {
+      metrics: {
+        enabled: true
+      }
+    }
+    storageProfile: { // By default, do not support native state storage, enable as needed to support workloads that require state
+      blobCSIDriver: {
+        enabled: false
+      }
+      diskCSIDriver: {
+        enabled: false
+      }
+      fileCSIDriver: {
+        enabled: false
+      }
+      snapshotController: {
+        enabled: false
+      }
+    }
+    workloadAutoScalerProfile: {
+      keda: {
+        enabled: false  // Enable if using KEDA to scale workloads
+      }
+      verticalPodAutoscaler: {
+        enabled: false // Enable to use the vertical pod autoscaler
+        updateMode: 'Auto'
+        controlledValues: 'RequestsAndLimits'
+      }
+    }
     disableLocalAccounts: true
     securityProfile: {
       workloadIdentity: {
         enabled: true
       }
-      azureDefender: {
+      imageCleaner: {
         enabled: true
+        intervalHours: 24 // TODO set to 120 5 days
+      }
+      azureKeyVaultKms: {
+        enabled: false // Not enabled in the this deployment, as it is not used. Enable as needed.
+      }
+      nodeRestriction: {
+        enabled: false // Not enabled in this deployment; consider if you need it: https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#noderestriction
+      }
+      customCATrustCertificates: [] // Empty
+      defender: {
         logAnalyticsWorkspaceResourceId: la.id
+        securityMonitoring: {
+          enabled: true
+        }
       }
     }
     oidcIssuerProfile: {
@@ -1871,10 +1916,10 @@ resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssig
   }
 }
 
-// Grant the OMS Agent's Managed Identity the metrics publisher role to push alerts
-resource mcOmsAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+// Grant the Azure Monitor (fka as OMS) Agent's Managed Identity the metrics publisher role to push alerts
+resource mcAmaAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   scope: mc
-  name: guid(mc.id, 'omsagent', monitoringMetricsPublisherRole.id)
+  name: guid(mc.id, 'amagent', monitoringMetricsPublisherRole.id)
   properties: {
     roleDefinitionId: monitoringMetricsPublisherRole.id
     principalId: mc.properties.addonProfiles.omsagent.identity.objectId
