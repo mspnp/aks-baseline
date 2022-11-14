@@ -1799,7 +1799,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
     }
     azureMonitorProfile: {
       metrics: {
-        enabled: true
+        enabled: false // This is for the AKS-PrometheusAddonPreview, which is not enabled in this cluster as Container Insights is already collecting.
       }
     }
     storageProfile: { // By default, do not support native state storage, enable as needed to support workloads that require state
