@@ -1828,11 +1828,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
       keda: {
         enabled: false  // Enable if using KEDA to scale workloads
       }
-      verticalPodAutoscaler: {
-        enabled: false // Enable to use the vertical pod autoscaler
-        updateMode: 'Auto'
-        controlledValues: 'RequestsAndLimits'
-      }
     }
     disableLocalAccounts: true
     securityProfile: {
