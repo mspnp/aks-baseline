@@ -1836,7 +1836,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
       }
       imageCleaner: {
         enabled: true
-        intervalHours: 24 // TODO set to 120 5 days
+        intervalHours: 120 // 5 days
       }
       azureKeyVaultKms: {
         enabled: false // Not enabled in the this deployment, as it is not used. Enable as needed.
