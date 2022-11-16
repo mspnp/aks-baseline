@@ -24,7 +24,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 #### Azure platform
 
-- AKS v1.24
+- AKS v1.25
   - System and User [node pool separation](https://learn.microsoft.com/azure/aks/use-system-pools)
   - [AKS-managed Azure AD](https://learn.microsoft.com/azure/aks/managed-aad)
   - Azure AD-backed Kubernetes RBAC (_local user accounts disabled_)
@@ -38,11 +38,13 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 #### In-cluster OSS components
 
-- [Flux GitOps Operator](https://fluxcd.io) _[AKS-managed extension]_
-- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.5/routing/providers/kubernetes-ingress/)
 - [Azure Workload Identity](https://learn.microsoft.com/azure/aks/workload-identity-overview) _[AKS-managed add-on]_
+- [Flux GitOps Operator](https://fluxcd.io) _[AKS-managed extension]_
+- [ImageCleaner (Eraser)](https://learn.microsoft.com/azure/aks/image-cleaner) _[AKS-managed add-on]_
+- [Kubernetes Reboot Daemon](https://learn.microsoft.com/azure/aks/node-updates-kured)
 - [Secrets Store CSI Driver for Kubernetes](https://learn.microsoft.com/azure/aks/csi-secrets-store-driver) _[AKS-managed add-on]_
-- [Kured](https://learn.microsoft.com/azure/aks/node-updates-kured)
+- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.5/routing/providers/kubernetes-ingress/)
+
 
 ![Network diagram depicting a hub-spoke network with two peered VNets and main Azure resources used in the architecture.](https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)
 

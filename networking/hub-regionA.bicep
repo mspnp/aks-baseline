@@ -651,8 +651,10 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
                 '${split(environment().authentication.loginEndpoint, '/')[2]}' // Prevent the linter from getting upset at login.microsoftonline.com
                 '*.blob.${environment().suffixes.storage}' // required for the extension installer to download the helm chart install flux. This storage account is not predictable, but does look like eusreplstore196 for example.
                 'azurearcfork8s.azurecr.io' // required for a few of the images installed by the extension.
-                '*.docker.io' // Only required if you use the default bootstrapping manifests included in this repo. Kured is sourced from here by default.
-                '*.docker.com' // Only required if you use the default bootstrapping manifests included in this repo. Kured is sourced from here by default.
+                '*.docker.io' // Only required if you use the default bootstrapping manifests included in this repo.
+                '*.docker.com' // Only required if you use the default bootstrapping manifests included in this repo.
+                'ghcr.io' // Only required if you use the default bootstrapping manifests included in this repo. Kured is sourced from here by default.
+                'pkg-containers.githubusercontent.com' // Only required if you use the default bootstrapping manifests included in this repo. Kured is sourced from here by default.
               ]
               targetUrls: []
               destinationAddresses: []
