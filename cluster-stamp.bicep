@@ -1453,7 +1453,7 @@ resource podmiIngressController 'Microsoft.ManagedIdentity/userAssignedIdentitie
 }
 
 resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
-  name: 'kv-${clusterName}'
+  name: 'kv-rklab-${clusterName}'
   location: location
   properties: {
     accessPolicies: [] // Azure RBAC is used instead
@@ -1685,9 +1685,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
         enableNodePublicIP: false
         maxPods: 30
         availabilityZones: [
-          '1'
           '2'
-          '3'
         ]
         upgradeSettings: {
           maxSurge: '33%'
@@ -1719,9 +1717,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
         enableNodePublicIP: false
         maxPods: 30
         availabilityZones: [
-          '1'
           '2'
-          '3'
         ]
         upgradeSettings: {
           maxSurge: '33%'
