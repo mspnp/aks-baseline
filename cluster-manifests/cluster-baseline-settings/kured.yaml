@@ -45,7 +45,7 @@ metadata:
   namespace: cluster-baseline-settings
   name: kured
 rules:
-# Allow kured to lock/unlock itself
+  # Allow kured to lock/unlock itself
   - apiGroups:     ["extensions"]
     resources:     ["daemonsets"]
     resourceNames: ["kured"]
@@ -78,14 +78,14 @@ metadata:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: kured                          # Must match `--ds-name`
-  namespace: cluster-baseline-settings # Must match `--ds-namespace`
+  name: kured                           # Must match `--ds-name`
+  namespace: cluster-baseline-settings  # Must match `--ds-namespace`
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: kured
   updateStrategy:
-   type: RollingUpdate
+    type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 1
   template:
