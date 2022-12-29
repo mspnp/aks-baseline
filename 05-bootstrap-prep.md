@@ -69,12 +69,12 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed as a
    :warning: Without updating these files and using your own fork, you will be deploying your cluster such that it takes dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure _all_ image references you bring to your cluster are from _your_ container registry (link imported in the prior step) or another that you feel confident relying on.
 
    ```bash
-   sed -i "s:docker.io:${ACR_NAME_AKS_BASELINE}.azurecr.io:" ./cluster-manifests/cluster-baseline-settings/kured.yaml
+   sed -i "s:ghcr.io:${ACR_NAME_AKS_BASELINE}.azurecr.io:" ./cluster-manifests/cluster-baseline-settings/kured.yaml
    ```
 
    Note, that if you are on macOS, you might need to use the following command instead:
    ```bash
-   sed -i '' 's:docker.io:'"${ACR_NAME_AKS_BASELINE}"'.azurecr.io:g' ./cluster-manifests/cluster-baseline-settings/kured.yaml
+   sed -i '' 's:ghcr.io:'"${ACR_NAME_AKS_BASELINE}"'.azurecr.io:g' ./cluster-manifests/cluster-baseline-settings/kured.yaml
    ```
    Now commit changes to repository.
 
