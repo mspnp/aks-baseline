@@ -1,6 +1,6 @@
 # End-to-end validation
 
-Now that you have a workload deployed, the [ASP.NET Core Docker sample web app](./10-workload.md), you can start validating and exploring this reference implementation of the [AKS baseline cluster](./). In addition to the workload, there are some observability validation you can perform as well.
+Now that you have a workload deployed, the [ASP.NET Core sample web app](./10-workload.md), you can start validating and exploring this reference implementation of the [AKS baseline cluster](./). In addition to the workload, there are some observability validation you can perform as well.
 
 ## Validate the web app
 
@@ -8,7 +8,7 @@ This section will help you to validate the workload is exposed correctly and res
 
 ### Steps
 
-1. Get Public IP of Application Gateway
+1. Get the public IP address of Application Gateway.
 
    > :book: The app team conducts a final acceptance test to be sure that traffic is flowing end-to-end as expected, so they place a request against the Azure Application Gateway endpoint.
 
@@ -18,7 +18,7 @@ This section will help you to validate the workload is exposed correctly and res
    echo APPGW_PUBLIC_IP: $APPGW_PUBLIC_IP
    ```
 
-1. Create `A` Record for DNS
+1. Create an `A` record for DNS.
 
    > :bulb: You can simulate this via a local hosts file modification. You're welcome to add a real DNS entry for your specific deployment's application domain name, if you have access to do so.
 
@@ -115,7 +115,7 @@ Monitoring your cluster is critical, especially when you're running a production
 1. In the Azure Portal, navigate to your AKS cluster resource.
 1. Click _Insights_ to see captured data.
 
-You can also execute [queries](https://learn.microsoft.com/azure/azure-monitor/log-query/get-started-portal) on the [cluster logs captured](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-log-search).
+You can also execute [queries](https://learn.microsoft.com/azure/azure-monitor/logs/log-analytics-tutorial) on the [cluster logs captured](https://learn.microsoft.com/azure/azure-monitor/containers/container-insights-log-query).
 
 1. In the Azure Portal, navigate to your AKS cluster resource.
 1. Click _Logs_ to see and query log data.
@@ -145,7 +145,7 @@ The example workload uses the standard dotnet logger interface, which are captur
 
 1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
 1. Select your Log Analytic Workspace resource and open the _Logs_ blade.
-1. Execute the following query
+1. Execute the following query.
 
    ```
    let podInventory = KubePodInventory
