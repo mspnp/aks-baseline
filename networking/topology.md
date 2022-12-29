@@ -2,7 +2,7 @@
 
 > Note: This is part of the Azure Kubernetes Service (AKS) baseline cluster reference implementation. For more information see the [readme file in the root](../README.md).
 
-## Hub Virtual network
+## Hub virtual network
 
 `CIDR: 10.200.0.0/24`
 
@@ -12,9 +12,9 @@ This regional VNet hub (shared) is meant to hold the following subnets:
 * [Gateway subnet]
 * [Azure Bastion subnet], with reference NSG in place
 
-> Note: For more information about this topology, you can read more at [Azure Hub-Spoke topology].
+> Note: For more information about this topology, you can read more at [Azure hub-spoke topology].
 
-## Spoke Virtual network
+## Spoke virtual network
 
 `CIDR: 10.240.0.0/16`
 
@@ -40,7 +40,7 @@ In the future, this VNet might hold more subnets like [ACI Provider instance] su
 | Azure Firewall Subnet (AzureFirewallSubnet) | -            | [59]               | -                    | -          | -                        | 100           | 100                 | 0                     | 0                         | 5                                        | 0                   | 64                    | 64                 | 26                 | 10.200.0.0/26  | 10.200.0.0  | 10.200.0.63   |
 | Azure Bastion Subnet (AzureBastionSubnet)   | -            | [50]               | -                    | -          | -                        | 100           | 100                 | 0                     | 0                         | 5                                        | 0                   | 64                    | 64                 | 26                 | 10.200.0.128/26 | 10.200.0.128 | 10.200.0.191  |
 
-## Additional Considerations
+## Additional considerations
 
 * [AKS System Nodepool] and [AKS User Nodepool] subnet:  Multi-tenant or other advanced workloads may have nodepool isolation requirements that might demand more (and likely smaller) subnets.
 * [AKS Internal Load Balancer subnet]: Multi-tenant, multiple SSL termination rules, single PPE supporting dev/QA/UAT, etc could lead to needing more ingress controllers, but for baseline, we should start with one.
@@ -57,7 +57,7 @@ In the future, this VNet might hold more subnets like [ACI Provider instance] su
 [Private Endpoints]: https://learn.microsoft.com/azure/private-link/private-endpoint-overview#private-endpoint-properties
 [Minimum Subnet size]: https://learn.microsoft.com/azure/aks/configure-azure-cni#plan-ip-addressing-for-your-cluster
 [Subnet Mask bits]: https://learn.microsoft.com/azure/virtual-network/virtual-networks-faq#how-small-and-how-large-can-vnets-and-subnets-be
-[Azure Hub-Spoke topology]: https://learn.microsoft.com/azure/architecture/reference-architectures/hybrid-networking/hub-spoke
+[Azure hub-spoke topology]: https://learn.microsoft.com/azure/architecture/reference-architectures/hybrid-networking/hub-spoke
 [Azure Firewall subnet]: https://learn.microsoft.com/azure/firewall/firewall-faq#does-the-firewall-subnet-size-need-to-change-as-the-service-scales
 [Gateway subnet]: https://learn.microsoft.com/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gwsub
 [Azure Application Gateway subnet]: https://learn.microsoft.com/azure/application-gateway/configuration-infrastructure#virtual-network-and-dedicated-subnet

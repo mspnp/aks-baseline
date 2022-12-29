@@ -1,8 +1,8 @@
-# End-to-End Validation
+# End-to-end validation
 
-Now that you have a workload deployed, the [ASP.NET Core Docker sample web app](./10-workload.md), you can start validating and exploring this reference implementation of the [AKS Baseline cluster](./). In addition to the workload, there are some observability validation you can perform as well.
+Now that you have a workload deployed, the [ASP.NET Core Docker sample web app](./10-workload.md), you can start validating and exploring this reference implementation of the [AKS baseline cluster](./). In addition to the workload, there are some observability validation you can perform as well.
 
-## Validate the Web App
+## Validate the web app
 
 This section will help you to validate the workload is exposed correctly and responding to HTTP requests.
 
@@ -83,7 +83,7 @@ Built-in as well as custom policies are applied to the cluster as part of the [c
    Error from server (Forbidden): error when creating "STDIN": admission webhook "validation.gatekeeper.sh" denied the request: [azurepolicy-k8scustomingresstlshostshavede-e64871e795ce3239cd99] TLS host must have one of defined domain suffixes. Valid domain names are ["contoso.com"]; defined TLS hosts are {"bu0001a0008-00.aks-ingress.invalid-domain.com"}; incompliant hosts are {"bu0001a0008-00.aks-ingress.invalid-domain.com"}.
    ```
 
-## Validate Web Application Firewall functionality
+## Validate web application firewall functionality
 
 Your workload is placed behind a Web Application Firewall (WAF), which has rules designed to stop intentionally malicious activity. You can test this by triggering one of the built-in rules with a request that looks malicious.
 
@@ -104,7 +104,7 @@ Your workload is placed behind a Web Application Firewall (WAF), which has rules
    | where ResourceProvider == "MICROSOFT.NETWORK" and Category == "ApplicationGatewayFirewallLog"
    ```
 
-## Validate Cluster Azure Monitor Insights and Logs
+## Validate cluster Azure Monitor insights and logs
 
 Monitoring your cluster is critical, especially when you're running a production cluster. Therefore, your AKS cluster is configured to send [diagnostic information](https://learn.microsoft.com/azure/aks/monitor-aks) of categories _cluster-autoscaler_, _kube-controller-manager_, _kube-audit-admin_ and _guard_ to the Log Analytics Workspace deployed as part of the [bootstrapping step](./05-bootstrap-prep.md). Additionally, [Azure Monitor for containers](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-overview) is configured on your cluster to capture metrics and logs from your workload containers. Azure Monitor is configured to surface cluster logs, here you can see those logs as they are generated. 
 
@@ -121,7 +121,7 @@ You can also execute [queries](https://learn.microsoft.com/azure/azure-monitor/l
 1. Click _Logs_ to see and query log data.
    :bulb: There are several examples on the _Kubernetes Services_ category.
 
-## Validate Azure Monitor for containers (Prometheus Metrics)
+## Validate Azure Monitor for containers (Prometheus metrics)
 
 Azure Monitor is configured to [scrape Prometheus metrics](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-prometheus-integration) in your cluster. This reference implementation is configured to collect Prometheus metrics from two namespaces, as configured in [`container-azm-ms-agentconfig.yaml`](./cluster-baseline-settings/container-azm-ms-agentconfig.yaml). There are two pods configured to emit Prometheus metrics:
 
@@ -137,7 +137,7 @@ Azure Monitor is configured to [scrape Prometheus metrics](https://learn.microso
 1. Find the one of the above queries in the _Containers_ category.
 1. You are able to select and execute the saved query over the scraped metrics.
 
-## Validate Workload Logs
+## Validate workload logs
 
 The example workload uses the standard dotnet logger interface, which are captured in `ContainerLogs` in Azure Monitor. You could also include additional logging and telemetry frameworks in your workload, such as Application Insights. Here are the steps to view the built-in application logs.
 
@@ -185,7 +185,7 @@ A series of metric alerts were configured as well in this reference implementati
 1. Select your cluster, then _Insights_.
 1. Select _Recommended alerts_ to see those enabled. (Feel free to enable/disable as you see fit.)
 
-## Validate Azure Container Registry Image Pulls
+## Validate Azure Container Registry image pulls
 
 If you configured your third-party images to be pulled from your Azure Container Registry vs public registries, you can validate that the container registry logs show `Pull` logs for your cluster when you applied your flux configuration.
 

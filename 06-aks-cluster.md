@@ -1,4 +1,4 @@
-# Deploy the AKS Cluster
+# Deploy the AKS cluster
 
 Now that your [ACR instance is deployed and ready to support cluster bootstrapping](./05-bootstrap-prep.md), the next step in the [AKS baseline reference implementation](./) is deploying the AKS cluster and its remaining adjacent Azure resources.
 
