@@ -52,7 +52,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    The bootstrapping process that already happened due to the usage of the Flux extension for AKS has set up the following, amoung other things
 
    * the workload's namespace named `a0008`
-   * Installed kured
+   * installed kured
 
    ```bash
    kubectl get namespaces
