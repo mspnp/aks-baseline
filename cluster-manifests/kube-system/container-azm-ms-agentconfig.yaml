@@ -84,7 +84,7 @@ data:
         ## Restricts Kubernetes monitoring to namespaces for pods that have annotations set and are scraped using the monitor_kubernetes_pods setting.
         ## This will take effect when monitor_kubernetes_pods is set to true
         ##   ex: monitor_kubernetes_pods_namespaces = ["default1", "default2", "default3"]
-        # monitor_kubernetes_pods_namespaces = ["a0008","cluster-baseline-settings"]
+        monitor_kubernetes_pods_namespaces = ["a0008","cluster-baseline-settings"]
 
         ## Label selector to target pods which have the specified label
         ## This will take effect when monitor_kubernetes_pods is set to true
