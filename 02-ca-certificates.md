@@ -1,4 +1,4 @@
-# Generate Your Client-Facing and AKS Ingress Controller TLS Certificates
+# Generate your client-facing and AKS ingress controller TLS certificates
 
 Now that you have the [prerequisites](./01-prerequisites.md) met, follow the steps below to create the TLS certificates that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS Ingress Controller. If you already have access to an appropriate certificates, or can procure them from your organization, consider doing so and skipping the certificate generation steps. The following will describe using a self-signed certs for instructive purposes only.
 
@@ -10,7 +10,7 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow the ste
    export DOMAIN_NAME_AKS_BASELINE="contoso.com"
    ```
 
-1. Generate a client-facing self-signed TLS certificate
+1. Generate a client-facing, self-signed TLS certificate.
 
    > :book: Contoso Bicycle needs to procure a CA certificate for the web site. As this is going to be a user-facing site, they purchase an EV cert from their CA. This will serve in front of the Azure Application Gateway. They will also procure another one, a standard cert, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing.
 
@@ -23,7 +23,7 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow the ste
    openssl pkcs12 -export -out appgw.pfx -in appgw.crt -inkey appgw.key -passout pass:
    ```
 
-1. Base64 encode the client-facing certificate
+1. Base64 encode the client-facing certificate.
 
    :bulb: No matter if you used a certificate from your organization or you generated one from above, you'll need the certificate (as `.pfx`) to be Base64 encoded for proper storage in Key Vault later.
 
@@ -32,15 +32,15 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow the ste
    echo APP_GATEWAY_LISTENER_CERTIFICATE_AKS_BASELINE: $APP_GATEWAY_LISTENER_CERTIFICATE_AKS_BASELINE
    ```
 
-1. Generate the wildcard certificate for the AKS Ingress Controller
+1. Generate the wildcard certificate for the AKS ingress controller.
 
-   > :book: Contoso Bicycle will also procure another TLS certificate, a standard cert, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing. Finally the app team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller.
+   > :book: Contoso Bicycle will also procure another TLS certificate, a standard cert, to be used with the AKS ingress controller. This one is not EV, as it will not be user facing. Finally the app team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller.
 
    ```bash
    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out traefik-ingress-internal-aks-ingress-tls.crt -keyout traefik-ingress-internal-aks-ingress-tls.key -subj "/CN=*.aks-ingress.${DOMAIN_NAME_AKS_BASELINE}/O=Contoso AKS Ingress"
    ```
 
-1. Base64 encode the AKS Ingress Controller certificate
+1. Base64 encode the AKS ingress controller certificate.
 
    :bulb: No matter if you used a certificate from your organization or you generated one from above, you'll need the public certificate (as `.crt` or `.cer`) to be Base64 encoded for proper storage in Key Vault later.
 

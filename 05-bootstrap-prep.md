@@ -55,7 +55,7 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed as a
    echo ACR_NAME_AKS_BASELINE: $ACR_NAME_AKS_BASELINE
 
    # Import core image(s) hosted in public container registries to be used during bootstrapping
-   az acr import --source ghcr.io/kubereboot/kured:1.11.0 -n $ACR_NAME_AKS_BASELINE
+   az acr import --source ghcr.io/kubereboot/kured:1.12.0 -n $ACR_NAME_AKS_BASELINE
    ```
 
    > In this walkthrough, there is only one image that is included in the bootstrapping process. It's included as an reference for this process. Your choice to use Kubernetes Reboot Daemon (Kured) or any other images, including helm charts, as part of your bootstrapping is yours to make.
@@ -69,12 +69,12 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed as a
    :warning: Without updating these files and using your own fork, you will be deploying your cluster such that it takes dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure _all_ image references you bring to your cluster are from _your_ container registry (link imported in the prior step) or another that you feel confident relying on.
 
    ```bash
-   sed -i "s:docker.io:${ACR_NAME_AKS_BASELINE}.azurecr.io:" ./cluster-manifests/cluster-baseline-settings/kured.yaml
+   sed -i "s:ghcr.io:${ACR_NAME_AKS_BASELINE}.azurecr.io:" ./cluster-manifests/cluster-baseline-settings/kured.yaml
    ```
 
    Note, that if you are on macOS, you might need to use the following command instead:
    ```bash
-   sed -i '' 's:docker.io:'"${ACR_NAME_AKS_BASELINE}"'.azurecr.io:g' ./cluster-manifests/cluster-baseline-settings/kured.yaml
+   sed -i '' 's:ghcr.io:'"${ACR_NAME_AKS_BASELINE}"'.azurecr.io:g' ./cluster-manifests/cluster-baseline-settings/kured.yaml
    ```
    Now commit changes to repository.
 

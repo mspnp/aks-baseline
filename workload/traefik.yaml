@@ -30,8 +30,8 @@ rules:
       - extensions
       - networking.k8s.io
     resources:
-      - ingresses
       - ingressclasses
+      - ingresses
     verbs:
       - get
       - list
@@ -46,14 +46,14 @@ rules:
   - apiGroups:
       - traefik.containo.us
     resources:
-      - middlewares
-      - middlewaretcps
       - ingressroutes
-      - traefikservices
       - ingressroutetcps
       - ingressrouteudps
+      - middlewares
+      - middlewaretcps
       - tlsoptions
       - tlsstores
+      - traefikservices
       - serverstransports
     verbs:
       - get
@@ -73,9 +73,9 @@ roleRef:
   kind: ClusterRole
   name: traefik-ingress-controller
 subjects:
-- kind: ServiceAccount
-  name: traefik-ingress-controller
-  namespace: a0008
+  - kind: ServiceAccount
+    name: traefik-ingress-controller
+    namespace: a0008
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -200,6 +200,7 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+  minReadySeconds: 0
   template:
     metadata:
       annotations:
@@ -227,10 +228,11 @@ spec:
         # PRODUCTION READINESS CHANGE REQUIRED
         # This image should be sourced from a non-public container registry, such as the
         # one deployed along side of this reference implementation.
-        # az acr import --source docker.io/library/traefik:v2.8.1 -n <your-acr-instance-name>
+        # az acr import --source docker.io/library/traefik:v2.9.6 -n <your-acr-instance-name>
         # and then set this to
-        # image: <your-acr-instance-name>.azurecr.io/library/traefik:v2.8.1
-      - image: docker.io/library/traefik:v2.8.1
+        # image: <your-acr-instance-name>.azurecr.io/library/traefik:v2.9.6
+      - image: docker.io/library/traefik:v2.9.6
+        imagePullPolicy: IfNotPresent
         name: traefik-ingress-controller
         resources:
           requests:
@@ -285,6 +287,8 @@ spec:
           - name: ssl-csi
             mountPath: /certs
             readOnly: true
+          - name: tmp
+            mountPath: /tmp
         args:
         - --configfile=/config/traefik.toml
       volumes:
@@ -299,5 +303,9 @@ spec:
               secretProviderClass: aks-ingress-tls-secret-csi-akv
         - name: data
           emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+      securityContext:
+        fsGroup: 65532
       nodeSelector:
        agentpool: npuser01

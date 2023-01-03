@@ -1,4 +1,4 @@
-# Cluster Baseline Configuration Files (GitOps)
+# Cluster baseline configuration files (GitOps)
 
 > Note: This is part of the Azure Kubernetes Service (AKS) Baseline cluster reference implementation. For more information check out the [readme file in the root](../README.md).
 

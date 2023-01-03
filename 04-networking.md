@@ -1,6 +1,6 @@
-# Deploy the Hub-Spoke Network Topology
+# Deploy the hub-spoke network topology
 
-The prerequisites for the [AKS Baseline cluster](./) are now completed with [Azure AD group and user work](./03-aad.md) performed in the prior steps. Now we will start with our first Azure resource deployment, the network resources.
+The prerequisites for the [AKS baseline cluster](./) are now completed with [Azure AD group and user work](./03-aad.md) performed in the prior steps. Now we will start with our first Azure resource deployment, the network resources.
 
 ## Subscription and resource group topology
 
@@ -8,7 +8,7 @@ This reference implementation is split across several resource groups in a singl
 
 ## Expected results
 
-### Resource Groups
+### Resource groups
 
 The following two resource groups will be created and populated with networking resources in the steps below.
 
@@ -19,10 +19,10 @@ The following two resource groups will be created and populated with networking 
 
 ### Resources
 
-* Regional Azure Firewall in Hub Virtual Network
-* Network Spoke for the Cluster
-* Network Peering from the Spoke to the Hub
-* Force Tunnel UDR for Cluster Subnets to the Hub
+* Regional Azure Firewall in hub virtual network
+* Network spoke for the cluster
+* Network peering from the spoke to the hub
+* Force tunnel UDR for cluster subnets to the hub
 * Network Security Groups for all subnets that support them
 
 ## Steps

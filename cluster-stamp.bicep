@@ -2021,7 +2021,7 @@ resource mcFlux_extension 'Microsoft.KubernetesConfiguration/extensions@2021-09-
       'helm-controller.enabled': 'false'
       'source-controller.enabled': 'true'
       'kustomize-controller.enabled': 'true'
-      'notification-controller.enabled': 'false'
+      'notification-controller.enabled': 'true'  // As of testing on 29-Dec, this is required to avoid an error.  Normally it's not a required controller. YMMV
       'image-automation-controller.enabled': 'false'
       'image-reflector-controller.enabled': 'false'
     }

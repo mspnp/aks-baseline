@@ -1,4 +1,4 @@
-# Configure AKS Ingress Controller with Azure Key Vault integration
+# Configure AKS ingress controller with Azure Key Vault integration
 
 Previously you have configured [workload prerequisites](./08-workload-prerequisites.md). These steps configure Traefik, the AKS ingress solution used in this reference implementation, so that it can securely expose the web app to your Application Gateway.
 
@@ -58,7 +58,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
    ```bash
    # Import ingress controller image hosted in public container registries
-   az acr import --source docker.io/library/traefik:v2.8.1 -n $ACR_NAME_AKS_BASELINE
+   az acr import --source docker.io/library/traefik:v2.9.6 -n $ACR_NAME_AKS_BASELINE
    ```
 
 1. Install the Traefik Ingress Controller.

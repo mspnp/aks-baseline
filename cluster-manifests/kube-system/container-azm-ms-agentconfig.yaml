@@ -21,19 +21,19 @@ data:
           # In the absense of this configmap, default value for enabled is true
           enabled = true
           # exclude_namespaces setting holds good only if enabled is set to true
-          # kube-system log collection is disabled by default in the absence of 'log_collection_settings.stdout' setting. If you want to enable kube-system, remove it from the following setting.
-          # If you want to continue to disable kube-system log collection keep this namespace in the following setting and add any other namespace you want to disable log collection to the array.
-          # In the absense of this configmap, default value for exclude_namespaces = ["kube-system"]
-          exclude_namespaces = ["kube-system"]
+          # kube-system,gatekeeper-system log collection are disabled by default in the absence of 'log_collection_settings.stdout' setting. If you want to enable kube-system,gatekeeper-system, remove them from the following setting.
+          # If you want to continue to disable kube-system,gatekeeper-system log collection keep the namespaces in the following setting and add any other namespace you want to disable log collection to the array.
+          # In the absense of this configmap, default value for exclude_namespaces = ["kube-system","gatekeeper-system"]
+          exclude_namespaces = ["kube-system","gatekeeper-system"]
 
        [log_collection_settings.stderr]
           # Default value for enabled is true
           enabled = true
           # exclude_namespaces setting holds good only if enabled is set to true
-          # kube-system log collection is disabled by default in the absence of 'log_collection_settings.stderr' setting. If you want to enable kube-system, remove it from the following setting.
-          # If you want to continue to disable kube-system log collection keep this namespace in the following setting and add any other namespace you want to disable log collection to the array.
-          # In the absense of this cofigmap, default value for exclude_namespaces = ["kube-system"]
-          exclude_namespaces = ["kube-system"]
+          # kube-system,gatekeeper-system log collection are disabled by default in the absence of 'log_collection_settings.stderr' setting. If you want to enable kube-system,gatekeeper-system, remove them from the following setting.
+          # If you want to continue to disable kube-system,gatekeeper-system log collection keep the namespaces in the following setting and add any other namespace you want to disable log collection to the array.
+          # In the absense of this configmap, default value for exclude_namespaces = ["kube-system","gatekeeper-system"]
+          exclude_namespaces = ["kube-system","gatekeeper-system"]
 
        [log_collection_settings.env_var]
           # In the absense of this configmap, default value for enabled is true
@@ -52,13 +52,14 @@ data:
           # Supported values for this setting are "v1","v2"
           # See documentation at https://aka.ms/ContainerLogv2 for benefits of v2 schema over v1 schema before opting for "v2" schema
           # containerlog_schema_version = "v2"
+
   prometheus-data-collection-settings: |-
     # Custom Prometheus metrics data collection settings
     [prometheus_data_collection_settings.cluster]
         # Cluster level scrape endpoint(s). These metrics will be scraped from agent's Replicaset (singleton)
         # Any errors related to prometheus scraping can be found in the KubeMonAgentEvents table in the Log Analytics workspace that the cluster is sending data to.
 
-        #Interval specifying how often to scrape for metrics. This is duration of time and can be specified for supporting settings by combining an integer value and time unit as a string value. Valid time units are ns, us (or Âµs), ms, s, m, h.
+        #Interval specifying how often to scrape for metrics. This is duration of time and can be specified for supporting settings by combining an integer value and time unit as a string value. Valid time units are ns, us (or µs), ms, s, m, h.
         interval = "1m"
 
         ## Uncomment the following settings with valid string arrays for prometheus scraping
@@ -95,11 +96,12 @@ data:
         ## Reference the docs at https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/
         ## eg. To scrape pods on a specific node
         # kubernetes_field_selector = "spec.nodeName=$HOSTNAME"
+
     [prometheus_data_collection_settings.node]
         # Node level scrape endpoint(s). These metrics will be scraped from agent's DaemonSet running in every node in the cluster
         # Any errors related to prometheus scraping can be found in the KubeMonAgentEvents table in the Log Analytics workspace that the cluster is sending data to.
 
-        #Interval specifying how often to scrape for metrics. This is duration of time and can be specified for supporting settings by combining an integer value and time unit as a string value. Valid time units are ns, us (or Âµs), ms, s, m, h.
+        #Interval specifying how often to scrape for metrics. This is duration of time and can be specified for supporting settings by combining an integer value and time unit as a string value. Valid time units are ns, us (or µs), ms, s, m, h.
         interval = "1m"
 
         ## Uncomment the following settings with valid string arrays for prometheus scraping
@@ -117,6 +119,7 @@ data:
       # When the setting is set to false, only the persistent volume metrics outside the kube-system namespace will be collected
       # When this is enabled (enabled = true), persistent volume metrics including those in the kube-system namespace will be collected
       enabled = true
+
   alertable-metrics-configuration-settings: |-
     # Alertable metrics configuration settings for container resource utilization
     [alertable_metrics_configuration_settings.container_resource_utilization_thresholds]
@@ -148,10 +151,27 @@ data:
   agent-settings: |-
     # prometheus scrape fluent bit settings for high scale
     # buffer size should be greater than or equal to chunk size else we set it to chunk size.
+    # settings scoped to prometheus sidecar container. all values in mb
     [agent_settings.prometheus_fbit_settings]
       tcp_listener_chunk_size = 10
       tcp_listener_buffer_size = 10
       tcp_listener_mem_buf_limit = 200
+
+    # prometheus scrape fluent bit settings for high scale
+    # buffer size should be greater than or equal to chunk size else we set it to chunk size.
+    # settings scoped to daemonset container. all values in mb
+    # [agent_settings.node_prometheus_fbit_settings]
+      # tcp_listener_chunk_size = 1
+      # tcp_listener_buffer_size = 1
+      # tcp_listener_mem_buf_limit = 10
+
+    # prometheus scrape fluent bit settings for high scale
+    # buffer size should be greater than or equal to chunk size else we set it to chunk size.
+    # settings scoped to replicaset container. all values in mb
+    # [agent_settings.cluster_prometheus_fbit_settings]
+      # tcp_listener_chunk_size = 1
+      # tcp_listener_buffer_size = 1
+      # tcp_listener_mem_buf_limit = 10
 
     # The following settings are "undocumented", we don't recommend uncommenting them unless directed by Microsoft.
     # They increase the maximum stdout/stderr log collection rate but will also cause higher cpu/memory usage.
@@ -162,4 +182,3 @@ data:
     #   tail_buf_chunksize_megabytes = "1"            # default value is 32kb (comment out this line for default)
     #   tail_buf_maxsize_megabytes = "1"              # defautl value is 32kb (comment out this line for default)
     #   tail_ignore_older = "5m"                      # default value same as fluent-bit default i.e.0m
-

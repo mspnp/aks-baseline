@@ -1,4 +1,4 @@
-# Azure Kubernetes Service (AKS) Baseline Cluster
+# Azure Kubernetes Service (AKS) baseline cluster
 
 This reference implementation demonstrates the _recommended starting (baseline) infrastructure architecture_ for a general purpose [AKS cluster](https://azure.microsoft.com/services/kubernetes-service). This implementation and document is meant to guide an interdisciplinary team or multiple distinct teams like networking, security and development through the process of getting this general purpose baseline infrastructure deployed and understanding the components of it.
 
@@ -6,7 +6,7 @@ We walk through the deployment here in a rather _verbose_ method to help you und
 
 ## Azure Architecture Center guidance
 
-This project has a companion set of articles that describe challenges, design patterns, and best practices for a secure AKS cluster. You can find this article on the Azure Architecture Center at [Azure Kubernetes Service (AKS) Baseline cluster](https://aka.ms/architecture/aks-baseline). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
+This project has a companion set of articles that describe challenges, design patterns, and best practices for a secure AKS cluster. You can find this article on the Azure Architecture Center at [Azure Kubernetes Service (AKS) baseline cluster](https://aka.ms/architecture/aks-baseline). If you haven't reviewed it, we suggest you read it as it will give added context to the considerations applied in this implementation. Ultimately, this is the direct implementation of that specific architectural guidance.
 
 ## Architecture
 
@@ -98,7 +98,7 @@ Most of the Azure resources deployed in the prior steps will incur ongoing charg
 
 - [ ] [Cleanup all resources](./12-cleanup.md)
 
-## Preview features
+## Preview and additional features
 
 Kubernetes and, by extension, AKS are fast-evolving products. The [AKS roadmap](https://aka.ms/AKS/Roadmap) shows how quick the product is changing. This reference implementation does take dependencies on select preview features which the AKS team describes as "Shipped & Improving." The rational behind that is that many of the preview features stay in that state for only a few months before entering GA. If you are just artchitecting your cluster today, by the time you're ready for production, there is a good chance that many of the preview features are nearing or will have hit GA.
 
@@ -109,14 +109,14 @@ This implementation will not include every preview feature, but instead only tho
 - [BYO CNI (`--network-plugin none`)](https://learn.microsoft.com/azure/aks/use-byo-cni)
 - [Simplified application autoscaling with Kubernetes Event-driven Autoscaling (KEDA) add-on](https://learn.microsoft.com/azure/aks/keda)
 
-## Related Reference Implementations
+## Related reference implementations
 
-The AKS Baseline was used as the foundation for the following additional reference implementations. These build on the learnings of the AKS baseline and applies a specific lens to the cluster to align a specific topology, requirement, and/or workload type.
+The AKS baseline was used as the foundation for the following additional reference implementations. These build on the learnings of the AKS baseline and applies a specific lens to the cluster to align a specific topology, requirement, and/or workload type.
 
-- [AKS Baseline for Multi-Region Clusters](https://github.com/mspnp/aks-baseline-multi-region)
-- [AKS Baseline for Regulated Workloads](https://github.com/mspnp/aks-baseline-regulated)
-- [AKS Baseline for Microservices](https://github.com/mspnp/aks-fabrikam-dronedelivery)
-- [Azure Landing Zones, Enterprise-Scale Reference Implementation using Terraform](https://github.com/Azure/caf-terraform-landingzones-starter/tree/starter/enterprise_scale/construction_sets/aks/online/aks_secure_baseline)
+- [AKS baseline for multi-region clusters](https://github.com/mspnp/aks-baseline-multi-region)
+- [AKS baseline for regulated workloads](https://github.com/mspnp/aks-baseline-regulated)
+- [AKS baseline for microservices](https://github.com/mspnp/aks-fabrikam-dronedelivery)
+- [Azure landing zones, enterprise-scale reference implementation using Terraform](https://github.com/Azure/caf-terraform-landingzones-starter/tree/starter/enterprise_scale/construction_sets/aks/online/aks_secure_baseline)
 
 ## Advanced topics
 
