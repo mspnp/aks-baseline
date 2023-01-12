@@ -44,13 +44,13 @@ No matter which backing store you use, the user assigned to the group will then 
 
 Built-in as well as custom policies are applied to the cluster as part of the [cluster deployment step](./06-aks-cluster.md) to ensure that workloads deployed to the cluster comply with the team's governance rules. Policy assignments with effect [`audit`](https://learn.microsoft.com/azure/governance/policy/concepts/effects#audit) will create a warning in the activity log and show violations in the Azure Policy blade in the portal, providing an aggregated view of the compliance state and the option to identify violating resources. Policy assignments with effect [`deny`](https://learn.microsoft.com/azure/governance/policy/concepts/effects#deny) will be enforced with the help of [Gatekeeper's admission controller webhook](https://open-policy-agent.github.io/gatekeeper/website/docs/) by denying API requests that would violate a policy otherwise.
 
-:bulb: Gatekeeper policies are implemented in the [policy language 'Rego'](https://learn.microsoft.com/azure/governance/policy/concepts/policy-for-kubernetes#policy-language). To deploy the policy of this reference architecture with the Azure platform, the Rego specification is Base64-encoded and stored in a field of the Azure Policy resource defined in `nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep`. It might be insightful to decode the string with an Base64 decoder of your choice and investigate the declarative implementation. 
+:bulb: Gatekeeper policies are implemented in the [policy language 'Rego'](https://learn.microsoft.com/azure/governance/policy/concepts/policy-for-kubernetes#policy-language). To deploy the policy of this reference architecture with the Azure platform, the Rego specification is Base64-encoded and stored in a field of the Azure Policy resource defined in `nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep`. It might be insightful to decode the string with an Base64 decoder of your choice and investigate the declarative implementation.
 
 ### Steps
 
 1. Try to add a second `Ingress` resource to your workload namespace with the following command.
 
-    Notice that the host value specified in the `rules` and the `tls` sections defines a domain name with suffix `invalid-domain.com` rather than the domain suffix you defined for your setup when you [created your certificates](./02-ca-certificates.md)).
+   Notice that the host value specified in the `rules` and the `tls` sections defines a domain name with suffix `invalid-domain.com` rather than the domain suffix you defined for your setup when you [created your certificates](./02-ca-certificates.md)).
 
    ```bash
    cat <<EOF | kubectl create -f -
@@ -93,11 +93,11 @@ Your workload is placed behind a Web Application Firewall (WAF), which has rules
 
 1. Browse to the site with the following appended to the URL: `?sql=DELETE%20FROM` (e.g. <https://bicycle.contoso.com/?sql=DELETE%20FROM>).
 1. Observe that your request was blocked by Application Gateway's WAF rules and your workload never saw this potentially dangerous request.
-1. Blocked requests (along with other gateway data) will be visible in the attached Log Analytics workspace. 
+1. Blocked requests (along with other gateway data) will be visible in the attached Log Analytics workspace.
 
    Browse to the Application Gateway in the resource group `rg-bu0001-a0008` and navigate to the _Logs_ blade. Execute the following query below to show WAF logs and see that the request was rejected due to a _SQL Injection Attack_ (field _Message_).
 
-   > :warning: Note that it may take a couple of minutes until the logs are transferred from the Application Gateway to the Log Analytics Workspace. So be a little patient if the query does not immediatly return results after sending the https request in the former step. 
+   > :warning: Note that it may take a couple of minutes until the logs are transferred from the Application Gateway to the Log Analytics Workspace. So be a little patient if the query does not immediatly return results after sending the https request in the former step.
 
    ```
    AzureDiagnostics
@@ -106,7 +106,7 @@ Your workload is placed behind a Web Application Firewall (WAF), which has rules
 
 ## Validate cluster Azure Monitor insights and logs
 
-Monitoring your cluster is critical, especially when you're running a production cluster. Therefore, your AKS cluster is configured to send [diagnostic information](https://learn.microsoft.com/azure/aks/monitor-aks) of categories _cluster-autoscaler_, _kube-controller-manager_, _kube-audit-admin_ and _guard_ to the Log Analytics Workspace deployed as part of the [bootstrapping step](./05-bootstrap-prep.md). Additionally, [Azure Monitor for containers](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-overview) is configured on your cluster to capture metrics and logs from your workload containers. Azure Monitor is configured to surface cluster logs, here you can see those logs as they are generated. 
+Monitoring your cluster is critical, especially when you're running a production cluster. Therefore, your AKS cluster is configured to send [diagnostic information](https://learn.microsoft.com/azure/aks/monitor-aks) of categories _cluster-autoscaler_, _kube-controller-manager_, _kube-audit-admin_ and _guard_ to the Log Analytics Workspace deployed as part of the [bootstrapping step](./05-bootstrap-prep.md). Additionally, [Azure Monitor for containers](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-overview) is configured on your cluster to capture metrics and logs from your workload containers. Azure Monitor is configured to surface cluster logs, here you can see those logs as they are generated.
 
 :bulb: If you need to inspect the behavior of the Kubernetes scheduler, enable the log category _kube-scheduler_ (either through the _Diagnostic Settings_ blade of your AKS cluster or by enabling the category in your `cluster-stamp.bicep` template). Note that this category is quite verbose and will impact the cost of your Log Analytics Workspace.
 
@@ -128,7 +128,7 @@ Azure Monitor is configured to [scrape Prometheus metrics](https://learn.microso
 - [Traefik](./workload/traefik.yaml) (in the `a0008` namespace)
 - [Kured](./cluster-baseline-settings/kured.yaml) (in the `cluster-baseline-settings` namespace)
 
- :bulb: This reference implementation ships with two queries (_All collected Prometheus information_ and _Kubenertes node reboot requested_) in a Log Analytics Query Pack as an example of how you can write your own and manage them via ARM templates.
+:bulb: This reference implementation ships with two queries (_All collected Prometheus information_ and _Kubenertes node reboot requested_) in a Log Analytics Query Pack as an example of how you can write your own and manage them via ARM templates.
 
 ### Steps
 
@@ -148,16 +148,9 @@ The example workload uses the standard dotnet logger interface, which are captur
 1. Execute the following query.
 
    ```
-   let podInventory = KubePodInventory
-   | where ContainerName endswith "aspnet-webapp-sample"
-   | distinct ContainerID, ContainerName
-   | project-rename Name=ContainerName;
-   ContainerLog
-   | project-away Name
-   | join kind=inner
-       podInventory
-   on ContainerID
-   | project TimeGenerated, LogEntry, Computer, Name, ContainerID
+   ContainerLogV2
+   | where ContainerName == "aspnet-webapp-sample"
+   | project TimeGenerated, LogMessage, Computer, ContainerName, ContainerId
    | order by TimeGenerated desc
    ```
 
