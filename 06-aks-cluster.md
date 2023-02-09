@@ -6,7 +6,7 @@ Now that your [ACR instance is deployed and ready to support cluster bootstrappi
 
 1. Indicate your bootstrapping repo.
 
-   > If you cloned this repo, then the value will be the original mspnp GitHub organization's repo, which will mean that your cluster will be bootstraped using public container images. If instead you forked this repo, then the GitOps repo will be your own repo, and your cluster will be bootstrapped using container images references based on the values in your repo's manifest files. On the prior instruction page you had the oppertunity to update those manifests to use your ACR instance. For guidance on using a private bootstrapping repo, see [Private bootstrapping repository](./cluster-manifests/README.md#private-bootstrapping-repository).
+   > If you cloned this repo, then the value will be the original mspnp GitHub organization's repo, which will mean that your cluster will be bootstraped using public container images. If instead you forked this repo, then the GitOps repo will be your own repo, and your cluster will be bootstrapped using container images references based on the values in your repo's manifest files. On the prior instruction page you had the opportunity to update those manifests to use your ACR instance. For guidance on using a private bootstrapping repo, see [Private bootstrapping repository](./cluster-manifests/README.md#private-bootstrapping-repository).
 
    ```bash
    GITOPS_REPOURL=$(git config --get remote.origin.url)
