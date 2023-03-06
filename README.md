@@ -14,7 +14,7 @@ This project has a companion set of articles that describe challenges, design pa
 
 The implementation presented here is the _minimum recommended baseline for most AKS clusters_. This implementation integrates with Azure services that will deliver observability, provide a network topology that will support multi-regional growth, and keep the in-cluster traffic secure as well. This architecture should be considered your starting point for pre-production and production stages.
 
-The material here is relatively dense. We strongly encourage you to dedicate time to walk through these instructions, with a mind to learning. We do NOT provide any "one click" deployment here. However, once you've understood the components involved and identified the shared responsibilities between your team and your great organization, it is encouraged that you build suitable, auditable deployment processes around your final infrastructure.
+The material here is relatively dense. We strongly encourage you to dedicate time to walk through these instructions, with a mind to learning. Therefore, we do NOT provide any "one click" deployment here. To understand the relationship between the deployed resources, we suggest that you consult the [detailed architecture overview](/networking/aks-baseline_details.drawio.svg) while exploring your deployment. Once you've understood the components involved and identified the shared responsibilities between your team and your great organization, it is encouraged that you build suitable, auditable deployment processes around your final infrastructure.
 
 Throughout the reference implementation, you will see reference to _Contoso Bicycle_. They are a fictional small and fast-growing startup that provides online web services to its clientele on the west coast of North America. They have no on-premises data centers and all their containerized line of business applications are now about to be orchestrated by secure, enterprise-ready AKS clusters. You can read more about [their requirements and their IT team composition](./contoso-bicycle/README.md). This narrative provides grounding for some implementation details, naming conventions, etc. You should adapt as you see fit.
 
@@ -47,6 +47,8 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 
 ![Network diagram depicting a hub-spoke network with two peered VNets and main Azure resources used in the architecture.](https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)
+
+Also do not forget to view the [detailed architecture diagram](/networking/aks-baseline_details.drawio.svg) to understand how the deployed resources work together in this reference architecture.
 
 ## Deploy the reference implementation
 
