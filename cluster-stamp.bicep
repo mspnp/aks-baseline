@@ -43,7 +43,7 @@ param clusterAuthorizedIPRanges array = []
   'southeastasia'
 ])
 param location string = 'eastus2'
-param kubernetesVersion string = '1.25.5'
+param kubernetesVersion string = '1.26.0'
 
 @description('Domain name to use for App Gateway and AKS ingress.')
 param domainName string = 'contoso.com'
@@ -60,6 +60,7 @@ param gitOpsBootstrappingRepoBranch string = 'main'
 
 var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resourceGroup().id)
 var clusterName = 'aks-${subRgUniqueString}'
+var backupStorageAccountName = 'stbackup${subRgUniqueString}'
 var agwName = 'apw-${clusterName}'
 
 var aksIngressDomainName = 'aks-ingress.${domainName}'
@@ -171,6 +172,12 @@ resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2018-0
   scope: subscription()
 }
 
+// Built-in Azure RBAC role that is applied to the AKS backup managed identity to allow it to write data to storage.
+resource storageBlobDataContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+  scope: subscription()
+}
+
 /*** EXISTING RESOURCE GROUP RESOURCES ***/
 
 // Azure Container Registry
@@ -183,6 +190,22 @@ resource acr 'Microsoft.ContainerRegistry/registries@2021-12-01-preview' existin
 resource la 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' existing = {
   scope: resourceGroup()
   name: 'la-${clusterName}'
+}
+
+// Backup Vault (for AKS Backup)
+resource bvAksBackupVault 'Microsoft.DataProtection/backupVaults@2023-01-01' existing = {
+  scope: resourceGroup()
+  name: 'bvAksBackupVault'
+}
+
+// The existing storage account for backups
+resource storageAksBackups 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+  scope: resourceGroup()
+  name: 'stbackup${subRgUniqueString}'
+
+  resource blobService 'blobServices' existing = {
+    name: 'default'
+  }
 }
 
 // Kubernetes namespace: a0008 -- this doesn't technically exist prior to deployment, but is required as a resource reference later in the template
@@ -198,13 +221,13 @@ resource nsA0008 'Microsoft.ContainerService/managedClusters/namespaces@2022-01-
 // Spoke resource group
 resource targetResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
   scope: subscription()
-  name: '${split(targetVnetResourceId,'/')[4]}'
+  name: split(targetVnetResourceId, '/')[4]
 }
 
 // Spoke virtual network
 resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2022-05-01' existing = {
   scope: targetResourceGroup
-  name: '${last(split(targetVnetResourceId,'/'))}'
+  name: last(split(targetVnetResourceId, '/'))
 
   // Spoke virutual network's subnet for the cluster nodes
   resource snetClusterNodes 'subnets' existing = {
@@ -971,6 +994,7 @@ resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-0
           'gatekeeper-system'
           'azure-arc'
           'flux-system'
+          'dataprotection-microsoft'
 
           // Known violations
           // K8sAzureAllowedSeccomp
@@ -1061,6 +1085,7 @@ resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-0
           'gatekeeper-system'
           'azure-arc'
           'flux-system'
+          'dataprotection-microsoft'
         ]
       }
       excludedContainers: {
@@ -1100,6 +1125,7 @@ resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021
           'gatekeeper-system'
           'azure-arc'
           'flux-system'
+          'dataprotection-microsoft'
         ]
       }
       effect: {
@@ -1129,6 +1155,7 @@ resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2021-06
           'kube-system'
           'gatekeeper-system'
           'azure-arc'
+          'dataprotection-microsoft'
         ]
       }
       effect: {
@@ -1154,6 +1181,7 @@ resource paAllowedHostPaths 'Microsoft.Authorization/policyAssignments@2021-06-0
           'gatekeeper-system'
           'azure-arc'
           'flux-system'
+          'dataprotection-microsoft'
         ]
       }
       allowedHostPaths: {
@@ -1184,6 +1212,7 @@ resource paAllowedExternalIPs 'Microsoft.Authorization/policyAssignments@2021-06
           'kube-system'
           'gatekeeper-system'
           'azure-arc'
+          'dataprotection-microsoft'
         ]
       }
       allowedExternalIPs: {
@@ -1213,6 +1242,7 @@ resource paDisallowEndpointEditPermissions 'Microsoft.Authorization/policyAssign
           'kube-system'
           'gatekeeper-system'
           'azure-arc'
+          'dataprotection-microsoft'
         ]
       }
       effect: {
@@ -1238,6 +1268,7 @@ resource paDisallowNamespaceUsage 'Microsoft.Authorization/policyAssignments@202
           'kube-system'
           'gatekeeper-system'
           'azure-arc'
+          'dataprotection-microsoft'
         ]
       }
       namespaces: {
@@ -1488,7 +1519,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
     }
   }
 
-  resource kvsGatewayPublicCert  'secrets' = {
+  resource kvsGatewayPublicCert 'secrets' = {
     name: 'gateway-public-cert'
     properties: {
       value: appGatewayListenerCertificate
@@ -1496,7 +1527,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
   }
 }
 
-resource kv_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource kv_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: kv
   name: 'default'
   properties: {
@@ -1768,7 +1799,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
       loadBalancerProfile: json('null')
       serviceCidr: '172.16.0.0/16'
       dnsServiceIP: '172.16.0.10'
-      dockerBridgeCidr: '172.18.0.1/16'
     }
     aadProfile: {
       managed: true
@@ -1810,23 +1840,23 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
         enabled: false // This is for the AKS-PrometheusAddonPreview, which is not enabled in this cluster as Container Insights is already collecting.
       }
     }
-    storageProfile: { // By default, do not support native state storage, enable as needed to support workloads that require state
+    storageProfile: {  // By default, do not support native state storage, enable as needed to support workloads that require state
       blobCSIDriver: {
         enabled: false // Azure Blobs
       }
       diskCSIDriver: {
-        enabled: false  // Azure Disk
+        enabled: true  // Azure Disk
       }
       fileCSIDriver: {
-        enabled: false  // Azure Files
+        enabled: false // Azure Files
       }
       snapshotController: {
-        enabled: false // CSI Snapshotter: https://github.com/kubernetes-csi/external-snapshotter
+        enabled: true  // CSI Snapshotter: https://github.com/kubernetes-csi/external-snapshotter
       }
     }
     workloadAutoScalerProfile: {
       keda: {
-        enabled: false  // Enable if using KEDA to scale workloads
+        enabled: false // Enable if using KEDA to scale workloads
       }
     }
     disableLocalAccounts: true
@@ -1902,6 +1932,10 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
     paRbacEnabled
     paManagedIdentitiesEnabled
 
+    // Logical dependency, our backup source should exist before cluster creation, as the cluster will be
+    // bootstrapped with backup configured.
+    storageAksBackups
+
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
     kvPodMiIngressControllerSecretsUserRole_roleAssignment
@@ -1974,7 +2008,7 @@ resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.A
   }
 }
 
-resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource mc_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: mc
   name: 'default'
   properties: {
@@ -2073,6 +2107,53 @@ resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurati
   ]
 }
 
+// New storage container in the existing storage account specifically for this cluster
+resource backupContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2022-09-01' = {
+  parent: storageAksBackups::blobService
+  name: toLower('backup-${clusterName}')
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
+// Ensures that data protection (AKS Backup) is installed.
+resource mc_dataProtectionExtension 'Microsoft.KubernetesConfiguration/extensions@2022-11-01' = {
+  scope: mc
+  name: 'dataProtection'
+  properties: {
+    extensionType: 'microsoft.dataprotection.kubernetes'
+    autoUpgradeMinorVersion: true
+    aksAssignedIdentity: {
+      type: 'SystemAssigned'
+    }
+    releaseTrain: 'Stable'
+    scope: {
+      cluster: {
+        releaseNamespace: 'dataprotection-microsoft'
+      }
+    }
+    configurationSettings: {
+      'configuration.backupStorageLocation.config.subscriptionId': split(storageAksBackups.id, '/')[2]
+      'configuration.backupStorageLocation.config.resourceGroup': split(storageAksBackups.id, '/')[4]
+      'configuration.backupStorageLocation.config.storageAccount': storageAksBackups.name
+      'configuration.backupStorageLocation.bucket': backupContainer.name
+      'credentials.tenantId': mc.identity.tenantId
+    }
+    configurationProtectedSettings: {}
+  }
+}
+
+// Grant the Data Protection extension write access this cluster's backup container in the storage account.
+resource dataProtetionExtensionStorageContainer_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: backupContainer
+  name: guid(backupContainer.id, 'mi-dataProtection-extension', storageBlobDataContributorRole.id)
+  properties: {
+    roleDefinitionId: storageBlobDataContributorRole.id
+    principalId: mc_dataProtectionExtension.properties.aksAssignedIdentity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'nested_EnsureClusterUserAssignedHasRbacToManageVMSS.bicep' = {
   name: 'EnsureClusterUserAssignedHasRbacToManageVMSS'
   scope: nodeResourceGroup
@@ -2090,7 +2171,7 @@ resource st 'Microsoft.EventGrid/systemTopics@2021-12-01' = {
   }
 }
 
-resource st_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource st_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: st
   name: 'default'
   properties: {
@@ -2122,9 +2203,9 @@ resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPo
     managedRules: {
       managedRuleSets: [
         {
-            ruleSetType: 'OWASP'
-            ruleSetVersion: '3.2'
-            ruleGroupOverrides: []
+          ruleSetType: 'OWASP'
+          ruleSetVersion: '3.2'
+          ruleGroupOverrides: []
         }
         {
           ruleSetType: 'Microsoft_BotManagerRuleSet'

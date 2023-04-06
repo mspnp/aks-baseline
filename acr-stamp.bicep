@@ -58,16 +58,16 @@ var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resou
 
 /*** EXISTING RESOURCES ***/
 
-resource spokeResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
+resource spokeResourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' existing = {
   scope: subscription()
-  name: '${split(targetVnetResourceId,'/')[4]}'
+  name: split(targetVnetResourceId,'/')[4]
 }
 
-resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' existing = {
+resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' existing = {
   scope: spokeResourceGroup
-  name: '${last(split(targetVnetResourceId,'/'))}'
+  name: last(split(targetVnetResourceId,'/'))
   
-  resource snetPrivateLinkEndpoints 'subnets@2021-05-01' existing = {
+  resource snetPrivateLinkEndpoints 'subnets' existing = {
     name: 'snet-privatelinkendpoints'
   }
 }
@@ -75,7 +75,7 @@ resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' exis
 /*** RESOURCES ***/
 
 // This Log Analytics workspace will be the log sink for all resources in the cluster resource group. This includes ACR, the AKS cluster, Key Vault, etc. It also is the Container Insights log sink for the AKS cluster.
-resource laAks 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
+resource laAks 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: 'la-aks-${subRgUniqueString}'
   location: location
   properties: {
@@ -88,7 +88,7 @@ resource laAks 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
 
 // Apply the built-in 'Container registries should have anonymous authentication disabled' policy. Azure RBAC only is allowed.
 var pdAnonymousContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '9f2dea28-e834-476c-99c5-3507b4728395')
-resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2022-06-01' = {
   name: guid(resourceGroup().id, pdAnonymousContainerRegistryAccessDisallowedId)
   location: 'global'
   scope: resourceGroup()
@@ -107,7 +107,7 @@ resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/p
 
 // Apply the built-in 'Container registries should have local admin account disabled' policy. Azure RBAC only is allowed.
 var pdAdminAccountContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'dc921057-6b28-4fbe-9b83-f7bec05db6c2')
-resource paAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+resource paAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2022-06-01' = {
   name: guid(resourceGroup().id, pdAdminAccountContainerRegistryAccessDisallowedId)
   location: 'global'
   scope: resourceGroup()
@@ -130,12 +130,12 @@ resource dnsPrivateZoneAcr 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   location: 'global'
   properties: {}
 
-  resource dnsVnetLinkAcrToSpoke 'virtualNetworkLinks@2020-06-01' = {
+  resource dnsVnetLinkAcrToSpoke 'virtualNetworkLinks' = {
     name: 'to_${spokeVirtualNetwork.name}'
     location: 'global'
     properties: {
       virtualNetwork: {
-        id: targetVnetResourceId
+        id: spokeVirtualNetwork.id
       }
       registrationEnabled: false
     }
@@ -209,8 +209,8 @@ resource acrAks_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-
   }
 }
 
-// Expose Azure Container Registry via Private Link, into the cluster nodes subnet.
-resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2021-05-01' = {
+// Expose Azure Container Registry via Private Link, into the cluster nodes virtual network.
+resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2022-09-01' = {
   name: 'pe-${acrAks.name}'
   location: location
   dependsOn: [
@@ -233,7 +233,7 @@ resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2021-05-01
     ]
   }
 
-  resource privateDnsZoneGroupAcr 'privateDnsZoneGroups@2021-05-01' = {
+  resource privateDnsZoneGroupAcr 'privateDnsZoneGroups' = {
     name: 'default'
     properties: {
       privateDnsZoneConfigs: [
@@ -241,6 +241,178 @@ resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2021-05-01
           name: 'privatelink-azurecr-io'
           properties: {
             privateDnsZoneId: dnsPrivateZoneAcr.id
+          }
+        }
+      ]
+    }
+  }
+}
+
+// AKS Backup is configured and managed via a backup vault in the same region
+// This ideally wouldn't be tied to the individual cluster stamp, as it would
+// exist longer than the lifecycle of the cluster, just log sinks. We are
+// representing that by place this resource creation into this pre-cluster
+// deployment file.
+resource bvAksBackupVault 'Microsoft.DataProtection/backupVaults@2023-01-01' = {
+  name: 'bvAksBackupVault'
+  location: location
+  properties: {
+    storageSettings: [
+      {
+        datastoreType: 'VaultStore'
+        type: 'GeoRedundant'
+      }
+    ]
+    securitySettings: {
+      immutabilitySettings: {
+        state: 'Disabled'
+      }
+      softDeleteSettings: {
+        state: 'On'
+        retentionDurationInDays: 14
+      }
+    }
+    featureSettings: {
+      crossSubscriptionRestoreSettings: {
+        state: 'Disabled'
+      }
+    }
+  }
+
+  // Daily UTC midnight Kubernetes backup policy as an example. Configure policy as needed.
+  resource aksPolicy 'backupPolicies' = {
+    name: 'bp-aks-default-daily'
+    properties: {
+      objectType: 'BackupPolicy'
+      datasourceTypes: [
+        'Microsoft.ContainerService/managedClusters'
+      ]
+      policyRules: [
+        {
+          objectType: 'AzureBackupRule'
+          name: 'BackupDaily'
+          backupParameters: {
+            objectType: 'AzureBackupParams'
+            backupType: 'Incremental'
+          }
+          dataStore: {
+            objectType: 'DataStoreInfoBase'
+            dataStoreType: 'OperationalStore'
+          }
+          trigger: {
+            objectType: 'ScheduleBasedTriggerContext'
+            schedule: {
+              timeZone: 'UTC'
+              repeatingTimeIntervals: [
+                'R/2023-04-06T0:0:00+00:00/P1D'
+              ]
+            }
+            taggingCriteria: []
+          }
+        }
+      ]
+    }
+  }
+}
+
+// Backup vault logging
+resource bvAksBackupVault_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: bvAksBackupVault
+  properties: {
+    workspaceId: laAks.id
+    logs: [
+      {
+        category: 'AzureBackupReport'
+        enabled: true
+      }
+    ]
+  }
+}
+
+// This stores AKS Backup content, to be used by all clusters
+resource storageAksBackups 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: 'stbackup${subRgUniqueString}'
+  location: location
+  sku: {
+    name: 'Standard_GRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    allowSharedKeyAccess: false
+    dnsEndpointType: 'Default'
+    defaultToOAuthAuthentication: false
+    publicNetworkAccess: 'Disabled'
+    allowCrossTenantReplication: false
+    allowBlobPublicAccess: false
+    minimumTlsVersion: 'TLS1_2'
+    isHnsEnabled: false
+    isLocalUserEnabled: false
+    isSftpEnabled: false
+    routingPreference: {
+      publishInternetEndpoints: false
+      publishMicrosoftEndpoints: true
+      routingChoice: 'MicrosoftRouting'
+    }
+    networkAcls: {
+      bypass: 'None'
+      virtualNetworkRules: []
+      ipRules: []
+      defaultAction: 'Deny'
+    }
+    supportsHttpsTrafficOnly: true
+    accessTier: 'Hot' 
+  }
+}
+
+// Private DNS Zone for our AKS Backup storage account
+resource dnsPrivateZoneBlob 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.blob.core.windows.net'
+  location: 'global'
+  properties: {}
+
+
+  // Enabling Storage Account Private Link on cluster virtual network.
+  resource vnetlnk 'virtualNetworkLinks' = {
+    name: 'to_${spokeVirtualNetwork.name}'
+    location: 'global'
+    properties: {
+      virtualNetwork: {
+        id: spokeVirtualNetwork.id
+      }
+      registrationEnabled: false
+    }
+  }
+}
+
+resource peAksBackupStorage 'Microsoft.Network/privateEndpoints@2022-07-01' = {
+  name: 'pe-${storageAksBackups.name}'
+  location: location
+  properties: {
+    subnet: {
+      id: spokeVirtualNetwork::snetPrivateLinkEndpoints.id
+    }
+    privateLinkServiceConnections: [
+      {
+        name: 'to_${spokeVirtualNetwork.name}'
+        properties: {
+          privateLinkServiceId: storageAksBackups.id
+          groupIds: [
+            'blob'
+          ]
+        }
+      }
+    ]
+  }
+
+  resource pdnszg 'privateDnsZoneGroups' = {
+    name: 'default'
+    properties: {
+      privateDnsZoneConfigs: [
+        {
+          name: 'privatelink-blob-core-windows-net'
+          properties: {
+            privateDnsZoneId: dnsPrivateZoneBlob.id
           }
         }
       ]
