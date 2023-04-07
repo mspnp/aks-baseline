@@ -60,7 +60,6 @@ param gitOpsBootstrappingRepoBranch string = 'main'
 
 var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resourceGroup().id)
 var clusterName = 'aks-${subRgUniqueString}'
-var backupStorageAccountName = 'stbackup${subRgUniqueString}'
 var agwName = 'apw-${clusterName}'
 
 var aksIngressDomainName = 'aks-ingress.${domainName}'
@@ -180,6 +179,11 @@ resource storageBlobDataContributorRole 'Microsoft.Authorization/roleDefinitions
 
 /*** EXISTING RESOURCE GROUP RESOURCES ***/
 
+// Useful to think of these as resources that are not tied to the lifecycle of any individual
+// cluster. Logging sinks, container registries, backup destinations, etc are typical
+// resources that would exist before & after any individual cluster is deployed or is removed
+// from the solution.
+
 // Azure Container Registry
 resource acr 'Microsoft.ContainerRegistry/registries@2021-12-01-preview' existing = {
   scope: resourceGroup()
@@ -198,7 +202,7 @@ resource bvAksBackupVault 'Microsoft.DataProtection/backupVaults@2023-01-01' exi
   name: 'bvAksBackupVault'
 }
 
-// The existing storage account for backups
+// Storage Account for backups
 resource storageAksBackups 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
   scope: resourceGroup()
   name: 'stbackup${subRgUniqueString}'
@@ -473,7 +477,7 @@ resource maJobsCompletedMoreThan6HoursAgo 'Microsoft.Insights/metricAlerts@2018-
 }
 
 resource maHighContainerCPUUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Container CPU usage high for ${clusterName} CI-9'
+  name: 'Container CPU usage violates the configured threshold for ${clusterName} CI-19'
   location: 'global'
   properties: {
     autoMitigate: true
@@ -498,18 +502,18 @@ resource maHighContainerCPUUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = 
               ]
             }
           ]
-          metricName: 'cpuExceededPercentage'
+          metricName: 'cpuThresholdViolated'
           metricNamespace: 'Insights.Container/containers'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: 90
+          threshold: 0  // This threshold is defined in the container-azm-ms-agentconfig.yaml file.
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
       ]
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
     }
-    description: 'This alert monitors container CPU utilization.'
+    description: 'This alert monitors container CPU usage. It uses the threshold defined in the config map.'
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
@@ -525,7 +529,7 @@ resource maHighContainerCPUUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = 
 }
 
 resource maHighContainerWorkingSetMemoryUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Container working set memory usage high for ${clusterName} CI-10'
+  name: 'Container working set memory usage violates the configured threshold for ${clusterName} CI-20'
   location: 'global'
   properties: {
     autoMitigate: true
@@ -550,18 +554,18 @@ resource maHighContainerWorkingSetMemoryUsage 'Microsoft.Insights/metricAlerts@2
               ]
             }
           ]
-          metricName: 'memoryWorkingSetExceededPercentage'
+          metricName: 'memoryWorkingSetThresholdViolated'
           metricNamespace: 'Insights.Container/containers'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: 90
+          threshold: 0  // This threshold is defined in the container-azm-ms-agentconfig.yaml file.
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
       ]
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
     }
-    description: 'This alert monitors container working set memory utilization.'
+    description: 'This alert monitors container working set memory usage. It uses the threshold defined in the config map.'
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
@@ -1682,7 +1686,7 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 }
 
-resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
+resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
   name: clusterName
   location: location
   tags: {
@@ -1886,6 +1890,11 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
       enabled: true
     }
     enableNamespaceResources: false
+    ingressProfile: {
+      webAppRouting: {
+        enabled: false
+      }
+    }
   }
   identity: {
     type: 'UserAssigned'
@@ -1894,8 +1903,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
     }
   }
   sku: {
-    name: 'Basic'
-    tier: 'Paid'
+    name: 'Base'
+    tier: 'Standard'
   }
   dependsOn: [
     sci
@@ -1932,14 +1941,26 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
     paRbacEnabled
     paManagedIdentitiesEnabled
 
-    // Logical dependency, our backup source should exist before cluster creation, as the cluster will be
+    // Logical dependency, our backup destination should exist before cluster creation, as the cluster will be
     // bootstrapped with backup configured.
-    storageAksBackups
+    backupContainer
 
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
     kvPodMiIngressControllerSecretsUserRole_roleAssignment
   ]
+
+  // Grant managed identity access from our Backup Vault to this cluster to support
+  // AKS Backup
+  resource trustedAccess 'trustedAccessRoleBindings' = {
+    name: 'ta-aks-backup'
+    properties: {
+      roles: [
+        'Microsoft.DataProtection/backupVaults/backup-operator'
+      ]
+      sourceResourceId: bvAksBackupVault.id
+    }
+  }
 }
 
 resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
@@ -2107,7 +2128,9 @@ resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurati
   ]
 }
 
-// New storage container in the existing storage account specifically for this cluster
+// New storage container in the existing storage account specifically for this cluster.
+// All clusters could back up to a single container or you can follow a container-per-cluster
+// model like shown here.
 resource backupContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2022-09-01' = {
   parent: storageAksBackups::blobService
   name: toLower('backup-${clusterName}')
@@ -2137,7 +2160,7 @@ resource mc_dataProtectionExtension 'Microsoft.KubernetesConfiguration/extension
       'configuration.backupStorageLocation.config.resourceGroup': split(storageAksBackups.id, '/')[4]
       'configuration.backupStorageLocation.config.storageAccount': storageAksBackups.name
       'configuration.backupStorageLocation.bucket': backupContainer.name
-      'credentials.tenantId': mc.identity.tenantId
+      'credentials.tenantId': subscription().tenantId
     }
     configurationProtectedSettings: {}
   }
@@ -2209,7 +2232,7 @@ resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPo
         }
         {
           ruleSetType: 'Microsoft_BotManagerRuleSet'
-          ruleSetVersion: '0.1'
+          ruleSetVersion: '1.0'
           ruleGroupOverrides: []
         }
       ]
