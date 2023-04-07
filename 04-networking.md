@@ -104,6 +104,12 @@ The following two resource groups will be created and populated with networking 
    >
    > Hubs and spokes are controlled by the networking team's GitHub Actions workflows. This automation is not included in this reference implementation as this body of work is focused on the AKS baseline and not the networking team's CI/CD practices.
 
+## Private DNS Zones
+
+Private DNS zones in this reference implementation are implemented directly at the spoke level, meaning the workload team creates the private link DNS zones & records for the resources needed; furthermore, the workload is directly using Azure DNS for resolution. Your networking topology might support this decentralized model or instead DNS & DNS zones for Private Link might be handed at the regional hub or in a [VWAN virtual hub extension](https://learn.microsoft.com/azure/architecture/guide/networking/private-link-vwan-dns-virtual-hub-extension-pattern) by your networking team.
+
+If your organization operate a centeralized DNS model, you'll need to adapt how DNS zones records are managed this implementation into your existing enteprise networking DNS zone strategy. Since this reference implementation is expected to be deployed isolated from existing infrastructure; this is not something you need to address now; but will be something to understand and address when taking your solution to production.
+
 ### Next step
 
 :arrow_forward: [Prep for cluster bootstrapping](./05-bootstrap-prep.md)

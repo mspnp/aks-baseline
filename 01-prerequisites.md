@@ -30,19 +30,16 @@ This is the starting point for the instructions on deploying the [AKS baseline r
 
 1. While the following feature(s) are still in _preview_, please enable them in your target subscription.
 
-   1. [Register the Defender for Containers preview feature = `AKS-AzureDefender`](https://learn.microsoft.com/azure/defender-for-cloud/defender-for-containers-enable?pivots=defender-for-container-aks&tabs=k8s-deploy-cli%2Ck8s-deploy-asc%2Ck8s-verify-asc%2Ck8s-remove-arc%2Caks-removeprofile-api#deploy-the-defender-profile)
-
    1. [Register the Workload Identity preview feature = `EnableWorkloadIdentityPreview`](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster#register-the-enableworkloadidentitypreview-feature-flag)
 
-   1. Register the ImageCleaner (Earser) preview feature = `EnableImageCleanerPreview`](https://learn.microsoft.com/azure/aks/image-cleaner#prerequisites)
+   1. [Register the ImageCleaner (Earser) preview feature = `EnableImageCleanerPreview`](https://learn.microsoft.com/azure/aks/image-cleaner#prerequisites)
 
    ```bash
-   az feature register --namespace "Microsoft.ContainerService" -n "AKS-AzureDefender"
    az feature register --namespace "Microsoft.ContainerService" -n "EnableWorkloadIdentityPreview"
    az feature register --namespace "Microsoft.ContainerService" -n "EnableImageCleanerPreview"
 
    # Keep running until all say "Registered." (This may take up to 20 minutes.)
-   az feature list -o table --query "[?name=='Microsoft.ContainerService/AKS-AzureDefender' || name=='Microsoft.ContainerService/EnableWorkloadIdentityPreview' || name=='Microsoft.ContainerService/EnableImageCleanerPreview'].{Name:name,State:properties.state}"
+   az feature list -o table --query "[?name=='Microsoft.ContainerService/EnableWorkloadIdentityPreview' || name=='Microsoft.ContainerService/EnableImageCleanerPreview'].{Name:name,State:properties.state}"
 
    # When all say "Registered" then re-register the AKS resource provider
    az provider register --namespace Microsoft.ContainerService
