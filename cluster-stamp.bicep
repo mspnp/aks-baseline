@@ -177,6 +177,12 @@ resource storageBlobDataContributorRole 'Microsoft.Authorization/roleDefinitions
   scope: subscription()
 }
 
+// Built-in Azure RBAC role that is applied to the AKS backup managed identity to allow it to write data to storage.
+resource storageAccountContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
+  scope: subscription()
+}
+
 // Built-in Azure RBAC "Reader" role. Used by Backup Vault to see the AKS cluster.
 resource readerRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
@@ -212,6 +218,10 @@ resource la 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' existi
 resource bvAksBackupVault 'Microsoft.DataProtection/backupVaults@2023-01-01' existing = {
   scope: resourceGroup()
   name: 'bvAksBackupVault'
+
+  resource defaultPolicy 'backupPolicies' existing = {
+    name: 'bp-aks-default-daily'
+  }
 }
 
 // Storage Account for backups
@@ -2155,7 +2165,7 @@ resource backupContainer 'Microsoft.Storage/storageAccounts/blobServices/contain
 // Ensures that data protection (AKS Backup) is installed.
 resource mc_dataProtectionExtension 'Microsoft.KubernetesConfiguration/extensions@2022-11-01' = {
   scope: mc
-  name: 'dataProtection'
+  name: 'azure-aks-backup'
   properties: {
     extensionType: 'microsoft.dataprotection.kubernetes'
     autoUpgradeMinorVersion: true
@@ -2202,6 +2212,76 @@ resource dataProtetionExtensionStorageContainer_roleAssignment 'Microsoft.Author
     principalType: 'ServicePrincipal'
   }
 }
+
+// Grant the Data Protection extension storage contributor access this cluster's backup storage account.
+resource dataProtetionExtensionStorage_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: storageAksBackups
+  name: guid(backupContainer.id, mc_dataProtectionExtension.id, storageAccountContributorRole.id)
+  properties: {
+    roleDefinitionId: storageAccountContributorRole.id
+    principalId: mc_dataProtectionExtension.properties.aksAssignedIdentity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Enable daily backups
+// All and future namespaces
+//
+resource backupInstance 'Microsoft.DataProtection/backupVaults/backupInstances@2023-01-01' = {
+  parent: bvAksBackupVault
+  name: 'bi-${mc.name}'
+  properties: {
+    friendlyName: 'bi-${clusterName}'
+    objectType: 'BackupInstance'
+    dataSourceSetInfo: {
+      objectType: 'DatasourceSet'
+      resourceID: mc.id
+      resourceType: 'Microsoft.ContainerService/managedClusters'
+      resourceLocation: location
+      resourceName: mc.name
+      resourceUri: mc.id
+      datasourceType: 'Microsoft.ContainerService/managedClusters'
+    }
+    dataSourceInfo: {
+      objectType: 'Datasource'
+      resourceID: mc.id
+      resourceType: 'Microsoft.ContainerService/managedClusters'
+      resourceLocation: location
+      resourceName: mc.name
+      resourceUri: mc.id
+      datasourceType: 'Microsoft.ContainerService/managedClusters'
+    }
+    policyInfo: {
+      policyId: bvAksBackupVault::defaultPolicy.id
+      policyParameters: {
+        dataStoreParametersList: [
+          {
+            objectType: 'AzureOperationalStoreParameters'
+            dataStoreType: 'OperationalStore'
+            resourceGroupId: resourceGroup().id
+          }
+        ]
+        backupDatasourceParametersList: [
+          {
+            objectType: 'KubernetesClusterBackupDatasourceParameters'
+            includeClusterScopeResources: true
+            snapshotVolumes: false
+            labelSelectors: null
+            includedNamespaces: null
+            excludedNamespaces: null
+            includedResourceTypes: null
+            excludedResourceTypes: [
+              'v1/Secret'
+            ]
+          }
+        ]
+      }
+    }
+    datasourceAuthCredentials: null
+    validationType: null
+  }
+}
+
 
 // Allows the backup vault's identity to see the cluster and the snapshots
 // Details: https://learn.microsoft.com/azure/backup/azure-kubernetes-service-cluster-backup-concept#required-roles-and-permissions
