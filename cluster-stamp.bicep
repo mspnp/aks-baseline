@@ -43,7 +43,7 @@ param clusterAuthorizedIPRanges array = []
   'southeastasia'
 ])
 param location string = 'eastus2'
-param kubernetesVersion string = '1.25.5'
+param kubernetesVersion string = '1.26.0'
 
 @description('Domain name to use for App Gateway and AKS ingress.')
 param domainName string = 'contoso.com'
@@ -173,6 +173,11 @@ resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2018-0
 
 /*** EXISTING RESOURCE GROUP RESOURCES ***/
 
+// Useful to think of these as resources that are not tied to the lifecycle of any individual
+// cluster. Logging sinks, container registries, backup destinations, etc are typical
+// resources that would exist before & after any individual cluster is deployed or is removed
+// from the solution.
+
 // Azure Container Registry
 resource acr 'Microsoft.ContainerRegistry/registries@2021-12-01-preview' existing = {
   scope: resourceGroup()
@@ -198,13 +203,13 @@ resource nsA0008 'Microsoft.ContainerService/managedClusters/namespaces@2022-01-
 // Spoke resource group
 resource targetResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
   scope: subscription()
-  name: '${split(targetVnetResourceId,'/')[4]}'
+  name: split(targetVnetResourceId, '/')[4]
 }
 
 // Spoke virtual network
 resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2022-05-01' existing = {
   scope: targetResourceGroup
-  name: '${last(split(targetVnetResourceId,'/'))}'
+  name: last(split(targetVnetResourceId, '/'))
 
   // Spoke virutual network's subnet for the cluster nodes
   resource snetClusterNodes 'subnets' existing = {
@@ -450,7 +455,7 @@ resource maJobsCompletedMoreThan6HoursAgo 'Microsoft.Insights/metricAlerts@2018-
 }
 
 resource maHighContainerCPUUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Container CPU usage high for ${clusterName} CI-9'
+  name: 'Container CPU usage violates the configured threshold for ${clusterName} CI-19'
   location: 'global'
   properties: {
     autoMitigate: true
@@ -475,18 +480,18 @@ resource maHighContainerCPUUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = 
               ]
             }
           ]
-          metricName: 'cpuExceededPercentage'
+          metricName: 'cpuThresholdViolated'
           metricNamespace: 'Insights.Container/containers'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: 90
+          threshold: 0  // This threshold is defined in the container-azm-ms-agentconfig.yaml file.
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
       ]
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
     }
-    description: 'This alert monitors container CPU utilization.'
+    description: 'This alert monitors container CPU usage. It uses the threshold defined in the config map.'
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
@@ -502,7 +507,7 @@ resource maHighContainerCPUUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = 
 }
 
 resource maHighContainerWorkingSetMemoryUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Container working set memory usage high for ${clusterName} CI-10'
+  name: 'Container working set memory usage violates the configured threshold for ${clusterName} CI-20'
   location: 'global'
   properties: {
     autoMitigate: true
@@ -527,18 +532,18 @@ resource maHighContainerWorkingSetMemoryUsage 'Microsoft.Insights/metricAlerts@2
               ]
             }
           ]
-          metricName: 'memoryWorkingSetExceededPercentage'
+          metricName: 'memoryWorkingSetThresholdViolated'
           metricNamespace: 'Insights.Container/containers'
           name: 'Metric1'
           operator: 'GreaterThan'
-          threshold: 90
+          threshold: 0  // This threshold is defined in the container-azm-ms-agentconfig.yaml file.
           timeAggregation: 'Average'
           skipMetricValidation: true
         }
       ]
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
     }
-    description: 'This alert monitors container working set memory utilization.'
+    description: 'This alert monitors container working set memory usage. It uses the threshold defined in the config map.'
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
@@ -1488,7 +1493,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
     }
   }
 
-  resource kvsGatewayPublicCert  'secrets' = {
+  resource kvsGatewayPublicCert 'secrets' = {
     name: 'gateway-public-cert'
     properties: {
       value: appGatewayListenerCertificate
@@ -1496,7 +1501,7 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
   }
 }
 
-resource kv_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource kv_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: kv
   name: 'default'
   properties: {
@@ -1651,7 +1656,7 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 }
 
-resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
+resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
   name: clusterName
   location: location
   tags: {
@@ -1768,7 +1773,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
       loadBalancerProfile: json('null')
       serviceCidr: '172.16.0.0/16'
       dnsServiceIP: '172.16.0.10'
-      dockerBridgeCidr: '172.18.0.1/16'
     }
     aadProfile: {
       managed: true
@@ -1810,15 +1814,15 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
         enabled: false // This is for the AKS-PrometheusAddonPreview, which is not enabled in this cluster as Container Insights is already collecting.
       }
     }
-    storageProfile: { // By default, do not support native state storage, enable as needed to support workloads that require state
+    storageProfile: {  // By default, do not support native state storage, enable as needed to support workloads that require state
       blobCSIDriver: {
         enabled: false // Azure Blobs
       }
       diskCSIDriver: {
-        enabled: false  // Azure Disk
+        enabled: false // Azure Disk
       }
       fileCSIDriver: {
-        enabled: false  // Azure Files
+        enabled: false // Azure Files
       }
       snapshotController: {
         enabled: false // CSI Snapshotter: https://github.com/kubernetes-csi/external-snapshotter
@@ -1826,7 +1830,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
     }
     workloadAutoScalerProfile: {
       keda: {
-        enabled: false  // Enable if using KEDA to scale workloads
+        enabled: false // Enable if using KEDA to scale workloads
       }
     }
     disableLocalAccounts: true
@@ -1856,6 +1860,11 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
       enabled: true
     }
     enableNamespaceResources: false
+    ingressProfile: {
+      webAppRouting: {
+        enabled: false
+      }
+    }
   }
   identity: {
     type: 'UserAssigned'
@@ -1864,8 +1873,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2022-09-02-preview' = {
     }
   }
   sku: {
-    name: 'Basic'
-    tier: 'Paid'
+    name: 'Base'
+    tier: 'Standard'
   }
   dependsOn: [
     sci
@@ -1974,7 +1983,7 @@ resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.A
   }
 }
 
-resource mc_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource mc_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: mc
   name: 'default'
   properties: {
@@ -2090,7 +2099,7 @@ resource st 'Microsoft.EventGrid/systemTopics@2021-12-01' = {
   }
 }
 
-resource st_diagnosticSettings  'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource st_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: st
   name: 'default'
   properties: {
@@ -2128,7 +2137,7 @@ resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPo
         }
         {
           ruleSetType: 'Microsoft_BotManagerRuleSet'
-          ruleSetVersion: '0.1'
+          ruleSetVersion: '1.0'
           ruleGroupOverrides: []
         }
       ]
