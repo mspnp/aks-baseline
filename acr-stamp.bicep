@@ -248,19 +248,18 @@ resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2022-09-01
   }
 }
 
-// AKS Backup is configured and managed via a backup vault in the same region
-// This ideally wouldn't be tied to the individual cluster stamp, as it would
-// exist longer than the lifecycle of the cluster, just log sinks. We are
-// representing that by place this resource creation into this pre-cluster
-// deployment file.
+// Supports configuring the AKS Backup extension.
 resource bvAksBackupVault 'Microsoft.DataProtection/backupVaults@2023-01-01' = {
   name: 'bvAksBackupVault'
   location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     storageSettings: [
       {
         datastoreType: 'VaultStore'
-        type: 'GeoRedundant'
+        type: 'ZoneRedundant'
       }
     ]
     securitySettings: {
@@ -272,11 +271,7 @@ resource bvAksBackupVault 'Microsoft.DataProtection/backupVaults@2023-01-01' = {
         retentionDurationInDays: 14
       }
     }
-    featureSettings: {
-      crossSubscriptionRestoreSettings: {
-        state: 'Disabled'
-      }
-    }
+    featureSettings: {}
   }
 
   // Daily UTC midnight Kubernetes backup policy as an example. Configure policy as needed.
@@ -304,29 +299,40 @@ resource bvAksBackupVault 'Microsoft.DataProtection/backupVaults@2023-01-01' = {
             schedule: {
               timeZone: 'UTC'
               repeatingTimeIntervals: [
-                'R/2023-04-06T0:0:00+00:00/P1D'
+                'R/2023-01-01T00:00:00+00:00/P1D'
               ]
             }
-            taggingCriteria: []
+            taggingCriteria: [
+              {
+                tagInfo: {
+                  tagName: 'Default'
+                }
+                taggingPriority: 99
+                isDefault: true
+              }
+            ]
           }
+        }
+        {
+          objectType: 'AzureRetentionRule'
+          name: 'Default'
+          isDefault: true
+          lifecycles: [
+            {
+              deleteAfter: {
+                objectType: 'AbsoluteDeleteOption'
+                duration: 'P7D'
+              }
+              targetDataStoreCopySettings: []
+              sourceDataStore: {
+                dataStoreType: 'OperationalStore'
+                objectType: 'DataStoreInfoBase'
+              }
+            }
+          ]
         }
       ]
     }
-  }
-}
-
-// Backup vault logging
-resource bvAksBackupVault_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: 'default'
-  scope: bvAksBackupVault
-  properties: {
-    workspaceId: laAks.id
-    logs: [
-      {
-        category: 'AzureBackupReport'
-        enabled: true
-      }
-    ]
   }
 }
 
@@ -340,8 +346,7 @@ resource storageAksBackups 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   kind: 'StorageV2'
   properties: {
     allowSharedKeyAccess: false
-    dnsEndpointType: 'Default'
-    defaultToOAuthAuthentication: false
+    defaultToOAuthAuthentication: true
     publicNetworkAccess: 'Disabled'
     allowCrossTenantReplication: false
     allowBlobPublicAccess: false
@@ -350,7 +355,7 @@ resource storageAksBackups 'Microsoft.Storage/storageAccounts@2022-09-01' = {
     isLocalUserEnabled: false
     isSftpEnabled: false
     routingPreference: {
-      publishInternetEndpoints: false
+      publishInternetEndpoints: true
       publishMicrosoftEndpoints: true
       routingChoice: 'MicrosoftRouting'
     }
@@ -360,8 +365,25 @@ resource storageAksBackups 'Microsoft.Storage/storageAccounts@2022-09-01' = {
       ipRules: []
       defaultAction: 'Deny'
     }
+    encryption: {
+      keySource: 'Microsoft.Storage'
+      services: {
+        file: {
+          keyType: 'Account'
+          enabled: true
+        }
+        blob: {
+          keyType: 'Account'
+          enabled: true
+        }
+      }
+    }
     supportsHttpsTrafficOnly: true
     accessTier: 'Hot' 
+  }
+
+  resource blobservice 'blobServices' = {
+    name: 'default'
   }
 }
 
@@ -382,6 +404,28 @@ resource dnsPrivateZoneBlob 'Microsoft.Network/privateDnsZones@2020-06-01' = {
       }
       registrationEnabled: false
     }
+  }
+}
+
+resource storageAksBackups_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: storageAksBackups::blobservice
+  properties: {
+    workspaceId: laAks.id
+    logs: [
+      {
+        category: 'StorageRead'
+        enabled: true
+      }
+      {
+        category: 'StorageWrite'
+        enabled: true
+      }
+      {
+        category: 'StorageDelete'
+        enabled: true
+      }
+    ]
   }
 }
 

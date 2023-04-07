@@ -42,7 +42,7 @@ In addition to ACR being deployed to support bootstrapping, this is where any ot
    echo RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE: $RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE
    ```
 
-1. Deploy the container registry template.
+1. Deploy the container registry and non-stamp resources template.
 
    ```bash
    # [This takes about four minutes.]
