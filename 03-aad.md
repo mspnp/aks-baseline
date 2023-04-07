@@ -29,7 +29,7 @@ This does not configure anything related to workload identity. This configuratio
 
 1. Playing the role as the Contoso Bicycle Azure AD team, login into the tenant where Kubernetes Cluster API authorization will be associated with.
 
-   > :bulb: Skip the `az login` command if you plan to use your current user account's Azure AD tenant for Kubernetes authorization.
+   > :bulb: Skip the `az login` command if you plan to use your current user account's Azure AD tenant for Kubernetes authorization. _Using the same tenant is common._
 
    ```bash
    az login -t <Replace-With-ClusterApi-AzureAD-TenantId> --allow-no-subscriptions

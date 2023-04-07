@@ -12,9 +12,13 @@ Container registries often have a lifecycle that extends beyond the scope of a s
 
 The role of this pre-existing ACR instance is made more prominant when we think about cluster bootstrapping. That is the process that happens after Azure resource deployment of the cluster, but before your first workload lands in the cluster. The cluster will be bootstrapped _immedately and automatically_ after resource deployment, which means you'll need ACR in place to act as your official OCI artifact repository for required images and Helm charts used in that bootstrapping process.
 
-### Method
+### Bootstrapping method
 
 We'll be bootstrapping this cluster with the Flux GitOps agent as installed as an AKS extension. This specific choice does not imply that Flux, or GitOps in general, is the only approach to bootstrapping. Consider your organizational familiarity and acceptance of tooling like this and decide if cluster bootstrapping should be performed with GitOps or via your deployment pipelines. If you are running a fleet of clusters, a GitOps approach is highly recommended for uniformity and easier governance. When running only a few clusters, GitOps might be seen as "too much" and you might instead opt for integrating that process into one or more deployment pipelines to ensure bootstrapping takes place. No matter which way you go, you'll need your bootstrapping artifacts ready to go before you start your cluster deployment so that you can minimize the time between cluster deployment and bootstrapping. Using the Flux AKS extension allows your cluster to start already bootstrapped and sets you up with a solid management foundation going forward.
+
+### Additional resources
+
+In addition to ACR being deployed to support bootstrapping, this is where any other resources that are considered not tied to the lifecycle of an individual cluster is deployed. ACR is one example as talked about above. Another example in this implementation, includes the AKS Backup Vault and backup artifacts storage account which likely would exist prior to and after any individual AKS cluster's existance. When designing your pipelines, ensure to isolate components by their lifecycle watch for singletons in an architecture. These are typically resources like regional logging sinks, supporting global routing infrastructure, etc. As compared to potentially transiently/replaceable components, like the AKS cluster itself. _This implemention does not represent a complete seperation of stamp vs regional resources, but is fairly close. Deviations are strickly for ease of deployment in this walkthrough instead of as examples of guidance._
 
 ## Steps
 
