@@ -1770,7 +1770,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
       networkPolicy: 'azure'
       outboundType: 'userDefinedRouting'
       loadBalancerSku: 'standard'
-      loadBalancerProfile: json('null')
+      loadBalancerProfile: null
       serviceCidr: '172.16.0.0/16'
       dnsServiceIP: '172.16.0.10'
     }
