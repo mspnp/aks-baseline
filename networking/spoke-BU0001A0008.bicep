@@ -13,6 +13,7 @@ param hubVnetResourceId string
   'eastus'
   'eastus2'
   'westus2'
+  'westus3'
   'francecentral'
   'germanywestcentral'
   'northeurope'

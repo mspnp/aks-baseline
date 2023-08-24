@@ -32,6 +32,7 @@ param clusterAuthorizedIPRanges array = []
   'eastus'
   'eastus2'
   'westus2'
+  'westus3'
   'francecentral'
   'germanywestcentral'
   'northeurope'
@@ -43,7 +44,7 @@ param clusterAuthorizedIPRanges array = []
   'southeastasia'
 ])
 param location string = 'eastus2'
-param kubernetesVersion string = '1.26.0'
+param kubernetesVersion string = '1.27.3'
 
 @description('Domain name to use for App Gateway and AKS ingress.')
 param domainName string = 'contoso.com'
