@@ -24,7 +24,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 #### Azure platform
 
-- AKS v1.26
+- AKS v1.27
   - System and User [node pool separation](https://learn.microsoft.com/azure/aks/use-system-pools)
   - [AKS-managed Azure AD](https://learn.microsoft.com/azure/aks/managed-aad)
   - Azure AD-backed Kubernetes RBAC (_local user accounts disabled_)
