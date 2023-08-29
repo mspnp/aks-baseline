@@ -7,8 +7,8 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 1. Get the AKS Ingress Controller Managed Identity details.
 
    ```bash
-   INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
-   echo INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID
+   INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_AKS_BASELINE=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
+   echo INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_AKS_BASELINE: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_AKS_BASELINE
    ```
 
 1. Ensure your bootstrapping process has created the following namespace.
@@ -34,7 +34,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    spec:
      provider: azure
      parameters:
-       clientID: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID
+       clientID: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_AKS_BASELINE
        usePodIdentity: "false"
        useVMManagedIdentity: "false"
        keyvaultName: $KEYVAULT_NAME_AKS_BASELINE
