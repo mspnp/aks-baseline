@@ -7,7 +7,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 1. Get the AKS Ingress Controller Managed Identity details.
 
    ```bash
-   INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_AKS_BASELINE=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
+   export INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_AKS_BASELINE=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
    echo INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_AKS_BASELINE: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID_AKS_BASELINE
    ```
 
