@@ -14,15 +14,15 @@ This section will help you to validate the workload is exposed correctly and res
 
    ```bash
    # query the Azure Application Gateway Public Ip
-   export APPGW_PUBLIC_IP_AKS_BASELINE=$(az deployment group show --resource-group rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
-   echo APPGW_PUBLIC_IP_AKS_BASELINE: $APPGW_PUBLIC_IP_AKS_BASELINE
+   APPGW_PUBLIC_IP=$(az deployment group show --resource-group rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.appGwPublicIpAddress.value -o tsv)
+   echo APPGW_PUBLIC_IP: $APPGW_PUBLIC_IP
    ```
 
 1. Create an `A` record for DNS.
 
    > :bulb: You can simulate this via a local hosts file modification. You're welcome to add a real DNS entry for your specific deployment's application domain name, if you have access to do so.
 
-   Map the Azure Application Gateway public IP address to the application domain name. To do that, please edit your hosts file (`C:\Windows\System32\drivers\etc\hosts` or `/etc/hosts`) and add the following record to the end: `${APPGW_PUBLIC_IP_AKS_BASELINE} bicycle.${DOMAIN_NAME_AKS_BASELINE}` (e.g. `50.140.130.120   bicycle.contoso.com`)
+   Map the Azure Application Gateway public IP address to the application domain name. To do that, please edit your hosts file (`C:\Windows\System32\drivers\etc\hosts` or `/etc/hosts`) and add the following record to the end: `${APPGW_PUBLIC_IP} bicycle.${DOMAIN_NAME_AKS_BASELINE}` (e.g. `50.140.130.120   bicycle.contoso.com`)
 
 1. Browse to the site (e.g. <https://bicycle.contoso.com>).
 

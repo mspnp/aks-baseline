@@ -9,11 +9,11 @@ Now that your [ACR instance is deployed and ready to support cluster bootstrappi
    > If you cloned this repo, then the value will be the original mspnp GitHub organization's repo, which will mean that your cluster will be bootstraped using public container images. If instead you forked this repo, then the GitOps repo will be your own repo, and your cluster will be bootstrapped using container images references based on the values in your repo's manifest files. On the prior instruction page you had the opportunity to update those manifests to use your ACR instance. For guidance on using a private bootstrapping repo, see [Private bootstrapping repository](./cluster-manifests/README.md#private-bootstrapping-repository).
 
    ```bash
-   export GITOPS_REPOURL_AKS_BASELINE=$(git config --get remote.origin.url)
-   echo GITOPS_REPOURL_AKS_BASELINE: $GITOPS_REPOURL_AKS_BASELINE
+   GITOPS_REPOURL=$(git config --get remote.origin.url)
+   echo GITOPS_REPOURL: $GITOPS_REPOURL
 
-   export GITOPS_CURRENT_BRANCH_NAME_AKS_BASELINE=$(git branch --show-current)
-   echo GITOPS_CURRENT_BRANCH_NAME_AKS_BASELINE: $GITOPS_CURRENT_BRANCH_NAME_AKS_BASELINE
+   GITOPS_CURRENT_BRANCH_NAME=$(git branch --show-current)
+   echo GITOPS_CURRENT_BRANCH_NAME: $GITOPS_CURRENT_BRANCH_NAME
    ```
 
 1. Deploy the cluster ARM template.
@@ -21,7 +21,7 @@ Now that your [ACR instance is deployed and ready to support cluster bootstrappi
 
    ```bash
    # [This takes about 18 minutes.]
-   az deployment group create -g rg-bu0001a0008 -f cluster-stamp.bicep -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE} clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE} a0008NamespaceReaderAadGroupObjectId=${AADOBJECTID_GROUP_A0008_READER_AKS_BASELINE} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC_AKS_BASELINE} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_AKS_BASELINE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE} domainName=${DOMAIN_NAME_AKS_BASELINE} gitOpsBootstrappingRepoHttpsUrl=${GITOPS_REPOURL_AKS_BASELINE} gitOpsBootstrappingRepoBranch=${GITOPS_CURRENT_BRANCH_NAME_AKS_BASELINE} location=eastus2
+   az deployment group create -g rg-bu0001a0008 -f cluster-stamp.bicep -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE} clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE} a0008NamespaceReaderAadGroupObjectId=${AADOBJECTID_GROUP_A0008_READER_AKS_BASELINE} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC_AKS_BASELINE} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_AKS_BASELINE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE} domainName=${DOMAIN_NAME_AKS_BASELINE} gitOpsBootstrappingRepoHttpsUrl=${GITOPS_REPOURL} gitOpsBootstrappingRepoBranch=${GITOPS_CURRENT_BRANCH_NAME} location=eastus2
    ```
 
    > Alteratively, you could have updated the [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) file and deployed as above, using `-p "@azuredeploy.parameters.prod.json"` instead of providing the individual key-value pairs.

@@ -22,8 +22,8 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 1. Get the cluster name.
 
    ```bash
-   export AKS_CLUSTER_NAME_AKS_BASELINE=$(az aks list -g rg-bu0001a0008 --query '[0].name' -o tsv)
-   echo AKS_CLUSTER_NAME_AKS_BASELINE: $AKS_CLUSTER_NAME_AKS_BASELINE
+   AKS_CLUSTER_NAME=$(az aks list -g rg-bu0001a0008 --query '[0].name' -o tsv)
+   echo AKS_CLUSTER_NAME: $AKS_CLUSTER_NAME
    ```
 
 1. Get AKS `kubectl` credentials.
@@ -33,7 +33,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    > In a following step, you'll log in with a user that has been added to the Azure AD security group used to back the Kubernetes RBAC admin role. Executing the first `kubectl` command below will invoke the AAD login process to authorize the _user of your choice_, which will then be authenticated against Kubernetes RBAC to perform the action. The user you choose to log in with _must be a member of the AAD group bound_ to the `cluster-admin` ClusterRole. For simplicity you could either use the "break-glass" admin user created in [Azure Active Directory Integration](03-aad.md) (`bu0001a0008-admin`) or any user you assigned to the `cluster-admin` group assignment in your [`cluster-rbac.yaml`](cluster-manifests/cluster-rbac.yaml) file.
 
    ```bash
-   az aks get-credentials -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME_AKS_BASELINE
+   az aks get-credentials -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME
    ```
 
    :warning: At this point two important steps are happening:
