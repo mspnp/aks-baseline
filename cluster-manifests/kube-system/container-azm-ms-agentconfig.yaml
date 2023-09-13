@@ -52,6 +52,10 @@ data:
           # Supported values for this setting are "v1","v2"
           # See documentation at https://aka.ms/ContainerLogv2 for benefits of v2 schema over v1 schema before opting for "v2" schema
           containerlog_schema_version = "v2"
+       #[log_collection_settings.enable_multiline_logs]
+          # fluent-bit based multiline log collection for go (stacktrace), dotnet (stacktrace)
+          # if enabled will also stitch together container logs split by docker/cri due to size limits(16KB per log line)
+          # enabled = "false"
 
   prometheus-data-collection-settings: |-
     # Custom Prometheus metrics data collection settings
@@ -75,7 +79,7 @@ data:
 
         # When monitor_kubernetes_pods = true, replicaset will scrape Kubernetes pods for the following prometheus annotations:
         # - prometheus.io/scrape: Enable scraping for this pod
-        # - prometheus.io/scheme: If the metrics endpoint is secured then you will need to
+        # - prometheus.io/scheme: Default is http
         #     set this to `https` & most likely set the tls config.
         # - prometheus.io/path: If the metrics path is not /metrics, define it with this annotation.
         # - prometheus.io/port: If port is not 9102 use this annotation
@@ -180,5 +184,26 @@ data:
     #   log_flush_interval_secs = "1"                 # default value is 15
     #   tail_mem_buf_limit_megabytes = "10"           # default value is 10
     #   tail_buf_chunksize_megabytes = "1"            # default value is 32kb (comment out this line for default)
-    #   tail_buf_maxsize_megabytes = "1"              # defautl value is 32kb (comment out this line for default)
+    #   tail_buf_maxsize_megabytes = "1"              # default value is 32kb (comment out this line for default)
     #   tail_ignore_older = "5m"                      # default value same as fluent-bit default i.e.0m
+
+    # On both AKS & Arc K8s enviornments, if Cluster has configured with Forward Proxy then Proxy settings automatically applied and used for the agent
+    # Certain configurations, proxy config should be ignored for example Cluster with AMPLS + Proxy
+    # in such scenarios, use the following config to ignore proxy settings
+    # [agent_settings.proxy_config]
+    #    ignore_proxy_settings = "true"  # if this is not applied, default value is false
+
+    # The following settings are "undocumented", we don't recommend uncommenting them unless directed by Microsoft.
+    # Configuration settings for the waittime for the network listeners to be available
+    # [agent_settings.network_listener_waittime]
+    #   tcp_port_25226 = 45                           # Port 25226 is used for telegraf to fluent-bit data in ReplicaSet
+    #   tcp_port_25228 = 60                           # Port 25228 is used for telegraf to fluentd data
+    #   tcp_port_25229 = 45                           # Port 25229 is used for telegraf to fluent-bit data in DaemonSet
+
+    # The following settings are "undocumented", we don't recommend uncommenting them unless directed by Microsoft.
+    # [agent_settings.mdsd_config]
+    #   monitoring_max_event_rate = "50000" # default 20K eps
+    #   backpressure_memory_threshold_in_mb = "1500" # default 3500MB
+    #   upload_max_size_in_mb = "20"  # default 2MB
+    #   upload_frequency_seconds = "1" # default 60 upload_frequency_seconds
+    #   compression_level = "0"  # supported levels 0 to 9 and 0 means no compression
