@@ -102,7 +102,7 @@ var pdDisallowNamespaceUsageId = tenantResourceId('Microsoft.Authorization/polic
 // Built-in 'Azure Kubernetes Service clusters should have Defender profile enabled' Azure Policy policy definition
 var pdDefenderInClusterEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'a1840de2-8088-4ea8-b153-b4c723e9cb01')
 
-// Built-in 'Azure Kubernetes Service Clusters should enable Azure Active Directory integration' Azure Policy policy definition
+// Built-in 'Azure Kubernetes Service Clusters should enable Microsoft Entra ID integration' Azure Policy policy definition
 var pdEntraIdIntegrationEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '450d2877-ebea-41e8-b00c-e286317d21bf')
 
 // Built-in 'Azure Kubernetes Service Clusters should have local authentication methods disabled' Azure Policy policy definition
@@ -1277,7 +1277,7 @@ resource paDefenderInClusterEnabled 'Microsoft.Authorization/policyAssignments@2
   }
 }
 
-// Applying the built-in 'Azure Kubernetes Service Clusters should enable Azure Active Directory integration' policy at the resource group level.
+// Applying the built-in 'Azure Kubernetes Service Clusters should enable Microsoft Entra ID integration' policy at the resource group level.
 resource paMicrosoftEntraIdIntegrationEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
   name: guid(pdEntraIdIntegrationEnabledId, resourceGroup().id, clusterName)
   location: 'global'

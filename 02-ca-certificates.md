@@ -61,4 +61,4 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow the ste
 
 ### Next step
 
-:arrow_forward: [Prep for Azure Active Directory integration](./03-microsoft-entra-id.md)
+:arrow_forward: [Prep for Microsoft Entra ID integration](./03-microsoft-entra-id.md)

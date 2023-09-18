@@ -62,7 +62,7 @@ There are considerations that must be addressed before you start deploying your 
 
 - [ ] Begin by ensuring you [install and meet the prerequisites](./01-prerequisites.md)
 - [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./02-ca-certificates.md)
-- [ ] [Plan your Azure Active Directory integration](./03-microsoft-entra-id.md)
+- [ ] [Plan your Microsoft Entra ID integration](./03-microsoft-entra-id.md)
 
 ### 2. Build target network
 

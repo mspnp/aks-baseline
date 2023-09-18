@@ -1,4 +1,4 @@
-# Prep for Azure Active Directory integration
+# Prep for Microsoft Entra ID integration
 
 In the prior step, you [generated the user-facing TLS certificate](./02-ca-certificates.md); now we'll prepare Microsoft Entra ID for Kubernetes role-based access control (RBAC). This will ensure you have a Microsoft Entra security group(s) and user(s) assigned for group-based Kubernetes control plane access.
 
