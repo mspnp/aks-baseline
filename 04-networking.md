@@ -1,6 +1,6 @@
 # Deploy the hub-spoke network topology
 
-The prerequisites for the [AKS baseline cluster](./) are now completed with [Azure AD group and user work](./03-aad.md) performed in the prior steps. Now we will start with our first Azure resource deployment, the network resources.
+The prerequisites for the [AKS baseline cluster](./) are now completed with [Azure AD group and user work](./03-microsoft-entra-id.md) performed in the prior steps. Now we will start with our first Azure resource deployment, the network resources.
 
 ## Subscription and resource group topology
 
