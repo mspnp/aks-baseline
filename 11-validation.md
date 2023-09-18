@@ -32,11 +32,11 @@ This section will help you to validate the workload is exposed correctly and res
 
 ## Validate reader access to the a0008 namespace. _Optional._
 
-When setting up [Azure AD security groups](./03-microsoft-entra-id.md) you created a group to be used as a "reader" for the namespace a0008. If you want to experience this RBAC example, you'll want to add a user to that group.
+When setting up [Microsoft Entra security groups](./03-microsoft-entra-id.md) you created a group to be used as a "reader" for the namespace a0008. If you want to experience this RBAC example, you'll want to add a user to that group.
 
 If Azure RBAC is your cluster's Kubernetes RBAC backing store, then that is all that is needed.
 
-If instead Kubernetes RBAC is backed directly by Azure AD, then you'll need to ensure that you've updated and applied the [`rbac.yaml`](./cluster-manifests/a0008/rbac.yaml) according to the instructions found at the end of the [Azure AD configuration page](./03-microsoft-entra-id.md).
+If instead Kubernetes RBAC is backed directly by Microsoft Entra ID, then you'll need to ensure that you've updated and applied the [`rbac.yaml`](./cluster-manifests/a0008/rbac.yaml) according to the instructions found at the end of the [Microsoft Entra ID configuration page](./03-microsoft-entra-id.md).
 
 No matter which backing store you use, the user assigned to the group will then be able to `az aks get-credentials` to the cluster and you can validate that user is limited to a _read only_ view of the a0008 namespace.
 

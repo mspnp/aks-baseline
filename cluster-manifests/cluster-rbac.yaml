@@ -1,4 +1,4 @@
-# This file is exclusively to be used when you are using Azure AD direct assignment for Kubertnetes RBAC 
+# This file is exclusively to be used when you are using Microsoft Entra ID direct assignment for Kubertnetes RBAC 
 # and NOT when you are using Azure RBAC as your Kubernetes RBAC backing store.
 #
 #  Mapping k8s cluster user facing roles to Microsoft Entra groups: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles
