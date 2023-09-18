@@ -1,7 +1,7 @@
 # This file is exclusively to be used when you are using Azure AD direct assignment for Kubertnetes RBAC 
 # and NOT when you are using Azure RBAC as your Kubernetes RBAC backing store.
 #
-#  Map k8s user facing namespace roles to AAD groups: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles
+#  Map k8s user facing namespace roles to Microsoft Entra groups: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles
 #apiVersion: rbac.authorization.k8s.io/v1
 #kind: RoleBinding
 #metadata:
@@ -13,7 +13,7 @@
 #  name: admin
 #subjects:
 #  - kind: Group
-#    name: <replace-with-an-aad-group-object-id-for-this-namespace-role-binding>
+#    name: <replace-with-a-microsoft-entra-group-object-id-for-this-namespace-role-binding>
 #---
 #apiVersion: rbac.authorization.k8s.io/v1
 #kind: RoleBinding
@@ -26,7 +26,7 @@
 #  name: namespace-editer
 #subjects:
 #  - kind: Group
-#    name: <replace-with-an-aad-group-object-id-for-this-namespace-role-binding>
+#    name: <replace-with-a-microsoft-entra-group-object-id-for-this-namespace-role-binding>
 #---
 #apiVersion: rbac.authorization.k8s.io/v1
 #kind: RoleBinding
@@ -39,4 +39,4 @@
 #  name: view
 #subjects:
 #  - kind: Group
-#    name: <replace-with-an-aad-group-object-id-for-this-namespace-role-binding>
+#    name: <replace-with-a-microsoft-entra-group-object-id-for-this-namespace-role-binding>

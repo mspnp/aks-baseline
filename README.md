@@ -26,11 +26,11 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 - AKS v1.27
   - System and User [node pool separation](https://learn.microsoft.com/azure/aks/use-system-pools)
-  - [AKS-managed Azure AD](https://learn.microsoft.com/azure/aks/managed-aad)
+  - [AKS-managed Microsoft Entra ID integration](https://learn.microsoft.com/azure/aks/managed-aad)
   - Azure AD-backed Kubernetes RBAC (_local user accounts disabled_)
   - Managed Identities
   - Azure CNI
-  - [Azure Monitor for containers](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-overview)
+  - [Azure Monitor for containers](https://learn.microsoft.com/azure/azure-monitor/containers/container-insights-overview)
 - Azure Virtual Networks (hub-spoke)
   - Azure Firewall managed egress
 - Azure Application Gateway (WAF)

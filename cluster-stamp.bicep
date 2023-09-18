@@ -1805,7 +1805,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
       enablePrivateCluster: false
     }
     podIdentityProfile: {
-      enabled: false // Using federated workload identity for Azure AD Pod identities, not the deprecated AAD Pod Identity
+      enabled: false // Using Microsoft Entra Workload IDs for pod identities.
     }
     autoUpgradeProfile: {
       upgradeChannel: 'stable'
