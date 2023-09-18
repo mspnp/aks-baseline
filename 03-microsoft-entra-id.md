@@ -40,16 +40,17 @@ This does not configure anything related to workload identity. This configuratio
 1. Create/identify the Azure AD security group that is going to map to the [Kubernetes Cluster Admin](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) role `cluster-admin`.
 
    If you already have a security group that is appropriate for your cluster's admin service accounts, use that group and don't create a new one. If using your own group or your Azure AD administrator created one for you to use; you will need to update the group name and ID throughout the reference implementation.
+
    ```bash
-   export AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE=[Paste your existing cluster admin group Object ID here.]
-   echo AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE: $AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE
+   export MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE=[Paste your existing cluster admin group Object ID here.]
+   echo MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE: $MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE
    ```
 
    If you want to create a new one instead, you can use the following code:
 
    ```bash
-   export AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE=$(az ad group create --display-name 'cluster-admins-bu0001a000800' --mail-nickname 'cluster-admins-bu0001a000800' --description "Principals in this group are cluster admins in the bu0001a000800 cluster." --query id -o tsv)
-   echo AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE: $AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE
+   export MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE=$(az ad group create --display-name 'cluster-admins-bu0001a000800' --mail-nickname 'cluster-admins-bu0001a000800' --description "Principals in this group are cluster admins in the bu0001a000800 cluster." --query id -o tsv)
+   echo MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE: $MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE
    ```
 
    This Azure AD group object ID will be used later while creating the cluster. This way, once the cluster gets deployed the new group will get the proper Cluster Role bindings in Kubernetes.
@@ -62,11 +63,11 @@ This does not configure anything related to workload identity. This configuratio
 
    ```bash
    TENANTDOMAIN_K8SRBAC=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
-   AADOBJECTNAME_USER_CLUSTERADMIN=bu0001a000800-admin
-   AADOBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${AADOBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${AADOBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-sign-in --password ChangeMebu0001a0008AdminChangeMe --query id -o tsv)
+   MEIDOBJECTNAME_USER_CLUSTERADMIN=bu0001a000800-admin
+   MEIDOBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${MEIDOBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${MEIDOBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-sign-in --password ChangeMebu0001a0008AdminChangeMe --query id -o tsv)
    echo TENANTDOMAIN_K8SRBAC: $TENANTDOMAIN_K8SRBAC
-   echo AADOBJECTNAME_USER_CLUSTERADMIN: $AADOBJECTNAME_USER_CLUSTERADMIN
-   echo AADOBJECTID_USER_CLUSTERADMIN: $AADOBJECTID_USER_CLUSTERADMIN
+   echo MEIDOBJECTNAME_USER_CLUSTERADMIN: $MEIDOBJECTNAME_USER_CLUSTERADMIN
+   echo MEIDOBJECTID_USER_CLUSTERADMIN: $MEIDOBJECTID_USER_CLUSTERADMIN
    ```
 
 1. Add the cluster admin user(s) to the cluster admin security group.
@@ -76,14 +77,14 @@ This does not configure anything related to workload identity. This configuratio
    You should skip this step, if the group identified in the former step already has a cluster admin assigned as member.
 
    ```bash
-   az ad group member add -g $AADOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE --member-id $AADOBJECTID_USER_CLUSTERADMIN
+   az ad group member add -g $MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE --member-id $MEIDOBJECTID_USER_CLUSTERADMIN
    ```
 
 1. Create/identify the Azure AD security group that is going to be a namespace reader. _Optional_
 
    ```bash
-   export AADOBJECTID_GROUP_A0008_READER_AKS_BASELINE=$(az ad group create --display-name 'cluster-ns-a0008-readers-bu0001a000800' --mail-nickname 'cluster-ns-a0008-readers-bu0001a000800' --description "Principals in this group are readers of namespace a0008 in the bu0001a000800 cluster." --query id -o tsv)
-   echo AADOBJECTID_GROUP_A0008_READER_AKS_BASELINE: $AADOBJECTID_GROUP_A0008_READER_AKS_BASELINE
+   export MEIDOBJECTID_GROUP_A0008_READER_AKS_BASELINE=$(az ad group create --display-name 'cluster-ns-a0008-readers-bu0001a000800' --mail-nickname 'cluster-ns-a0008-readers-bu0001a000800' --description "Principals in this group are readers of namespace a0008 in the bu0001a000800 cluster." --query id -o tsv)
+   echo MEIDOBJECTID_GROUP_A0008_READER_AKS_BASELINE: $MEIDOBJECTID_GROUP_A0008_READER_AKS_BASELINE
    ```
 
 ## Kubernetes RBAC backing store
