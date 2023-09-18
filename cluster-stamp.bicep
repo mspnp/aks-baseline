@@ -6,10 +6,10 @@ targetScope = 'resourceGroup'
 @minLength(79)
 param targetVnetResourceId string
 
-@description('Azure AD Group in the identified tenant that will be granted the highly privileged cluster-admin role. If Azure RBAC is used, then this group will get a role assignment to Azure RBAC, else it will be assigned directly to the cluster\'s admin group.')
+@description('Microsoft Entra group in the identified tenant that will be granted the highly privileged cluster-admin role. If Azure RBAC is used, then this group will get a role assignment to Azure RBAC, else it will be assigned directly to the cluster\'s admin group.')
 param clusterAdminMicrosoftEntraGroupObjectId string
 
-@description('Azure AD Group in the identified tenant that will be granted the read only privileges in the a0008 namespace that exists in the cluster. This is only used when Azure RBAC is used for Kubernetes RBAC.')
+@description('Microsoft Entra group in the identified tenant that will be granted the read only privileges in the a0008 namespace that exists in the cluster. This is only used when Azure RBAC is used for Kubernetes RBAC.')
 param a0008NamespaceReaderMicrosoftEntraGroupObjectId string
 
 @description('Your AKS control plane Cluster API authentication tenant')

@@ -53,7 +53,7 @@ This does not configure anything related to workload identity. This configuratio
    echo MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE: $MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE
    ```
 
-   This Azure AD group object ID will be used later while creating the cluster. This way, once the cluster gets deployed the new group will get the proper Cluster Role bindings in Kubernetes.
+   This Microsoft Entra group object ID will be used later while creating the cluster. This way, once the cluster gets deployed the new group will get the proper Cluster Role bindings in Kubernetes.
 
 1. Create a "break-glass" cluster administrator user for your AKS cluster.
 
@@ -103,9 +103,9 @@ If you instead wish to not use Azure RBAC as your Kubernetes RBAC authorization 
 
 1. Set up additional Kubernetes RBAC associations. _Optional, fork required._
 
-   > :book:  The team knows there will be more than just cluster admins that need group-managed access to the cluster. Out of the box, Kubernetes has other roles like _admin_, _edit_, and _view_ which can also be mapped to Azure AD Groups for use both at namespace and at the cluster level. Likewise custom roles can be created which need to be mapped to Azure AD Groups.
+   > :book:  The team knows there will be more than just cluster admins that need group-managed access to the cluster. Out of the box, Kubernetes has other roles like _admin_, _edit_, and _view_ which can also be mapped to Microsoft Entra groups for use both at namespace and at the cluster level. Likewise custom roles can be created which need to be mapped to Microsoft Entra groups.
 
-   In the [`cluster-rbac.yaml` file](./cluster-manifests/cluster-rbac.yaml) and the various namespaced [`rbac.yaml files`](./cluster-manifests/cluster-baseline-settings/rbac.yaml), you can uncomment what you wish and replace the `<replace-with-a-microsoft-entra-group-object-id...>` placeholders with corresponding new or existing Azure AD groups that map to their purpose for this cluster or namespace. **You do not need to perform this action for this walkthrough**; they are only here for your reference.
+   In the [`cluster-rbac.yaml` file](./cluster-manifests/cluster-rbac.yaml) and the various namespaced [`rbac.yaml files`](./cluster-manifests/cluster-baseline-settings/rbac.yaml), you can uncomment what you wish and replace the `<replace-with-a-microsoft-entra-group-object-id...>` placeholders with corresponding new or existing Microsoft Entra groups that map to their purpose for this cluster or namespace. **You do not need to perform this action for this walkthrough**; they are only here for your reference.
 
 ### Save your work in-progress
 
