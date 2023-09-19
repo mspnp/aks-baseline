@@ -7,6 +7,7 @@ metadata:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
 ---
+#https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-rbac.yml
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -30,8 +31,8 @@ rules:
       - extensions
       - networking.k8s.io
     resources:
-      - ingressclasses
       - ingresses
+      - ingressclasses
     verbs:
       - get
       - list
@@ -44,16 +45,17 @@ rules:
     verbs:
       - update
   - apiGroups:
+      - traefik.io
       - traefik.containo.us
     resources:
-      - ingressroutes
-      - ingressroutetcps
-      - ingressrouteudps
       - middlewares
       - middlewaretcps
+      - ingressroutes
+      - traefikservices
+      - ingressroutetcps
+      - ingressrouteudps
       - tlsoptions
       - tlsstores
-      - traefikservices
       - serverstransports
     verbs:
       - get
