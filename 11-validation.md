@@ -87,7 +87,7 @@ Built-in as well as custom policies are applied to the cluster as part of the [c
 
 Your workload is placed behind a Web Application Firewall (WAF), which has rules designed to stop intentionally malicious activity. You can test this by triggering one of the built-in rules with a request that looks malicious.
 
-> :bulb: This reference implementation enables the built-in OWASP rule set, in **Prevention** mode.
+> :bulb: This reference implementation enables the built-in OWASP ruleset, in **Prevention** mode.
 
 ### Steps
 
