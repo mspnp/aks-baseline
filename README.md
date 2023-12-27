@@ -24,13 +24,13 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 #### Azure platform
 
-- AKS v1.25
+- AKS v1.27
   - System and User [node pool separation](https://learn.microsoft.com/azure/aks/use-system-pools)
-  - [AKS-managed Azure AD](https://learn.microsoft.com/azure/aks/managed-aad)
-  - Azure AD-backed Kubernetes RBAC (_local user accounts disabled_)
+  - [AKS-managed Microsoft Entra ID integration](https://learn.microsoft.com/azure/aks/managed-aad)
+  - Microsoft Entra ID-backed Kubernetes RBAC (_local user accounts disabled_)
   - Managed Identities
   - Azure CNI
-  - [Azure Monitor for containers](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-overview)
+  - [Azure Monitor for containers](https://learn.microsoft.com/azure/azure-monitor/containers/container-insights-overview)
 - Azure Virtual Networks (hub-spoke)
   - Azure Firewall managed egress
 - Azure Application Gateway (WAF)
@@ -43,7 +43,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 - [ImageCleaner (Eraser)](https://learn.microsoft.com/azure/aks/image-cleaner) _[AKS-managed add-on]_
 - [Kubernetes Reboot Daemon](https://learn.microsoft.com/azure/aks/node-updates-kured)
 - [Secrets Store CSI Driver for Kubernetes](https://learn.microsoft.com/azure/aks/csi-secrets-store-driver) _[AKS-managed add-on]_
-- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.5/routing/providers/kubernetes-ingress/)
+- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.10/routing/providers/kubernetes-ingress/)
 
 
 ![Network diagram depicting a hub-spoke network with two peered VNets and main Azure resources used in the architecture.](https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)
@@ -62,7 +62,7 @@ There are considerations that must be addressed before you start deploying your 
 
 - [ ] Begin by ensuring you [install and meet the prerequisites](./01-prerequisites.md)
 - [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./02-ca-certificates.md)
-- [ ] [Plan your Azure Active Directory integration](./03-aad.md)
+- [ ] [Plan your Microsoft Entra ID integration](./03-microsoft-entra-id.md)
 
 ### 2. Build target network
 

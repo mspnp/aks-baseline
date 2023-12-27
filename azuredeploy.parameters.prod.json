@@ -8,10 +8,10 @@
     "targetVnetResourceId": {
       "value": "/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00"
     },
-    "clusterAdminAadGroupObjectId": {
+    "clusterAdminMicrosoftEntraGroupObjectId": {
       "value": "[guid--security-group-objectid-that-will-become-cluster-admin]"
     },
-    "a0008NamespaceReaderAadGroupObjectId": {
+    "a0008NamespaceReaderMicrosoftEntraGroupObjectId": {
       "value": "[guid--security-group-objectid-that-will-become-namespace-a0008-reader]"
     },
     "k8sControlPlaneAuthorizationTenantId": {

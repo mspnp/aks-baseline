@@ -1,4 +1,4 @@
-# Source: https://github.com/kubereboot/charts/tree/kured-4.2.0/charts/kured (1.12.0)
+# Source: https://github.com/kubereboot/charts/tree/kured-5.2.0/charts/kured (1.14.0)
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -81,6 +81,7 @@ metadata:
   name: kured                           # Must match `--ds-name`
   namespace: cluster-baseline-settings  # Must match `--ds-namespace`
 spec:
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/name: kured
@@ -118,10 +119,10 @@ spec:
           # PRODUCTION READINESS CHANGE REQUIRED
           # This image should be sourced from a non-public container registry, such as the
           # one deployed along side of this reference implementation.
-          # az acr import --source ghcr.io/kubereboot/kured:1.12.0 -n <your-acr-instance-name>
+          # az acr import --source ghcr.io/kubereboot/kured:1.14.0 -n <your-acr-instance-name>
           # and then set this to
-          # image: <your-acr-instance-name>.azurecr.io/kubereboot/kured:1.12.0
-          image: ghcr.io/kubereboot/kured:1.12.0
+          # image: <your-acr-instance-name>.azurecr.io/kubereboot/kured:1.14.0
+          image: ghcr.io/kubereboot/kured:1.14.0
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true # Give permission to nsenter /proc/1/ns/mnt
