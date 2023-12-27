@@ -6,11 +6,11 @@ targetScope = 'resourceGroup'
 @minLength(79)
 param targetVnetResourceId string
 
-@description('Azure AD Group in the identified tenant that will be granted the highly privileged cluster-admin role. If Azure RBAC is used, then this group will get a role assignment to Azure RBAC, else it will be assigned directly to the cluster\'s admin group.')
-param clusterAdminAadGroupObjectId string
+@description('Microsoft Entra group in the identified tenant that will be granted the highly privileged cluster-admin role. If Azure RBAC is used, then this group will get a role assignment to Azure RBAC, else it will be assigned directly to the cluster\'s admin group.')
+param clusterAdminMicrosoftEntraGroupObjectId string
 
-@description('Azure AD Group in the identified tenant that will be granted the read only privileges in the a0008 namespace that exists in the cluster. This is only used when Azure RBAC is used for Kubernetes RBAC.')
-param a0008NamespaceReaderAadGroupObjectId string
+@description('Microsoft Entra group in the identified tenant that will be granted the read only privileges in the a0008 namespace that exists in the cluster. This is only used when Azure RBAC is used for Kubernetes RBAC.')
+param a0008NamespaceReaderMicrosoftEntraGroupObjectId string
 
 @description('Your AKS control plane Cluster API authentication tenant')
 param k8sControlPlaneAuthorizationTenantId string
@@ -102,8 +102,8 @@ var pdDisallowNamespaceUsageId = tenantResourceId('Microsoft.Authorization/polic
 // Built-in 'Azure Kubernetes Service clusters should have Defender profile enabled' Azure Policy policy definition
 var pdDefenderInClusterEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'a1840de2-8088-4ea8-b153-b4c723e9cb01')
 
-// Built-in 'Azure Kubernetes Service Clusters should enable Azure Active Directory integration' Azure Policy policy definition
-var pdAadIntegrationEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '450d2877-ebea-41e8-b00c-e286317d21bf')
+// Built-in 'Azure Kubernetes Service Clusters should enable Microsoft Entra ID integration' Azure Policy policy definition
+var pdEntraIdIntegrationEnabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '450d2877-ebea-41e8-b00c-e286317d21bf')
 
 // Built-in 'Azure Kubernetes Service Clusters should have local authentication methods disabled' Azure Policy policy definition
 var pdLocalAuthDisabledId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '993c2fcd-2b29-49d2-9eb0-df2c3a730c32')
@@ -1277,15 +1277,15 @@ resource paDefenderInClusterEnabled 'Microsoft.Authorization/policyAssignments@2
   }
 }
 
-// Applying the built-in 'Azure Kubernetes Service Clusters should enable Azure Active Directory integration' policy at the resource group level.
-resource paAadIntegrationEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
-  name: guid(pdAadIntegrationEnabledId, resourceGroup().id, clusterName)
+// Applying the built-in 'Azure Kubernetes Service Clusters should enable Microsoft Entra ID integration' policy at the resource group level.
+resource paMicrosoftEntraIdIntegrationEnabled 'Microsoft.Authorization/policyAssignments@2021-06-01' = {
+  name: guid(pdEntraIdIntegrationEnabledId, resourceGroup().id, clusterName)
   location: 'global'
   scope: resourceGroup()
   properties: {
-    displayName: take('[${clusterName}] ${reference(pdAadIntegrationEnabledId, '2021-06-01').displayName}', 120)
-    description: reference(pdAadIntegrationEnabledId, '2021-06-01').description
-    policyDefinitionId: pdAadIntegrationEnabledId
+    displayName: take('[${clusterName}] ${reference(pdEntraIdIntegrationEnabledId, '2021-06-01').displayName}', 120)
+    description: reference(pdEntraIdIntegrationEnabledId, '2021-06-01').description
+    policyDefinitionId: pdEntraIdIntegrationEnabledId
     parameters: {
       effect: {
         value: 'Audit' // This policy (as of 1.0.0) does not have a Deny option, otherwise that would be set here.
@@ -1778,7 +1778,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
     aadProfile: {
       managed: true
       enableAzureRBAC: isUsingAzureRBACasKubernetesRBAC
-      adminGroupObjectIDs: ((!isUsingAzureRBACasKubernetesRBAC) ? array(clusterAdminAadGroupObjectId) : [])
+      adminGroupObjectIDs: ((!isUsingAzureRBACasKubernetesRBAC) ? array(clusterAdminMicrosoftEntraGroupObjectId) : [])
       tenantID: k8sControlPlaneAuthorizationTenantId
     }
     autoScalerProfile: {
@@ -1805,7 +1805,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
       enablePrivateCluster: false
     }
     podIdentityProfile: {
-      enabled: false // Using federated workload identity for Azure AD Pod identities, not the deprecated AAD Pod Identity
+      enabled: false // Using Microsoft Entra Workload IDs for pod identities.
     }
     autoUpgradeProfile: {
       upgradeChannel: 'stable'
@@ -1887,7 +1887,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
     // but logically they need to be in place before workloads are, so forcing that here. This also
     // ensures that the policies are applied to the cluster at bootstrapping time.
     paAKSLinuxRestrictive
-    paAadIntegrationEnabled
     paAllowedExternalIPs
     paAllowedHostPaths
     paAuthorizedIpRangesDefined
@@ -1905,7 +1904,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
     // They are not technically a dependency, but logically they would have existed on the resource group
     // prior to the existence of the cluster, so forcing that here.
     paDefenderInClusterEnabled
-    paAadIntegrationEnabled
+    paMicrosoftEntraIdIntegrationEnabled
     paLocalAuthDisabled
     paAzurePolicyEnabled
     paOldKuberentesDisabled
@@ -1940,46 +1939,46 @@ resource mcAmaAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Auth
   }
 }
 
-resource mcAadAdminGroupClusterAdminRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC) {
+resource mcMicrosoftEntraAdminGroupClusterAdminRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC) {
   scope: mc
-  name: guid('aad-admin-group', mc.id, clusterAdminAadGroupObjectId)
+  name: guid('microsoft-entra-admin-group', mc.id, clusterAdminMicrosoftEntraGroupObjectId)
   properties: {
     roleDefinitionId: clusterAdminRole.id
     description: 'Members of this group are cluster admins of this cluster.'
-    principalId: clusterAdminAadGroupObjectId
+    principalId: clusterAdminMicrosoftEntraGroupObjectId
     principalType: 'Group'
   }
 }
 
-resource mcAadAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC) {
+resource mcMicrosoftEntraAdminGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC) {
   scope: mc
-  name: guid('aad-admin-group-sc', mc.id, clusterAdminAadGroupObjectId)
+  name: guid('microsoft-entra-admin-group-sc', mc.id, clusterAdminMicrosoftEntraGroupObjectId)
   properties: {
     roleDefinitionId: serviceClusterUserRole.id
     description: 'Members of this group are cluster users of this cluster.'
-    principalId: clusterAdminAadGroupObjectId
+    principalId: clusterAdminMicrosoftEntraGroupObjectId
     principalType: 'Group'
   }
 }
 
-resource maAadA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && !(empty(a0008NamespaceReaderAadGroupObjectId)) && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
+resource maMicrosoftEntraA0008ReaderGroupClusterReaderRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && !(empty(a0008NamespaceReaderMicrosoftEntraGroupObjectId)) && (!(a0008NamespaceReaderMicrosoftEntraGroupObjectId == clusterAdminMicrosoftEntraGroupObjectId))) {
   scope: nsA0008
-  name: guid('aad-a0008-reader-group', mc.id, a0008NamespaceReaderAadGroupObjectId)
+  name: guid('microsoft-entra-a0008-reader-group', mc.id, a0008NamespaceReaderMicrosoftEntraGroupObjectId)
   properties: {
     roleDefinitionId: clusterReaderRole.id
     description: 'Members of this group are readers of the a0008 namespace in this cluster.'
-    principalId: a0008NamespaceReaderAadGroupObjectId
+    principalId: a0008NamespaceReaderMicrosoftEntraGroupObjectId
     principalType: 'Group'
   }
 }
 
-resource maAadA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && !(empty(a0008NamespaceReaderAadGroupObjectId)) && (!(a0008NamespaceReaderAadGroupObjectId == clusterAdminAadGroupObjectId))) {
+resource maMicrosoftEntraA0008ReaderGroupServiceClusterUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = if (isUsingAzureRBACasKubernetesRBAC && !(empty(a0008NamespaceReaderMicrosoftEntraGroupObjectId)) && (!(a0008NamespaceReaderMicrosoftEntraGroupObjectId == clusterAdminMicrosoftEntraGroupObjectId))) {
   scope: mc
-  name: guid('aad-a0008-reader-group-sc', mc.id, a0008NamespaceReaderAadGroupObjectId)
+  name: guid('microsoft-entra-a0008-reader-group-sc', mc.id, a0008NamespaceReaderMicrosoftEntraGroupObjectId)
   properties: {
     roleDefinitionId: serviceClusterUserRole.id
     description: 'Members of this group are cluster users of this cluster.'
-    principalId: a0008NamespaceReaderAadGroupObjectId
+    principalId: a0008NamespaceReaderMicrosoftEntraGroupObjectId
     principalType: 'Group'
   }
 }

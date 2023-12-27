@@ -3,7 +3,7 @@
 Contoso Bicycle is a fictitious company. The company is a small and fast-growing startup that provides online web services to its clientele in the west coast, North America. The web services were deployed to the cloud from the get-go. They have no on-premises data centers or legacy applications. Here's the brief cloud profile:
 
 - Have several workloads running and operating in Azure.
-- Use Azure Active Directory for identity management.
+- Use Microsoft Entra ID for identity management.
 - Knowledgeable about containers and have considered them for application development.
 - Aware of Kubernetes as a well-known container orchestration.
 - Researched AKS as a possibility.
@@ -32,7 +32,7 @@ Review Azure services and workloads from the lens of security. Incorporate Azure
 
 ### Identity team
 
-Responsible for identity and access management for the Azure environment. They work with the Security and Architecture teams for use of Azure Active Directory, role-based access controls, and segmentation. Also, monitoring service principles for service access and application level access.
+Responsible for identity and access management for the Azure environment. They work with the Security and Architecture teams for use of Microsoft Entra ID, role-based access controls, and segmentation. Also, monitoring service principles for service access and application level access.
 
 ### Networking team
 
@@ -64,7 +64,7 @@ The web service’s host should have these capabilities.
 
 ### Security
 
-- Identity management: Contoso is an existing Microsoft 365 user. They rely heavily on Azure Active Directory as their control plane for identity.
+- Identity management: Contoso is an existing Microsoft 365 user. They rely heavily on Microsoft Entra ID as their control plane for identity.
 - Certificate: They must expose all web services through SSL and aim for end-to-end encryption, as much as possible.
 - Network: They have existing workloads running in Azure Virtual Networks. They would like to minimize direct exposure to Azure resources to the public internet. Their existing architecture runs with regional hub and spoke topologies. This way, the network can be expanded in the future and also provide workload isolation. All web applications require a web application firewall (WAF) service to help govern HTTP traffic flows.
 - Secrets management: They would like to use a secure store for sensitive information.
@@ -92,7 +92,7 @@ can easily be recreated consistently and at any time.
 - Azure Network Policy will be enabled for use, even though there's a single workload in one line-of-business.
 - Azure Container Registry will be used for the container image registry. The cluster will access the registry through Azure Private Link.
 - To stay up to date with OS and security patches, have tools to help the restart of nodes when needed.
-- AKS will be integrated with Azure Active Directory for role-based access control. This choice is aligned with the strategy of using identity as an operational control plane.
+- AKS will be integrated with Microsoft Entra ID for role-based access control. This choice is aligned with the strategy of using identity as an operational control plane.
 - Azure Monitor will be used for logging, metrics, monitoring, and alerting to use the existing knowledge of Log Analytics.
 - Azure Key Vault will be used to store all secret information including SSL certificates. Key Vault data will be mounted by using Azure Key Vault with Secrets Store Container Storage Interface (CSI) driver.
 - Two node pools will be used in AKS. The system node pool will be used for critical system pods. The second node pool will be used for the application workload.
