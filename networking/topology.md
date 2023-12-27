@@ -6,27 +6,27 @@
 
 `CIDR: 10.200.0.0/24`
 
-This regional VNet hub (shared) is meant to hold the following subnets:
+This regional virtual network hub (shared) holds the following subnets:
 
-* [Azure Firewall subnet]
-* [Gateway subnet]
-* [Azure Bastion subnet], with reference NSG in place
+- [Azure Firewall subnet]
+- [Gateway subnet]
+- [Azure Bastion subnet], with reference NSG in place
 
-> Note: For more information about this topology, you can read more at [Azure hub-spoke topology].
+> For more information about this topology, you can read more at [Azure hub-spoke topology].
 
 ## Spoke virtual network
 
 `CIDR: 10.240.0.0/16`
 
-This VNet spoke is meant to hold the following subnets:
+This virtual network holds the following subnets:
 
-* [AKS System Nodepool] and [AKS User Nodepool] subnet
-* [AKS Internal Load Balancer subnet]
-* [Azure Application Gateway subnet]
-* [Private Link Endpoint subnet]
-* All with basic NSGs around each
+- [AKS System Nodepool] and [AKS User Nodepool] subnet
+- [AKS Internal Load Balancer subnet]
+- [Azure Application Gateway subnet]
+- [Private Link Endpoint subnet]
+- All with basic NSGs around each
 
-In the future, this VNet might hold more subnets like [ACI Provider instance] subnets, more [AKS Nodepools subnets], and more.
+In the future, this virtual network might hold more subnets like [Azure Container Instances Provider instance subnets], more [AKS Nodepools subnets], and more.
 
 ## Subnet details
 
@@ -42,9 +42,9 @@ In the future, this VNet might hold more subnets like [ACI Provider instance] su
 
 ## Additional considerations
 
-* [AKS System Nodepool] and [AKS User Nodepool] subnet:  Multi-tenant or other advanced workloads may have nodepool isolation requirements that might demand more (and likely smaller) subnets.
-* [AKS Internal Load Balancer subnet]: Multi-tenant, multiple SSL termination rules, single PPE supporting dev/QA/UAT, etc could lead to needing more ingress controllers, but for baseline, we should start with one.
-* [Private Endpoints] subnet: Private Links are created for Azure Container Registry and Azure Key Vault, so these Azure services can be accessed using Private Endpoints within the spoke virtual network. There are multiple [Private Link deployment options]; in this implementation they are deployed to a dedicated subnet within the spoke virtual network.
+- [AKS System Nodepool] and [AKS User Nodepool] subnet:  multitenant or other advanced workloads may have nodepool isolation requirements that might demand more (and likely smaller) subnets.
+- [AKS Internal Load Balancer subnet]: multitenant, multiple SSL termination rules, single PPE supporting dev/QA/UAT, and so on could lead to needing more ingress controllers, but for baseline, we should start with one.
+- [Private Endpoints] subnet: Private Links are created for Azure Container Registry and Azure Key Vault, so these Azure services can be accessed using Private Endpoints within the spoke virtual network. There are multiple [Private Link deployment options]; in this implementation they are deployed to a dedicated subnet within the spoke virtual network.
 
 [27]: https://learn.microsoft.com/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gwsub
 [251]: https://learn.microsoft.com/azure/application-gateway/configuration-overview#size-of-the-subnet

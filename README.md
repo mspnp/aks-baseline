@@ -1,8 +1,8 @@
 # Azure Kubernetes Service (AKS) baseline cluster
 
-This reference implementation demonstrates the _recommended starting (baseline) infrastructure architecture_ for a general purpose [AKS cluster](https://azure.microsoft.com/services/kubernetes-service). This implementation and document is meant to guide an interdisciplinary team or multiple distinct teams like networking, security and development through the process of getting this general purpose baseline infrastructure deployed and understanding the components of it.
+This reference implementation demonstrates the *recommended starting (baseline) infrastructure architecture* for a general purpose [AKS cluster](https://azure.microsoft.com/services/kubernetes-service). This implementation and document is meant to guide an interdisciplinary team or multiple distinct teams like networking, security and development through the process of getting this general purpose baseline infrastructure deployed and understanding the components of it.
 
-We walk through the deployment here in a rather _verbose_ method to help you understand each component of this cluster, ideally teaching you about each layer and providing you with the knowledge necessary to apply it to your workload.
+We walk through the deployment here in a rather *verbose* method to help you understand each component of this cluster, ideally teaching you about each layer and providing you with the knowledge necessary to apply it to your workload.
 
 ## Azure Architecture Center guidance
 
@@ -12,11 +12,11 @@ This project has a companion set of articles that describe challenges, design pa
 
 **This architecture is infrastructure focused**, more so than on workload. It concentrates on the AKS cluster itself, including concerns with identity, post-deployment configuration, secret management, and network topologies.
 
-The implementation presented here is the _minimum recommended baseline for most AKS clusters_. This implementation integrates with Azure services that will deliver observability, provide a network topology that will support multi-regional growth, and keep the in-cluster traffic secure as well. This architecture should be considered your starting point for pre-production and production stages.
+The implementation presented here is the *minimum recommended baseline for most AKS clusters*. This implementation integrates with Azure services that will deliver observability, provide a network topology that will support multiregional growth, and keep the in-cluster traffic secure as well. This architecture should be considered your starting point for preproduction and production stages.
 
 The material here is relatively dense. We strongly encourage you to dedicate time to walk through these instructions, with a mind to learning. Therefore, we do NOT provide any "one click" deployment here. To understand the relationship between the deployed resources, we suggest that you consult the [detailed architecture overview](/networking/aks-baseline_details.drawio.svg) while exploring your deployment. Once you've understood the components involved and identified the shared responsibilities between your team and your great organization, it is encouraged that you build suitable, auditable deployment processes around your final infrastructure.
 
-Throughout the reference implementation, you will see reference to _Contoso Bicycle_. They are a fictional small and fast-growing startup that provides online web services to its clientele on the west coast of North America. They have no on-premises data centers and all their containerized line of business applications are now about to be orchestrated by secure, enterprise-ready AKS clusters. You can read more about [their requirements and their IT team composition](./contoso-bicycle/README.md). This narrative provides grounding for some implementation details, naming conventions, etc. You should adapt as you see fit.
+Throughout the reference implementation, you will see reference to *Contoso Bicycle*. They are a fictional small and fast-growing startup that provides online web services to its clientele on the west coast of North America. They have no on-premises datacenters and all their containerized line of business applications are now about to be orchestrated by secure, enterprise-ready AKS clusters. You can read more about [their requirements and their IT team composition](./contoso-bicycle/README.md). This narrative provides grounding for some implementation details, naming conventions, and so on. You should adapt as you see fit.
 
 Finally, this implementation uses the [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/master/samples/aspnetapp) as an example workload. This workload is purposefully uninteresting, as it is here exclusively to help you experience the baseline infrastructure.
 
@@ -27,7 +27,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 - AKS v1.27
   - System and User [node pool separation](https://learn.microsoft.com/azure/aks/use-system-pools)
   - [AKS-managed Microsoft Entra ID integration](https://learn.microsoft.com/azure/aks/managed-aad)
-  - Microsoft Entra ID-backed Kubernetes RBAC (_local user accounts disabled_)
+  - Microsoft Entra ID-backed Kubernetes RBAC (*local user accounts disabled*)
   - Managed Identities
   - Azure CNI
   - [Azure Monitor for containers](https://learn.microsoft.com/azure/azure-monitor/containers/container-insights-overview)
@@ -38,13 +38,12 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 #### In-cluster OSS components
 
-- [Azure Workload Identity](https://learn.microsoft.com/azure/aks/workload-identity-overview) _[AKS-managed add-on]_
-- [Flux GitOps Operator](https://fluxcd.io) _[AKS-managed extension]_
-- [ImageCleaner (Eraser)](https://learn.microsoft.com/azure/aks/image-cleaner) _[AKS-managed add-on]_
+- [Azure Workload Identity](https://learn.microsoft.com/azure/aks/workload-identity-overview) *[AKS-managed add-on]*
+- [Flux GitOps Operator](https://fluxcd.io) *[AKS-managed extension]*
+- [ImageCleaner (Eraser)](https://learn.microsoft.com/azure/aks/image-cleaner) *[AKS-managed add-on]*
 - [Kubernetes Reboot Daemon](https://learn.microsoft.com/azure/aks/node-updates-kured)
-- [Secrets Store CSI Driver for Kubernetes](https://learn.microsoft.com/azure/aks/csi-secrets-store-driver) _[AKS-managed add-on]_
+- [Secrets Store CSI Driver for Kubernetes](https://learn.microsoft.com/azure/aks/csi-secrets-store-driver) *[AKS-managed add-on]*
 - [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.10/routing/providers/kubernetes-ingress/)
-
 
 ![Network diagram depicting a hub-spoke network with two peered VNets and main Azure resources used in the architecture.](https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)
 
@@ -52,9 +51,9 @@ Also do not forget to view the [detailed architecture diagram](/networking/aks-b
 
 ## Deploy the reference implementation
 
-A deployment of AKS-hosted workloads typically experiences a separation of duties and lifecycle management in the area of prerequisites, the host network, the cluster infrastructure, and finally the workload itself. This reference implementation is similar. Also, be aware our primary purpose is to illustrate the topology and decisions of a baseline cluster. We feel a "step-by-step" flow will help you learn the pieces of the solution and give you insight into the relationship between them. Ultimately, lifecycle/SDLC management of your cluster and its dependencies will depend on your situation (team roles, organizational standards, etc), and will be implemented as appropriate for your needs.
+A deployment of AKS-hosted workloads typically experiences a separation of duties and lifecycle management in the area of prerequisites, the host network, the cluster infrastructure, and finally the workload itself. This reference implementation is similar. Also, be aware our primary purpose is to illustrate the topology and decisions of a baseline cluster. We feel a "step-by-step" flow will help you learn the pieces of the solution and give you insight into the relationship between them. Ultimately, lifecycle/SDLC management of your cluster and its dependencies will depend on your situation (team roles, organizational standards, and so on), and will be implemented as appropriate for your needs.
 
-**Please start this learning journey in the _Preparing for the cluster_ section.** If you follow this through to the end, you'll have our recommended baseline cluster installed, with an end-to-end sample workload running for you to reference in your own Azure subscription.
+**Please start this learning journey in the *Preparing for the cluster* section.** If you follow this through to the end, you'll have our recommended baseline cluster installed, with an end-to-end sample workload running for you to reference in your own Azure subscription.
 
 ### 1. :rocket: Preparing for the cluster
 
@@ -82,7 +81,7 @@ We perform the prior steps manually here for you to understand the involved comp
 
 ### 4. Deploy your workload
 
-Without a workload deployed to the cluster it will be hard to see how these decisions come together to work as a reliable application platform for your business. The deployment of this workload would typically follow a CI/CD pattern and may involve even more advanced deployment strategies (blue/green, etc). The following steps represent a manual deployment, suitable for illustration purposes of this infrastructure.
+Without a workload deployed to the cluster it will be hard to see how these decisions come together to work as a reliable application platform for your business. The deployment of this workload would typically follow a CI/CD pattern and may involve even more advanced deployment strategies (such as blue/green). The following steps represent a manual deployment, suitable for illustration purposes of this infrastructure.
 
 - [ ] Just like the cluster, there are [workload prerequisites to address](./08-workload-prerequisites.md)
 - [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./09-secret-management-and-ingress-controller.md)
@@ -104,7 +103,7 @@ Most of the Azure resources deployed in the prior steps will incur ongoing charg
 
 Kubernetes and, by extension, AKS are fast-evolving products. The [AKS roadmap](https://aka.ms/AKS/Roadmap) shows how quick the product is changing. This reference implementation does take dependencies on select preview features which the AKS team describes as "Shipped & Improving." The rational behind that is that many of the preview features stay in that state for only a few months before entering GA. If you are just artchitecting your cluster today, by the time you're ready for production, there is a good chance that many of the preview features are nearing or will have hit GA.
 
-This implementation will not include every preview feature, but instead only those that add significant value to a general-purpose cluster. There are some additional preview features you may wish to evaluate in pre-production clusters that augment your posture around security, manageability, etc. As these features come out of preview, this reference implementation may be updated to incorporate them. Consider trying out and providing feedback on the following:
+This implementation will not include every preview feature, but instead only those that add significant value to a general-purpose cluster. There are some additional preview features you may wish to evaluate in preproduction clusters that augment your posture around security, manageability, and so on. As these features come out of preview, this reference implementation may be updated to incorporate them. Consider trying out and providing feedback on the following:
 
 - [BYO Kubelet Identity](https://learn.microsoft.com/azure/aks/use-managed-identity#bring-your-own-kubelet-mi)
 - [Planned maintenance window](https://learn.microsoft.com/azure/aks/planned-maintenance)
@@ -113,9 +112,9 @@ This implementation will not include every preview feature, but instead only tho
 
 ## Related reference implementations
 
-The AKS baseline was used as the foundation for the following additional reference implementations. These build on the learnings of the AKS baseline and applies a specific lens to the cluster to align a specific topology, requirement, and/or workload type.
+The AKS baseline was used as the foundation for the following additional reference implementations. These build on the learnings of the AKS baseline and applies a specific Lens to the cluster to align a specific topology, requirement, or workload type.
 
-- [AKS baseline for multi-region clusters](https://github.com/mspnp/aks-baseline-multi-region)
+- [AKS baseline for multiregion clusters](https://github.com/mspnp/aks-baseline-multi-region)
 - [AKS baseline for regulated workloads](https://github.com/mspnp/aks-baseline-regulated)
 - [AKS baseline for microservices](https://github.com/mspnp/aks-fabrikam-dronedelivery)
 - [Azure landing zones, enterprise-scale reference implementation using Terraform](https://github.com/Azure/caf-terraform-landingzones-starter/tree/starter/enterprise_scale/construction_sets/aks/online/aks_secure_baseline)
@@ -125,11 +124,11 @@ The AKS baseline was used as the foundation for the following additional referen
 This reference implementation intentionally does not cover more advanced scenarios. For example topics like the following are not addressed:
 
 - Cluster lifecycle management with regard to SDLC and GitOps
-- Workload SDLC integration (including concepts like [Bridge to Kubernetes](https://learn.microsoft.com/visualstudio/containers/bridge-to-kubernetes), advanced deployment techniques, [Draft](https://learn.microsoft.com/azure/aks/draft), etc)
+- Workload SDLC integration (including concepts like [Bridge to Kubernetes](https://learn.microsoft.com/visualstudio/containers/bridge-to-kubernetes), advanced deployment techniques, [Draft](https://learn.microsoft.com/azure/aks/draft), and so on)
 - Container security
 - Multiple (related or unrelated) workloads owned by the same team
 - Multiple workloads owned by disparate teams (AKS as a shared platform in your organization)
-- Cluster-contained state (PVC, etc)
+- Cluster-contained state (PV and PVC)
 - Windows node pools
 - Scale-to-zero node pools and event-based scaling (KEDA)
 - [Terraform](https://learn.microsoft.com/azure/developer/terraform/create-k8s-cluster-with-tf-and-aks)
@@ -139,7 +138,7 @@ Keep watching this space, as we build out reference implementation guidance on t
 
 ## Final thoughts
 
-Kubernetes is a very flexible platform, giving infrastructure and application operators many choices to achieve their business and technology objectives. At points along your journey, you will need to consider when to take dependencies on Azure platform features, OSS solutions, support channels, regulatory compliance, and operational processes. **We encourage this reference implementation to be the place for you to _start_ architectural conversations within your own team; adapting to your specific requirements, and ultimately delivering a solution that delights your customers.**
+Kubernetes is a very flexible platform, giving infrastructure and application operators many choices to achieve their business and technology objectives. At points along your journey, you will need to consider when to take dependencies on Azure platform features, OSS solutions, support channels, regulatory compliance, and operational processes. **We encourage this reference implementation to be the place for you to *start* architectural conversations within your own team; adapting to your specific requirements, and ultimately delivering a solution that delights your customers.**
 
 ## Related documentation
 
@@ -149,7 +148,7 @@ Kubernetes is a very flexible platform, giving infrastructure and application op
 
 ## Contributions
 
-Please see our [contributor guide](./CONTRIBUTING.md).
+Please see our [Contributor guide](./CONTRIBUTING.md).
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact <opencode@microsoft.com> with any additional questions or comments.
 
