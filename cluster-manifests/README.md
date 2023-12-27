@@ -6,11 +6,11 @@ This is the root of the GitOps configuration directory. These Kubernetes object 
 
 ## Contents
 
-* Default Namespaces
-* Kubernetes RBAC Role Assignments (cluster and namespace) to Microsoft Entra groups. _Optional_
-* [Kured](#kured)
-* Ingress Network Policy
-* Azure Monitor Prometheus Scraping
+- Default Namespaces
+- Kubernetes RBAC Role Assignments (cluster and namespace) to Microsoft Entra groups. *Optional*
+- [Kured](#kured)
+- Ingress Network Policy
+- Azure Monitor Prometheus Scraping
 
 ### Kured
 
@@ -18,7 +18,7 @@ Kured is included as a solution to handle occasional required reboots from daily
 
 ## Private bootstrapping repository
 
-Typically, your bootstrapping repository wouldn't be a public facing repository like this one, but instead a private GitHub or Azure DevOps repo. The Flux operator deployed with the cluster supports private git repositories as your bootstrapping source. In addition to requiring network line of sight to the repository from your cluster's nodes, you'll also need to ensure that you've provided the necessary credentials. This can come, typically, in the form of certificate based SSH or personal access tokens (PAT), both ideally scoped as read-only to the repo with no additional permissions.
+Typically, your bootstrapping repository wouldn't be a public-facing repository like this one, but instead a private GitHub or Azure DevOps repo. The Flux operator deployed with the cluster supports private Git repositories as your bootstrapping source. In addition to requiring network line of sight to the repository from your cluster's nodes, you'll also need to ensure that you've provided the necessary credentials. This can come, typically, in the form of certificate-based SSH or personal access tokens (PAT), both ideally scoped as read-only to the repo with no additional permissions.
 
 Modify the [`cluster-stamp.json`](/cluster-stamp.json) file as follows.
 

@@ -1,6 +1,6 @@
 # Generate your client-facing and AKS ingress controller TLS certificates
 
-Now that you have the [prerequisites](./01-prerequisites.md) met, follow the steps below to create the TLS certificates that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS Ingress Controller. If you already have access to an appropriate certificates, or can procure them from your organization, consider doing so and skipping the certificate generation steps. The following will describe using a self-signed certs for instructive purposes only.
+Now that you have the [prerequisites](./01-prerequisites.md) met, follow these steps to create the TLS certificates that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS ingress controller. If you already have access to an appropriate certificates, or can procure them from your organization, consider doing so and skipping the certificate generation steps. The following will describe using a self-signed certs for instructive purposes only.
 
 ## Steps
 
@@ -14,7 +14,7 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow the ste
 
    > :book: Contoso Bicycle needs to procure a CA certificate for the web site. As this is going to be a user-facing site, they purchase an EV cert from their CA. This will serve in front of the Azure Application Gateway. They will also procure another one, a standard cert, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing.
 
-   :warning: Do not use the certificate created by this script for actual deployments. The use of self-signed certificates are provided for ease of illustration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, _even for development purposes_.
+   :warning: Do not use the certificate created by this script for actual deployments. The use of self-signed certificates are provided for ease of illustration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, *even for development purposes*.
 
    Create the certificate that will be presented to web clients by Azure Application Gateway for your domain.
 

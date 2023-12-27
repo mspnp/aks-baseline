@@ -10,4 +10,4 @@ The AKS cluster, in our reference implementation, is here to serve as an applica
 
 ## Ingress
 
-In this AKS cluster, we decided to do workload-level ingress. While ingress could be defined and managed at the cluster level, it's often more reasonable to define ingress as an extension of the workload. Allowing operational consistency between the workload and the ingress resource, especially in a multi-tenant AKS cluster. We are deploying Traefik as our ingress solution.
+In this AKS cluster, we decided to do workload-level ingress. While ingress could be defined and managed at the cluster level, it's often more reasonable to define ingress as an extension of the workload. Allowing operational consistency between the workload and the ingress resource, especially in a multitenant AKS cluster. We are deploying Traefik as our ingress solution.

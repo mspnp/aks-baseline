@@ -1,6 +1,6 @@
 # Case study – Contoso Bicycle
 
-Contoso Bicycle is a fictitious company. The company is a small and fast-growing startup that provides online web services to its clientele in the west coast, North America. The web services were deployed to the cloud from the get-go. They have no on-premises data centers or legacy applications. Here's the brief cloud profile:
+Contoso Bicycle is a fictitious company. The company is a small and fast-growing startup that provides online web services to its clientele in the west coast, North America. The web services were deployed to the cloud from the get-go. They have no on-premises datacenters or legacy applications. Here's the brief cloud profile:
 
 - Have several workloads running and operating in Azure.
 - Use Microsoft Entra ID for identity management.
@@ -14,7 +14,7 @@ Based on the company's profile and business requirements, we've created a [refer
 
 ## Organization structure
 
-Contoso Bicycle has a single IT Team with these sub teams.
+Contoso Bicycle has a single IT Team with these subteams.
 
 ![Contoso teams](contoso-teams.svg)
 
@@ -24,7 +24,7 @@ Work with the line of business from idea through deployment into production. The
 
 ### Development team
 
-Responsible for developing Contoso’s web services. They rely on the guidance from the architecture team about implementing cloud design patterns. They own and run the integration and deployment pipeline for the web services.
+Responsible for developing Contoso's web services. They rely on the guidance from the architecture team about implementing cloud design patterns. They own and run the integration and deployment pipeline for the web services.
 
 ### Security team
 
@@ -32,7 +32,7 @@ Review Azure services and workloads from the lens of security. Incorporate Azure
 
 ### Identity team
 
-Responsible for identity and access management for the Azure environment. They work with the Security and Architecture teams for use of Microsoft Entra ID, role-based access controls, and segmentation. Also, monitoring service principles for service access and application level access.
+Responsible for identity and access management for the Azure environment. They work with the Security and Architecture teams for use of Microsoft Entra ID, role-based access control, and segmentation. Also, monitoring service principals for service access and application level access.
 
 ### Networking team
 
@@ -49,12 +49,12 @@ Here are the requirements based on an initial [Well-Architected Framework review
 ### Reliability
 
 - Global presence: The customer base is focused on the West Coast of North America.
-- Business continuity: The workloads need to be highly available at a minimum cost. They have a Recovery Time Objective (RTO) of 4 hours.
-- On-premises connectivity: They don’t need to connect to on-premises data centers or legacy applications.
+- Business continuity: The workloads need to be highly available at a minimum cost. They have a recovery time objective (RTO) of 4 hours.
+- On-premises connectivity: They don't need to connect to on-premises datacenters or legacy applications.
 
 ### Performance efficiency
 
-The web service’s host should have these capabilities.
+The web service's host should have these capabilities.
 
 - Auto scaling: Automatically scale to handle the demands of expected traffic patterns. The web service is unlikely to experience a high-volume scale event. The scaling methods shouldn't drive up the cost.
 - Right sizing: Select hardware size and features that are suited for the web service and are cost effective.
@@ -74,19 +74,17 @@ The web service’s host should have these capabilities.
 ### Operational excellence
 
 - Logging, monitoring, metrics, alerting: They use Azure Monitor for their existing workloads. They would like to use it for AKS, if possible.
-- Automated deployments: They understand the importance of automation. They build automated processes for all infrastructure so that environments and workloads
-can easily be recreated consistently and at any time.
+- Automated deployments: They understand the importance of automation. They build automated processes for all infrastructure so that environments and workloads can easily be re-created consistently and at any time.
 
 ### Cost optimization
 
-- Cost center: There’s only one line-of-business. So, all costs are billed to a single cost center.
+- Cost center: There's only one line-of-business. So, all costs are billed to a single cost center.
 - Budget and alerts: They have certain planned budgets. They want to be alerted when certain thresholds like 50%, 75%, and 90% of the plan has been reached.
 
 ## Design and technology choices
 
-- Deploy the AKS cluster into an existing Azure Virtual Network spoke. Use the existing Azure Firewall in the regional hub for securing outgoing traffic
-    from the cluster.
-- Traffic from public facing website is required to be encrypted. This encryption is implemented with Azure Application Gateway with integrated web application firewall (WAF).
+- Deploy the AKS cluster into an existing Azure Virtual Network spoke. Use the existing Azure Firewall in the regional hub for securing outgoing traffic from the cluster.
+- Traffic from public-facing website is required to be encrypted. This encryption is implemented with Azure Application Gateway with integrated web application firewall (WAF).
 - Use Traefik as the Kubernetes ingress controller.
 - The workload is stateless. No data will be persisted inside the cluster.
 - Azure Network Policy will be enabled for use, even though there's a single workload in one line-of-business.
@@ -96,4 +94,4 @@ can easily be recreated consistently and at any time.
 - Azure Monitor will be used for logging, metrics, monitoring, and alerting to use the existing knowledge of Log Analytics.
 - Azure Key Vault will be used to store all secret information including SSL certificates. Key Vault data will be mounted by using Azure Key Vault with Secrets Store Container Storage Interface (CSI) driver.
 - Two node pools will be used in AKS. The system node pool will be used for critical system pods. The second node pool will be used for the application workload.
-- To make sure the workload is scaled properly, requests and limits will be enforced by assigning quotas for the Horizontal Pod Autoscaling (HPA). AKS cluster autoscaler  will be enabled so that additional nodes are automatically provisioned if pods can’t be scheduled.
+- To make sure the workload is scaled properly, requests and limits will be enforced by assigning quotas for the Horizontal Pod Autoscaling (HPA). AKS cluster autoscaler will be enabled so that additional nodes are automatically provisioned if pods can't be scheduled.

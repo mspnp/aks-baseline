@@ -4,7 +4,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
 ## Steps
 
-1. Get the AKS Ingress Controller Managed Identity details.
+1. Get the AKS Ingress Controller managed identity details.
 
    ```bash
    INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
@@ -22,7 +22,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
    > The ingress controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
    >
-   > Create a `SecretProviderClass` resource with with your federated identity and Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
+   > Create a `SecretProviderClass` resource with your federated identity and Azure Key Vault parameters for the [Azure Key Vault Provider for Secrets Store CSI Driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure).
 
    ```bash
    cat <<EOF | kubectl create -f -
@@ -54,7 +54,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
 1. Import the Traefik container image to your container registry.
 
-   > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for an application that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
+   > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for an application that needs to pull an image *right now*. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
 
    ```bash
    # Import ingress controller image hosted in public container registries
@@ -65,9 +65,9 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
    > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
 
-   > If you used your own fork of this GitHub repo, update the one `image:` value in [`traefik.yaml`](./workload/traefik.yaml) to reference your container registry instead of the default public container registry and change the URL below to point to yours as well.
+   > If you used your own fork of this GitHub repo, update the one `image:` value in [`traefik.yaml`](./workload/traefik.yaml) to reference your container registry instead of the default public container registry and change the following URL to point to yours as well.
 
-   :warning: Deploying the traefik `traefik.yaml` file unmodified from this repo will be deploying your workload to take dependencies on a public container registry. This is generally okay for learning/testing, but not suitable for production. Before going to production, ensure _all_ image references are from _your_ container registry or another that you feel confident relying on.
+   :warning: Deploying the Traefik `traefik.yaml` file unmodified from this repo will be deploying your workload to take dependencies on a public container registry. This is generally okay for learning/testing, but not suitable for production. Before going to production, ensure *all* image references are from *your* container registry or another that you feel confident relying on.
 
    ```bash
    kubectl create -f https://raw.githubusercontent.com/mspnp/aks-baseline/main/workload/traefik.yaml

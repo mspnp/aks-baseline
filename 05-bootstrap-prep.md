@@ -4,21 +4,22 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 
 ## Expected results
 
-Container registries often have a lifecycle that extends beyond the scope of a single cluster. They can be scoped broadly at organizational or business unit levels, or can be scoped at workload levels, but usually are not directly tied to the lifecycle of any specific cluster instance. For example, you may do blue/green _cluster instance_ deployments, both using the same container registry. Even though clusters came and went, the registry stays intact.
+Container registries often have a lifecycle that extends beyond the scope of a single cluster. They can be scoped broadly at organizational or business unit levels, or can be scoped at workload levels, but usually are not directly tied to the lifecycle of any specific cluster instance. For example, you may do blue/green *cluster instance* deployments, both using the same container registry. Even though clusters came and went, the registry stays intact.
 
-* Azure Container Registry (ACR) is deployed, and exposed as a private endpoint.
-* ACR is populated with images your cluster will need as part of its bootstrapping process.
-* Log Analytics is deployed and ACR platform logging is configured. This workspace will be used by your cluster as well.
+- Azure Container Registry is deployed, and exposed as a private endpoint.
+- Azure Container Registry is populated with images your cluster will need as part of its bootstrapping process.
+- Log Analytics is deployed and Azure Container Registry platform logging is configured. This workspace will be used by your cluster as well.
 
-The role of this pre-existing ACR instance is made more prominant when we think about cluster bootstrapping. That is the process that happens after Azure resource deployment of the cluster, but before your first workload lands in the cluster. The cluster will be bootstrapped _immedately and automatically_ after resource deployment, which means you'll need ACR in place to act as your official OCI artifact repository for required images and Helm charts used in that bootstrapping process.
+The role of this pre-existing Azure Container Registry instance is made more prominant when we think about cluster bootstrapping. That is the process that happens after Azure resource deployment of the cluster, but before your first workload lands in the cluster. The cluster will be bootstrapped *immedately and automatically* after resource deployment, which means you'll need Azure Container Registry in place to act as your official OCI artifact repository for required images and Helm charts used in that bootstrapping process.
 
 ### Bootstrapping method
 
-We'll be bootstrapping this cluster with the Flux GitOps agent as installed as an AKS extension. This specific choice does not imply that Flux, or GitOps in general, is the only approach to bootstrapping. Consider your organizational familiarity and acceptance of tooling like this and decide if cluster bootstrapping should be performed with GitOps or via your deployment pipelines. If you are running a fleet of clusters, a GitOps approach is highly recommended for uniformity and easier governance. When running only a few clusters, GitOps might be seen as "too much" and you might instead opt for integrating that process into one or more deployment pipelines to ensure bootstrapping takes place. No matter which way you go, you'll need your bootstrapping artifacts ready to go before you start your cluster deployment so that you can minimize the time between cluster deployment and bootstrapping. Using the Flux AKS extension allows your cluster to start already bootstrapped and sets you up with a solid management foundation going forward.
+We'll be bootstrapping this cluster with the Flux GitOps agent as installed as an AKS extension. This specific choice does not imply that Flux, or GitOps in general, is the only approach to bootstrapping. Consider your organizational familiarity and acceptance of tooling like this and decide whether cluster bootstrapping should be performed with GitOps or via your deployment pipelines. If you are running a fleet of clusters, a GitOps approach is highly recommended for uniformity and easier governance. When running only a few clusters, GitOps might be seen as "too much" and you might instead opt for integrating that process into one or more deployment pipelines to ensure bootstrapping takes place. No matter which way you go, you'll need your bootstrapping artifacts ready to go before you start your cluster deployment so that you can minimize the time between cluster deployment and bootstrapping. Using the Flux AKS extension allows your cluster to start already bootstrapped and sets you up with a solid management foundation going forward.
 
 ### Additional resources
 
-In addition to ACR being deployed to support bootstrapping, this is where any other resources that are considered not tied to the lifecycle of an individual cluster is deployed. ACR is one example as talked about above. Another example could be an AKS Backup Vault and backup artifacts storage account which likely would exist prior to and after any individual AKS cluster's existance. When designing your pipelines, ensure to isolate components by their lifecycle watch for singletons in an architecture. These are typically resources like regional logging sinks, supporting global routing infrastructure, etc. This is in contrast to potentially transiently/replaceable components, like the AKS cluster itself. _This implemention does not represent a complete seperation of stamp vs regional resources, but is fairly close. Deviations are strickly for ease of deployment in this walkthrough instead of as examples of guidance._
+In addition to Azure Container Registry being deployed to support bootstrapping, this is where any other resources that are considered not tied to the lifecycle of an individual cluster is deployed. Azure Container Registry is one example as talked about above. Another example could be an AKS Backup Vault and backup artifacts storage account which likely would exist prior to and after any individual AKS cluster's existance. When designing your pipelines, ensure to isolate components by their lifecycle watch for singletons in an architecture. These are typically resources like regional logging sinks, supporting global routing infrastructure, and so on. This is in contrast to potentially transiently/replaceable components, like the AKS cluster itself. *This implemention does not represent a complete seperation of stamp vs regional resources, but is fairly close. Deviations are strickly for ease of deployment in this walkthrough instead of as examples of guidance.*
+
 ## Steps
 
 1. Create the AKS cluster resource group.
@@ -32,9 +33,9 @@ In addition to ACR being deployed to support bootstrapping, this is where any ot
    az group create --name rg-bu0001a0008 --location eastus2
    ```
 
-1. Get the AKS cluster spoke virtual network resource ID.
+1. Get the AKS cluster spoke Virtual Network resource ID.
 
-   > :book: The app team will be deploying to a spoke virtual network, that was already provisioned by the network team.
+   > :book: The app team will be deploying to a spoke Virtual Network, that was already provisioned by the network team.
 
    ```bash
    export RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)
@@ -50,7 +51,7 @@ In addition to ACR being deployed to support bootstrapping, this is where any ot
 
 1. Import cluster management images to your container registry.
 
-   > Public container registries are subject to faults such as outages or request throttling. Interruptions like these can be crippling for a system that needs to pull an image _right now_. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
+   > Public container registries are subject to faults such as outages or request throttling. Interruptions like these can be crippling for a system that needs to pull an image *right now*. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
 
    ```bash
    # Get your ACR instance name
@@ -61,24 +62,26 @@ In addition to ACR being deployed to support bootstrapping, this is where any ot
    az acr import --source ghcr.io/kubereboot/kured:1.14.0 -n $ACR_NAME_AKS_BASELINE
    ```
 
-   > In this walkthrough, there is only one image that is included in the bootstrapping process. It's included as an reference for this process. Your choice to use Kubernetes Reboot Daemon (Kured) or any other images, including helm charts, as part of your bootstrapping is yours to make.
+   > In this walkthrough, there is only one image that is included in the bootstrapping process. It's included as a reference for this process. Your choice to use Kubernetes Reboot Daemon (Kured) or any other images, including Helm charts, as part of your bootstrapping is yours to make.
 
-1. Update bootstrapping manifests to pull from your ACR instance. _Optional. Fork required._
+1. Update bootstrapping manifests to pull from your Azure Container Registry. *Optional. Fork required.*
 
    > Your cluster will immedately begin processing the manifests in [`cluster-manifests/`](./cluster-manifests/) due to the bootstrapping configuration that will be applied to it. So, before you deploy the cluster now would be the right time push the following changes to your fork so that it will use your files instead of the files found in the original mspnp repo which point to public container registries:
    >
-   > * update the one `image:` value in [`kured.yaml`](./cluster-manifests/cluster-baseline-settings/kured.yaml) to use your container registry instead of a public container registry. See the comment in the file for instructions (or you can simply run the command below.)
+   > - update the one `image:` value in [`kured.yaml`](./cluster-manifests/cluster-baseline-settings/kured.yaml) to use your container registry instead of a public container registry. See the comment in the file for instructions (or you can simply run the following command.)
 
-   :warning: Without updating these files and using your own fork, you will be deploying your cluster such that it takes dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure _all_ image references you bring to your cluster are from _your_ container registry (link imported in the prior step) or another that you feel confident relying on.
+   :warning: Without updating these files and using your own fork, you will be deploying your cluster such that it takes dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure *all* image references you bring to your cluster are from *your* container registry (link imported in the prior step) or another that you feel confident relying on.
 
    ```bash
    sed -i "s:ghcr.io:${ACR_NAME_AKS_BASELINE}.azurecr.io:" ./cluster-manifests/cluster-baseline-settings/kured.yaml
    ```
 
    Note, that if you are on macOS, you might need to use the following command instead:
+
    ```bash
    sed -i '' 's:ghcr.io:'"${ACR_NAME_AKS_BASELINE}"'.azurecr.io:g' ./cluster-manifests/cluster-baseline-settings/kured.yaml
    ```
+
    Now commit changes to repository.
 
    ```bash
