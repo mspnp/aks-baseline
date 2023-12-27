@@ -668,6 +668,68 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2021-05-01' = {
             }
           ]
         }
+        {
+          ruleCollectionType: 'FirewallPolicyFilterRuleCollection'
+          name: 'AksBackup-Traffic'
+          priority: 350
+          action: {
+            type: 'Allow'
+          }
+          rules: [
+            {
+              ruleType: 'ApplicationRule'
+              name: 'container-origin'
+              description: 'Supports pulling AKS backup images.'
+              protocols: [
+                {
+                  protocolType: 'Https'
+                  port: 443
+                }
+              ]
+              fqdnTags: []
+              webCategories: []
+              targetFqdns: [
+                'mcr.microsoft.com'
+                'kubernetesbcdrextensionacr.azurecr.io'
+                'pipelineagent.azurecr.io'
+                'search.maven.org'
+              ]
+              targetUrls: []
+              destinationAddresses: []
+              terminateTLS: false
+              sourceAddresses: []
+              sourceIpGroups: [
+                ipgNodepoolSubnet.id
+              ]
+            }
+            {
+              ruleType: 'ApplicationRule'
+              name: 'cert-requirements'
+              description: 'Supports cert validation required by the AKS backup agent.'
+              protocols: [
+                {
+                  protocolType: 'Http'
+                  port: 80
+                }
+              ]
+              fqdnTags: []
+              webCategories: []
+              targetFqdns: [
+                'oneocsp.microsoft.com'
+                'ocsp.digicert.com'
+                'crl3.digicert.com'
+                'www.microsoft.com'
+              ]
+              targetUrls: []
+              destinationAddresses: []
+              terminateTLS: false
+              sourceAddresses: []
+              sourceIpGroups: [
+                ipgNodepoolSubnet.id
+              ]
+            }
+          ]
+        }
       ]
     }
   }

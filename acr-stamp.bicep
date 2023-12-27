@@ -290,6 +290,222 @@ resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2022-09-01
   }
 }
 
+// Supports configuring the AKS Backup extension.
+resource bvAksBackupVault 'Microsoft.DataProtection/backupVaults@2023-01-01' = {
+  name: 'bvAksBackupVault'
+  location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    storageSettings: [
+      {
+        datastoreType: 'VaultStore'
+        type: 'ZoneRedundant'
+      }
+    ]
+    securitySettings: {
+      immutabilitySettings: {
+        state: 'Disabled'
+      }
+      softDeleteSettings: {
+        state: 'On'
+        retentionDurationInDays: 14
+      }
+    }
+    featureSettings: {}
+  }
+
+  // Daily UTC midnight Kubernetes backup policy as an example. Configure policy as needed.
+  resource aksPolicy 'backupPolicies' = {
+    name: 'bp-aks-default-daily'
+    properties: {
+      objectType: 'BackupPolicy'
+      datasourceTypes: [
+        'Microsoft.ContainerService/managedClusters'
+      ]
+      policyRules: [
+        {
+          objectType: 'AzureBackupRule'
+          name: 'BackupDaily'
+          backupParameters: {
+            objectType: 'AzureBackupParams'
+            backupType: 'Incremental'
+          }
+          dataStore: {
+            objectType: 'DataStoreInfoBase'
+            dataStoreType: 'OperationalStore'
+          }
+          trigger: {
+            objectType: 'ScheduleBasedTriggerContext'
+            schedule: {
+              timeZone: 'UTC'
+              repeatingTimeIntervals: [
+                'R/2023-01-01T00:00:00+00:00/P1D'
+              ]
+            }
+            taggingCriteria: [
+              {
+                tagInfo: {
+                  tagName: 'Default'
+                }
+                taggingPriority: 99
+                isDefault: true
+              }
+            ]
+          }
+        }
+        {
+          objectType: 'AzureRetentionRule'
+          name: 'Default'
+          isDefault: true
+          lifecycles: [
+            {
+              deleteAfter: {
+                objectType: 'AbsoluteDeleteOption'
+                duration: 'P7D'
+              }
+              targetDataStoreCopySettings: []
+              sourceDataStore: {
+                dataStoreType: 'OperationalStore'
+                objectType: 'DataStoreInfoBase'
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+
+// This stores AKS Backup content, to be used by all clusters
+resource storageAksBackups 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: 'stbackup${subRgUniqueString}'
+  location: location
+  sku: {
+    name: 'Standard_GRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    allowSharedKeyAccess: false
+    defaultToOAuthAuthentication: true
+    publicNetworkAccess: 'Disabled'
+    allowCrossTenantReplication: false
+    allowBlobPublicAccess: false
+    minimumTlsVersion: 'TLS1_2'
+    isHnsEnabled: false
+    isLocalUserEnabled: false
+    isSftpEnabled: false
+    routingPreference: {
+      publishInternetEndpoints: true
+      publishMicrosoftEndpoints: true
+      routingChoice: 'MicrosoftRouting'
+    }
+    networkAcls: {
+      bypass: 'None'
+      virtualNetworkRules: []
+      ipRules: []
+      defaultAction: 'Deny'
+    }
+    encryption: {
+      keySource: 'Microsoft.Storage'
+      services: {
+        file: {
+          keyType: 'Account'
+          enabled: true
+        }
+        blob: {
+          keyType: 'Account'
+          enabled: true
+        }
+      }
+    }
+    supportsHttpsTrafficOnly: true
+    accessTier: 'Hot' 
+  }
+
+  resource blobservice 'blobServices' = {
+    name: 'default'
+  }
+}
+
+// Private DNS Zone for our AKS Backup storage account
+resource dnsPrivateZoneBlob 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.blob.core.windows.net'
+  location: 'global'
+  properties: {}
+
+
+  // Enabling Storage Account Private Link on cluster virtual network.
+  resource vnetlnk 'virtualNetworkLinks' = {
+    name: 'to_${spokeVirtualNetwork.name}'
+    location: 'global'
+    properties: {
+      virtualNetwork: {
+        id: spokeVirtualNetwork.id
+      }
+      registrationEnabled: false
+    }
+  }
+}
+
+resource storageAksBackups_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: storageAksBackups::blobservice
+  properties: {
+    workspaceId: laAks.id
+    logs: [
+      {
+        category: 'StorageRead'
+        enabled: true
+      }
+      {
+        category: 'StorageWrite'
+        enabled: true
+      }
+      {
+        category: 'StorageDelete'
+        enabled: true
+      }
+    ]
+  }
+}
+
+resource peAksBackupStorage 'Microsoft.Network/privateEndpoints@2022-07-01' = {
+  name: 'pe-${storageAksBackups.name}'
+  location: location
+  properties: {
+    subnet: {
+      id: spokeVirtualNetwork::snetPrivateLinkEndpoints.id
+    }
+    privateLinkServiceConnections: [
+      {
+        name: 'to_${spokeVirtualNetwork.name}'
+        properties: {
+          privateLinkServiceId: storageAksBackups.id
+          groupIds: [
+            'blob'
+          ]
+        }
+      }
+    ]
+  }
+
+  resource pdnszg 'privateDnsZoneGroups' = {
+    name: 'default'
+    properties: {
+      privateDnsZoneConfigs: [
+        {
+          name: 'privatelink-blob-core-windows-net'
+          properties: {
+            privateDnsZoneId: dnsPrivateZoneBlob.id
+          }
+        }
+      ]
+    }
+  }
+}
+
 /*** OUTPUTS ***/
 
 output containerRegistryName string = acrAks.name

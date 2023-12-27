@@ -32,11 +32,14 @@ This is the starting point for the instructions on deploying the [AKS baseline r
 
    1. [Register the ImageCleaner (Earser) preview feature = `EnableImageCleanerPreview`](https://learn.microsoft.com/azure/aks/image-cleaner#prerequisites)
 
+   1. [Register the Trusted Access preview feature = `TrustedAccessPreview`](https://learn.microsoft.com/azure/backup/azure-kubernetes-service-cluster-manage-backups#register-the-trusted-access) to support AKS Backup.
+
    ```bash
    az feature register --namespace "Microsoft.ContainerService" -n "EnableImageCleanerPreview"
+   az feature register --namespace "Microsoft.ContainerService" -n "TrustedAccessPreview"
 
    # Keep running until all say "Registered." (This may take up to 20 minutes.)
-   az feature list -o table --query "[?name=='Microsoft.ContainerService/EnableImageCleanerPreview'].{Name:name,State:properties.state}"
+   az feature list -o table --query "[?name=='Microsoft.ContainerService/EnableImageCleanerPreview' || name=='Microsoft.ContainerService/TrustedAccessPreview'].{Name:name,State:properties.state}"
 
    # When all say "Registered" then re-register the AKS resource provider
    az provider register --namespace Microsoft.ContainerService

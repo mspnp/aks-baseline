@@ -172,6 +172,30 @@ resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2018-0
   scope: subscription()
 }
 
+// Built-in Azure RBAC role that is applied to the AKS backup managed identity to allow it to write data to storage.
+resource storageBlobDataContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+  scope: subscription()
+}
+
+// Built-in Azure RBAC role that is applied to the AKS backup managed identity to allow it to write data to storage.
+resource storageAccountContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  name: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
+  scope: subscription()
+}
+
+// Built-in Azure RBAC "Reader" role. Used by Backup Vault to see the AKS cluster.
+resource readerRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+  scope: subscription()
+}
+
+// Disk Snapshot Contributor (for AKS Backup)
+resource diskSnapshotContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: '7efff54f-a5b4-42b5-a1c5-5411624893ce'
+  scope: subscription()
+}
+
 /*** EXISTING RESOURCE GROUP RESOURCES ***/
 
 // Useful to think of these as resources that are not tied to the lifecycle of any individual
@@ -189,6 +213,26 @@ resource acr 'Microsoft.ContainerRegistry/registries@2021-12-01-preview' existin
 resource la 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' existing = {
   scope: resourceGroup()
   name: 'la-${clusterName}'
+}
+
+// Backup Vault (for AKS Backup)
+resource bvAksBackupVault 'Microsoft.DataProtection/backupVaults@2023-01-01' existing = {
+  scope: resourceGroup()
+  name: 'bvAksBackupVault'
+
+  resource defaultPolicy 'backupPolicies' existing = {
+    name: 'bp-aks-default-daily'
+  }
+}
+
+// Storage Account for backups
+resource storageAksBackups 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+  scope: resourceGroup()
+  name: 'stbackup${subRgUniqueString}'
+
+  resource blobService 'blobServices' existing = {
+    name: 'default'
+  }
 }
 
 // Kubernetes namespace: a0008 -- this doesn't technically exist prior to deployment, but is required as a resource reference later in the template
@@ -977,6 +1021,7 @@ resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-0
           'gatekeeper-system'
           'azure-arc'
           'flux-system'
+          'dataprotection-microsoft'
 
           // Known violations
           // K8sAzureAllowedSeccomp
@@ -1067,6 +1112,7 @@ resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-0
           'gatekeeper-system'
           'azure-arc'
           'flux-system'
+          'dataprotection-microsoft'
         ]
       }
       excludedContainers: {
@@ -1106,6 +1152,7 @@ resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021
           'gatekeeper-system'
           'azure-arc'
           'flux-system'
+          'dataprotection-microsoft'
         ]
       }
       effect: {
@@ -1135,6 +1182,7 @@ resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2021-06
           'kube-system'
           'gatekeeper-system'
           'azure-arc'
+          'dataprotection-microsoft'
         ]
       }
       effect: {
@@ -1160,6 +1208,7 @@ resource paAllowedHostPaths 'Microsoft.Authorization/policyAssignments@2021-06-0
           'gatekeeper-system'
           'azure-arc'
           'flux-system'
+          'dataprotection-microsoft'
         ]
       }
       allowedHostPaths: {
@@ -1190,6 +1239,7 @@ resource paAllowedExternalIPs 'Microsoft.Authorization/policyAssignments@2021-06
           'kube-system'
           'gatekeeper-system'
           'azure-arc'
+          'dataprotection-microsoft'
         ]
       }
       allowedExternalIPs: {
@@ -1219,6 +1269,7 @@ resource paDisallowEndpointEditPermissions 'Microsoft.Authorization/policyAssign
           'kube-system'
           'gatekeeper-system'
           'azure-arc'
+          'dataprotection-microsoft'
         ]
       }
       effect: {
@@ -1244,6 +1295,7 @@ resource paDisallowNamespaceUsage 'Microsoft.Authorization/policyAssignments@202
           'kube-system'
           'gatekeeper-system'
           'azure-arc'
+          'dataprotection-microsoft'
         ]
       }
       namespaces: {
@@ -1820,13 +1872,13 @@ resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
         enabled: false // Azure Blobs
       }
       diskCSIDriver: {
-        enabled: false // Azure Disk
+        enabled: true  // Azure Disk
       }
       fileCSIDriver: {
         enabled: false // Azure Files
       }
       snapshotController: {
-        enabled: false // CSI Snapshotter: https://github.com/kubernetes-csi/external-snapshotter
+        enabled: true  // CSI Snapshotter: https://github.com/kubernetes-csi/external-snapshotter
       }
     }
     workloadAutoScalerProfile: {
@@ -1881,6 +1933,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
     sci
 
     ndEnsureClusterIdentityHasRbacToSelfManagedResources
+    mcDiskSnapshotSupport_roleAssignment
 
     // Azure Policy for Kubernetes policies that we'd want in place before pods start showing up
     // in the cluster.  The are not technically a dependency from the resource provider perspective,
@@ -1911,10 +1964,26 @@ resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
     paRbacEnabled
     paManagedIdentitiesEnabled
 
+    // Logical dependency, our backup destination should exist before cluster creation, as the cluster will be
+    // bootstrapped with backup configured.
+    backupContainer
+
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
     kvPodMiIngressControllerSecretsUserRole_roleAssignment
   ]
+
+  // Grant managed identity access from our Backup Vault to this cluster to support
+  // AKS Backup
+  resource trustedAccess 'trustedAccessRoleBindings' = {
+    name: 'ta-aks-backup'
+    properties: {
+      roles: [
+        'Microsoft.DataProtection/backupVaults/backup-operator'
+      ]
+      sourceResourceId: bvAksBackupVault.id
+    }
+  }
 }
 
 resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
@@ -2080,6 +2149,150 @@ resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurati
     mcFlux_extension
     acrKubeletAcrPullRole_roleAssignment
   ]
+}
+
+// New storage container in the existing storage account specifically for this cluster.
+// All clusters could back up to a single container or you can follow a container-per-cluster
+// model like shown here.
+resource backupContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2022-09-01' = {
+  parent: storageAksBackups::blobService
+  name: toLower('backup-${clusterName}')
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
+// Ensures that data protection (AKS Backup) is installed.
+resource mc_dataProtectionExtension 'Microsoft.KubernetesConfiguration/extensions@2022-11-01' = {
+  scope: mc
+  name: 'azure-aks-backup'
+  properties: {
+    extensionType: 'microsoft.dataprotection.kubernetes'
+    autoUpgradeMinorVersion: true
+    aksAssignedIdentity: {
+      type: 'SystemAssigned'
+    }
+    releaseTrain: 'Stable'
+    scope: {
+      cluster: {
+        releaseNamespace: 'dataprotection-microsoft'
+      }
+    }
+    configurationSettings: {
+      'configuration.backupStorageLocation.config.subscriptionId': split(storageAksBackups.id, '/')[2]
+      'configuration.backupStorageLocation.config.resourceGroup': split(storageAksBackups.id, '/')[4]
+      'configuration.backupStorageLocation.config.storageAccount': storageAksBackups.name
+      'configuration.backupStorageLocation.bucket': backupContainer.name
+      'configuration.backupStorageLocation.prefix': ''
+      'configuration.volumeSnapshotLocation.config.resourceGroup': resourceGroup().id  // Using the cluster resource group, if you use another RG, RBAC needs to be adjusted.
+      'configuration.volumeSnapshotLocation.config.incremental': 'false'
+      'credentials.tenantId': subscription().tenantId
+    }
+    configurationProtectedSettings: {}
+  }
+}
+
+// Kubelet needs access to the resource group for AKS backup snapshots
+resource mcDiskSnapshotSupport_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(resourceGroup().id, diskSnapshotContributorRole.id, miClusterControlPlane.id)
+  properties: {
+    roleDefinitionId: diskSnapshotContributorRole.id
+    principalId: miClusterControlPlane.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Grant the Data Protection extension write access this cluster's backup container in the storage account.
+resource dataProtetionExtensionStorageContainer_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: backupContainer
+  name: guid(backupContainer.id, 'mi-dataProtection-extension', storageBlobDataContributorRole.id)
+  properties: {
+    roleDefinitionId: storageBlobDataContributorRole.id
+    principalId: mc_dataProtectionExtension.properties.aksAssignedIdentity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Grant the Data Protection extension storage contributor access this cluster's backup storage account.
+resource dataProtetionExtensionStorage_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  scope: storageAksBackups
+  name: guid(backupContainer.id, mc_dataProtectionExtension.id, storageAccountContributorRole.id)
+  properties: {
+    roleDefinitionId: storageAccountContributorRole.id
+    principalId: mc_dataProtectionExtension.properties.aksAssignedIdentity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Enable daily backups
+// All and future namespaces
+//
+resource backupInstance 'Microsoft.DataProtection/backupVaults/backupInstances@2023-01-01' = {
+  parent: bvAksBackupVault
+  name: 'bi-${mc.name}'
+  properties: {
+    friendlyName: 'bi-${clusterName}'
+    objectType: 'BackupInstance'
+    dataSourceSetInfo: {
+      objectType: 'DatasourceSet'
+      resourceID: mc.id
+      resourceType: 'Microsoft.ContainerService/managedClusters'
+      resourceLocation: location
+      resourceName: mc.name
+      resourceUri: mc.id
+      datasourceType: 'Microsoft.ContainerService/managedClusters'
+    }
+    dataSourceInfo: {
+      objectType: 'Datasource'
+      resourceID: mc.id
+      resourceType: 'Microsoft.ContainerService/managedClusters'
+      resourceLocation: location
+      resourceName: mc.name
+      resourceUri: mc.id
+      datasourceType: 'Microsoft.ContainerService/managedClusters'
+    }
+    policyInfo: {
+      policyId: bvAksBackupVault::defaultPolicy.id
+      policyParameters: {
+        dataStoreParametersList: [
+          {
+            objectType: 'AzureOperationalStoreParameters'
+            dataStoreType: 'OperationalStore'
+            resourceGroupId: resourceGroup().id
+          }
+        ]
+        backupDatasourceParametersList: [
+          {
+            objectType: 'KubernetesClusterBackupDatasourceParameters'
+            includeClusterScopeResources: true
+            snapshotVolumes: false
+            labelSelectors: null
+            includedNamespaces: null
+            excludedNamespaces: null
+            includedResourceTypes: null
+            excludedResourceTypes: [
+              'v1/Secret'
+            ]
+          }
+        ]
+      }
+    }
+    datasourceAuthCredentials: null
+    validationType: null
+  }
+}
+
+
+// Allows the backup vault's identity to see the cluster and the snapshots
+// Details: https://learn.microsoft.com/azure/backup/azure-kubernetes-service-cluster-backup-concept#required-roles-and-permissions
+resource backupVaultReadClusterAndSnapshots_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: resourceGroup() // Covers both the cluster and the snapshot resource group
+  name: guid(bvAksBackupVault.id, mc_dataProtectionExtension.id, readerRole.id)
+  properties: {
+    roleDefinitionId: readerRole.id
+    principalId: bvAksBackupVault.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
 }
 
 module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'nested_EnsureClusterUserAssignedHasRbacToManageVMSS.bicep' = {
