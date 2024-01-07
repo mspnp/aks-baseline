@@ -42,7 +42,7 @@ This does not configure anything related to workload identity. This configuratio
    If you already have a security group that is appropriate for your cluster's admin service accounts, use that group and don't create a new one. If using your own group or your Microsoft Entra ID administrator created one for you to use; you will need to update the group name and ID throughout the reference implementation.
   
   ```bash
-   export MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE=$(az ad group list --display-name 'cluster-ns-a0008-readers-bu0001a000800' --query "[].id" -o tsv)
+   export MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE=$(az ad group list --display-name 'cluster-admins-bu0001a000800' --query "[].id" -o tsv)
    echo MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE: $MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE
   ```
 
