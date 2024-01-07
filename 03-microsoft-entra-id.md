@@ -40,6 +40,11 @@ This does not configure anything related to workload identity. This configuratio
 1. Create/identify the Microsoft Entra security group that is going to map to the [Kubernetes Cluster Admin](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) role `cluster-admin`.
 
    If you already have a security group that is appropriate for your cluster's admin service accounts, use that group and don't create a new one. If using your own group or your Microsoft Entra ID administrator created one for you to use; you will need to update the group name and ID throughout the reference implementation.
+  
+  ```bash
+   export MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE=$(az ad group list --display-name 'cluster-ns-a0008-readers-bu0001a000800' --query "[].id" -o tsv)
+   echo MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE: $MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE
+  ```
 
    ```bash
    export MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE=[Paste your existing cluster admin group Object ID here.]
@@ -81,6 +86,12 @@ This does not configure anything related to workload identity. This configuratio
    ```
 
 1. Create/identify the Microsoft Entra security group that is going to be a namespace reader. *Optional*
+
+  If the group already exist
+  ```bash
+   export MEIDOBJECTID_GROUP_A0008_READER_AKS_BASELINE=$(az ad group list --display-name 'cluster-ns-a0008-readers-bu0001a000800' --query "[].id" -o tsv)
+   echo MEIDOBJECTID_GROUP_A0008_READER_AKS_BASELINE: $MEIDOBJECTID_GROUP_A0008_READER_AKS_BASELINE
+  ```
 
    ```bash
    export MEIDOBJECTID_GROUP_A0008_READER_AKS_BASELINE=$(az ad group create --display-name 'cluster-ns-a0008-readers-bu0001a000800' --mail-nickname 'cluster-ns-a0008-readers-bu0001a000800' --description "Principals in this group are readers of namespace a0008 in the bu0001a000800 cluster." --query id -o tsv)
