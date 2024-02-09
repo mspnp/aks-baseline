@@ -59,7 +59,7 @@ In addition to Azure Container Registry being deployed to support bootstrapping,
    echo ACR_NAME_AKS_BASELINE: $ACR_NAME_AKS_BASELINE
 
    # Import core image(s) hosted in public container registries to be used during bootstrapping
-   az acr import --source ghcr.io/kubereboot/kured:1.15.0 -n $ACR_NAME_AKS_BASELINE
+   az acr import --source ghcr.io/kubereboot/kured:1.14.0 -n $ACR_NAME_AKS_BASELINE
    ```
 
    > In this walkthrough, there is only one image that is included in the bootstrapping process. It's included as a reference for this process. Your choice to use Kubernetes Reboot Daemon (Kured) or any other images, including Helm charts, as part of your bootstrapping is yours to make.
