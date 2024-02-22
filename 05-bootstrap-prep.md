@@ -57,36 +57,6 @@ In addition to Azure Container Registry being deployed to support bootstrapping,
    # Get your ACR instance name
    export ACR_NAME_AKS_BASELINE=$(az deployment group show -g rg-bu0001a0008 -n acr-stamp --query properties.outputs.containerRegistryName.value -o tsv)
    echo ACR_NAME_AKS_BASELINE: $ACR_NAME_AKS_BASELINE
-
-   # Import core image(s) hosted in public container registries to be used during bootstrapping
-   az acr import --source ghcr.io/kubereboot/kured:1.15.0 -n $ACR_NAME_AKS_BASELINE
-   ```
-
-   > In this walkthrough, there is only one image that is included in the bootstrapping process. It's included as a reference for this process. Your choice to use Kubernetes Reboot Daemon (Kured) or any other images, including Helm charts, as part of your bootstrapping is yours to make.
-
-1. Update bootstrapping manifests to pull from your Azure Container Registry. *Optional. Fork required.*
-
-   > Your cluster will immedately begin processing the manifests in [`cluster-manifests/`](./cluster-manifests/) due to the bootstrapping configuration that will be applied to it. So, before you deploy the cluster now would be the right time push the following changes to your fork so that it will use your files instead of the files found in the original mspnp repo which point to public container registries:
-   >
-   > - update the one `image:` value in [`kured.yaml`](./cluster-manifests/cluster-baseline-settings/kured.yaml) to use your container registry instead of a public container registry. See the comment in the file for instructions (or you can simply run the following command.)
-
-   :warning: Without updating these files and using your own fork, you will be deploying your cluster such that it takes dependencies on public container registries. This is generally okay for exploratory/testing, but not suitable for production. Before going to production, ensure *all* image references you bring to your cluster are from *your* container registry (link imported in the prior step) or another that you feel confident relying on.
-
-   ```bash
-   sed -i "s:ghcr.io:${ACR_NAME_AKS_BASELINE}.azurecr.io:" ./cluster-manifests/cluster-baseline-settings/kured.yaml
-   ```
-
-   Note, that if you are on macOS, you might need to use the following command instead:
-
-   ```bash
-   sed -i '' 's:ghcr.io:'"${ACR_NAME_AKS_BASELINE}"'.azurecr.io:g' ./cluster-manifests/cluster-baseline-settings/kured.yaml
-   ```
-
-   Now commit changes to repository.
-
-   ```bash
-   git commit -a -m "Update image source to use my ACR instance instead of a public container registry."
-   git push
    ```
 
 ### Save your work in-progress
