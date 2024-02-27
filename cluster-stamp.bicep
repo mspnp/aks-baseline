@@ -1741,6 +1741,9 @@ resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
       httpApplicationRouting: {
         enabled: false
       }
+      ingressApplicationGateway: {
+        enabled: false
+      }
       omsagent: {
         enabled: true
         config: {
@@ -1755,6 +1758,12 @@ resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
         config: {
           version: 'v2'
         }
+      }
+      openServiceMesh: {
+        enabled: false
+      }
+      kubeDashboard: {
+        enabled: false
       }
       azureKeyvaultSecretsProvider: {
         enabled: true
