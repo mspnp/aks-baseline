@@ -1640,7 +1640,7 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 }
 
-resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
+resource mc 'Microsoft.ContainerService/managedClusters@2024-01-01' = {
   name: clusterName
   location: location
   tags: {
@@ -1800,6 +1800,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
       enabled: false // Using Microsoft Entra Workload IDs for pod identities.
     }
     autoUpgradeProfile: {
+      nodeOSUpgradeChannel: 'SecurityPatch'
       upgradeChannel: 'node-image'
     }
     azureMonitorProfile: {
