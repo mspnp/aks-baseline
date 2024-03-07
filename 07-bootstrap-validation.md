@@ -26,6 +26,15 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    echo AKS_CLUSTER_NAME: $AKS_CLUSTER_NAME
    ```
 
+1. Validate there is no available images upgrades. This aks cluster was just installed. Therefore only a race condition between publication of new availble images and thes deployment image fetch could result into a different state.
+
+   ```bash
+   az aks nodepool get-upgrades -n npuser01 --cluster-name $AKS_CLUSTER_NAME -g rg-bu0001a0008 && \
+   az aks nodepool show -n npuser01 --cluster-name $AKS_CLUSTER_NAME -g rg-bu0001a0008 --query nodeImageVersion
+   ```
+
+   > The update phase of the AKS cluster lifecycle bleongs to day2 operations, cluster ops will be regularly updating the node images for two main reasons, the first one is for the Kubernetes cluster version and the second one is to keep up with node-level OS security updates. This can be achieved manually for the greatest degree of control by placing requests against the Azure control plane or alternatevely ops team could opt-in to allways update to the latest available version by configuring a planned maintenance window to perform this automatically. AKS provides with two configurable auto-upgrade channels dedicated to the two oforementioned update types. For more information, please refer to  [Upgrade options for Azure Kubernetes Service (AKS) clusters](https://learn.microsoft.com/azure/aks/upgrade-cluster). Nodepools in this AKS cluster span into multiple availability zones, so an important consideration is that automatic updates are conducted based on a best-effort zone balancing in node groups. Pod Disruption Budget and Nodes Max Surge are configured in this baseline to increase the Availabilty of the workload and as another attempt to prevent from unbalance zones.
+
 1. Get AKS `kubectl` credentials.
 
    > In the [Microsoft Entra ID Integration](03-microsoft-entra-id.md) step, we placed our cluster under Microsoft Entra group-backed RBAC. This is the first time we are seeing this used. `az aks get-credentials` sets your `kubectl` context so that you can issue commands against your cluster. Even when you have enabled Microsoft Entra ID integration with your AKS cluster, an Azure user has sufficient permissions on the cluster resource can still access your AKS cluster by using the `--admin` switch to this command. Using this switch *bypasses* Microsoft Entra ID and uses client certificate authentication instead; that isn't what we want to happen. So in order to prevent that practice, local account access such as `clusterAdmin` or `clusterMonitoringUser`) is expressly disabled.
