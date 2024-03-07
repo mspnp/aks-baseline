@@ -61,6 +61,7 @@ The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
 
    ```output
    NAME                                                 AGE
+   k8sazurecustomcontainerallowedimages                 21m
    k8sazurev1blockdefault                               21m
    k8sazurev1blockendpointeditdefaultrole               21m
    … more …            

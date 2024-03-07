@@ -42,7 +42,7 @@ The cluster now has an [Traefik configured with a TLS certificate](./09-secret-m
 
    > At this point, the route to the workload is established, SSL offloading configured, a network policy is in place to only allow Traefik to connect to your workload, and Traefik is configured to only accept requests from App Gateway.
 
-1. Test direct workload access from unauthorized network loactions. *Optional.*
+1. Test direct workload access from unauthorized network locations. *Optional.*
 
    > You should expect a `403` HTTP response from your ingress controller if you attempt to connect to it *without* going through the App Gateway. Likewise, if any workload other than the ingress controller attempts to reach the workload, the traffic will be denied via network policies.
 

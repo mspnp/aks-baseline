@@ -6,26 +6,8 @@ targetScope = 'resourceGroup'
 @minLength(79)
 param hubVnetResourceId string
 
-@allowed([
-  'australiaeast'
-  'canadacentral'
-  'centralus'
-  'eastus'
-  'eastus2'
-  'westus2'
-  'westus3'
-  'francecentral'
-  'germanywestcentral'
-  'northeurope'
-  'southafricanorth'
-  'southcentralus'
-  'uksouth'
-  'westeurope'
-  'japaneast'
-  'southeastasia'
-])
 @description('The spokes\'s regional affinity, must be the same as the hub\'s location. All resources tied to this spoke will also be homed in this region. The network team maintains this approved regional list which is a subset of zones with Availability Zone support.')
-param location string
+param location string = resourceGroup().location
 
 // A designator that represents a business unit id and application id
 var orgAppId = 'BU0001A0008'
@@ -33,7 +15,7 @@ var clusterVNetName = 'vnet-spoke-${orgAppId}-00'
 
 /*** EXISTING HUB RESOURCES ***/
 
-// This is 'rg-enterprise-networking-hubs' if using the default values in the walkthrough
+// This is 'rg-enterprise-networking-hubs-$region' if using the default values in the walkthrough
 resource hubResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
   scope: subscription()
   name: split(hubVnetResourceId,'/')[4]

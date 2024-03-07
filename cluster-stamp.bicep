@@ -24,26 +24,9 @@ param aksIngressControllerCertificate string
 @description('IP ranges authorized to contact the Kubernetes API server. Passing an empty array will result in no IP restrictions. If any are provided, remember to also provide the public IP of the egress Azure Firewall otherwise your nodes will not be able to talk to the API server (e.g. Flux).')
 param clusterAuthorizedIPRanges array = []
 
-@description('AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region. This needs to be the same region as the vnet provided in these parameters.')
-@allowed([
-  'australiaeast'
-  'canadacentral'
-  'centralus'
-  'eastus'
-  'eastus2'
-  'westus2'
-  'westus3'
-  'francecentral'
-  'germanywestcentral'
-  'northeurope'
-  'southafricanorth'
-  'southcentralus'
-  'uksouth'
-  'westeurope'
-  'japaneast'
-  'southeastasia'
-])
-param location string = 'eastus2'
+@description('AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region. This needs to be the same region as the vnet provided in these parameters. This defaults to the resource group\'s location for higher reliability.')
+param location string = resourceGroup().location
+
 param kubernetesVersion string = '1.28.3'
 
 @description('Domain name to use for App Gateway and AKS ingress.')

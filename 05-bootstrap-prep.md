@@ -10,7 +10,7 @@ Container registries often have a lifecycle that extends beyond the scope of a s
 - Azure Container Registry is populated with images your cluster will need as part of its bootstrapping process.
 - Log Analytics is deployed and Azure Container Registry platform logging is configured. This workspace will be used by your cluster as well.
 
-The role of this pre-existing Azure Container Registry instance is made more prominant when we think about cluster bootstrapping. That is the process that happens after Azure resource deployment of the cluster, but before your first workload lands in the cluster. The cluster will be bootstrapped *immedately and automatically* after resource deployment, which means you'll need Azure Container Registry in place to act as your official OCI artifact repository for required images and Helm charts used in that bootstrapping process.
+The role of this pre-existing Azure Container Registry instance is made more prominent when we think about cluster bootstrapping. That is the process that happens after Azure resource deployment of the cluster, but before your first workload lands in the cluster. The cluster will be bootstrapped *immediately and automatically* after resource deployment, which means you'll need Azure Container Registry in place to act as your official OCI artifact repository for required images and Helm charts used in that bootstrapping process.
 
 ### Bootstrapping method
 
@@ -18,7 +18,7 @@ We'll be bootstrapping this cluster with the Flux GitOps agent as installed as a
 
 ### Additional resources
 
-In addition to Azure Container Registry being deployed to support bootstrapping, this is where any other resources that are considered not tied to the lifecycle of an individual cluster is deployed. Azure Container Registry is one example as talked about above. Another example could be an AKS Backup Vault and backup artifacts storage account which likely would exist prior to and after any individual AKS cluster's existance. When designing your pipelines, ensure to isolate components by their lifecycle watch for singletons in an architecture. These are typically resources like regional logging sinks, supporting global routing infrastructure, and so on. This is in contrast to potentially transiently/replaceable components, like the AKS cluster itself. *This implemention does not represent a complete seperation of stamp vs regional resources, but is fairly close. Deviations are strickly for ease of deployment in this walkthrough instead of as examples of guidance.*
+In addition to Azure Container Registry being deployed to support bootstrapping, this is where any other resources that are considered not tied to the lifecycle of an individual cluster is deployed. Azure Container Registry is one example as talked about above. Another example could be an AKS Backup Vault and backup artifacts storage account which likely would exist prior to and after any individual AKS cluster's existence. When designing your pipelines, ensure to isolate components by their lifecycle watch for singletons in an architecture. These are typically resources like regional logging sinks, supporting global routing infrastructure, and so on. This is in contrast with potentially transient/replaceable components, like the AKS cluster itself. *This implementation does not represent a complete separation of stamp vs regional resources, but is fairly close. Deviations are strictly for ease of deployment in this walkthrough instead of as examples of guidance.*
 
 ## Steps
 
@@ -30,7 +30,7 @@ In addition to Azure Container Registry being deployed to support bootstrapping,
 
    ```bash
    # [This takes less than one minute.]
-   az group create --name rg-bu0001a0008 --location eastus2
+   az group create --name rg-bu0001a0008 --location $LOCATION_AKS_BASELINE
    ```
 
 1. Get the AKS cluster spoke Virtual Network resource ID.
@@ -38,7 +38,7 @@ In addition to Azure Container Registry being deployed to support bootstrapping,
    > :book: The app team will be deploying to a spoke Virtual Network, that was already provisioned by the network team.
 
    ```bash
-   export RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)
+   export RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE=$(az deployment group show -g rg-enterprise-networking-spokes-${LOCATION_AKS_BASELINE} -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)
    echo RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE: $RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE
    ```
 
@@ -46,7 +46,7 @@ In addition to Azure Container Registry being deployed to support bootstrapping,
 
    ```bash
    # [This takes about four minutes.]
-   az deployment group create -g rg-bu0001a0008 -f acr-stamp.bicep -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE} location=eastus2
+   az deployment group create -g rg-bu0001a0008 -f acr-stamp.bicep -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE}
    ```
 
 1. Import cluster management images to your container registry.
@@ -66,7 +66,7 @@ In addition to Azure Container Registry being deployed to support bootstrapping,
 
 1. Update bootstrapping manifests to pull from your Azure Container Registry. *Optional. Fork required.*
 
-   > Your cluster will immedately begin processing the manifests in [`cluster-manifests/`](./cluster-manifests/) due to the bootstrapping configuration that will be applied to it. So, before you deploy the cluster now would be the right time push the following changes to your fork so that it will use your files instead of the files found in the original mspnp repo which point to public container registries:
+   > Your cluster will immediately begin processing the manifests in [`cluster-manifests/`](./cluster-manifests/) due to the bootstrapping configuration that will be applied to it. So, before you deploy the cluster now would be the right time push the following changes to your fork so that it will use your files instead of the files found in the original mspnp repo which point to public container registries:
    >
    > - update the one `image:` value in [`kured.yaml`](./cluster-manifests/cluster-baseline-settings/kured.yaml) to use your container registry instead of a public container registry. See the comment in the file for instructions (or you can simply run the following command.)
 

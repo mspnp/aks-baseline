@@ -6,7 +6,7 @@
       "value": "eastus2"
     },
     "targetVnetResourceId": {
-      "value": "/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00"
+      "value": "/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes-[region]/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00"
     },
     "clusterAdminMicrosoftEntraGroupObjectId": {
       "value": "[guid--security-group-objectid-that-will-become-cluster-admin]"
