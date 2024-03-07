@@ -112,7 +112,7 @@ The following two resource groups will be created and populated with networking 
 
 Private DNS zones in this reference implementation are implemented directly at the spoke level, meaning the workload team creates the Private Link DNS zones and records for the resources needed; furthermore, the workload is directly using Azure DNS for resolution. Your networking topology might support this decentralized model or instead DNS & DNS zones for Private Link might be handed at the regional hub or in a [VWAN virtual hub extension](https://learn.microsoft.com/azure/architecture/guide/networking/private-link-virtual-wan-dns-virtual-hub-extension-pattern) by your networking team.
 
-If your organization operate a centralized DNS model, you'll need to adapt how DNS zones records are managed this implementation into your existing enterprise networking DNS zone strategy. Since this reference implementation is expected to be deployed isolated from existing infrastructure; this is not something you need to address now; but will be something to understand and address when taking your solution to production.
+If your organization operates a centralized DNS model, you will need to integrate the management of DNS zone records for this implementation into your existing enterprise networking DNS zone strategy. Since this reference implementation is expected to be deployed in isolation from your existing infrastructure; this is not something you need to address now; but will be something to understand and address when taking your solution to production.
 
 ### Save your work in-progress
 
