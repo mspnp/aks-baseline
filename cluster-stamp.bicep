@@ -1817,7 +1817,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2023-02-02-preview' = {
       enabled: false // Using Microsoft Entra Workload IDs for pod identities.
     }
     autoUpgradeProfile: {
-      upgradeChannel: 'stable'
+      upgradeChannel: 'node-image'
     }
     azureMonitorProfile: {
       metrics: {
