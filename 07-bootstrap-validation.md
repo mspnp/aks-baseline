@@ -26,7 +26,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    echo AKS_CLUSTER_NAME: $AKS_CLUSTER_NAME
    ```
 
-1. Validate there is no available images upgrades. This aks cluster was just installed. Therefore only a race condition between publication of new availble images and thes deployment image fetch could result into a different state.
+1. Validate there are no available image upgrades. As this AKS cluster was recently deployed, only a race condition between publication of new available images and the deployment image fetch could result into a different state.
 
    ```bash
    az aks nodepool get-upgrades -n npuser01 --cluster-name $AKS_CLUSTER_NAME -g rg-bu0001a0008 && \

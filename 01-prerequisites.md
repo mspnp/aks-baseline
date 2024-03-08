@@ -38,10 +38,10 @@ This is the starting point for the instructions on deploying the [AKS baseline r
    # Keep running until all say "Registered." (This may take up to 20 minutes.)
    az feature list -o table --query "[?name=='Microsoft.ContainerService/EnableImageCleanerPreview'].{Name:name,State:properties.state}"
 
-   # Node OS Level Automatic Security Patches are currently in Preview and requies the following feature
+   # Automatic node-level OS security patches are currently in preview and requires the following feature
    az feature register --namespace "Microsoft.ContainerService" -n "NodeOsUpgradeChannelPreview"
 
-   # Keep running until all say "Registered." (It takes a few minutes for the status to be udated)
+   # Keep running until all say "Registered" (It takes a few minutes for the status to be updated)
    az feature show --namespace "Microsoft.ContainerService" --name "NodeOsUpgradeChannelPreview"
 
    # When all say "Registered" then re-register the AKS resource provider
