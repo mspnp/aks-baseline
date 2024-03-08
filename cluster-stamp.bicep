@@ -1640,7 +1640,7 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 }
 
-resource mc 'Microsoft.ContainerService/managedClusters@2024-01-01' = {
+resource mc 'Microsoft.ContainerService/managedClusters@2024-01-02-preview' = {
   name: clusterName
   location: location
   tags: {
