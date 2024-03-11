@@ -1817,8 +1817,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-01-02-preview' = {
       enabled: false // Using Microsoft Entra Workload IDs for pod identities.
     }
     autoUpgradeProfile: {
-      nodeOSUpgradeChannel: 'NodeImage'
-      upgradeChannel: 'node-image'
+      nodeOSUpgradeChannel: 'SecurityPatch'
+      upgradeChannel: 'none'
     }
     azureMonitorProfile: {
       metrics: {
@@ -1932,28 +1932,11 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-01-02-preview' = {
       maintenanceWindow: {
         durationHours: 12
         schedule: {
-          weekly: {
-            dayOfWeek: 'Tuesday'
-            intervalWeeks: 1
+          daily: {
+            intervalDays: 2
           }
         }
         startTime: '09:00'
-      }
-    }
-  }
-
-  resource k8s_maintenanceConfigurations 'maintenanceConfigurations' = {
-    name: 'aksManagedAutoUpgradeSchedule'
-    properties: {
-      maintenanceWindow: {
-        durationHours: 12
-        schedule: {
-          weekly: {
-            dayOfWeek: 'Wednesday'
-            intervalWeeks: 2
-          }
-        }
-        startTime: '21:00'
       }
     }
   }

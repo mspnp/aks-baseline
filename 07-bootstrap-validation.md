@@ -34,16 +34,16 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    ```outcome
    {
-     "nodeOsUpgradeChannel": "NodeImage",
-     "upgradeChannel": "node-image"
+     "nodeOsUpgradeChannel": "SecurityPatch",
+     "upgradeChannel": "none"
    }
    ```
 
-   > This cluster now receives weekly updates for both the Operating System (OS) and Kubernetes. For workloads that need to always run the most secure OS version, you can opt-in for regular updates by selecting the `SecurityPatch` channel.
+   > This cluster now receives daily updates for the Operating System (OS) security patches and leave that up to a customer to perform Kubernetes updates (after testing).
 
    > The node update phase of the cluster’s lifecycle belongs to day2 operations. Cluster operations will regularly update node images for two main reasons: 1) to update the Kubernetes cluster version, and 2) to keep up with node-level OS updates. A new AKS release introduces new features, such as addons and new Kubernetes versions, while new AKS node images bring changes at the OS level. Both types of releases adhere to Azure Safe Deployment Practices for rollout across all regions. For more information, please refer to [How to use the release tracker](https://learn.microsoft.com/azure/aks/release-tracker#how-to-use-the-release-tracker). Additionally, cluster operations aim to stay updated with supported Kubernetes versions for Service Level Agreement (SLA) compliance and to avoid accumulating updates, as version updates cannot be skipped at will. For more details, please see [Kubernetes version upgrades](https://learn.microsoft.com/azure/aks/upgrade-aks-cluster?tabs=azure-cli#kubernetes-version-upgrades).
 
-   > When a new update becomes available, it can be manually applied for the greatest degree of control by making requests against the Azure control plane. Alternatively, the operations team can opt to automatically update to the latest version by configuring an update channel to follow the desired cadence. This can be combined with a planned maintenance window, one for Kubernetes version updates and another for OS-level upgrades. AKS offers two different configurable auto-upgrade channels dedicated to these update types. For more information, please refer to [Upgrade options for Azure Kubernetes Service (AKS) clusters](https://learn.microsoft.com/azure/aks/upgrade-cluster). Node pools in this AKS cluster span multiple availability zones. Therefore, it’s important to note that automatic updates are conducted based on a best-effort zone balancing in node groups. To prevent zone imbalance and increase availability, Nodes Max Surge and Pod Disruption Budget are configured in this baseline. By default, cluster nodes are updated one at a time. Max Surge can adjust the speed of a cluster upgrade. In clusters with 6+ nodes hosting disruption-sensitive workloads, a surge of up to `33%` is recommended for a safe upgrade pace. For more information, please see [Customer node surge upgrade](https://learn.microsoft.com/azure/aks/upgrade-aks-cluster?tabs=azure-cli#customize-node-surge-upgrade). To minimize disruption, production clusters should be configured with [node draining timeout](https://learn.microsoft.com/azure/aks/upgrade-aks-cluster?tabs=azure-cli#set-node-drain-timeout-valuei) and [soak time](https://learn.microsoft.com/azure/aks/upgrade-aks-cluster?tabs=azure-cli#set-node-soak-time-value), taking into account the specific characteristics of their workloads.
+   > When a new update becomes available, it can be manually applied for the greatest degree of control by making requests against the Azure control plane which is what we recommmend for Kubernetes version updates. Alternatively, the operations team can opt to automatically update to the latest version by configuring an update channel to follow the desired cadence. This can be combined with a planned maintenance window, one for Kubernetes version updates and another for OS-level upgrades. AKS offers two different configurable auto-upgrade channels dedicated to these update types. For more information, please refer to [Upgrade options for Azure Kubernetes Service (AKS) clusters](https://learn.microsoft.com/azure/aks/upgrade-cluster). Node pools in this AKS cluster span multiple availability zones. Therefore, it’s important to note that automatic updates are conducted based on a best-effort zone balancing in node groups. To prevent zone imbalance and increase availability, Nodes Max Surge and Pod Disruption Budget are configured in this baseline. By default, cluster nodes are updated one at a time. Max Surge can adjust the speed of a cluster upgrade. In clusters with 6+ nodes hosting disruption-sensitive workloads, a surge of up to `33%` is recommended for a safe upgrade pace. For more information, please see [Customer node surge upgrade](https://learn.microsoft.com/azure/aks/upgrade-aks-cluster?tabs=azure-cli#customize-node-surge-upgrade). To minimize disruption, production clusters should be configured with [node draining timeout](https://learn.microsoft.com/azure/aks/upgrade-aks-cluster?tabs=azure-cli#set-node-drain-timeout-valuei) and [soak time](https://learn.microsoft.com/azure/aks/upgrade-aks-cluster?tabs=azure-cli#set-node-soak-time-value), taking into account the specific characteristics of their workloads.
 
 1. See your maitenance configuration
 
@@ -56,18 +56,19 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 > Mindful Timing for Upgrades:
 > - Be mindful of when upgrades should occur. If you have overlapping maintenance windows, AKS will determine the running order.
 > - To avoid conflicts, leave at least 24 hours between maintenance window configurations. The timing will depend on the number of nodes in your specific cluster and the duration required for upgrades.
+> - Current configuration should not represent a conflict since Kubernetes version updates are applied manually when customer see fit.
 >
 > OS-Level Updates:
-> - By default, the OS-level updates maintenance window is scheduled on a weekly cadence. This is because the OS channel is configured with `NodeImage`, where a new node image is shipped every week.
-> - If you choose the `SecurityPatch` channel, consider changing the maintenance window to daily for more frequent updates.
+> - By default, the OS-level updates maintenance window is scheduled on a daily cadence. This is because the OS channel is configured with `SecurityPatch`, where a new update can be shipped when available.
+> - If you choose the `NodeImage` channel, consider changing the maintenance window to weekly since updates get shipped on a weekly cadence.
 >
 > Kubernetes Version Management:
-> - To stay current with the latest Kubernetes version, a monthly cadence is generally sufficient. However, you can adjust this based on your specific needs.
-> - For more regular updates, configure your cluster to upgrade every two weeks.
+> - To ensure the Kubernetes version is a supported one, a monthly update is generally sufficient. However, it is recommended to track the AKS releases and adjust accordinly.
+> - Being proactive and keep the Kubernetes version current is the best practice.
 >
 > Maintenance Operations:
 > - Keep in mind that performing maintenance operations is considered best-effort. They are not guaranteed to occur within a specific window.
-> - While it’s not strictly recommended, if you require greater control, consider manually updating your cluster.
+> - While it’s not recommended for OS-level updates, if you require greater control, consider manually updating your cluster.
 >
 > Remember that these guidelines provide flexibility, allowing you to strike a balance between timely updates and operational control. Choose the approach that aligns best with your organization’s requirements.
 
