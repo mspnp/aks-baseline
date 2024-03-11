@@ -1800,7 +1800,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-01-02-preview' = {
       enabled: false // Using Microsoft Entra Workload IDs for pod identities.
     }
     autoUpgradeProfile: {
-      nodeOSUpgradeChannel: 'SecurityPatch'
       upgradeChannel: 'node-image'
     }
     azureMonitorProfile: {
