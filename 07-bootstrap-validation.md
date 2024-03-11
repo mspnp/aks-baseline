@@ -26,6 +26,25 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    echo AKS_CLUSTER_NAME: $AKS_CLUSTER_NAME
    ```
 
+1. Validate the current day2 strategy this baseline follows to upagrade the AKS cluster
+
+   ```bash
+   az aks show -n $AKS_CLUSTER_NAME -g rg-bu0001a0008 --query "autoUpgradeProfile"
+   ```
+
+   ```outcome
+   {
+     "nodeOsUpgradeChannel": "NodeImage",
+     "upgradeChannel": "node-image"
+   }
+   ```
+
+   > This cluster is now receiving OS and Kubernetes updates on weekly bassis. For some workloads where it is imperative to be running always on top of the most secure OS version available, it is possible to opt-in for regular updates by picking up the `SecurityPatch` channel instead.
+
+   > The node update phase of the cluster lifecycle belongs to day2 operations. Cluster ops will update their node images as regular as required for two main reasons, the first one is for the Kubernetes cluster version, and the second one is to keep up with node-level OS updates. A new AKS release will be introducing new features such as new addons as well as making new kubernetes versions available while new AKS Node Images introduce changes at the OS level. Both release types follow Azure Safe Deployments Practices to roll out to all regions. For more information please take a look [How to use the release tracker](https://learn.microsoft.com/azure/aks/release-tracker#how-to-use-the-release-tracker). Additionally, cluster ops want to keep up with supported kubernetes versions for SLA reasons as well as to prevent from piled up updates since version updates can't be skipped at one's discretion. For more information, please take a look at [Kubernetes version upgrades](https://learn.microsoft.com/azure/aks/upgrade-aks-cluster?tabs=azure-cli#kubernetes-version-upgrades).
+
+   > Once a new update is available, it can be applied manually for the greatest degree of control by placing requests against the Azure control plane. Alternatevely, ops team could opt-in to automatically update to the latest available version by configuring an udpate channel following a desired cadence combining this with a planned maintenance window, one for kubernetes version updates and another one for OS level upgrades. AKS provides with two configurable different auto-upgrade channels dedicated to the oforementioned update types. For more information, please refer to  [Upgrade options for Azure Kubernetes Service (AKS) clusters](https://learn.microsoft.com/azure/aks/upgrade-cluster). Nodepools in this AKS cluster span into multiple availability zones, so an important consideration is that automatic updates are conducted based on a best-effort zone balancing in node groups. Nodes Max Surge and Pod Disruption Budget are configured in this baseline to prevent from unbalanced zones increasing the Availabilty. By default clusters nodes are updated one at the time. Max Surge has the ability to increase or reduce the speed of a cluster upgrade. In clusters with 4+ nodes hosting worloads that are sensitive to disruptions, it is recommended up to `33%` surge to achieve a safe upgrade pace. For more information, please take a look at [Customer node surge upgrade](https://learn.microsoft.com/azure/aks/upgrade-aks-cluster?tabs=azure-cli#customize-node-surge-upgrade). To prevent from disruption, production clusters should be configured with [node draining timeout](https://learn.microsoft.com/azure/aks/upgrade-aks-cluster?tabs=azure-cli#set-node-drain-timeout-valuei) and [soak time](https://learn.microsoft.com/azure/aks/upgrade-aks-cluster?tabs=azure-cli#set-node-soak-time-value) by taking into account the specific charactistics of their workloads.
+
 1. Validate there are no available image upgrades. As this AKS cluster was recently deployed, only a race condition between publication of new available images and the deployment image fetch could result into a different state.
 
    ```bash
@@ -33,7 +52,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    az aks nodepool show -n npuser01 --cluster-name $AKS_CLUSTER_NAME -g rg-bu0001a0008 --query nodeImageVersion
    ```
 
-   > The update phase of the AKS cluster lifecycle bleongs to day2 operations, cluster ops will be regularly updating the node images for two main reasons, the first one is for the Kubernetes cluster version and the second one is to keep up with node-level OS security updates. This can be achieved manually for the greatest degree of control by placing requests against the Azure control plane or alternatevely ops team could opt-in to allways update to the latest available version by configuring a planned maintenance window to perform this automatically. AKS provides with two configurable auto-upgrade channels dedicated to the two oforementioned update types. For more information, please refer to  [Upgrade options for Azure Kubernetes Service (AKS) clusters](https://learn.microsoft.com/azure/aks/upgrade-cluster). Nodepools in this AKS cluster span into multiple availability zones, so an important consideration is that automatic updates are conducted based on a best-effort zone balancing in node groups. Pod Disruption Budget and Nodes Max Surge are configured in this baseline to increase the Availabilty of the workload and as another attempt to prevent from unbalance zones.
+   > Typically, base node iamges doesn't contain a suffix with a date (i.e. `AKSUbuntu-2204gen2containerd`). If the `nodeImageVersion` value looks like `AKSUbuntu-2204gen2containerd-202402.26.0` a SecurityPatch or NodeImage upgrade has been applied to the aks node.
 
 1. Get AKS `kubectl` credentials.
 
