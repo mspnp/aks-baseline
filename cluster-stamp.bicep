@@ -1817,7 +1817,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-01-02-preview' = {
       enabled: false // Using Microsoft Entra Workload IDs for pod identities.
     }
     autoUpgradeProfile: {
-      nodeOSUpgradeChannel: 'SecurityPatch'
+      nodeOSUpgradeChannel: 'NodeImage'
       upgradeChannel: 'none'
     }
     azureMonitorProfile: {
@@ -1932,15 +1932,15 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-01-02-preview' = {
       maintenanceWindow: {
         durationHours: 12
         schedule: {
-          daily: {
-            intervalDays: 2
+          weekly: {
+            dayOfWeek: 'Monday'
+            intervalWeeks: 1
           }
         }
-        startTime: '09:00'
+        startTime: '21:00'
       }
     }
   }
-
 }
 
 resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
