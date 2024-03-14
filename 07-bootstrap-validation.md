@@ -47,7 +47,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    az aks maintenanceconfiguration list --cluster-name $AKS_CLUSTER_NAME -g rg-bu0001a0008
    ```
 
-   > Node image updates are shipped on a weekly default cadence. The maintenance window of this AKS cluster for node image updates is configured every Thursday at 9PM. If that node image is released out of this maintenance window, the nodes will catchup on the following ocurrence. AKS nodes that require to be more frequently updated could consider changing its auto-upgrade channel to `SecurityPatch` and configure a daily maintenance window.
+   > Node image updates are shipped on a weekly default cadence. The maintenance window of this AKS cluster for node image updates is configured every Tuesday at 9PM. If that node image is released out of this maintenance window, the nodes will catchup on the following ocurrence. AKS nodes that require to be more frequently updated could consider changing its auto-upgrade channel to `SecurityPatch` and configure a daily maintenance window.
 
 1. Validate there are no available image upgrades. As this AKS cluster was recently deployed, only a race condition between publication of new available images and the deployment image fetch could result into a different state.
 

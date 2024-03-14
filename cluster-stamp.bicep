@@ -1933,7 +1933,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-01-02-preview' = {
         durationHours: 12
         schedule: {
           weekly: {
-            dayOfWeek: 'Monday'
+            dayOfWeek: 'Tuesday'
             intervalWeeks: 1
           }
         }
