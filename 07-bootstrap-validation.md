@@ -26,29 +26,6 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    echo AKS_CLUSTER_NAME: $AKS_CLUSTER_NAME
    ```
 
-1. Validate the current day2 strategy this baseline follows to upagrade the AKS cluster
-
-   ```bash
-   az aks show -n $AKS_CLUSTER_NAME -g rg-bu0001a0008 --query "autoUpgradeProfile"
-   ```
-
-   ```outcome
-   {
-     "nodeOsUpgradeChannel": "NodeImage",
-     "upgradeChannel": "none"
-   }
-   ```
-
-   > The AKS nodes are configured to automatically receives weekly image updates including security patches, kernel and other node related stuff. AKS cluster version won't be automatically updated since production cluster should be manually updated after testing in lower environments.
-
-1. See your maitenance configuration
-
-   ```bash
-   az aks maintenanceconfiguration list --cluster-name $AKS_CLUSTER_NAME -g rg-bu0001a0008
-   ```
-
-   > Node image updates are shipped on a weekly default cadence. The maintenance window of this AKS cluster for node image updates is configured every Tuesday at 9PM. If that node image is released out of this maintenance window, the nodes will catchup on the following ocurrence. AKS nodes that require to be more frequently updated could consider changing its auto-upgrade channel to `SecurityPatch` and configure a daily maintenance window.
-
 1. Validate there are no available image upgrades. As this AKS cluster was recently deployed, only a race condition between publication of new available images and the deployment image fetch could result into a different state.
 
    ```bash
@@ -57,6 +34,10 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    ```
 
    > Typically, base node iamges doesn't contain a suffix with a date (i.e. `AKSUbuntu-2204gen2containerd`). If the `nodeImageVersion` value looks like `AKSUbuntu-2204gen2containerd-202402.26.0` a SecurityPatch or NodeImage upgrade has been applied to the AKS node.
+
+   > The AKS nodes are configured to automatically receives weekly image updates including security patches, kernel and other node related stuff. AKS cluster version won't be automatically updated since production cluster should be manually updated after testing in lower environments.
+
+   > Node image updates are shipped on a weekly default cadence. The maintenance window of this AKS cluster for node image updates is configured every Tuesday at 9PM. If that node image is released out of this maintenance window, the nodes will catchup on the following ocurrence. AKS nodes that require to be more frequently updated could consider changing its auto-upgrade channel to `SecurityPatch` and configure a daily maintenance window.
 
 1. Get AKS `kubectl` credentials.
 
