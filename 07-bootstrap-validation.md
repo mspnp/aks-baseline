@@ -33,11 +33,11 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    az aks nodepool show -n npuser01 --cluster-name $AKS_CLUSTER_NAME -g rg-bu0001a0008 --query nodeImageVersion
    ```
 
-   > Typically, base node iamges doesn't contain a suffix with a date (i.e. `AKSUbuntu-2204gen2containerd`). If the `nodeImageVersion` value looks like `AKSUbuntu-2204gen2containerd-202402.26.0` a SecurityPatch or NodeImage upgrade has been applied to the AKS node.
+   > Typically, base node images don't contain a suffix with a date (i.e. `AKSUbuntu-2204gen2containerd`). If the `nodeImageVersion` value looks like `AKSUbuntu-2204gen2containerd-202402.26.0` a SecurityPatch or NodeImage upgrade has been applied to the AKS node.
 
-   > The AKS nodes are configured to automatically receives weekly image updates including security patches, kernel and other node related stuff. AKS cluster version won't be automatically updated since production cluster should be manually updated after testing in lower environments.
+   > The AKS nodes are configured to receive weekly updates automatically which include security patches, kernel updates, and node images updates. The AKS cluster version won't be updated automatically since production clusters should be updated manually after testing in lower environments.
 
-   > Node image updates are shipped on a weekly default cadence. The maintenance window of this AKS cluster for node image updates is configured every Tuesday at 9PM. If that node image is released out of this maintenance window, the nodes will catchup on the following ocurrence. AKS nodes that require to be more frequently updated could consider changing its auto-upgrade channel to `SecurityPatch` and configure a daily maintenance window.
+   > Node image updates are shipped on a weekly cadence by default. This AKS cluster is configured to have its maintenance window for node image updates every Tuesday at 9PM. If a node image is released outside of this maintenance window, the nodes will be updated on the next scheduled occurrence. For AKS nodes that require more frequent updates, consider changing the auto-upgrade channel to `SecurityPatch` and configuring a daily maintenance window.
 
 1. Get AKS `kubectl` credentials.
 
