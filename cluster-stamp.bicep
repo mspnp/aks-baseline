@@ -263,23 +263,6 @@ resource qPrometheusAll 'Microsoft.OperationalInsights/queryPacks/queries@2019-0
   }
 }
 
-// Example query that shows the usage of a specific Prometheus metric emitted by Kured
-resource qNodeReboots 'Microsoft.OperationalInsights/queryPacks/queries@2019-09-01' = {
-  parent: qpBaselineQueryPack
-  name: guid(resourceGroup().id, 'KuredNodeReboot', clusterName)
-  properties: {
-    displayName: 'Kubenertes node reboot requested'
-    description: 'Which Kubernetes nodes are flagged for reboot (based on Prometheus metrics).'
-    body: 'InsightsMetrics | where Namespace == "prometheus" and Name == "kured_reboot_required" | where Val > 0'
-    related: {
-      categories: [
-        'container'
-        'management'
-      ]
-    }
-  }
-}
-
 resource sci 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
   name: 'ContainerInsights(${la.name})'
   location: location
@@ -961,15 +944,6 @@ resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2021-0
           'azure-arc'
           'flux-system'
 
-          // Known violations
-          // K8sAzureAllowedSeccomp
-          //  - Kured, no profile defined
-          // K8sAzureContainerNoPrivilege
-          //  - Kured, requires privileged to perform reboot
-          // K8sAzureBlockHostNamespaceV2
-          //  - Kured, shared host namespace
-          // K8sAzureAllowedUsersGroups
-          //  - Kured, no runAsNonRoot, no runAsGroup, no supplementalGroups, no fsGroup
           'cluster-baseline-settings'
 
           // Known violations
@@ -1054,7 +1028,6 @@ resource paRoRootFilesystem 'Microsoft.Authorization/policyAssignments@2021-06-0
       }
       excludedContainers: {
         value: [
-          'kured'   // Kured
           'aspnet-webapp-sample'   // ASP.NET Core does not support read-only root
         ]
       }
@@ -1078,10 +1051,10 @@ resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2021
     policyDefinitionId: pdEnforceResourceLimitsId
     parameters: {
       cpuLimit: {
-        value: '500m' // Kured = 500m, traefik-ingress-controller = 200m, aspnet-webapp-sample = 100m
+        value: '500m' // traefik-ingress-controller = 200m, aspnet-webapp-sample = 100m
       }
       memoryLimit: {
-        value: '256Mi' // aspnet-webapp-sample = 256Mi, traefik-ingress-controller = 128Mi, Kured = 48Mi
+        value: '256Mi' // aspnet-webapp-sample = 256Mi, traefik-ingress-controller = 128Mi
       }
       excludedNamespaces: {
         value: [
@@ -1111,7 +1084,7 @@ resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2021-06
     parameters: {
       allowedContainerImagesRegex: {
         // If all images are pull into your ARC instance as described in these instructions you can remove the docker.io & ghcr.io entries.
-        value: '${acr.name}\\.azurecr\\.io/.+$|mcr\\.microsoft\\.com/.+$|ghcr\\.io/kubereboot/kured.+$|docker\\.io/library/.+$'
+        value: '${acr.name}\\.azurecr\\.io/.+$|mcr\\.microsoft\\.com/.+$|docker\\.io/library/.+$'
       }
       excludedNamespaces: {
         value: [

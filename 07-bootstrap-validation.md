@@ -65,11 +65,9 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    The bootstrapping process that already happened due to the usage of the Flux extension for AKS has set up the following, amoung other things
 
    - the workload's namespace named `a0008`
-   - installed kured
 
    ```bash
    kubectl get namespaces
-   kubectl get all -n cluster-baseline-settings
    ```
 
    These commands will show you results that were due to the automatic bootstrapping process your cluster experienced due to the Flux GitOps extension. This content mirrors the content found in [`cluster-manifests`](./cluster-manifests), and commits made there will reflect in your cluster within minutes of making the change.
