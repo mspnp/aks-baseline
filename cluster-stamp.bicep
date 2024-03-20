@@ -1801,7 +1801,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-01-02-preview' = {
     }
     autoUpgradeProfile: {
       nodeOSUpgradeChannel: 'NodeImage'
-      upgradeChannel: 'node-image'
+      upgradeChannel: 'none'
     }
     azureMonitorProfile: {
       metrics: {
@@ -1920,27 +1920,10 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-01-02-preview' = {
             intervalWeeks: 1
           }
         }
-        startTime: '09:00'
-      }
-    }
-  }
-
-  resource k8s_maintenanceConfigurations 'maintenanceConfigurations' = {
-    name: 'aksManagedAutoUpgradeSchedule'
-    properties: {
-      maintenanceWindow: {
-        durationHours: 12
-        schedule: {
-          weekly: {
-            dayOfWeek: 'Wednesday'
-            intervalWeeks: 2
-          }
-        }
         startTime: '21:00'
       }
     }
   }
-
 }
 
 resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
