@@ -26,6 +26,19 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    echo AKS_CLUSTER_NAME: $AKS_CLUSTER_NAME
    ```
 
+1. Validate there are no available image upgrades. As this AKS cluster was recently deployed, only a race condition between publication of new available images and the deployment image fetch could result into a different state.
+
+   ```bash
+   az aks nodepool get-upgrades -n npuser01 --cluster-name $AKS_CLUSTER_NAME -g rg-bu0001a0008 && \
+   az aks nodepool show -n npuser01 --cluster-name $AKS_CLUSTER_NAME -g rg-bu0001a0008 --query nodeImageVersion
+   ```
+
+   > Typically, base node images don't contain a suffix with a date (i.e. `AKSUbuntu-2204gen2containerd`). If the `nodeImageVersion` value looks like `AKSUbuntu-2204gen2containerd-202402.26.0` a SecurityPatch or NodeImage upgrade has been applied to the AKS node.
+
+   > The AKS nodes are configured to receive weekly updates automatically which include security patches, kernel updates, and node images updates. The AKS cluster version won't be updated automatically since production clusters should be updated manually after testing in lower environments.
+
+   > Node image updates are shipped on a weekly cadence by default. This AKS cluster is configured to have its maintenance window for node image updates every Tuesday at 9PM. If a node image is released outside of this maintenance window, the nodes will be updated on the next scheduled occurrence. For AKS nodes that require more frequent updates, consider changing the auto-upgrade channel to `SecurityPatch` and configuring a daily maintenance window.
+
 1. Get AKS `kubectl` credentials.
 
    > In the [Microsoft Entra ID Integration](03-microsoft-entra-id.md) step, we placed our cluster under Microsoft Entra group-backed RBAC. This is the first time we are seeing this used. `az aks get-credentials` sets your `kubectl` context so that you can issue commands against your cluster. Even when you have enabled Microsoft Entra ID integration with your AKS cluster, an Azure user has sufficient permissions on the cluster resource can still access your AKS cluster by using the `--admin` switch to this command. Using this switch *bypasses* Microsoft Entra ID and uses client certificate authentication instead; that isn't what we want to happen. So in order to prevent that practice, local account access such as `clusterAdmin` or `clusterMonitoringUser`) is expressly disabled.
@@ -52,11 +65,9 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    The bootstrapping process that already happened due to the usage of the Flux extension for AKS has set up the following, amoung other things
 
    - the workload's namespace named `a0008`
-   - installed kured
 
    ```bash
    kubectl get namespaces
-   kubectl get all -n cluster-baseline-settings
    ```
 
    These commands will show you results that were due to the automatic bootstrapping process your cluster experienced due to the Flux GitOps extension. This content mirrors the content found in [`cluster-manifests`](./cluster-manifests), and commits made there will reflect in your cluster within minutes of making the change.
