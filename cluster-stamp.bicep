@@ -16,6 +16,7 @@ param a0008NamespaceReaderMicrosoftEntraGroupObjectId string
 param k8sControlPlaneAuthorizationTenantId string
 
 @description('The certificate data for app gateway TLS termination. It is base64')
+@secure()
 param appGatewayListenerCertificate string
 
 @description('The Base64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate.')
