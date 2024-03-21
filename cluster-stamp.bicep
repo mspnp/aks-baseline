@@ -15,7 +15,7 @@ param a0008NamespaceReaderMicrosoftEntraGroupObjectId string
 @description('Your AKS control plane Cluster API authentication tenant')
 param k8sControlPlaneAuthorizationTenantId string
 
-@description('The certificate data for app gateway TLS termination. It is base64')
+@description('The PFX certificate for app gateway TLS termination. It is base64')
 @secure()
 param appGatewayListenerCertificate string
 
@@ -1451,8 +1451,8 @@ resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
     }
   }
 
-  resource kvsGatewayPublicCert 'secrets' = {
-    name: 'gateway-public-cert'
+  resource kvsGatewayExternalCert 'secrets' = {
+    name: 'gateway-external-pfx-cert'
     properties: {
       value: appGatewayListenerCertificate
     }
@@ -2199,7 +2199,7 @@ resource agw 'Microsoft.Network/applicationGateways@2021-05-01' = {
       {
         name: '${agwName}-ssl-certificate'
         properties: {
-          keyVaultSecretId: kv::kvsGatewayPublicCert.properties.secretUri
+          keyVaultSecretId: kv::kvsGatewayExternalCert.properties.secretUri
         }
       }
     ]
