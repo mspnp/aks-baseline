@@ -99,10 +99,7 @@ metadata:
   namespace: a0008
   annotations:
     kubernetes.io/ingress.allow-http: "false"
-    # defines controller implementing this ingress resource: https://learn.microsoft.com/en-us/azure/dev-spaces/how-to/ingress-https-traefik
-    # ingress.class annotation is being deprecated in Kubernetes 1.18: https://kubernetes.io/docs/concepts/services-networking/ingress/#deprecated-annotation
-    # For backwards compatibility, when this annotation is set, precedence is given over the new field ingressClassName under spec.
-    kubernetes.io/ingress.class: traefik-internal
+    kubernetes.io/spec.ingressClassName: traefik-internal
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.tls.options: default
@@ -127,5 +124,4 @@ spec:
           service:
             name: aspnetapp-service
             port:
-              number: 80
----
+              number: 80---
