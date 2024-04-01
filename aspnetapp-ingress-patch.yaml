@@ -1,0 +1,6 @@
+- op: replace
+  path: "/spec/tls/0/hosts/0"
+  value: bu0001a0008-00.aks-ingress.contoso.com
+- op: replace
+  path: "/spec/rules/0/host"
+  value: bu0001a0008-00.aks-ingress.contoso.com
