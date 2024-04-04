@@ -1,0 +1,7 @@
+# Ignore certificate and key files
+*.crt
+*.key
+*.pfx
+*.pem
+aks_baseline.env
+/.vs/*
