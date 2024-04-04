@@ -4,3 +4,4 @@
 *.pfx
 *.pem
 aks_baseline.env
+/.vs/*
