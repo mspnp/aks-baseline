@@ -75,7 +75,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
 1. Wait for Traefik to be ready.
 
-   > During Traefik's pod creation process, Azure Key Vault will be accessed to get the required certs needed for pod volume mount (csi). This sometimes takes a bit of time, but will eventually succeed if properly configured.
+   > During Traefik's pod creation process, Azure Key Vault will be accessed to get the required certs needed for pod volume mount (csi). This sometimes takes a bit of time but will eventually succeed if properly configured.
 
    ```bash
    kubectl wait -n a0008 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s
