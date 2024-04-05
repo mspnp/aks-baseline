@@ -28,7 +28,7 @@ param clusterAuthorizedIPRanges array = []
 @description('AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region. This needs to be the same region as the vnet provided in these parameters. This defaults to the resource group\'s location for higher reliability.')
 param location string = resourceGroup().location
 
-param kubernetesVersion string = '1.28.3'
+param kubernetesVersion string = '1.29'
 
 @description('Domain name to use for App Gateway and AKS ingress.')
 param domainName string = 'contoso.com'
@@ -1632,7 +1632,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-01-02-preview' = {
         osDiskSizeGB: 80
         osDiskType: 'Ephemeral'
         osType: 'Linux'
-        osSKU: 'Ubuntu'
+        osSKU: 'AzureLinux'
         minCount: 3
         maxCount: 4
         vnetSubnetID: targetVirtualNetwork::snetClusterNodes.id
@@ -1666,7 +1666,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-01-02-preview' = {
         osDiskSizeGB: 120
         osDiskType: 'Ephemeral'
         osType: 'Linux'
-        osSKU: 'Ubuntu'
+        osSKU: 'AzureLinux'
         minCount: 2
         maxCount: 5
         vnetSubnetID: targetVirtualNetwork::snetClusterNodes.id

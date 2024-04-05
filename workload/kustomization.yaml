@@ -4,7 +4,7 @@ kind: Kustomization
 resources:
 - aspnetapp.yaml
 
-patchesJson6902:
+patches:
 - target:
     kind: Ingress
     name: aspnetapp-ingress

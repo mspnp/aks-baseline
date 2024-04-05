@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
 ---
-#https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-rbac.yml
+#https://raw.githubusercontent.com/traefik/traefik/v2.11/docs/content/reference/dynamic-configuration/kubernetes-crd-rbac.yml
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -230,10 +230,10 @@ spec:
         # PRODUCTION READINESS CHANGE REQUIRED
         # This image should be sourced from a non-public container registry, such as the
         # one deployed along side of this reference implementation.
-        # az acr import --source docker.io/library/traefik:v2.10.7 -n <your-acr-instance-name>
+        # az acr import --source docker.io/library/traefik:v2.11 -n <your-acr-instance-name>
         # and then set this to
-        # image: <your-acr-instance-name>.azurecr.io/library/traefik:v2.10.7
-      - image: docker.io/library/traefik:v2.10.7
+        # image: <your-acr-instance-name>.azurecr.io/library/traefik:v2.11
+      - image: docker.io/library/traefik:v2.11
         imagePullPolicy: IfNotPresent
         name: traefik-ingress-controller
         resources:
