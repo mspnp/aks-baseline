@@ -51,7 +51,7 @@ Also do not forget to view the [detailed architecture diagram](/networking/aks-b
 
 ## Deploy the reference implementation
 
-A deployment of AKS-hosted workloads typically experiences a separation of duties and lifecycle management in the area of prerequisites, the host network, the cluster infrastructure, and finally the workload itself. This reference implementation is similar. Also, be aware our primary purpose is to illustrate the topology and decisions of a baseline cluster. We feel a "step-by-step" flow will help you learn the pieces of the solution and give you insight into the relationship between them. Ultimately, lifecycle/SDLC management of your cluster and its dependencies will depend on your situation (team roles, organizational standards, and so on), and will be implemented as appropriate for your needs.
+A deployment of AKS-hosted workloads typically experiences a separation of duties and lifecycle management in the areas of prerequisites, the host network, the cluster infrastructure, and finally the workload itself. This reference implementation is similar. Also, be aware our primary purpose is to illustrate the topology and decisions of a baseline cluster. We feel a "step-by-step" flow will help you learn the pieces of the solution and give you insight into the relationship between them. Ultimately, lifecycle/SDLC management of your cluster and its dependencies will depend on your situation (team roles, organizational standards, and so on), and will be implemented as appropriate for your needs.
 
 **Please start this learning journey in the *Preparing for the cluster* section.** If you follow this through to the end, you'll have our recommended baseline cluster installed, with an end-to-end sample workload running for you to reference in your own Azure subscription.
 
@@ -65,7 +65,7 @@ There are considerations that must be addressed before you start deploying your 
 
 ### 2. Build target network
 
-Microsoft recommends AKS be deploy into a carefully planned network; sized appropriately for your needs and with proper network observability. Organizations typically favor a traditional hub-spoke model, which is reflected in this implementation. While this is a standard hub-spoke model, there are fundamental sizing and portioning considerations included that should be understood.
+Microsoft recommends AKS be deployed into a carefully planned network; sized appropriately for your needs and with proper network observability. Organizations typically favor a traditional hub-spoke model, which is reflected in this implementation. While this is a standard hub-spoke model, there are fundamental sizing and portioning considerations included that should be understood.
 
 - [ ] [Build the hub-spoke network](./04-networking.md)
 
@@ -101,7 +101,7 @@ Most of the Azure resources deployed in the prior steps will incur ongoing charg
 
 ## Preview and additional features
 
-Kubernetes and, by extension, AKS are fast-evolving products. The [AKS roadmap](https://aka.ms/AKS/Roadmap) shows how quick the product is changing. This reference implementation does take dependencies on select preview features which the AKS team describes as "Shipped & Improving." The rational behind that is that many of the preview features stay in that state for only a few months before entering GA. If you are just artchitecting your cluster today, by the time you're ready for production, there is a good chance that many of the preview features are nearing or will have hit GA.
+Kubernetes and, by extension, AKS are fast-evolving products. The [AKS roadmap](https://aka.ms/AKS/Roadmap) shows how quickly the product is changing. This reference implementation does take dependencies on select preview features which the AKS team describes as "Shipped & Improving." The rationale behind that is that many of the preview features stay in that state for only a few months before entering GA. If you are just architecting your cluster today, by the time you're ready for production, there is a good chance that many of the preview features are nearing or will have hit GA.
 
 This implementation will not include every preview feature, but instead only those that add significant value to a general-purpose cluster. There are some additional preview features you may wish to evaluate in preproduction clusters that augment your posture around security, manageability, and so on. As these features come out of preview, this reference implementation may be updated to incorporate them. Consider trying out and providing feedback on the following:
 

@@ -1,6 +1,6 @@
 # End-to-end validation
 
-Now that you have a workload deployed, the [ASP.NET Core sample web app](./10-workload.md), you can start validating and exploring this reference implementation of the [AKS baseline cluster](./). In addition to the workload, there are some observability validation you can perform as well.
+Now that you have a workload deployed, the [ASP.NET Core sample web app](./10-workload.md), you can start validating and exploring this reference implementation of the [AKS baseline cluster](./). In addition to the workload, there is some observability validation you can perform as well.
 
 ## Validate the web app
 
@@ -28,7 +28,7 @@ This section will help you to validate the workload is exposed correctly and res
 
    > :bulb: Remember to include the protocol prefix `https://` in the URL you type in the address bar of your browser. A TLS warning will be present due to using a self-signed certificate. You can ignore it or import the self-signed cert (`appgw.pfx`) to your user's trusted root store.
 
-   Refresh the web page a couple of times and observe the value `Host name` displayed at the bottom of the page. As the Traefik Ingress Controller balances the requests between the two pods hosting the web page, the host name will change from one pod name to the other throughtout your queries.
+   Refresh the web page a couple of times and observe the value `Host name` displayed at the bottom of the page. As the Traefik Ingress Controller balances the requests between the two pods hosting the web page, the host name will change from one pod name to the other throughout your queries.
 
 ## Validate reader access to the a0008 namespace. *Optional.*
 
