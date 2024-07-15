@@ -179,7 +179,7 @@ resource acrAks 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
     }
     dataEndpointEnabled: true
     networkRuleBypassOptions: 'AzureServices'
-    zoneRedundancy: 'Disabled' // This Preview feature only supports three regions at this time, and eastus2's paired region (centralus), does not support this. So disabling for now.
+    zoneRedundancy: 'Enabled'
   }
 
   resource acrReplication 'replications@2021-09-01' = {
