@@ -1,10 +1,12 @@
 # Deploy the hub-spoke network topology
 
-The prerequisites for the [AKS baseline cluster](./) are now completed with [Microsoft Entra group and user work](./03-microsoft-entra-id.md) performed in the prior steps. Now we will start with our first Azure resource deployment, the network resources.
+In the previous steps, we completed the [Microsoft Entra group and user work](./03-microsoft-entra-id.md), which means we've met the prerequisites for the [AKS baseline cluster](./). In this article, we perform our first Azure resource deployment, which is for the network resources.
 
 ## Subscription and resource group topology
 
-This reference implementation is split across several resource groups in a single subscription. This is to replicate the fact that many organizations will split certain responsibilities into specialized subscriptions (such as regional hubs/VWAN in a *Connectivity* subscription and workloads in landing zone subscriptions). We expect you to explore this reference implementation within a single subscription, but when you implement this cluster at your organization, you will need to take what you've learned here and apply it to your expected subscription and resource group topology (such as those [offered by the Cloud Adoption Framework](https://learn.microsoft.com/azure/cloud-adoption-framework/decision-guides/subscriptions/).) This single subscription, multiple resource group model is for simplicity of demonstration purposes only.
+This reference implementation is split across several resource groups in a single subscription. This configuration replicates the fact that many organizations will split certain responsibilities into specialized subscriptions, such as regional hubs/VWAN in a *Connectivity* subscription and workloads in landing zone subscriptions.
+
+We expect you to explore this reference implementation within a single subscription, but when you implement this cluster at your organization, you will need to take what you've learned here and apply it to your expected subscription and resource group topology, such as those [offered by the Cloud Adoption Framework](https://learn.microsoft.com/azure/cloud-adoption-framework/decision-guides/subscriptions/). This single subscription, multiple resource group model is for simplicity of demonstration purposes only.
 
 ## Expected results
 
@@ -27,7 +29,7 @@ The following two resource groups will be created and populated with networking 
 
 ## Steps
 
-1. Login into the Azure subscription that you'll be deploying into.
+1. Sign into the Azure subscription that you'll be deploying the resources to.
 
    > :book: The networking team logins into the Azure subscription that will contain the regional hub. At Contoso Bicycle, all of their regional hubs are in the same, centrally-managed subscription, separated by resource groups per region.
 
