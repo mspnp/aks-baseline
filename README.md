@@ -59,23 +59,23 @@ A deployment of AKS-hosted workloads typically experiences a separation of dutie
 
 There are considerations that must be addressed before you start deploying your cluster. Do I have enough permissions in my subscription and AD tenant to do a deployment of this size? How much of this will be handled by my team directly vs having another team be responsible?
 
-- [ ] Begin by ensuring you [install and meet the prerequisites](./docs/01-prerequisites.md)
-- [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./docs/02-ca-certificates.md)
-- [ ] [Plan your Microsoft Entra ID integration](./docs/03-microsoft-entra-id.md)
+- [ ] Begin by ensuring you [install and meet the prerequisites](./docs/deploy/01-prerequisites.md)
+- [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./docs/deploy/02-ca-certificates.md)
+- [ ] [Plan your Microsoft Entra ID integration](./docs/deploy/03-microsoft-entra-id.md)
 
 ### 2. Build target network
 
 Microsoft recommends AKS be deployed into a carefully planned network; sized appropriately for your needs and with proper network observability. Organizations typically favor a traditional hub-spoke model, which is reflected in this implementation. While this is a standard hub-spoke model, there are fundamental sizing and portioning considerations included that should be understood.
 
-- [ ] [Build the hub-spoke network](./docs/04-networking.md)
+- [ ] [Build the hub-spoke network](./docs/deploy/04-networking.md)
 
 ### 3. Deploying the cluster
 
 This is the heart of the guidance in this reference implementation; paired with prior network topology guidance. Here you will deploy the Azure resources for your cluster and the adjacent services such as Azure Application Gateway WAF, Azure Monitor, Azure Container Registry, and Azure Key Vault. This is also where you will validate the cluster is bootstrapped.
 
-- [ ] [Prep for cluster bootstrapping](./docs/05-bootstrap-prep.md)
-- [ ] [Deploy the AKS cluster and supporting services](./docs/06-aks-cluster.md)
-- [ ] [Validate cluster bootstrapping](./docs/07-bootstrap-validation.md)
+- [ ] [Prep for cluster bootstrapping](./docs/deploy/05-bootstrap-prep.md)
+- [ ] [Deploy the AKS cluster and supporting services](./docs/deploy/06-aks-cluster.md)
+- [ ] [Validate cluster bootstrapping](./docs/deploy/07-bootstrap-validation.md)
 
 We perform the prior steps manually here for you to understand the involved components, but we advocate for an automated DevOps process. Therefore, incorporate the prior steps into your CI/CD pipeline, as you would any infrastructure as code (IaC). See the dedicated [AKS baseline automation guidance](https://github.com/Azure/aks-baseline-automation#aks-baseline-automation) for additional details.
 
@@ -83,21 +83,21 @@ We perform the prior steps manually here for you to understand the involved comp
 
 Without a workload deployed to the cluster it will be hard to see how these decisions come together to work as a reliable application platform for your business. The deployment of this workload would typically follow a CI/CD pattern and may involve even more advanced deployment strategies (such as blue/green). The following steps represent a manual deployment, suitable for illustration purposes of this infrastructure.
 
-- [ ] Just like the cluster, there are [workload prerequisites to address](./docs/08-workload-prerequisites.md)
-- [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./docs/09-secret-management-and-ingress-controller.md)
-- [ ] [Deploy the workload](./docs/10-workload.md)
+- [ ] Just like the cluster, there are [workload prerequisites to address](./docs/deploy/08-workload-prerequisites.md)
+- [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./docs/deploy/09-secret-management-and-ingress-controller.md)
+- [ ] [Deploy the workload](./docs/deploy/10-workload.md)
 
 ### 5. :checkered_flag: Validation
 
 Now that the cluster and the sample workload is deployed; it's time to look at how the cluster is functioning.
 
-- [ ] [Perform end-to-end deployment validation](./docs/11-validation.md)
+- [ ] [Perform end-to-end deployment validation](./docs/deploy/11-validation.md)
 
 ## :broom: Clean up resources
 
 Most of the Azure resources deployed in the prior steps will incur ongoing charges unless removed.
 
-- [ ] [Clean up all resources](./docs/12-cleanup.md)
+- [ ] [Clean up all resources](./docs/deploy/12-cleanup.md)
 
 ## Preview and additional features
 
