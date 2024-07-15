@@ -88,16 +88,20 @@ resource sqrDailyDataCapBreach 'Microsoft.Insights/scheduledQueryRules@2023-12-0
 }
 
 // Apply the built-in 'Container registries should have anonymous authentication disabled' policy. Azure RBAC only is allowed.
-var pdAnonymousContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '9f2dea28-e834-476c-99c5-3507b4728395')
+resource pdAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyDefinitions@2021-06-01' existing = {
+  name: '9f2dea28-e834-476c-99c5-3507b4728395'
+  scope: tenant()
+}
+
 resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2024-04-01' = {
-  name: guid(resourceGroup().id, pdAnonymousContainerRegistryAccessDisallowedId)
+  name: guid(resourceGroup().id, pdAnonymousContainerRegistryAccessDisallowed.id)
   location: 'global'
   scope: resourceGroup()
   properties: {
-    displayName: take('[acraks${subRgUniqueString}] ${reference(pdAnonymousContainerRegistryAccessDisallowedId, '2021-06-01').displayName}', 120)
-    description: reference(pdAnonymousContainerRegistryAccessDisallowedId, '2021-06-01').description
+    displayName: take('[acraks${subRgUniqueString}] ${pdAnonymousContainerRegistryAccessDisallowed.properties.displayName}', 120)
+    description: pdAnonymousContainerRegistryAccessDisallowed.properties.description
     enforcementMode: 'Default'
-    policyDefinitionId: pdAnonymousContainerRegistryAccessDisallowedId
+    policyDefinitionId: pdAnonymousContainerRegistryAccessDisallowed.id
     parameters: {
       effect: {
         value: 'Deny'
@@ -107,16 +111,20 @@ resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/p
 }
 
 // Apply the built-in 'Container registries should have local admin account disabled' policy. Azure RBAC only is allowed.
-var pdAdminAccountContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'dc921057-6b28-4fbe-9b83-f7bec05db6c2')
+resource pdAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyDefinitions@2021-06-01' existing = {
+  name: 'dc921057-6b28-4fbe-9b83-f7bec05db6c2'
+  scope: tenant()
+}
+
 resource paAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2024-04-01' = {
-  name: guid(resourceGroup().id, pdAdminAccountContainerRegistryAccessDisallowedId)
+  name: guid(resourceGroup().id, pdAdminAccountContainerRegistryAccessDisallowed.id)
   location: 'global'
   scope: resourceGroup()
   properties: {
-    displayName: take('[acraks${subRgUniqueString}] ${reference(pdAdminAccountContainerRegistryAccessDisallowedId, '2021-06-01').displayName}', 120)
-    description: reference(pdAdminAccountContainerRegistryAccessDisallowedId, '2021-06-01').description
+    displayName: take('[acraks${subRgUniqueString}] ${pdAdminAccountContainerRegistryAccessDisallowed.properties.displayName}', 120)
+    description: pdAdminAccountContainerRegistryAccessDisallowed.properties.description
     enforcementMode: 'Default'
-    policyDefinitionId: pdAdminAccountContainerRegistryAccessDisallowedId
+    policyDefinitionId: pdAdminAccountContainerRegistryAccessDisallowed.id
     parameters: {
       effect: {
         value: 'Deny'
