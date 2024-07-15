@@ -1,6 +1,6 @@
 # Deploy the hub-spoke network topology
 
-In the previous steps, we completed the [Microsoft Entra group and user work](./03-microsoft-entra-id.md), which means we've met the prerequisites for the [AKS baseline cluster](./). In this article, we perform our first Azure resource deployment, which is for the network resources.
+In the previous steps, we completed the [Microsoft Entra group and user work](./03-microsoft-entra-id.md), which means we've met the prerequisites for the [AKS baseline cluster](../../). In this article, we perform our first Azure resource deployment, which is for the network resources.
 
 ## Subscription and resource group topology
 
