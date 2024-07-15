@@ -25,23 +25,23 @@ resource networkContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01
 
 /*** EXISTING HUB RESOURCES ***/
 
-resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' existing = {
+resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
   name: targetVirtualNetworkName
 }
 
-resource snetClusterNodes 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
+resource snetClusterNodes 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
   parent: targetVirtualNetwork
   name: 'snet-clusternodes'
 }
 
-resource snetClusterIngress 'Microsoft.Network/virtualNetworks/subnets@2021-05-01' existing = {
+resource snetClusterIngress 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
   parent: targetVirtualNetwork
   name: 'snet-clusteringressservices'
 }
 
 /*** RESOURCES ***/
 
-resource snetClusterNodesMiClusterControlPlaneNetworkContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+resource snetClusterNodesMiClusterControlPlaneNetworkContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: snetClusterNodes
   name: guid(snetClusterNodes.id, networkContributorRole.id, clusterControlPlaneIdentityName)
   properties: {
@@ -52,7 +52,7 @@ resource snetClusterNodesMiClusterControlPlaneNetworkContributorRole_roleAssignm
   }
 }
 
-resource snetClusterIngressServicesMiClusterControlPlaneSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+resource snetClusterIngressServicesMiClusterControlPlaneSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: snetClusterIngress
   name: guid(snetClusterIngress.id, networkContributorRole.id, clusterControlPlaneIdentityName)
   properties: {
