@@ -1,6 +1,6 @@
 # Prep for cluster bootstrapping
 
-Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS baseline reference implementation](./) is preparing what your AKS cluster should be bootstrapped with.
+Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS baseline reference implementation](../../) is preparing what your AKS cluster should be bootstrapped with.
 
 ## Expected results
 

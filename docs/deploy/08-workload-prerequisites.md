@@ -1,6 +1,6 @@
 # Workload prerequisites
 
-The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping up the infrastructure focus of the [AKS baseline reference implementation](./). Follow these steps to import the TLS certificate that the ingress controller will serve for Application Gateway to connect to your web app.
+The AKS Cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping up the infrastructure focus of the [AKS baseline reference implementation](../../). Follow these steps to import the TLS certificate that the ingress controller will serve for Application Gateway to connect to your web app.
 
 ## Steps
 
