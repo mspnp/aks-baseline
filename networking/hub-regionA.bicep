@@ -357,7 +357,7 @@ resource ipgNodepoolSubnet 'Microsoft.Network/ipGroups@2023-11-01' = {
   name: 'ipg-${location}-AksNodepools'
   location: location
   properties: {
-    ipAddresses: [for nodepoolSubnetResourceId in nodepoolSubnetResourceIds: '${reference(nodepoolSubnetResourceId, '2020-05-01').addressPrefix}']
+    ipAddresses: [for nodepoolSubnetResourceId in nodepoolSubnetResourceIds: '${reference(nodepoolSubnetResourceId, '2023-11-01').addressPrefix}']
   }
 }
 
