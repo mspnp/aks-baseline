@@ -68,40 +68,48 @@ The following two resource groups will be created and populated with networking 
    > Note: The subnets for Azure Bastion and cross-premises connectivity are deployed in this reference architecture, but the resources are not deployed. Since this reference implementation is expected to be deployed isolated from existing infrastructure; these IP addresses should not conflict with any existing networking you have, even if those IP addresses overlap. If you need to connect the reference implementation to existing networks, you will need to adjust the IP space as per your requirements as to not conflict in the reference ARM templates.
 
    ```bash
-   # [This takes about six minutes to run.]
+   # [This takes about ten minutes to run.]
    az deployment group create -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -f networking/hub-default.bicep
    ```
 
-   The hub creation will emit the following:
+   The hub deployment emits the following output:
 
       - `hubVnetId` - which you'll will query in future steps when creating connected regional spokes. Such as, `/subscriptions/[id]/resourceGroups/rg-enterprise-networking-hubs-eastus2/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub`
 
-1. Create the spoke that will be home to the AKS cluster and its adjacent resources.
-
-   > :book: The networking team receives a request from an app team in business unit (BU) 0001 for a network spoke to house their new AKS-based application (Internally know as Application ID: A0008). The network team talks with the app team to understand their requirements and aligns those needs with Microsoft's best practices for a general-purpose AKS cluster deployment. They capture those specific requirements and deploy the spoke, aligning to those specs, and connecting it to the matching regional hub.
+1. Capture the output from the hub network deployment that will be required in later steps.
 
    ```bash
    RESOURCEID_VNET_HUB=$(az deployment group show -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -n hub-default --query properties.outputs.hubVnetId.value -o tsv)
    echo RESOURCEID_VNET_HUB: $RESOURCEID_VNET_HUB
+   ```
 
+1. Create the spoke network that will be home to the AKS cluster and its adjacent resources.
+
+   > :book: The networking team receives a request from an app team in business unit (BU) 0001 for a network spoke to house their new AKS-based application (Internally know as Application ID: A0008). The network team talks with the app team to understand their requirements and aligns those needs with Microsoft's best practices for a general-purpose AKS cluster deployment. They capture those specific requirements and deploy the spoke, aligning to those specs, and connecting it to the matching regional hub.
+
+   ```bash
    # [This takes about four minutes to run.]
    az deployment group create -g rg-enterprise-networking-spokes-${LOCATION_AKS_BASELINE} -f networking/spoke-BU0001A0008.bicep -p hubVnetResourceId="${RESOURCEID_VNET_HUB}"
    ```
 
-   The spoke creation will emit the following:
+   The spoke network deployment emits the following outputs:
 
      - `appGwPublicIpAddress` - The public IP address of the Azure Application Gateway (WAF) that will receive traffic for your workload.
      - `clusterVnetResourceId` - The resource ID of the virtual network where the cluster, App Gateway, and related resources will be deployed. Such as, `/subscriptions/[id]/resourceGroups/rg-enterprise-networking-spokes-eastus2/providers/Microsoft.Network/virtualNetworks/vnet-spoke-BU0001A0008-00`
      - `nodepoolSubnetResourceIds` - An array containing the subnet resource IDs of the AKS node pools in the spoke. Such as, `[ "/subscriptions/[id]/resourceGroups/rg-enterprise-networking-spokes-eastus2/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-clusternodes"]`
+
+1. Capture the output from the spoke network deployment that will be required in later steps.
+
+   ```bash
+   RESOURCEID_SUBNET_NODEPOOLS=$(az deployment group show -g rg-enterprise-networking-spokes-${LOCATION_AKS_BASELINE} -n spoke-BU0001A0008 --query properties.outputs.nodepoolSubnetResourceIds.value -o json)
+   echo RESOURCEID_SUBNET_NODEPOOLS: $RESOURCEID_SUBNET_NODEPOOLS
+   ```
 
 1. Update the shared, regional hub deployment to account for the networking requirements of the upcoming workload in the spoke.
 
    > :book: Now that their regional hub has its first spoke, the hub can no longer run off of the generic hub template. The networking team creates a named hub template (such as, `hub-eastus2.bicep`) to forever represent this specific hub and the features this specific hub needs in order to support its spokes' requirements. As new spokes are attached and new requirements arise for the regional hub, they will be added to this template file.
 
    ```bash
-   RESOURCEID_SUBNET_NODEPOOLS=$(az deployment group show -g rg-enterprise-networking-spokes-${LOCATION_AKS_BASELINE} -n spoke-BU0001A0008 --query properties.outputs.nodepoolSubnetResourceIds.value -o json)
-   echo RESOURCEID_SUBNET_NODEPOOLS: $RESOURCEID_SUBNET_NODEPOOLS
-
    # [This takes about 15 minutes to run.]
    az deployment group create -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -f networking/hub-regionA.bicep -p nodepoolSubnetResourceIds="${RESOURCEID_SUBNET_NODEPOOLS}"
    ```
@@ -110,11 +118,11 @@ The following two resource groups will be created and populated with networking 
    >
    > Hubs and spokes are controlled by the networking team's GitHub Actions workflows. This automation is not included in this reference implementation as this body of work is focused on the AKS baseline and not the networking team's CI/CD practices.
 
-## Private DNS Zones
+## Private DNS zones
 
-Private DNS zones in this reference implementation are implemented directly at the spoke level, meaning the workload team creates the Private Link DNS zones and records for the resources needed; furthermore, the workload is directly using Azure DNS for resolution. Your networking topology might support this decentralized model or instead DNS & DNS zones for Private Link might be handed at the regional hub or in a [VWAN virtual hub extension](https://learn.microsoft.com/azure/architecture/guide/networking/private-link-virtual-wan-dns-virtual-hub-extension-pattern) by your networking team.
+Private DNS zones in this reference implementation are implemented directly at the spoke level, meaning the workload team creates the Private Link DNS zones and records for the resources needed; furthermore, the workload is directly using Azure DNS for resolution. Your networking topology might support this decentralized model too. Alternatively, DNS and DNS zones for Private Link might be handed at the regional hub or in a [VWAN virtual hub extension](https://learn.microsoft.com/azure/architecture/guide/networking/private-link-virtual-wan-dns-virtual-hub-extension-pattern) by your networking team.
 
-If your organization operates a centralized DNS model, you will need to integrate the management of DNS zone records for this implementation into your existing enterprise networking DNS zone strategy. Since this reference implementation is expected to be deployed in isolation from your existing infrastructure; this is not something you need to address now; but will be something to understand and address when taking your solution to production.
+If your organization operates a centralized DNS model, you will need to integrate the management of DNS zone records for this implementation into your existing enterprise networking DNS zone strategy. Since this reference implementation is expected to be deployed in isolation from your existing infrastructure, this isn't something you need to address now - but will be something to understand and address when taking your solution to production.
 
 ### Save your work in-progress
 
