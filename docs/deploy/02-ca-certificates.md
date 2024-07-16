@@ -34,7 +34,7 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow these s
 
 1. Generate the wildcard certificate for the AKS ingress controller.
 
-   > :book: Contoso Bicycle will also procure another TLS certificate, a standard cert, to be used with the AKS ingress controller. This one is not EV, as it will not be user facing. Finally the app team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller.
+   > :book: Contoso Bicycle procured a standard CA certificate to be used with the AKS ingress controller. This one is not EV, because it won't be user-facing. The app team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller.
 
    ```bash
    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out traefik-ingress-internal-aks-ingress-tls.crt -keyout traefik-ingress-internal-aks-ingress-tls.key -subj "/CN=*.aks-ingress.${DOMAIN_NAME_AKS_BASELINE}/O=Contoso AKS Ingress"
