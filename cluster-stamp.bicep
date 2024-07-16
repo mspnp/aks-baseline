@@ -2327,6 +2327,7 @@ resource agw 'Microsoft.Network/applicationGateways@2023-11-01' = {
       {
         name: 'apw-routing-rules'
         properties: {
+          priority: 100
           ruleType: 'Basic'
           httpListener: {
             id: resourceId('Microsoft.Network/applicationGateways/httpListeners', agwName, 'listener-https')
