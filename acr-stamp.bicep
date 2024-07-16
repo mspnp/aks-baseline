@@ -55,7 +55,7 @@ resource laAks 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
 // Logging costs can be a significant part of any architecture, and putting a cap on
 // a logging sink (none of which are applied here), can help keep costs in check but
 // you run a risk of losing critical data.
-resource sqrDailyDataCapBreach 'Microsoft.Insights/scheduledQueryRules@2023-12-01' = {
+resource sqrDailyDataCapBreach 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
   name: 'Daily data cap breached for workspace ${laAks.name} CIQ-1'
   location: location
   properties: {
