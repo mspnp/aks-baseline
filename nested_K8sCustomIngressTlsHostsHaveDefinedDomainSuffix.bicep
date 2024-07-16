@@ -2,7 +2,7 @@ targetScope = 'subscription'
 
 /*** RESOURCES ***/
 
-resource pdK8sCustomIngressTlsHostsHaveDefinedDomainSuffix 'Microsoft.Authorization/policyDefinitions@2021-06-01' = {
+resource pdK8sCustomIngressTlsHostsHaveDefinedDomainSuffix 'Microsoft.Authorization/policyDefinitions@2023-04-01' = {
   scope: subscription()
   name: 'K8sCustomIngressTlsHostsHaveDefinedDomainSuffix'
   properties: {

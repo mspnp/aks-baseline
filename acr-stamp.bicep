@@ -18,12 +18,12 @@ var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resou
 
 /*** EXISTING RESOURCES ***/
 
-resource spokeResourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' existing = {
+resource spokeResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
   scope: subscription()
   name: split(targetVnetResourceId,'/')[4]
 }
 
-resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' existing = {
+resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
   scope: spokeResourceGroup
   name: last(split(targetVnetResourceId,'/'))
   
@@ -35,7 +35,7 @@ resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2022-09-01' exis
 /*** RESOURCES ***/
 
 // This Log Analytics workspace will be the log sink for all resources in the cluster resource group. This includes ACR, the AKS cluster, Key Vault, etc. It also is the Container Insights log sink for the AKS cluster.
-resource laAks 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+resource laAks 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: 'la-aks-${subRgUniqueString}'
   location: location
   properties: {
@@ -88,16 +88,20 @@ resource sqrDailyDataCapBreach 'Microsoft.Insights/scheduledQueryRules@2018-04-1
 }
 
 // Apply the built-in 'Container registries should have anonymous authentication disabled' policy. Azure RBAC only is allowed.
-var pdAnonymousContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', '9f2dea28-e834-476c-99c5-3507b4728395')
-resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2022-06-01' = {
-  name: guid(resourceGroup().id, pdAnonymousContainerRegistryAccessDisallowedId)
+resource pdAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyDefinitions@2021-06-01' existing = {
+  name: '9f2dea28-e834-476c-99c5-3507b4728395'
+  scope: tenant()
+}
+
+resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2024-04-01' = {
+  name: guid(resourceGroup().id, pdAnonymousContainerRegistryAccessDisallowed.id)
   location: 'global'
   scope: resourceGroup()
   properties: {
-    displayName: take('[acraks${subRgUniqueString}] ${reference(pdAnonymousContainerRegistryAccessDisallowedId, '2021-06-01').displayName}', 120)
-    description: reference(pdAnonymousContainerRegistryAccessDisallowedId, '2021-06-01').description
+    displayName: take('[acraks${subRgUniqueString}] ${pdAnonymousContainerRegistryAccessDisallowed.properties.displayName}', 120)
+    description: pdAnonymousContainerRegistryAccessDisallowed.properties.description
     enforcementMode: 'Default'
-    policyDefinitionId: pdAnonymousContainerRegistryAccessDisallowedId
+    policyDefinitionId: pdAnonymousContainerRegistryAccessDisallowed.id
     parameters: {
       effect: {
         value: 'Deny'
@@ -107,16 +111,20 @@ resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/p
 }
 
 // Apply the built-in 'Container registries should have local admin account disabled' policy. Azure RBAC only is allowed.
-var pdAdminAccountContainerRegistryAccessDisallowedId = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'dc921057-6b28-4fbe-9b83-f7bec05db6c2')
-resource paAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2022-06-01' = {
-  name: guid(resourceGroup().id, pdAdminAccountContainerRegistryAccessDisallowedId)
+resource pdAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyDefinitions@2021-06-01' existing = {
+  name: 'dc921057-6b28-4fbe-9b83-f7bec05db6c2'
+  scope: tenant()
+}
+
+resource paAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2024-04-01' = {
+  name: guid(resourceGroup().id, pdAdminAccountContainerRegistryAccessDisallowed.id)
   location: 'global'
   scope: resourceGroup()
   properties: {
-    displayName: take('[acraks${subRgUniqueString}] ${reference(pdAdminAccountContainerRegistryAccessDisallowedId, '2021-06-01').displayName}', 120)
-    description: reference(pdAdminAccountContainerRegistryAccessDisallowedId, '2021-06-01').description
+    displayName: take('[acraks${subRgUniqueString}] ${pdAdminAccountContainerRegistryAccessDisallowed.properties.displayName}', 120)
+    description: pdAdminAccountContainerRegistryAccessDisallowed.properties.description
     enforcementMode: 'Default'
-    policyDefinitionId: pdAdminAccountContainerRegistryAccessDisallowedId
+    policyDefinitionId: pdAdminAccountContainerRegistryAccessDisallowed.id
     parameters: {
       effect: {
         value: 'Deny'
@@ -144,7 +152,7 @@ resource dnsPrivateZoneAcr 'Microsoft.Network/privateDnsZones@2020-06-01' = {
 }
 
 // The Container Registry that the AKS cluster will be authorized to use to pull images.
-resource acrAks 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
+resource acrAks 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: 'acraks${subRgUniqueString}'
   location: location
   dependsOn: [
@@ -211,7 +219,7 @@ resource acrAks_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-
 }
 
 // Expose Azure Container Registry via Private Link, into the cluster nodes virtual network.
-resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2022-09-01' = {
+resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2023-11-01' = {
   name: 'pe-${acrAks.name}'
   location: location
   dependsOn: [
