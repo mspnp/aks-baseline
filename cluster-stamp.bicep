@@ -946,7 +946,7 @@ resource skva 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
   }
 }
 
-resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
+resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
   name: 'PodFailedScheduledQuery'
   location: location
   properties: {
