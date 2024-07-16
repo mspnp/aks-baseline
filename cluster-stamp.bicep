@@ -54,7 +54,7 @@ var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPla
 /*** EXISTING TENANT RESOURCES ***/
 
 // Built-in 'Kubernetes cluster pod security restricted standards for Linux-based workloads' Azure Policy for Kubernetes initiative definition
-resource psdAKSLinuxRestrictive 'Microsoft.Authorization/policyDefinitions@2021-06-01' existing = {
+resource psdAKSLinuxRestrictive 'Microsoft.Authorization/policySetDefinitions@2021-06-01' existing = {
   name: '42b8ef37-b724-4e24-bbc8-7a7708edfe00'
   scope: tenant()
 }
