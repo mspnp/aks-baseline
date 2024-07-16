@@ -74,7 +74,7 @@ The following two resource groups will be created and populated with networking 
 
    The hub deployment emits the following output:
 
-      - `hubVnetId` - which you'll will query in future steps when creating connected regional spokes. Such as, `/subscriptions/[id]/resourceGroups/rg-enterprise-networking-hubs-eastus2/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub`
+      - `hubVnetId` - which you'll query in future steps when creating connected regional spokes. Such as, `/subscriptions/[id]/resourceGroups/rg-enterprise-networking-hubs-eastus2/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub`
 
 1. Capture the output from the hub network deployment that will be required in later steps.
 
