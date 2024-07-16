@@ -1667,7 +1667,7 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 }
 
-resource mc 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
+resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
   name: clusterName
   location: location
   tags: {
@@ -1690,7 +1690,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
         maxCount: 4
         vnetSubnetID: targetVirtualNetwork::snetClusterNodes.id
         enableAutoScaling: true
-        enableCustomCATrust: false
         enableFIPS: false
         enableEncryptionAtHost: false
         type: 'VirtualMachineScaleSets'
@@ -1724,7 +1723,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
         maxCount: 5
         vnetSubnetID: targetVirtualNetwork::snetClusterNodes.id
         enableAutoScaling: true
-        enableCustomCATrust: false
         enableFIPS: false
         enableEncryptionAtHost: false
         type: 'VirtualMachineScaleSets'
@@ -1869,7 +1867,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
       nodeRestriction: {
         enabled: true // https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#noderestriction
       }
-      customCATrustCertificates: [] // Empty
       defender: {
         logAnalyticsWorkspaceResourceId: la.id
         securityMonitoring: {
@@ -1880,7 +1877,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
     oidcIssuerProfile: {
       enabled: true
     }
-    enableNamespaceResources: false
     ingressProfile: {
       webAppRouting: {
         enabled: false
