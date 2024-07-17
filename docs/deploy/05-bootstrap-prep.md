@@ -46,7 +46,7 @@ In addition to Azure Container Registry being deployed to support bootstrapping,
 
    ```bash
    # [This takes about four minutes.]
-   az deployment group create -g rg-bu0001a0008 -f acr-stamp.bicep -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE}
+   az deployment group create -g rg-bu0001a0008 -f deploy/bootstrap-cluster/acr-stamp.bicep -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE}
    ```
 
 1. Import cluster management images to your container registry.
