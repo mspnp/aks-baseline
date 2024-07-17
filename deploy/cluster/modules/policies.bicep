@@ -549,7 +549,7 @@ resource paManagedIdentitiesEnabled 'Microsoft.Authorization/policyAssignments@2
 // Deploying and applying the custom policy 'Kubernetes cluster ingress TLS hosts must have defined domain suffix' as defined in nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep
 // Note: Policy definition must be deployed as module since policy definitions require a targetScope of 'subscription'.
 
-module modK8sIngressTlsHostsHaveDefinedDomainSuffix '../nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep' = { // TODO path
+module modK8sIngressTlsHostsHaveDefinedDomainSuffix './k8s-custom-ingress-tls-hosts-have-defined-domain-suffix.bicep' = {
   name: 'modK8sIngressTlsHostsHaveDefinedDomainSuffix'
   scope: subscription()
 }

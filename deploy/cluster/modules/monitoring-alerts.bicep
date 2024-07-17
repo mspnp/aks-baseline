@@ -652,7 +652,7 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2018-04-16' = {
     description: 'Alert on pod Failed phase.'
     enabled: 'true'
     source: {
-      query: loadTextContent('../monitoring/pod-failed-alert-query.kql')
+      query: loadTextContent('monitoring/pod-failed-alert-query.kql')
       dataSourceId: la.id
       queryType: 'ResultCount'
     }

@@ -370,7 +370,7 @@ resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Author
   }
 }
 
-module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'nested_EnsureClusterIdentityHasRbacToSelfManagedResources.bicep' = {
+module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'modules/ensure-cluster-identity-has-rbac-to-self-managed-resources.bicep' = {
   name: 'EnsureClusterIdentityHasRbacToSelfManagedResources'
   scope: targetResourceGroup
   params: {
@@ -886,7 +886,7 @@ resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurati
   ]
 }
 
-module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'nested_EnsureClusterUserAssignedHasRbacToManageVMSS.bicep' = {
+module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'modules/ensure-cluster-user-assigned-has-rbac-to-manage-vmss.bicep' = {
   name: 'EnsureClusterUserAssignedHasRbacToManageVMSS'
   scope: nodeResourceGroup
   params: {
