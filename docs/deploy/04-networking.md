@@ -4,9 +4,9 @@ In the previous steps, we completed the [Microsoft Entra group and user work](./
 
 ## Subscription and resource group topology
 
-This reference implementation is split across several resource groups in a single subscription. This configuration replicates the fact that many organizations will split certain responsibilities into specialized subscriptions, such as regional hubs/VWAN in a *Connectivity* subscription and workloads in landing zone subscriptions.
+This reference implementation is split across several resource groups in a single subscription. This configuration replicates the fact that many organizations will split certain responsibilities into specialized subscriptions, such as regional hubs/VWAN in a *Connectivity* subscription and workloads in application landing zone subscriptions.
 
-We expect you to explore this reference implementation within a single subscription, but when you implement this cluster at your organization, you will need to take what you've learned here and apply it to your expected subscription and resource group topology, such as those [offered by the Cloud Adoption Framework](https://learn.microsoft.com/azure/cloud-adoption-framework/decision-guides/subscriptions/). This single subscription, multiple resource group model is for simplicity of demonstration purposes only.
+We expect you to explore this reference implementation within a single subscription, but when you implement this cluster at your organization, you will need to take what you've learned here and apply it to your expected subscription and resource group topology, such as those [offered by the Cloud Adoption Framework](https://learn.microsoft.com/azure/cloud-adoption-framework/ready/landing-zone/design-area/resource-org-subscriptions). This single subscription, multiple resource group model is for simplicity of demonstration purposes only.
 
 ## Expected results
 

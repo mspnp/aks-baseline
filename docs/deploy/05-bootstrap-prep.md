@@ -22,7 +22,7 @@ Whichever tooling choice you make, you'll need your bootstrapping artifacts read
 
 In addition to Azure Container Registry being deployed to support bootstrapping, this is where any other resources that are considered not tied to the lifecycle of an individual cluster is deployed. Another example could be an AKS Backup Vault, and a backup artifacts storage account, which likely would exist prior to and after any individual AKS cluster's existence.
 
-When designing your pipelines, be sure to isolate components by their lifecycle. Watch for singletons in an architecture. Singletons are typically resources like regional logging sinks, global routing infrastructure, and so on. This is in contrast with potentially transient/replaceable components, like the AKS cluster itself.
+When designing your pipelines, be sure to isolate components by their lifecycle. Identify singletons in an architecture. Singletons are typically resources like regional logging sinks, global routing infrastructure, and so on. This is in contrast with potentially transient/replaceable components, like the AKS cluster itself.
 
 *This implementation does not represent a complete separation of stamp resources from regional resources, but is fairly close. Deviations are strictly for ease of deployment in this walkthrough instead of as examples of guidance.*
 
