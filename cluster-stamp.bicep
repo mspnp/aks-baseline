@@ -975,10 +975,6 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
         }
       ]
     }
-    actions: {
-      actionGroups: [
-      ]
-    }
   }
 }
 
