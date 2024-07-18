@@ -24,7 +24,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 #### Azure platform
 
-- AKS v1.29
+- AKS v1.30
   - System and user [node pool separation](https://learn.microsoft.com/azure/aks/use-system-pools)
   - [AKS-managed Microsoft Entra ID integration](https://learn.microsoft.com/azure/aks/managed-aad)
   - Microsoft Entra ID-backed Kubernetes RBAC (*local user accounts disabled*)
@@ -43,7 +43,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 - [ImageCleaner (Eraser)](https://learn.microsoft.com/azure/aks/image-cleaner) *[AKS-managed add-on]*
 - [Kubernetes Reboot Daemon](https://learn.microsoft.com/azure/aks/node-updates-kured)
 - [Secrets Store CSI Driver for Kubernetes](https://learn.microsoft.com/azure/aks/csi-secrets-store-driver) *[AKS-managed add-on]*
-- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v2.11/routing/providers/kubernetes-ingress/)
+- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v3.0/routing/providers/kubernetes-ingress/)
 
 ![Network diagram depicting a hub-spoke network with two peered VNets and main Azure resources used in the architecture.](https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)
 

@@ -28,7 +28,7 @@ param clusterAuthorizedIPRanges array = []
 @description('AKS Service, Node Pool, and supporting services (KeyVault, App Gateway, etc) region. This needs to be the same region as the vnet provided in these parameters. This defaults to the resource group\'s location for higher reliability.')
 param location string = resourceGroup().location
 
-param kubernetesVersion string = '1.29'
+param kubernetesVersion string = '1.30'
 
 @description('Domain name to use for App Gateway and AKS ingress.')
 param domainName string = 'contoso.com'
@@ -1137,7 +1137,7 @@ resource paEnforceImageSource 'Microsoft.Authorization/policyAssignments@2024-04
     policyDefinitionId: pdEnforceImageSource.id
     parameters: {
       allowedContainerImagesRegex: {
-        // If all images are pull into your ARC instance as described in these instructions you can remove the docker.io & ghcr.io entries.
+        // If all images are pull into your ACR instance as described in these instructions you can remove the docker.io & ghcr.io entries.
         value: '${acr.name}\\.azurecr\\.io/.+$|mcr\\.microsoft\\.com/.+$|docker\\.io/library/.+$'
       }
       excludedNamespaces: {
