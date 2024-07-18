@@ -1,6 +1,6 @@
 # Configure AKS ingress controller with Azure Key Vault integration
 
-Previously you have configured [workload prerequisites](./08-workload-prerequisites.md). These steps configure Traefik, the AKS ingress solution used in this reference implementation, so that it can securely expose the web app to your Application Gateway.
+Previously you have configured [workload prerequisites](./08-workload-prerequisites.md). The following steps configure Traefik, the AKS ingress solution used in this reference implementation, so that it can securely expose the web app to your Application Gateway.
 
 ## Steps
 
@@ -52,9 +52,24 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    EOF
    ```
 
+1. Optional: Sign up for a Docker Hub account.
+
+   When Azure Container Registry imports the Traefik container image, it's likely to fail because the Docker Hub service performs rate limiting. As a service that shares an IP address between many different Azure customers, Azure Container Registry frequently hits the rate limits imposed by Docker Hub. You can avoid this issue by using your own [Docker Hub account](https://www.docker.com/pricing) and providing the credentials so that Azure Container Registry can use it when it's importing the image.
+
+   Note your Docker Hub user name and either a password or [personal access token](https://docs.docker.com/docker-hub/access-tokens/).
+
 1. Import the Traefik container image to your container registry.
 
    > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for an application that needs to pull an image *right now*. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
+
+   If you have your own Docker Hub account, use the following command to provide the credentials during the import process:
+
+   ```bash
+   # Import ingress controller image hosted in public container registries
+   az acr import --source docker.io/library/traefik:v2.11 -n $ACR_NAME_AKS_BASELINE --username YOUR_DOCKER_HUB_USERNAME --password YOUR_DOCKER_HUB_PASSWORD_OR_PERSONAL_ACCESS_TOKEN
+   ```
+
+   If you don't have a Docker Hub account, use the following command, but note that you might receive a rate limit failure and need to retry repeatedly:
 
    ```bash
    # Import ingress controller image hosted in public container registries

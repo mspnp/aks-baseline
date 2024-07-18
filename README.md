@@ -12,11 +12,11 @@ This project has a companion set of articles that describe challenges, design pa
 
 **This architecture is infrastructure focused**, more so than on workload. It concentrates on the AKS cluster itself, including concerns with identity, post-deployment configuration, secret management, and network topologies.
 
-The implementation presented here is the *minimum recommended baseline for most AKS clusters*. This implementation integrates with Azure services that will deliver observability, provide a network topology that will support multiregional growth, and keep the in-cluster traffic secure as well. This architecture should be considered your starting point for preproduction and production stages.
+The implementation presented here is the *minimum recommended baseline for most AKS clusters*. This implementation integrates with Azure services that deliver observability, provide a network topology that support multiregional growth, and keep the in-cluster traffic secure as well. This architecture should be considered your starting point for pre-production and production stages.
 
 The material here is relatively dense. We strongly encourage you to dedicate time to walk through these instructions, with a mind to learning. Therefore, we do NOT provide any "one click" deployment here. To understand the relationship between the deployed resources, we suggest that you consult the [detailed architecture overview](./docs/aks-baseline_details.drawio.svg) while exploring your deployment. Once you've understood the components involved and identified the shared responsibilities between your team and your great organization, it is encouraged that you build suitable, auditable deployment processes around your final infrastructure.
 
-Throughout the reference implementation, you will see reference to *Contoso Bicycle*. They are a fictional small and fast-growing startup that provides online web services to its clientele on the west coast of North America. They have no on-premises datacenters and all their containerized line of business applications are now about to be orchestrated by secure, enterprise-ready AKS clusters. You can read more about [their requirements and their IT team composition](./contoso-bicycle/README.md). This narrative provides grounding for some implementation details, naming conventions, and so on. You should adapt as you see fit.
+Throughout the reference implementation, you will see reference to *Contoso Bicycle*. It is a fictional small and fast-growing startup that provides online web services to its clientele on the west coast of North America. They have no on-premises datacenters and all their containerized line of business applications are now about to be orchestrated by secure, enterprise-ready AKS clusters. You can read more about [their requirements and their IT team composition](./contoso-bicycle/README.md). This narrative provides grounding for some implementation details, naming conventions, and so on. You should adapt as you see fit.
 
 Finally, this implementation uses the [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/master/samples/aspnetapp) as an example workload. This workload is purposefully uninteresting, as it is here exclusively to help you experience the baseline infrastructure.
 
@@ -25,16 +25,16 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 #### Azure platform
 
 - AKS v1.29
-  - System and User [node pool separation](https://learn.microsoft.com/azure/aks/use-system-pools)
+  - System and user [node pool separation](https://learn.microsoft.com/azure/aks/use-system-pools)
   - [AKS-managed Microsoft Entra ID integration](https://learn.microsoft.com/azure/aks/managed-aad)
   - Microsoft Entra ID-backed Kubernetes RBAC (*local user accounts disabled*)
-  - Managed Identities
+  - Managed identities
   - Azure CNI
   - [Azure Monitor for containers](https://learn.microsoft.com/azure/azure-monitor/containers/container-insights-overview)
-- Azure Virtual Networks (hub-spoke)
+- Azure virtual networks (hub-spoke)
   - Azure Firewall managed egress
 - Azure Application Gateway (WAF)
-- AKS-managed Internal Load Balancers
+- AKS-managed internal load balancers
 
 #### In-cluster OSS components
 
@@ -51,11 +51,11 @@ Also do not forget to view the [detailed architecture diagram](./docs/aks-baseli
 
 ## Deploy the reference implementation
 
-A deployment of AKS-hosted workloads typically experiences a separation of duties and lifecycle management in the areas of prerequisites, the host network, the cluster infrastructure, and finally the workload itself. This reference implementation is similar. Also, be aware our primary purpose is to illustrate the topology and decisions of a baseline cluster. We feel a "step-by-step" flow will help you learn the pieces of the solution and give you insight into the relationship between them. Ultimately, lifecycle/SDLC management of your cluster and its dependencies will depend on your situation (team roles, organizational standards, and so on), and will be implemented as appropriate for your needs.
+A deployment of AKS-hosted workloads typically involves a separation of duties and lifecycle management in the areas of prerequisites, the host network, the cluster infrastructure, and finally the workload itself. Different teams often are responsible for each of these components. This reference implementation follows a similar approach. Also, be aware our primary purpose is to illustrate the topology and decisions of a baseline cluster. We feel a "step-by-step" flow will help you learn the pieces of the solution and give you insight into the relationship between them. Ultimately, lifecycle/SDLC management of your cluster and its dependencies will depend on your situation (team roles, organizational standards, and so on), and will be implemented as appropriate for your needs.
 
 **Please start this learning journey in the *Preparing for the cluster* section.** If you follow this through to the end, you'll have our recommended baseline cluster installed, with an end-to-end sample workload running for you to reference in your own Azure subscription.
 
-### 1. :rocket: Preparing for the cluster
+### 1. :rocket: Prepare for the cluster
 
 There are considerations that must be addressed before you start deploying your cluster. Do I have enough permissions in my subscription and AD tenant to do a deployment of this size? How much of this will be handled by my team directly vs having another team be responsible?
 
@@ -63,13 +63,13 @@ There are considerations that must be addressed before you start deploying your 
 - [ ] [Procure client-facing and AKS Ingress Controller TLS certificates](./docs/deploy/02-ca-certificates.md)
 - [ ] [Plan your Microsoft Entra ID integration](./docs/deploy/03-microsoft-entra-id.md)
 
-### 2. Build target network
+### 2. :electric_plug: Build target network
 
 Microsoft recommends AKS be deployed into a carefully planned network; sized appropriately for your needs and with proper network observability. Organizations typically favor a traditional hub-spoke model, which is reflected in this implementation. While this is a standard hub-spoke model, there are fundamental sizing and portioning considerations included that should be understood.
 
 - [ ] [Build the hub-spoke network](./docs/deploy/04-networking.md)
 
-### 3. Deploying the cluster
+### 3. :package: Deploy the cluster
 
 This is the heart of the guidance in this reference implementation; paired with prior network topology guidance. Here you will deploy the Azure resources for your cluster and the adjacent services such as Azure Application Gateway WAF, Azure Monitor, Azure Container Registry, and Azure Key Vault. This is also where you will validate the cluster is bootstrapped.
 
@@ -79,7 +79,7 @@ This is the heart of the guidance in this reference implementation; paired with 
 
 We perform the prior steps manually here for you to understand the involved components, but we advocate for an automated DevOps process. Therefore, incorporate the prior steps into your CI/CD pipeline, as you would any infrastructure as code (IaC). See the dedicated [AKS baseline automation guidance](https://github.com/Azure/aks-baseline-automation#aks-baseline-automation) for additional details.
 
-### 4. Deploy your workload
+### 4. :package: Deploy your workload
 
 Without a workload deployed to the cluster it will be hard to see how these decisions come together to work as a reliable application platform for your business. The deployment of this workload would typically follow a CI/CD pattern and may involve even more advanced deployment strategies (such as blue/green). The following steps represent a manual deployment, suitable for illustration purposes of this infrastructure.
 
@@ -87,7 +87,7 @@ Without a workload deployed to the cluster it will be hard to see how these deci
 - [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./docs/deploy/09-secret-management-and-ingress-controller.md)
 - [ ] [Deploy the workload](./docs/deploy/10-workload.md)
 
-### 5. :checkered_flag: Validation
+### 5. :checkered_flag: Validate
 
 Now that the cluster and the sample workload is deployed; it's time to look at how the cluster is functioning.
 

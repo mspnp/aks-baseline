@@ -1,12 +1,12 @@
-# Prep for cluster bootstrapping
+# Prepare for cluster bootstrapping
 
-Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS baseline reference implementation](../../) is preparing what your AKS cluster should be bootstrapped with.
+Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS baseline reference implementation](../../) is preparing what the resources that help to bootstrap your AKS cluster. In this example we deploy a container registry, but there are other resources you might deploy in your scenario too.
 
 ## Expected results
 
-Container registries often have a lifecycle that extends beyond the scope of a single cluster. They can be scoped broadly at organizational or business unit levels, or can be scoped at workload levels, but usually are not directly tied to the lifecycle of any specific cluster instance. For example, you may do blue/green *cluster instance* deployments, both using the same container registry. Even though clusters came and went, the registry stays intact.
+Container registries often have a lifecycle that extends beyond the scope of a single cluster. They can be scoped broadly at organizational or business unit levels, or can be scoped at workload levels, but usually are not directly tied to the lifecycle of any specific cluster instance. For example, you may do blue/green *cluster instance* deployments, both using the same container registry. Even though clusters come and go, the registry stays intact.
 
-- Azure Container Registry is deployed and exposed as a private endpoint.
+- Azure Container Registry is deployed and exposed by using a private endpoint.
 - Azure Container Registry is populated with images your cluster will need as part of its bootstrapping process.
 - Log Analytics is deployed and Azure Container Registry platform logging is configured. This workspace will be used by your cluster as well.
 
@@ -14,11 +14,17 @@ The role of this pre-existing Azure Container Registry instance is made more pro
 
 ### Bootstrapping method
 
-We'll be bootstrapping this cluster with the Flux GitOps agent installed as an AKS extension. This specific choice does not imply that Flux, or GitOps in general, is the only approach to bootstrapping. Consider your organizational familiarity and acceptance of tooling like this and decide whether cluster bootstrapping should be performed with GitOps or via your deployment pipelines. If you are running a fleet of clusters, a GitOps approach is highly recommended for uniformity and easier governance. When running only a few clusters, GitOps might be seen as "too much" and you might instead opt for integrating that process into one or more deployment pipelines to ensure bootstrapping takes place. No matter which way you go, you'll need your bootstrapping artifacts ready to go before you start your cluster deployment so that you can minimize the time between cluster deployment and bootstrapping. Using the Flux AKS extension allows your cluster to start already bootstrapped and sets you up with a solid management foundation going forward.
+We'll be bootstrapping this cluster with the Flux GitOps agent installed as an AKS extension. This specific choice does not imply that Flux, or GitOps in general, is the only approach to bootstrapping. Consider your organizational familiarity and acceptance of tooling like this and decide whether cluster bootstrapping should be performed with GitOps or via your deployment pipelines. If you are running a fleet of clusters, a GitOps approach is highly recommended for uniformity and easier governance. When running only a few clusters, GitOps might be seen as "too much" and you might instead opt for integrating that process into one or more deployment pipelines to ensure bootstrapping takes place.
+
+Whichever tooling choice you make, you'll need your bootstrapping artifacts ready to go before you start your cluster deployment so that you can minimize the time between cluster deployment and bootstrapping. Using the Flux AKS extension allows your cluster to start already bootstrapped and sets you up with a solid management foundation to build upon.
 
 ### Additional resources
 
-In addition to Azure Container Registry being deployed to support bootstrapping, this is where any other resources that are considered not tied to the lifecycle of an individual cluster is deployed. Azure Container Registry is one example as talked about above. Another example could be an AKS Backup Vault and backup artifacts storage account which likely would exist prior to and after any individual AKS cluster's existence. When designing your pipelines, ensure to isolate components by their lifecycle watch for singletons in an architecture. These are typically resources like regional logging sinks, supporting global routing infrastructure, and so on. This is in contrast with potentially transient/replaceable components, like the AKS cluster itself. *This implementation does not represent a complete separation of stamp vs regional resources but is fairly close. Deviations are strictly for ease of deployment in this walkthrough instead of as examples of guidance.*
+In addition to Azure Container Registry being deployed to support bootstrapping, this is where any other resources that are considered not tied to the lifecycle of an individual cluster is deployed. Another example could be an AKS Backup Vault, and a backup artifacts storage account, which likely would exist prior to and after any individual AKS cluster's existence.
+
+When designing your pipelines, be sure to isolate components by their lifecycle. Identify singletons in an architecture. Singletons are typically resources like regional logging sinks, global routing infrastructure, and so on. This is in contrast with potentially transient/replaceable components, like the AKS cluster itself.
+
+*This implementation does not represent a complete separation of stamp resources from regional resources, but is fairly close. Deviations are strictly for ease of deployment in this walkthrough instead of as examples of guidance.*
 
 ## Steps
 
@@ -33,9 +39,9 @@ In addition to Azure Container Registry being deployed to support bootstrapping,
    az group create --name rg-bu0001a0008 --location $LOCATION_AKS_BASELINE
    ```
 
-1. Get the AKS cluster spoke Virtual Network resource ID.
+1. Get the AKS cluster spoke virtual network's resource ID, which was emitted as an output in a previous step.
 
-   > :book: The app team will be deploying to a spoke Virtual Network, that was already provisioned by the network team.
+   > :book: The app team will be deploying to a spoke virtual network, which was already provisioned by the network team.
 
    ```bash
    export RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE=$(az deployment group show -g rg-enterprise-networking-spokes-${LOCATION_AKS_BASELINE} -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)
@@ -49,9 +55,11 @@ In addition to Azure Container Registry being deployed to support bootstrapping,
    az deployment group create -g rg-bu0001a0008 -f acr-stamp.bicep -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE}
    ```
 
-1. Import cluster management images to your container registry.
+   The container registry deployment emits the following output:
 
-   > Public container registries are subject to faults such as outages or request throttling. Interruptions like these can be crippling for a system that needs to pull an image *right now*. To minimize the risks of using public registries, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry.
+      - `containerRegistryName` - which you'll use in future steps when connecting the cluster to the container registry.
+
+1. Capture the output from the container registry that will be required in later steps.
 
    ```bash
    # Get your ACR instance name
