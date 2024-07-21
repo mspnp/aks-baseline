@@ -30,7 +30,7 @@ When designing your pipelines, be sure to isolate components by their lifecycle.
 
 1. Create the AKS cluster resource group.
 
-   > :book: The app team working on behalf of business unit 0001 (BU001) is looking to create an AKS cluster of the app they are creating (Application ID: 0008). They have worked with the organization's networking team and have been provisioned a spoke network in which to lay their cluster and network-aware external resources into (such as Application Gateway). They took that information and added it to their [`acr-stamp.json`](./acr-stamp.json), [`cluster-stamp.json`](./cluster-stamp.json), and [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) files.
+   > :book: The app team working on behalf of business unit 0001 (BU001) is looking to create an AKS cluster of the app they are creating (Application ID: 0008). They have worked with the organization's networking team and have been provisioned a spoke network in which to lay their cluster and network-aware external resources into (such as Application Gateway). They took that information and added it to their [`acr-stamp.bicep`](../../workload-team/bootstrap-cluster/acr-stamp.bicep), [`cluster-stamp.bicep`](../../workload-team/cluster/cluster-stamp.bicep), and [`azuredeploy.parameters.prod.json`](../../workload-team/cluster/azuredeploy.parameters.prod.json) files.
    >
    > They create this resource group to be the parent group for the application.
 

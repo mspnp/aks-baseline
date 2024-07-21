@@ -25,7 +25,7 @@ Now that your [Azure Container Registry instance is deployed and ready to suppor
    az deployment group create -g rg-bu0001a0008 -f workload-team/cluster/cluster-stamp.bicep -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE} clusterAdminMicrosoftEntraGroupObjectId=${MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE} a0008NamespaceReaderMicrosoftEntraGroupObjectId=${MEIDOBJECTID_GROUP_A0008_READER_AKS_BASELINE} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC_AKS_BASELINE} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_AKS_BASELINE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE} domainName=${DOMAIN_NAME_AKS_BASELINE} gitOpsBootstrappingRepoHttpsUrl=${GITOPS_REPOURL} gitOpsBootstrappingRepoBranch=${GITOPS_CURRENT_BRANCH_NAME}
    ```
 
-   > Alternatively, you could have updated the [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) file and deployed as above, using `-p "@azuredeploy.parameters.prod.json"` instead of providing the individual key-value pairs.
+   > Alternatively, you could have updated the [`azuredeploy.parameters.prod.json`](../../workload-team/cluster/azuredeploy.parameters.prod.json) file and deployed as above, using `-p "@azuredeploy.parameters.prod.json"` instead of providing the individual key-value pairs.
 
 ## Container registry note
 
