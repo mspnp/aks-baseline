@@ -69,7 +69,7 @@ The following two resource groups will be created and populated with networking 
 
    ```bash
    # [This takes about ten minutes to run.]
-   az deployment group create -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -f networking/hub-default.bicep
+   az deployment group create -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -f network-team/hub-default.bicep
    ```
 
    The hub deployment emits the following output:
@@ -89,7 +89,7 @@ The following two resource groups will be created and populated with networking 
 
    ```bash
    # [This takes about four minutes to run.]
-   az deployment group create -g rg-enterprise-networking-spokes-${LOCATION_AKS_BASELINE} -f networking/spoke-BU0001A0008.bicep -p hubVnetResourceId="${RESOURCEID_VNET_HUB}"
+   az deployment group create -g rg-enterprise-networking-spokes-${LOCATION_AKS_BASELINE} -f ./network-team/spoke-BU0001A0008.bicep -p hubVnetResourceId="${RESOURCEID_VNET_HUB}"
    ```
 
    The spoke network deployment emits the following outputs:
@@ -111,7 +111,7 @@ The following two resource groups will be created and populated with networking 
 
    ```bash
    # [This takes about 15 minutes to run.]
-   az deployment group create -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -f networking/hub-regionA.bicep -p nodepoolSubnetResourceIds="${RESOURCEID_SUBNET_NODEPOOLS}"
+   az deployment group create -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -f ./network-team/hub-regionA.bicep -p nodepoolSubnetResourceIds="${RESOURCEID_SUBNET_NODEPOOLS}"
    ```
 
    > :book: At this point the networking team has delivered a spoke in which BU 0001's app team can lay down their AKS cluster (ID: A0008). The networking team provides the necessary information to the app team for them to reference in their infrastructure-as-code artifacts.
