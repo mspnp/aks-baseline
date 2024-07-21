@@ -15,23 +15,24 @@ This is the root of the GitOps configuration directory. These Kubernetes object 
 
 Typically, your bootstrapping repository wouldn't be a public-facing repository like this one, but instead a private GitHub or Azure DevOps repo. The Flux operator deployed with the cluster supports private Git repositories as your bootstrapping source. In addition to requiring network line of sight to the repository from your cluster's nodes, you'll also need to ensure that you've provided the necessary credentials. This can come, typically, in the form of certificate-based SSH or personal access tokens (PAT), both ideally scoped as read-only to the repo with no additional permissions.
 
-Modify the [`cluster-stamp.json`](/cluster-stamp.json) file as follows.
+Modify the [`cluster-stamp.bicep`](../workload-team/cluster/cluster-stamp.bicep) file as follows.
 
 ### Git over SSH
 
 Use the following pattern in your `fluxConfigurations` extension resource.
 
-```json
-{
-    "type": "providers/fluxConfigurations",
-    "properties": {
-        "gitRepository": {
-            "url": "git@github.com:yourorg/yourrepo.git"
-        },
-        "configurationProtectedSettings": {
-            "sshPrivateKey": "<Base64 encoded PEM private key>"
-        }
+```bicep
+resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurations@2023-05-01' = {
+  // ... Other properties here
+  properties: {
+    // ... Other properties here
+    gitRepository: {
+      url: 'git@github.com:yourorg/yourrepo.git'
     }
+    configurationProtectedSettings: {
+      sshPrivateKey: '<Base64 encoded PEM private key>'
+    }
+  }
 }
 ```
 
@@ -39,17 +40,18 @@ Use the following pattern in your `fluxConfigurations` extension resource.
 
 You'll use the following pattern in your `fluxConfigurations` extension resource.
 
-```json
-{
-    "type": "providers/fluxConfigurations",
-    "properties": {
-        "gitRepository": {
-            "url": "https://github.com/yourorg/yourrepo.git",
-            "httpsUser": "<Username>"
-        },
-        "configurationProtectedSettings": {
-            "httpsKey": "<Base64 encoded, UTF-8 encoded Personal Access Token>"
-        }
+```bicep
+resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurations@2023-05-01' = {
+  // ... Other properties here
+  properties: {
+    // ... Other properties here
+    gitRepository: {
+      url: 'https://github.com/yourorg/yourrepo.git'
+      httpsUser: '<Username>'
     }
+    configurationProtectedSettings: {
+      httpsKey: '<Base64 encoded, UTF-8 encoded Personal Access Token>'
+    }
+  }
 }
 ```
