@@ -117,7 +117,7 @@ resource pdManagedIdentitiesEnabled 'Microsoft.Authorization/policyDefinitions@2
   scope: tenant()
 }
 
-// Resource Group Azure Policy Assignments - Azure Policy for Kubernetes Policies
+/*** RESOURCE GROUP AZURE POLICY ASSIGNMENTS - AZURE POLICY FOR KUBERNETES POLICIES ***/
 
 // Applying the built-in 'Kubernetes cluster pod security restricted standards for Linux-based workloads' initiative at the resource group level.
 // Constraint Names: K8sAzureAllowedSeccomp, K8sAzureAllowedCapabilities, K8sAzureContainerNoPrivilege, K8sAzureHostNetworkingPorts, K8sAzureVolumeTypes, K8sAzureBlockHostNamespaceV2, K8sAzureAllowedUsersGroups, K8sAzureContainerNoPrivilegeEscalation
@@ -408,7 +408,7 @@ resource paDisallowNamespaceUsage 'Microsoft.Authorization/policyAssignments@202
   }
 }
 
-// Azure Resource Provider policies that we'd like to see in place before the cluster is deployed.
+/*** RESOURCE GROUP AZURE POLICY ASSIGNMENTS - RESOURCE PROVIDER POLICIES ***/
 
 // Applying the built-in 'Azure Kubernetes Service clusters should have Defender profile enabled' policy at the resource group level.
 resource paDefenderInClusterEnabled 'Microsoft.Authorization/policyAssignments@2024-04-01' = {
