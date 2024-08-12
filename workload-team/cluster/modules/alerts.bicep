@@ -1,8 +1,73 @@
+@description('Location of the regional resources.')
+param location string
+
 @description('Name of the AKS cluster.')
 param clusterName string
 
+@description('Resource ID of the Log Analytics workspace.')
+param logAnalyticsWorkspaceResourceId string
+
 resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' existing = {
   name: clusterName
+}
+
+resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' = {
+  name: 'AllAzureAdvisorAlert'
+  location: 'Global'
+  properties: {
+    scopes: [
+      resourceGroup().id
+    ]
+    condition: {
+      allOf: [
+        {
+          field: 'category'
+          equals: 'Recommendation'
+        }
+        {
+          field: 'operationName'
+          equals: 'Microsoft.Advisor/recommendations/available/action'
+        }
+      ]
+    }
+    actions: {
+      actionGroups: []
+    }
+    enabled: true
+    description: 'All azure advisor alerts'
+  }
+}
+
+resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
+  name: 'PodFailedScheduledQuery'
+  location: location
+  properties: {
+    autoMitigate: true
+    displayName: '[${clusterName}] Scheduled Query for Pod Failed Alert'
+    description: 'Alert on pod Failed phase.'
+    severity: 3
+    enabled: true
+    scopes: [
+      logAnalyticsWorkspaceResourceId
+    ]
+    evaluationFrequency: 'PT5M'
+    windowSize: 'PT10M'
+    criteria: {
+      allOf: [
+        {
+          query: '//https://learn.microsoft.com/azure/azure-monitor/containers/container-insights-log-alerts \r\n let endDateTime = now(); let startDateTime = ago(1h); let trendBinSize = 1m; let clusterName = "${clusterName}"; KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | where ClusterName == clusterName | distinct ClusterName, TimeGenerated | summarize ClusterSnapshotCount = count() by bin(TimeGenerated, trendBinSize), ClusterName | join hint.strategy=broadcast ( KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | distinct ClusterName, Computer, PodUid, TimeGenerated, PodStatus | summarize TotalCount = count(), PendingCount = sumif(1, PodStatus =~ "Pending"), RunningCount = sumif(1, PodStatus =~ "Running"), SucceededCount = sumif(1, PodStatus =~ "Succeeded"), FailedCount = sumif(1, PodStatus =~ "Failed") by ClusterName, bin(TimeGenerated, trendBinSize) ) on ClusterName, TimeGenerated | extend UnknownCount = TotalCount - PendingCount - RunningCount - SucceededCount - FailedCount | project TimeGenerated, TotalCount = todouble(TotalCount) / ClusterSnapshotCount, PendingCount = todouble(PendingCount) / ClusterSnapshotCount, RunningCount = todouble(RunningCount) / ClusterSnapshotCount, SucceededCount = todouble(SucceededCount) / ClusterSnapshotCount, FailedCount = todouble(FailedCount) / ClusterSnapshotCount, UnknownCount = todouble(UnknownCount) / ClusterSnapshotCount| summarize AggregatedValue = avg(FailedCount) by bin(TimeGenerated, trendBinSize)'
+          metricMeasureColumn: 'AggregatedValue'
+          operator: 'GreaterThan'
+          threshold: 3
+          timeAggregation: 'Average'
+          failingPeriods: {
+            minFailingPeriodsToAlert: 2
+            numberOfEvaluationPeriods: 2
+          }
+        }
+      ]
+    }
+  }
 }
 
 resource maHighNodeCPUUtilization 'Microsoft.Insights/metricAlerts@2018-03-01' = {

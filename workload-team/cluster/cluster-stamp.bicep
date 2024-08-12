@@ -159,33 +159,6 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
 
 /*** RESOURCES ***/
 
-resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' = {
-  name: 'AllAzureAdvisorAlert'
-  location: 'Global'
-  properties: {
-    scopes: [
-      resourceGroup().id
-    ]
-    condition: {
-      allOf: [
-        {
-          field: 'category'
-          equals: 'Recommendation'
-        }
-        {
-          field: 'operationName'
-          equals: 'Microsoft.Advisor/recommendations/available/action'
-        }
-      ]
-    }
-    actions: {
-      actionGroups: []
-    }
-    enabled: true
-    description: 'All azure advisor alerts'
-  }
-}
-
 // A query pack to hold any custom quries you may want to write to monitor your cluster or workloads
 resource qpBaselineQueryPack 'Microsoft.OperationalInsights/queryPacks@2019-09-01' = {
   location: location
@@ -225,10 +198,12 @@ resource sci 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
   }
 }
 
-module metricAlerts 'modules/metric-alerts.bicep' = {
-  name: 'metric-alerts'
+module alerts 'modules/alerts.bicep' = {
+  name: 'alerts'
   params: {
+    location: location
     clusterName: mc.name
+    logAnalyticsWorkspaceResourceId: la.id
   }
   dependsOn: [
     sci
@@ -248,38 +223,6 @@ resource skva 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
     product: 'OMSGallery/KeyVaultAnalytics'
     promotionCode: ''
     publisher: 'Microsoft'
-  }
-}
-
-resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
-  name: 'PodFailedScheduledQuery'
-  location: location
-  properties: {
-    autoMitigate: true
-    displayName: '[${clusterName}] Scheduled Query for Pod Failed Alert'
-    description: 'Alert on pod Failed phase.'
-    severity: 3
-    enabled: true
-    scopes: [
-      la.id
-    ]
-    evaluationFrequency: 'PT5M'
-    windowSize: 'PT10M'
-    criteria: {
-      allOf: [
-        {
-          query: '//https://learn.microsoft.com/azure/azure-monitor/containers/container-insights-log-alerts \r\n let endDateTime = now(); let startDateTime = ago(1h); let trendBinSize = 1m; let clusterName = "${clusterName}"; KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | where ClusterName == clusterName | distinct ClusterName, TimeGenerated | summarize ClusterSnapshotCount = count() by bin(TimeGenerated, trendBinSize), ClusterName | join hint.strategy=broadcast ( KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | distinct ClusterName, Computer, PodUid, TimeGenerated, PodStatus | summarize TotalCount = count(), PendingCount = sumif(1, PodStatus =~ "Pending"), RunningCount = sumif(1, PodStatus =~ "Running"), SucceededCount = sumif(1, PodStatus =~ "Succeeded"), FailedCount = sumif(1, PodStatus =~ "Failed") by ClusterName, bin(TimeGenerated, trendBinSize) ) on ClusterName, TimeGenerated | extend UnknownCount = TotalCount - PendingCount - RunningCount - SucceededCount - FailedCount | project TimeGenerated, TotalCount = todouble(TotalCount) / ClusterSnapshotCount, PendingCount = todouble(PendingCount) / ClusterSnapshotCount, RunningCount = todouble(RunningCount) / ClusterSnapshotCount, SucceededCount = todouble(SucceededCount) / ClusterSnapshotCount, FailedCount = todouble(FailedCount) / ClusterSnapshotCount, UnknownCount = todouble(UnknownCount) / ClusterSnapshotCount| summarize AggregatedValue = avg(FailedCount) by bin(TimeGenerated, trendBinSize)'
-          metricMeasureColumn: 'AggregatedValue'
-          operator: 'GreaterThan'
-          threshold: 3
-          timeAggregation: 'Average'
-          failingPeriods: {
-            minFailingPeriodsToAlert: 2
-            numberOfEvaluationPeriods: 2
-          }
-        }
-      ]
-    }
   }
 }
 
