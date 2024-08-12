@@ -34,7 +34,9 @@ resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exis
 
 /*** RESOURCES ***/
 
-// This Log Analytics workspace will be the log sink for all resources in the cluster resource group. This includes ACR, the AKS cluster, Key Vault, etc. It also is the Container Insights log sink for the AKS cluster.
+// This Log Analytics workspace will be the log sink for all resources in the cluster resource group.
+// This includes ACR, the AKS cluster, Key Vault, etc.
+// It also is the Container Insights log sink for the AKS cluster.
 resource laAks 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: 'la-aks-${subRgUniqueString}'
   location: location
@@ -154,7 +156,8 @@ resource acrAks 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: 'acraks${subRgUniqueString}'
   location: location
   dependsOn: [
-    paAdminAccountContainerRegistryAccessDisallowed // These policy assignments are not true dependencies, but we want them in place before we deploy our ACR instance.
+    // These policy assignments are not true dependencies, but we want them in place before we deploy our ACR instance.
+    paAdminAccountContainerRegistryAccessDisallowed
     paAnonymousContainerRegistryAccessDisallowed
   ]
   sku: {
