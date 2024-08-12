@@ -1410,7 +1410,7 @@ resource paManagedIdentitiesEnabled 'Microsoft.Authorization/policyAssignments@2
 // Deploying and applying the custom policy 'Kubernetes cluster ingress TLS hosts must have defined domain suffix' as defined in nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep
 // Note: Policy definition must be deployed as module since policy definitions require a targetScope of 'subscription'.
 
-module modK8sIngressTlsHostsHaveDefinedDomainSuffix 'nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep' = {
+module modK8sIngressTlsHostsHaveDefinedDomainSuffix 'modules/policy-K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep' = {
   name: 'modK8sIngressTlsHostsHaveDefinedDomainSuffix'
   scope: subscription()
 }
@@ -1577,7 +1577,7 @@ resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Author
   }
 }
 
-module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'nested_EnsureClusterIdentityHasRbacToSelfManagedResources.bicep' = {
+module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'modules/role-assignment-EnsureClusterIdentityHasRbacToSelfManagedResources.bicep' = {
   name: 'EnsureClusterIdentityHasRbacToSelfManagedResources'
   scope: targetResourceGroup
   params: {
@@ -2114,7 +2114,7 @@ resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurati
   ]
 }
 
-module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'nested_EnsureClusterUserAssignedHasRbacToManageVMSS.bicep' = {
+module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'modules/role-assignment-EnsureClusterUserAssignedHasRbacToManageVMSS.bicep' = {
   name: 'EnsureClusterUserAssignedHasRbacToManageVMSS'
   scope: nodeResourceGroup
   params: {
