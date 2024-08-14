@@ -960,6 +960,7 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
     ]
     evaluationFrequency: 'PT5M'
     windowSize: 'PT10M'
+    skipQueryValidation: true
     criteria: {
       allOf: [
         {

@@ -113,7 +113,7 @@ You might not be able to use Azure RBAC as your Kubernetes RBAC authorization me
 
    > :book:  The team knows there will be more than just cluster admins that need group-managed access to the cluster. Out of the box, Kubernetes has other roles like *admin*, *edit*, and *view* which can also be mapped to Microsoft Entra groups for use both at namespace and at the cluster level. Likewise, custom roles can be created which need to be mapped to Microsoft Entra groups.
 
-   In the [`cluster-rbac.yaml` file](./cluster-manifests/cluster-rbac.yaml) and the various namespaced [`rbac.yaml files`](./cluster-manifests/cluster-baseline-settings/rbac.yaml), you can uncomment the parts that you need, and replace the `<replace-with-a-microsoft-entra-group-object-id...>` placeholders with corresponding new or existing Microsoft Entra groups that map to their purpose for this cluster or namespace. **You do not need to perform this action for this walkthrough**; they are only here for your reference.
+   In the [`cluster-rbac.yaml` file](../../cluster-manifests/cluster-rbac.yaml) and the various namespaced [`rbac.yaml files`](../../cluster-manifests/cluster-baseline-settings/rbac.yaml), you can uncomment the parts that you need, and replace the `<replace-with-a-microsoft-entra-group-object-id...>` placeholders with corresponding new or existing Microsoft Entra groups that map to their purpose for this cluster or namespace. **You do not need to perform this action for this walkthrough**; they are only here for your reference.
 
 ### Save your work in-progress
 
