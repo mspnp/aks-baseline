@@ -15,7 +15,7 @@ This is the root of the GitOps configuration directory. These Kubernetes object 
 
 Typically, your bootstrapping repository wouldn't be a public-facing repository like this one, but instead a private GitHub or Azure DevOps repo. The Flux operator deployed with the cluster supports private Git repositories as your bootstrapping source. In addition to requiring network line of sight to the repository from your cluster's nodes, you'll also need to ensure that you've provided the necessary credentials. This can come, typically, in the form of certificate-based SSH or personal access tokens (PAT), both ideally scoped as read-only to the repo with no additional permissions.
 
-Modify the [`cluster-stamp.bicep`](../workload-team/cluster/cluster-stamp.bicep) file as follows.
+Modify the [`cluster-stamp.bicep`](../workload-team/cluster-stamp.bicep) file as follows.
 
 ### Git over SSH
 
