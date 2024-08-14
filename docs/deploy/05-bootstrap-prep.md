@@ -30,7 +30,7 @@ When designing your pipelines, be sure to isolate components by their lifecycle.
 
 1. Create the AKS cluster resource group.
 
-   > :book: The app team working on behalf of business unit 0001 (BU001) is looking to create an AKS cluster of the app they are creating (Application ID: 0008). They have worked with the organization's networking team and have been provisioned a spoke network in which to lay their cluster and network-aware external resources into (such as Application Gateway). They took that information and added it to their [`acr-stamp.bicep`](../../workload-team/bootstrap-cluster/acr-stamp.bicep), [`cluster-stamp.bicep`](../../workload-team/cluster/cluster-stamp.bicep), and [`azuredeploy.parameters.prod.bicepparam`](../../workload-team/cluster/azuredeploy.parameters.prod.bicepparam) files.
+   > :book: The app team working on behalf of business unit 0001 (BU001) is looking to create an AKS cluster of the app they are creating (Application ID: 0008). They have worked with the organization's networking team and have been provisioned a spoke network in which to lay their cluster and network-aware external resources into (such as Application Gateway). They took that information and added it to their [`acr-stamp.bicep`](../../workload-team/acr-stamp.bicep), [`cluster-stamp.bicep`](../../workload-team/cluster-stamp.bicep), and [`azuredeploy.parameters.prod.bicepparam`](../../workload-team/azuredeploy.parameters.prod.bicepparam) files.
    >
    > They create this resource group to be the parent group for the application.
 
@@ -52,7 +52,7 @@ When designing your pipelines, be sure to isolate components by their lifecycle.
 
    ```bash
    # [This takes about four minutes.]
-   az deployment group create -g rg-bu0001a0008 -f workload-team/bootstrap-cluster/acr-stamp.bicep -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE}
+   az deployment group create -g rg-bu0001a0008 -f workload-team/acr-stamp.bicep -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE}
    ```
 
    The container registry deployment emits the following output:
