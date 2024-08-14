@@ -693,7 +693,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     sci
 
     ndEnsureClusterIdentityHasRbacToSelfManagedResources
-    
+
     // Policies that we need in place before the cluster is deployed or pods are deployed to it.
     // They are not technically a dependency from the resource provider perspective,
     // but logically they need to be in place before workloads are, so forcing that here. This also
