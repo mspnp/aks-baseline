@@ -2,6 +2,8 @@
 
 > Note: This is part of the Azure Kubernetes Service (AKS) baseline cluster reference implementation. For more information see the [readme file in the root](../README.md).
 
+There are multiple network CIDR ranges used throughout this reference implementation.
+
 ## Hub virtual network
 
 `CIDR: 10.200.0.0/24`
@@ -40,6 +42,12 @@ In the future, this virtual network might hold more subnets like [Azure Containe
 | Azure Firewall Subnet (AzureFirewallSubnet) | -            | [59]               | -                    | -          | -                        | 100           | 100                 | 0                     | 0                         | 5                                        | 0                   | 64                    | 64                 | 26                 | 10.200.0.0/26  | 10.200.0.0  | 10.200.0.63   |
 | Azure Bastion Subnet (AzureBastionSubnet)   | -            | [50]               | -                    | -          | -                        | 100           | 100                 | 0                     | 0                         | 5                                        | 0                   | 64                    | 64                 | 26                 | 10.200.0.128/26 | 10.200.0.128 | 10.200.0.191  |
 
+## Azure CNI Overlay
+
+`CIDR: 192.168.0.0/16`
+
+The cluster uses [Azure CNI Overlay]. Nodes are assigned IP addresses from within the spoke virtual network's subnet. Pods within the cluster are assigned IP addresses from within a separate CIDR range to those used by the virtual networks.
+
 ## Additional considerations
 
 - [AKS System Nodepool] and [AKS User Nodepool] subnet:  multitenant or other advanced workloads may have nodepool isolation requirements that might demand more (and likely smaller) subnets.
@@ -69,3 +77,4 @@ In the future, this virtual network might hold more subnets like [Azure Containe
 [AKS Internal Load Balancer subnet]: https://learn.microsoft.com/azure/aks/internal-lb#specify-a-different-subnet
 [ACI Provider Instance]: https://learn.microsoft.com/azure/container-instances/container-instances-vnet
 [AKS Nodepools subnets]: https://learn.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
+[Azure CNI Overlay]: https://learn.microsoft.com/azure/aks/azure-cni-overlay
