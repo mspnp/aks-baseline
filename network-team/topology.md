@@ -42,11 +42,13 @@ In the future, this virtual network might hold more subnets like [Azure Containe
 | Azure Firewall Subnet (AzureFirewallSubnet) | -            | [59]               | -                    | -          | -                        | 100           | 100                 | 0                     | 0                         | 5                                        | 0                   | 64                    | 64                 | 26                 | 10.200.0.0/26  | 10.200.0.0  | 10.200.0.63   |
 | Azure Bastion Subnet (AzureBastionSubnet)   | -            | [50]               | -                    | -          | -                        | 100           | 100                 | 0                     | 0                         | 5                                        | 0                   | 64                    | 64                 | 26                 | 10.200.0.128/26 | 10.200.0.128 | 10.200.0.191  |
 
-## Azure CNI Overlay
+## Pod address space
 
 `CIDR: 192.168.0.0/16`
 
-The cluster uses [Azure CNI Overlay]. Nodes are assigned IP addresses from within the spoke virtual network's subnet. Pods within the cluster are assigned IP addresses from within a separate CIDR range to those used by the virtual networks.
+The cluster uses [Azure CNI Overlay]. Pods within the cluster are assigned IP addresses from within a separate CIDR range to those used by the virtual networks.
+
+Nodes are assigned IP addresses from within the spoke virtual network's subnet, and also are allocated a /24 block within the pod address space for their pods to use.
 
 ## Additional considerations
 
