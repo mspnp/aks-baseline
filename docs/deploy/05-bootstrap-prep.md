@@ -30,7 +30,7 @@ When designing your pipelines, be sure to isolate components by their lifecycle.
 
 1. Create the AKS cluster resource group.
 
-   > :book: The app team working on behalf of business unit 0001 (BU001) is looking to create an AKS cluster of the app they are creating (Application ID: 0008). They have worked with the organization's networking team and have been provisioned a spoke network in which to lay their cluster and network-aware external resources into (such as Application Gateway). They took that information and added it to their [`acr-stamp.bicep`](../../workload-team/acr-stamp.bicep), [`cluster-stamp.bicep`](../../workload-team/cluster-stamp.bicep), and [`azuredeploy.parameters.prod.bicepparam`](../../workload-team/azuredeploy.parameters.prod.bicepparam) files.
+   > :book: The workload team working on behalf of business unit 0001 (BU001) is looking to create an AKS cluster of the app they are creating (Application ID: 0008). They have worked with the organization's networking team and have been provisioned a spoke network in which to lay their cluster and network-aware external resources into (such as Application Gateway). They took that information and added it to their [`acr-stamp.bicep`](../../workload-team/acr-stamp.bicep), [`cluster-stamp.bicep`](../../workload-team/cluster-stamp.bicep), and [`azuredeploy.parameters.prod.bicepparam`](../../workload-team/azuredeploy.parameters.prod.bicepparam) files.
    >
    > They create this resource group to be the parent group for the application.
 
@@ -41,7 +41,7 @@ When designing your pipelines, be sure to isolate components by their lifecycle.
 
 1. Get the AKS cluster spoke virtual network's resource ID, which was emitted as an output in a previous step.
 
-   > :book: The app team will be deploying to a spoke virtual network, which was already provisioned by the network team.
+   > :book: The workload team will be deploying to a spoke virtual network, which was already provisioned by the network team.
 
    ```bash
    export RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE=$(az deployment group show -g rg-enterprise-networking-spokes-${LOCATION_AKS_BASELINE} -n spoke-BU0001A0008 --query properties.outputs.clusterVnetResourceId.value -o tsv)

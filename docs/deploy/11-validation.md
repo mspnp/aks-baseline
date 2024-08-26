@@ -10,7 +10,7 @@ This section will help you to validate the workload is exposed correctly and res
 
 1. Get the public IP address of Application Gateway.
 
-   > :book: The app team conducts a final acceptance test to be sure that traffic is flowing end-to-end as expected, so they place a request against the Azure Application Gateway endpoint.
+   > :book: The workload team conducts a final acceptance test to be sure that traffic is flowing end-to-end as expected, so they place a request against the Azure Application Gateway endpoint.
 
    ```bash
    # query the Azure Application Gateway Public Ip
