@@ -29,7 +29,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
   - [AKS-managed Microsoft Entra ID integration](https://learn.microsoft.com/azure/aks/managed-aad)
   - Microsoft Entra ID-backed Kubernetes RBAC (*local user accounts disabled*)
   - Managed identities
-  - Azure CNI
+  - [Azure CNI Overlay](https://learn.microsoft.com/azure/aks/concepts-network-azure-cni-overlay)
   - [Azure Monitor for containers](https://learn.microsoft.com/azure/azure-monitor/containers/container-insights-overview)
 - Azure virtual networks (hub-spoke)
   - Azure Firewall managed egress

@@ -580,6 +580,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     enablePodSecurityPolicy: false
     networkProfile: {
       networkPlugin: 'azure'
+      networkPluginMode: 'overlay'
+      podCidr: '192.168.0.0/16'
       networkPolicy: 'azure'
       outboundType: 'userDefinedRouting'
       loadBalancerSku: 'standard'
