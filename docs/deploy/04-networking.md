@@ -85,7 +85,7 @@ The following two resource groups will be created and populated with networking 
 
 1. Create the spoke network that will be home to the AKS cluster and its adjacent resources.
 
-   > :book: The networking team receives a request from an app team in business unit (BU) 0001 for a network spoke to house their new AKS-based application (Internally know as Application ID: A0008). The network team talks with the app team to understand their requirements and aligns those needs with Microsoft's best practices for a general-purpose AKS cluster deployment. They capture those specific requirements and deploy the spoke, aligning to those specs, and connecting it to the matching regional hub.
+   > :book: The networking team receives a request from a workload team in business unit (BU) 0001 for a network spoke to house their new AKS-based application (Internally know as Application ID: A0008). The network team talks with the workload team to understand their requirements and aligns those needs with Microsoft's best practices for a general-purpose AKS cluster deployment. They capture those specific requirements and deploy the spoke, aligning to those specs, and connecting it to the matching regional hub.
 
    ```bash
    # [This takes about four minutes to run.]
@@ -114,7 +114,7 @@ The following two resource groups will be created and populated with networking 
    az deployment group create -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -f ./network-team/hub-regionA.bicep -p nodepoolSubnetResourceIds="${RESOURCEID_SUBNET_NODEPOOLS}"
    ```
 
-   > :book: At this point the networking team has delivered a spoke in which BU 0001's app team can lay down their AKS cluster (ID: A0008). The networking team provides the necessary information to the app team for them to reference in their infrastructure-as-code artifacts.
+   > :book: At this point the networking team has delivered a spoke in which BU 0001's workload team can lay down their AKS cluster (ID: A0008). The networking team provides the necessary information to the workload team for them to reference in their infrastructure-as-code artifacts.
    >
    > Hubs and spokes are controlled by the networking team's GitHub Actions workflows. This automation is not included in this reference implementation as this body of work is focused on the AKS baseline and not the networking team's CI/CD practices.
 

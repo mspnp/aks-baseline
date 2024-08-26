@@ -57,7 +57,7 @@ This does not configure anything related to workload identity. This configuratio
 
 1. Create a "break-glass" cluster administrator user for your AKS cluster.
 
-   > :book: The organization knows the value of having a break-glass admin user for their critical infrastructure. The app team requests a cluster admin user and Microsoft Entra ID Admin team proceeds with the creation of the user in Microsoft Entra ID.
+   > :book: The organization knows the value of having a break-glass admin user for their critical infrastructure. The workload team requests a cluster admin user and Microsoft Entra ID Admin team proceeds with the creation of the user in Microsoft Entra ID.
 
    You should skip this step, if the group identified in the former step already has a cluster admin assigned as member.
 
@@ -72,7 +72,7 @@ This does not configure anything related to workload identity. This configuratio
 
 1. Add the cluster admin user(s) to the cluster admin security group.
 
-   > :book: The recently created break-glass admin user is added to the Kubernetes Cluster Admin group from Microsoft Entra ID. After this step the Microsoft Entra ID Admin team will have finished the app team's request.
+   > :book: The recently created break-glass admin user is added to the Kubernetes Cluster Admin group from Microsoft Entra ID. After this step the Microsoft Entra ID Admin team will have finished the workload team's request.
 
    You should skip this step, if the group identified in the former step already has a cluster admin assigned as member.
 

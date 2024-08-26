@@ -4,7 +4,7 @@ The cluster now has an [Traefik configured with a TLS certificate](./09-secret-m
 
 ## Steps
 
-> :book: The Contoso app team is about to conclude this journey, but they need an app to test their new infrastructure. For this task they've picked out the venerable [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/main/samples/aspnetapp).
+> :book: The Contoso workload team is about to conclude this journey, but they need an app to test their new infrastructure. For this task they've picked out the venerable [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/main/samples/aspnetapp).
 
 1. Customize the host name of the Ingress resource to match your custom domain. *(You can skip this step if domain was left as contoso.com.)*
 
