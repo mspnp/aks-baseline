@@ -76,6 +76,13 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    az acr import --source docker.io/library/traefik:v3.1 -n $ACR_NAME_AKS_BASELINE
    ```
 
+1. Retrieve the fixed IPv4 address for the AKS internal load balancer ingress controller's service.
+
+   ```bash
+   INGRESS_CONTROLLER_SERVICE_ILB_IPV4_ADDRESS_BU0001A0008=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.ilbIpAddress.value -o tsv)
+   echo INGRESS_CONTROLLER_SERVICE_ILB_IPV4_ADDRESS_BU0001A0008: $INGRESS_CONTROLLER_SERVICE_ILB_IPV4_ADDRESS_BU0001A0008
+   ```
+
 1. Install the Traefik Ingress Controller.
 
    > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
@@ -85,7 +92,9 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    :warning: Deploying the Traefik `traefik.yaml` file unmodified from this repo will be deploying your workload to take dependencies on a public container registry. This is generally okay for learning/testing, but not suitable for production. Before going to production, ensure *all* image references are from *your* container registry or another that you feel confident relying on.
 
    ```bash
-   kubectl create -f https://raw.githubusercontent.com/mspnp/aks-baseline/main/workload/traefik.yaml
+   sed -i "s#<ingress-controller-ilb-ipv4-address>#${INGRESS_CONTROLLER_SERVICE_ILB_IPV4_ADDRESS_BU0001A0008}#g" workload/traefik.yaml
+
+   kubectl create -f workload/traefik.yaml
    ```
 
 1. Wait for Traefik to be ready.
