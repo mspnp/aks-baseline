@@ -40,7 +40,7 @@ param gitOpsBootstrappingRepoHttpsUrl string = 'https://github.com/mspnp/aks-bas
 param gitOpsBootstrappingRepoBranch string = 'main'
 
 @description('The AKS cluster Internal Load Balancer IP Address')
-param clusterInternalLoadBalancerIpAddress string
+param clusterInternalLoadBalancerIpAddress string = '10.240.4.4'
 
 /*** VARIABLES ***/
 
