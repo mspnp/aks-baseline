@@ -76,7 +76,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    az acr import --source docker.io/library/traefik:v3.1 -n $ACR_NAME_AKS_BASELINE
    ```
 
-1. Retrieve the fixed IPv4 address for the AKS internal load balancer ingress controller's service.
+1. When the cluster was deployed, the Bicep deployment decided on the fixed private IP address to use for the AKS internal load balancer ingress controller's service. Retrieve that IP address so we can configure it in the Traefik deployment, which will create the load balancer.
 
    ```bash
    INGRESS_CONTROLLER_SERVICE_ILB_IPV4_ADDRESS_BU0001A0008=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.ilbIpAddress.value -o tsv)
