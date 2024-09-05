@@ -39,6 +39,9 @@ param gitOpsBootstrappingRepoHttpsUrl string = 'https://github.com/mspnp/aks-bas
 @minLength(1)
 param gitOpsBootstrappingRepoBranch string = 'main'
 
+@description('The AKS cluster Internal Load Balancer IP Address')
+param clusterInternalLoadBalancerIpAddress string = '10.240.4.4'
+
 /*** VARIABLES ***/
 
 var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resourceGroup().id)
@@ -435,7 +438,7 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
       ttl: 3600
       aRecords: [
         {
-          ipv4Address: '10.240.4.4'
+          ipv4Address: clusterInternalLoadBalancerIpAddress
         }
       ]
     }
@@ -1146,3 +1149,4 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
 output aksClusterName string = clusterName
 output aksIngressControllerPodManagedIdentityClientId string = podmiIngressController.properties.clientId
 output keyVaultName string = kv.name
+output ilbIpAddress string = pdzAksIngress::aksIngressDomainName_bu0001a0008_00.properties.aRecords[0].ipv4Address
