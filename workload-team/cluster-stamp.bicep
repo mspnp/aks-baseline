@@ -167,6 +167,65 @@ resource amw 'Microsoft.Monitor/accounts@2023-10-01-preview' = {
   location: location
 }
 
+resource dce 'Microsoft.Insights/dataCollectionEndpoints@2023-03-11' = {
+  name: 'MSProm-${location}-${clusterName}'
+  location: location
+  kind: 'Linux'
+  properties: {
+    networkAcls: {
+      publicNetworkAccess: 'Enabled'
+    }
+  }
+}
+
+resource dcr 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
+  name: 'MSProm-${location}-${clusterName}'
+  kind: 'Linux'
+  location: location
+
+  properties: {
+    dataCollectionEndpointId: dce.id
+    dataSources: {
+      prometheusForwarder: [
+        {
+          name: 'PrometheusDataSource'
+          streams: [
+            'Microsoft-PrometheusMetrics'
+          ]
+          labelIncludeFilter: {}
+        }
+      ]
+    }
+    destinations: {
+      monitoringAccounts: [
+        {
+          accountResourceId: amw.id
+          name: 'MonitoringAccount1'
+        }
+      ]
+    }
+    dataFlows: [
+      {
+        streams: [
+          'Microsoft-PrometheusMetrics'
+        ]
+        destinations: [
+          'MonitoringAccount1'
+        ]
+      }
+    ]
+  }
+}
+
+// Associate a data collection rule to the AKS Cluster
+resource dcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11' = {
+  name: 'MSProm-${location}-${clusterName}'
+  scope: mc
+  properties: {
+    dataCollectionRuleId: dcr.id
+  }
+}
+
 // A query pack to hold any custom quries you may want to write to monitor your cluster or workloads
 resource qpBaselineQueryPack 'Microsoft.OperationalInsights/queryPacks@2019-09-01' = {
   location: location
