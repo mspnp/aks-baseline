@@ -161,6 +161,12 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
 
 /*** RESOURCES ***/
 
+// An Azure Monitor workspace where cluster metrics related to Prometheus are collected
+resource amw 'Microsoft.Monitor/accounts@2023-10-01-preview' = {
+  name: 'amw-${clusterName}'
+  location: location
+}
+
 // A query pack to hold any custom quries you may want to write to monitor your cluster or workloads
 resource qpBaselineQueryPack 'Microsoft.OperationalInsights/queryPacks@2019-09-01' = {
   location: location
