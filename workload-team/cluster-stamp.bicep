@@ -162,7 +162,7 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
 /*** RESOURCES ***/
 
 // An Azure Monitor workspace where cluster metrics related to Prometheus are collected
-resource amw 'Microsoft.Monitor/accounts@2023-10-01-preview' = {
+resource amw 'Microsoft.Monitor/accounts@2023-04-03' = {
   name: 'amw-${clusterName}'
   location: location
 }
