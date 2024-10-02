@@ -173,7 +173,7 @@ resource dce 'Microsoft.Insights/dataCollectionEndpoints@2023-03-11' = {
   kind: 'Linux'
   properties: {
     networkAcls: {
-      publicNetworkAccess: 'Enabled'
+      publicNetworkAccess: 'Disabled'
     }
   }
 }
@@ -439,6 +439,60 @@ module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'modules/role-assign
     targetVirtualNetworkName: targetVirtualNetwork.name
   }
 }
+
+// Enabling Azure Monitor workspace Private Link support.
+resource pdzAmw 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+  name: 'privatelink.prometheus.monitor.azure.com'
+  location: 'global'
+
+  // Enabling Azure Monitor workspace Private Link on cluster vnet.
+  resource vnetlnk 'virtualNetworkLinks' = {
+    name: 'to_${targetVirtualNetwork.name}'
+    location: 'global'
+    properties: {
+      virtualNetwork: {
+        id: targetVirtualNetwork.id
+      }
+      registrationEnabled: false
+    }
+  }
+}
+
+resource peAmw 'Microsoft.Network/privateEndpoints@2024-01-01' = {
+  name: 'pe-${amw.name}'
+  location: location
+  properties: {
+    subnet: {
+      id: targetVirtualNetwork::snetPrivatelinkendpoints.id
+    }
+    privateLinkServiceConnections: [
+      {
+        name: 'to_${targetVirtualNetwork.name}'
+        properties: {
+          privateLinkServiceId: amw.id
+          groupIds: [
+            'prometheusMetrics'
+          ]
+        }
+      }
+    ]
+  }
+
+  resource pdnszg 'privateDnsZoneGroups' = {
+    name: 'default'
+    properties: {
+      privateDnsZoneConfigs: [
+        {
+          name: 'privatelink-awm-com'
+          properties: {
+            privateDnsZoneId: pdzAmw.id
+          }
+        }
+      ]
+    }
+  }
+}
+
 
 // Enabling Azure Key Vault Private Link support.
 resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
