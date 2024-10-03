@@ -442,7 +442,7 @@ module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'modules/role-assign
 
 // Enabling Azure Monitor workspace Private Link support.
 resource pdzAmw 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: 'privatelink.prometheus.monitor.azure.com'
+  name: 'privatelink.${location}.prometheus.monitor.azure.com'
   location: 'global'
 
   // Enabling Azure Monitor workspace Private Link on cluster vnet.
