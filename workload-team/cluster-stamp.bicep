@@ -161,6 +161,71 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
 
 /*** RESOURCES ***/
 
+// An Azure Monitor workspace where cluster metrics related to Prometheus are collected
+resource amw 'Microsoft.Monitor/accounts@2023-04-03' = {
+  name: 'amw-${clusterName}'
+  location: location
+}
+
+resource dce 'Microsoft.Insights/dataCollectionEndpoints@2023-03-11' = {
+  name: 'MSProm-${location}-${clusterName}'
+  location: location
+  kind: 'Linux'
+  properties: {
+    networkAcls: {
+      publicNetworkAccess: 'Enabled'
+    }
+  }
+}
+
+resource dcr 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
+  name: 'MSProm-${location}-${clusterName}'
+  kind: 'Linux'
+  location: location
+
+  properties: {
+    dataCollectionEndpointId: dce.id
+    dataSources: {
+      prometheusForwarder: [
+        {
+          name: 'PrometheusDataSource'
+          streams: [
+            'Microsoft-PrometheusMetrics'
+          ]
+          labelIncludeFilter: {}
+        }
+      ]
+    }
+    destinations: {
+      monitoringAccounts: [
+        {
+          accountResourceId: amw.id
+          name: 'MonitoringAccount1'
+        }
+      ]
+    }
+    dataFlows: [
+      {
+        streams: [
+          'Microsoft-PrometheusMetrics'
+        ]
+        destinations: [
+          'MonitoringAccount1'
+        ]
+      }
+    ]
+  }
+}
+
+// Associate a data collection rule to the AKS Cluster
+resource dcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11' = {
+  name: 'MSProm-${location}-${clusterName}'
+  scope: mc
+  properties: {
+    dataCollectionRuleId: dcr.id
+  }
+}
+
 // A query pack to hold any custom quries you may want to write to monitor your cluster or workloads
 resource qpBaselineQueryPack 'Microsoft.OperationalInsights/queryPacks@2019-09-01' = {
   location: location
@@ -630,7 +695,11 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     }
     azureMonitorProfile: {
       metrics: {
-        enabled: false // This is for the AKS-PrometheusAddonPreview, which is not enabled in this cluster as Container Insights is already collecting.
+        enabled: true
+        kubeStateMetrics: {
+          metricAnnotationsAllowList: ''
+          metricLabelsAllowlist: ''
+        }
       }
     }
     storageProfile: {  // By default, do not support native state storage, enable as needed to support workloads that require state
@@ -703,6 +772,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     // but logically they need to be in place before workloads are, so forcing that here. This also
     // ensures that the policies are applied to the cluster at bootstrapping time.
     policies
+
+    dcr
 
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
