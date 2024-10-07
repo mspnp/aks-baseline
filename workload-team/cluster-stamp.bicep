@@ -935,6 +935,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     // ensures that the policies are applied to the cluster at bootstrapping time.
     policies
 
+    dcr
+
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
     kvPodMiIngressControllerSecretsUserRole_roleAssignment
