@@ -200,7 +200,7 @@ resource dcr 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
       monitoringAccounts: [
         {
           accountResourceId: amw.id
-          name: 'MonitoringAccount1'
+          name: amw.name
         }
       ]
     }
@@ -210,7 +210,7 @@ resource dcr 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
           'Microsoft-PrometheusMetrics'
         ]
         destinations: [
-          'MonitoringAccount1'
+          amw.name
         ]
       }
     ]
