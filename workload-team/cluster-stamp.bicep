@@ -165,6 +165,9 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
 resource amw 'Microsoft.Monitor/accounts@2023-04-03' = {
   name: 'amw-${clusterName}'
   location: location
+  properties: {
+     publicNetworkAccess: 'Enabled'
+  }
 }
 
 resource dce 'Microsoft.Insights/dataCollectionEndpoints@2023-03-11' = {
