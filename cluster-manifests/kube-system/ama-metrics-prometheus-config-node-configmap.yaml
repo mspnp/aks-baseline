@@ -1,3 +1,4 @@
+# This config map can be used to provide Prometheus scrape config for addon DaemonSet that runs on every Linux node in the cluster, and any node level targets on each node can be scraped by providing scrape jobs in this configmap.
 kind: ConfigMap
 apiVersion: v1
 data:
@@ -5,5 +6,6 @@ data:
     global:
       scrape_interval: 15s
 metadata:
+  # ama-metrics-prometheus-config-node - When a configmap with this name is created, scrape jobs defined in it are run from each Linux DaemonSet pod running in the cluster.
   name: ama-metrics-prometheus-config-node
   namespace: kube-system

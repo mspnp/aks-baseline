@@ -1,9 +1,11 @@
+# This config map can be used to provide Prometheus scrape config for addon replica. Addon runs a singleton replica, and any cluster level services can be discovered and scraped by providing scrape jobs in this configmap.
 kind: ConfigMap
 apiVersion: v1
 data:
   prometheus-config: |-
     global:
-      scrape_interval: 15s
+      scrape_interval: 20s
 metadata:
+  # ama-metrics-prometheus-config (Recommended) - When a configmap with this name is created, scrape jobs defined in it are run from the Azure monitor metrics replica pod running in the cluster.
   name: ama-metrics-prometheus-config
   namespace: kube-system
