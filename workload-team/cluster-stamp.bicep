@@ -220,6 +220,20 @@ resource dcr 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
   }
 }
 
+resource dcr_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: dcr
+  name: 'default'
+  properties: {
+    workspaceId: la.id
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+    ]
+  }
+}
+
 // Associate a data collection rule to the AKS Cluster
 resource dcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11' = {
   name: 'MSProm-${location}-${clusterName}'
