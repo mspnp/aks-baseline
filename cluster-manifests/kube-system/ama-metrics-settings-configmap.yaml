@@ -25,8 +25,8 @@ data:
     windowskubeproxy = false
     kappiebasic = true
     networkobservabilityRetina = true
-    networkobservabilityHubble = true
-    networkobservabilityCilium = true
+    networkobservabilityHubble = false
+    networkobservabilityCilium = false
     prometheuscollectorhealth = false
     controlplane-apiserver = true
     controlplane-cluster-autoscaler = false
@@ -52,7 +52,7 @@ data:
     windowskubeproxy = ""
     podannotations = ""
     kappiebasic = ""
-    networkobservabilityRetina = ""
+    networkobservabilityRetina = "networkobservability_forward_count|networkobservability_forward_bytes|networkobservability_drop_count|networkobservability_drop_bytes|networkobservability_tcp_state|networkobservability_tcp_connection_remote|networkobservability_tcp_connection_stats|networkobservability_ip_connection_stats|networkobservability_udp_connection_stats|networkobservability_udp_active_sockets|networkobservability_interface_stats"
     networkobservabilityHubble = ""
     networkobservabilityCilium = ""
     controlplane-apiserver = ""
@@ -60,7 +60,7 @@ data:
     controlplane-kube-scheduler = ""
     controlplane-kube-controller-manager = ""
     controlplane-etcd = ""
-    minimalingestionprofile = false
+    minimalingestionprofile = true
   # The scrape intervals for default/pre-definetargets. 30 secs is the default scrape frequency and it can be changed per default target using this configmap
   # https://learn.microsoft.com/azure/azure-monitor/containers/prometheus-metrics-scrape-configuration?tabs=CRDConfig%2CCRDScrapeConfig%2CConfigFileScrapeConfigBasicAuth%2CConfigFileScrapeConfigTLSAuth#scrape-interval-settings
   default-targets-scrape-interval-settings: |-
