@@ -146,7 +146,7 @@ data:
         job_completion_threshold_time_minutes = 360
   integrations: |-
     [integrations.azure_network_policy_manager]
-        collect_basic_metrics = true
+        collect_basic_metrics = false
         collect_advanced_metrics = false
     [integrations.azure_subnet_ip_usage]
         enabled = true
