@@ -1,4 +1,6 @@
+# https://raw.githubusercontent.com/Azure/prometheus-collector/refs/heads/main/otelcollector/configmaps/ama-metrics-prometheus-config-node-configmap.yaml
 # This config map can be used to provide Prometheus scrape config for addon DaemonSet that runs on every Linux node in the cluster, and any node level targets on each node can be scraped by providing scrape jobs in this configmap.
+# https://learn.microsoft.com/azure/virtual-network/kubernetes-network-policies#set-up-for-prometheus-server
 kind: ConfigMap
 apiVersion: v1
 data:

@@ -1,3 +1,4 @@
+# https://raw.githubusercontent.com/Azure/prometheus-collector/refs/heads/main/otelcollector/configmaps/ama-metrics-settings-configmap.yaml
 kind: ConfigMap
 apiVersion: v1
 data:
