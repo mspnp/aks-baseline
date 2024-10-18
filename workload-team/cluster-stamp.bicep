@@ -170,6 +170,7 @@ resource amw 'Microsoft.Monitor/accounts@2023-04-03' = {
   }
 }
 
+// A data collection endpoint to process prometheus scraped metrics so they can be ingested by Azure Monitor
 resource dce 'Microsoft.Insights/dataCollectionEndpoints@2023-03-11' = {
   name: 'MSProm-${location}-${clusterName}'
   location: location
@@ -181,6 +182,7 @@ resource dce 'Microsoft.Insights/dataCollectionEndpoints@2023-03-11' = {
   }
 }
 
+// A data collection rule that collects PrometheusMetrics from pods, nodes and cluster and configure Azure monitor workspace as destination  
 resource dcr 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
   name: 'MSProm-${location}-${clusterName}'
   kind: 'Linux'
@@ -220,6 +222,7 @@ resource dcr 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
   }
 }
 
+// A dianostic setting for all prometheuse dcr logs to be sent to log analytics
 resource dcr_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: dcr
   name: 'default'
