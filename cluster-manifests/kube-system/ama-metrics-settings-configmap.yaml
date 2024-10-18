@@ -53,7 +53,7 @@ data:
     windowskubeproxy = ""
     podannotations = ""
     kappiebasic = ""
-    networkobservabilityRetina = "networkobservability_forward_count|networkobservability_forward_bytes|networkobservability_drop_count|networkobservability_drop_bytes|networkobservability_tcp_state|networkobservability_tcp_connection_remote|networkobservability_tcp_connection_stats|networkobservability_ip_connection_stats|networkobservability_udp_connection_stats|networkobservability_udp_active_sockets|networkobservability_interface_stats"
+    networkobservabilityRetina = "" # networkobservability_forward_count|networkobservability_forward_bytes|networkobservability_drop_count|networkobservability_drop_bytes|networkobservability_tcp_state|networkobservability_tcp_connection_remote|networkobservability_tcp_connection_stats|networkobservability_ip_connection_stats|networkobservability_udp_connection_stats|networkobservability_udp_active_sockets|networkobservability_interface_stats
     networkobservabilityHubble = ""
     networkobservabilityCilium = ""
     controlplane-apiserver = ""
