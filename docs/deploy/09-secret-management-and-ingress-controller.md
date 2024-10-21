@@ -66,7 +66,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
    ```bash
    # Import ingress controller image hosted in public container registries
-   az acr import --source docker.io/library/traefik:v2.11 -n $ACR_NAME_AKS_BASELINE --username YOUR_DOCKER_HUB_USERNAME --password YOUR_DOCKER_HUB_PASSWORD_OR_PERSONAL_ACCESS_TOKEN
+   az acr import --source docker.io/library/traefik:v3.1 -n $ACR_NAME_AKS_BASELINE --username YOUR_DOCKER_HUB_USERNAME --password YOUR_DOCKER_HUB_PASSWORD_OR_PERSONAL_ACCESS_TOKEN
    ```
 
    If you don't have a Docker Hub account, use the following command, but note that you might receive a rate limit failure and need to retry repeatedly:
