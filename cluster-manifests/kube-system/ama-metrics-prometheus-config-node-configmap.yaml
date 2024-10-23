@@ -1,0 +1,30 @@
+# https://raw.githubusercontent.com/Azure/prometheus-collector/refs/heads/main/otelcollector/configmaps/ama-metrics-prometheus-config-node-configmap.yaml
+# This config map can be used to provide Prometheus scrape config for addon DaemonSet that runs on every Linux node in the cluster, and any node level targets on each node can be scraped by providing scrape jobs in this configmap.
+# https://learn.microsoft.com/azure/virtual-network/kubernetes-network-policies#set-up-for-prometheus-server
+kind: ConfigMap
+apiVersion: v1
+data:
+  prometheus-config: |-
+    global:
+      scrape_interval: 30s
+    scrape_configs:
+      - job_name: "azure-npm-node-metrics-from-pod-config"
+        metrics_path: /node-metrics
+        kubernetes_sd_configs:
+        - role: pod
+        relabel_configs:
+        - source_labels: [__meta_kubernetes_namespace]
+          regex: kube-system
+          action: keep
+        - source_labels: [__name__]
+          action: keep
+          regex: '(__meta_kubernetes_pod_annotationpresent_azure.*)'
+        - source_labels: [__address__]
+          action: replace
+          regex: ([^:]+)(?::\d+)?
+          replacement: "$1:10091"
+          target_label: __address__
+metadata:
+  # ama-metrics-prometheus-config-node - When a configmap with this name is created, scrape jobs defined in it are run from each Linux DaemonSet pod running in the cluster.
+  name: ama-metrics-prometheus-config-node
+  namespace: kube-system

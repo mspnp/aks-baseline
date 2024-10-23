@@ -525,6 +525,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' = {
                 '*.ods.opinsights.azure.com'
                 '*.oms.opinsights.azure.com'
                 '${location}.monitoring.azure.com'
+                '*.metrics.ingest.monitor.azure.com'
               ]
               targetUrls: []
               destinationAddresses: []

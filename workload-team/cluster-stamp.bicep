@@ -161,6 +161,91 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
 
 /*** RESOURCES ***/
 
+// An Azure Monitor workspace where cluster metrics related to Prometheus are collected
+resource amw 'Microsoft.Monitor/accounts@2023-04-03' = {
+  name: 'amw-${clusterName}'
+  location: location
+  properties: {
+     publicNetworkAccess: 'Enabled'
+  }
+}
+
+// A data collection endpoint to process Prometheus scraped metrics so they can be ingested by Azure Monitor
+resource dce 'Microsoft.Insights/dataCollectionEndpoints@2023-03-11' = {
+  name: 'MSProm-${location}-${clusterName}'
+  location: location
+  kind: 'Linux'
+  properties: {
+    networkAcls: {
+      publicNetworkAccess: 'Enabled'
+    }
+  }
+}
+
+// A data collection rule that collects PrometheusMetrics from pods, nodes and cluster and configure Azure monitor workspace as destination  
+resource dcr 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
+  name: 'MSProm-${location}-${clusterName}'
+  kind: 'Linux'
+  location: location
+
+  properties: {
+    dataCollectionEndpointId: dce.id
+    dataSources: {
+      prometheusForwarder: [
+        {
+          name: 'PrometheusDataSource'
+          streams: [
+            'Microsoft-PrometheusMetrics'
+          ]
+          labelIncludeFilter: {}
+        }
+      ]
+    }
+    destinations: {
+      monitoringAccounts: [
+        {
+          accountResourceId: amw.id
+          name: amw.name
+        }
+      ]
+    }
+    dataFlows: [
+      {
+        streams: [
+          'Microsoft-PrometheusMetrics'
+        ]
+        destinations: [
+          amw.name
+        ]
+      }
+    ]
+  }
+}
+
+// A diagnostic setting for all Prometheus DCR logs to be sent to log analytics
+resource dcr_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: dcr
+  name: 'default'
+  properties: {
+    workspaceId: la.id
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+    ]
+  }
+}
+
+// Associate a data collection rule to the AKS Cluster
+resource dcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11' = {
+  name: 'MSProm-${location}-${clusterName}'
+  scope: mc
+  properties: {
+    dataCollectionRuleId: dcr.id
+  }
+}
+
 // A query pack to hold any custom quries you may want to write to monitor your cluster or workloads
 resource qpBaselineQueryPack 'Microsoft.OperationalInsights/queryPacks@2019-09-01' = {
   location: location
@@ -630,7 +715,26 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     }
     azureMonitorProfile: {
       metrics: {
-        enabled: false // This is for the AKS-PrometheusAddonPreview, which is not enabled in this cluster as Container Insights is already collecting.
+        enabled: true
+        kubeStateMetrics: {
+          // https://learn.microsoft.com/azure/azure-monitor/containers/kubernetes-monitoring-enable
+          // https://github.com/kubernetes/kube-state-metrics
+
+          // Comma-separated list of Kubernetes annotations keys used in the resource's kube_resource_annotations metric.
+          // For example, kube_pod_annotations is the annotations metric for the pods resource.
+          // By default, this metric contains only name and namespace labels. To include more annotations,
+          // provide a list of resource names in their plural form and Kubernetes annotation keys that you want to allow for them.
+          // A single * can be provided for each resource to allow any annotations, but this has severe performance implications
+          // https://github.com/prometheus-community/helm-charts/blob/e68c764aa6c764ec5934c6812ff0eaa0877ba275/charts/kube-state-metrics/values.yaml#L342
+          metricAnnotationsAllowList: ''
+          
+          // Comma-separated list of more Kubernetes label keys that is used in the resource's kube_resource_labels metric kube_resource_labels metric.
+          // For example, kube_pod_labels is the labels metric for the pods resource. By default this metric contains only name and namespace labels.
+          // To include more labels, provide a list of resource names in their plural form and Kubernetes label keys that you want to allow for them.
+          // A single * can be provided for each resource to allow any labels, but i this has severe performance implications.
+          // https://github.com/prometheus-community/helm-charts/blob/e68c764aa6c764ec5934c6812ff0eaa0877ba275/charts/kube-state-metrics/values.yaml#L326
+          metricLabelsAllowlist: ''
+        }
       }
     }
     storageProfile: {  // By default, do not support native state storage, enable as needed to support workloads that require state
@@ -703,6 +807,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     // but logically they need to be in place before workloads are, so forcing that here. This also
     // ensures that the policies are applied to the cluster at bootstrapping time.
     policies
+
+    dcr
 
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment

@@ -1,0 +1,89 @@
+# https://raw.githubusercontent.com/Azure/prometheus-collector/refs/heads/main/otelcollector/configmaps/ama-metrics-settings-configmap.yaml
+kind: ConfigMap
+apiVersion: v1
+data:
+  schema-version:
+    #string.used by agent to parse config. supported versions are {v1}. Configs with other schema versions will be rejected by the agent.
+    v1
+  config-version:
+    #string.used by customer to keep track of this config file's version in their source control/repository (max allowed 10 chars, other chars will be truncated)
+    ver1
+  # Cluster alias (to change the value of cluster label in every time-series/metric that's ingested from a cluster)
+  # https://learn.microsoft.com/azure/azure-monitor/containers/prometheus-metrics-scrape-configuration?tabs=CRDConfig%2CCRDScrapeConfig%2CConfigFileScrapeConfigBasicAuth%2CConfigFileScrapeConfigTLSAuth#cluster-alias
+  prometheus-collector-settings: |-
+    cluster_alias = ""
+  # Enable/disable default scrape targets - Turn ON/OFF default scraping based on targets. Scrape configuration for these default targets are already pre-defined/built-in
+  # https://learn.microsoft.com/azure/azure-monitor/containers/prometheus-metrics-scrape-configuration?tabs=CRDConfig%2CCRDScrapeConfig%2CConfigFileScrapeConfigBasicAuth%2CConfigFileScrapeConfigTLSAuth#metrics-add-on-settings-configmap
+  default-scrape-settings-enabled: |-
+    kubelet = true
+    coredns = false
+    cadvisor = true
+    kubeproxy = false
+    apiserver = false
+    kubestate = true
+    nodeexporter = true
+    windowsexporter = false
+    windowskubeproxy = false
+    kappiebasic = true
+    networkobservabilityRetina = true
+    networkobservabilityHubble = false
+    networkobservabilityCilium = false
+    prometheuscollectorhealth = false
+    controlplane-apiserver = true
+    controlplane-cluster-autoscaler = false
+    controlplane-kube-scheduler = false
+    controlplane-kube-controller-manager = false
+    controlplane-etcd = true
+  # Regex for which namespaces to scrape through pod annotation based scraping.
+  # This is none by default. Use '.*' to scrape all namespaces of annotated pods.
+  # https://learn.microsoft.com/azure/azure-monitor/containers/prometheus-metrics-scrape-configuration?tabs=CRDConfig%2CCRDScrapeConfig%2CConfigFileScrapeConfigBasicAuth%2CConfigFileScrapeConfigTLSAuth#enable-pod-annotation-based-scraping
+  pod-annotation-based-scraping: |-
+    podannotationnamespaceregex = "kube-system|a0008"
+  # Metric keep-lists - this setting is used to control which metrics are listed to be allowed from each default target and to change the default behavior
+  # https://learn.microsoft.com/azure/azure-monitor/containers/prometheus-metrics-scrape-configuration?tabs=CRDConfig%2CCRDScrapeConfig%2CConfigFileScrapeConfigBasicAuth%2CConfigFileScrapeConfigTLSAuth#customize-metrics-collected-by-default-targets
+  default-targets-metrics-keep-list: |-
+    kubelet = ""
+    coredns = ""
+    cadvisor = ""
+    kubeproxy = ""
+    apiserver = ""
+    kubestate = ""
+    nodeexporter = ""
+    windowsexporter = ""
+    windowskubeproxy = ""
+    podannotations = ""
+    kappiebasic = ""
+    networkobservabilityRetina = "" # networkobservability_forward_count|networkobservability_forward_bytes|networkobservability_drop_count|networkobservability_drop_bytes|networkobservability_tcp_state|networkobservability_tcp_connection_remote|networkobservability_tcp_connection_stats|networkobservability_ip_connection_stats|networkobservability_udp_connection_stats|networkobservability_udp_active_sockets|networkobservability_interface_stats
+    networkobservabilityHubble = ""
+    networkobservabilityCilium = ""
+    controlplane-apiserver = ""
+    controlplane-cluster-autoscaler = ""
+    controlplane-kube-scheduler = ""
+    controlplane-kube-controller-manager = ""
+    controlplane-etcd = ""
+    minimalingestionprofile = true
+  # The scrape intervals for default/pre-definetargets. 30 secs is the default scrape frequency and it can be changed per default target using this configmap
+  # https://learn.microsoft.com/azure/azure-monitor/containers/prometheus-metrics-scrape-configuration?tabs=CRDConfig%2CCRDScrapeConfig%2CConfigFileScrapeConfigBasicAuth%2CConfigFileScrapeConfigTLSAuth#scrape-interval-settings
+  default-targets-scrape-interval-settings: |-
+    kubelet = "30s"
+    coredns = "30s"
+    cadvisor = "30s"
+    kubeproxy = "30s"
+    apiserver = "30s"
+    kubestate = "30s"
+    nodeexporter = "30s"
+    windowsexporter = "30s"
+    windowskubeproxy = "30s"
+    kappiebasic = "30s"
+    networkobservabilityRetina = "30s"
+    networkobservabilityHubble = "30s"
+    networkobservabilityCilium = "30s"
+    prometheuscollectorhealth = "30s"
+    podannotations = "30s"
+  # debug-mode - turning this ON helps to debug missing metric/ingestion issues 
+  # https://learn.microsoft.com/azure/azure-monitor/containers/prometheus-metrics-scrape-configuration?tabs=CRDConfig%2CCRDScrapeConfig%2CConfigFileScrapeConfigBasicAuth%2CConfigFileScrapeConfigTLSAuth#debug-mode
+  debug-mode: |-
+    enabled = false
+metadata:
+  name: ama-metrics-settings-configmap
+  namespace: kube-system
