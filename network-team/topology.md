@@ -65,7 +65,7 @@ Nodes are assigned IP addresses from within the spoke virtual network's subnet, 
 [30]: https://learn.microsoft.com/azure/aks/use-system-pools#system-and-user-node-pools
 [% Max Surge]: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#max-surge
 [% Max Unavailable]: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#max-unavailable
-[Azure Subnet not assignable IPs factor]: https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/private-ip-addresses#allocation-method
+[Azure Subnet not assignable IPs factor]: https://learn.microsoft.com/azure/virtual-network/ip-services/private-ip-addresses#allocation-method
 [Private Endpoints]: https://learn.microsoft.com/azure/private-link/private-endpoint-overview#private-endpoint-properties
 [Minimum Subnet size]: https://learn.microsoft.com/azure/aks/configure-azure-cni#plan-ip-addressing-for-your-cluster
 [Subnet Mask bits]: https://learn.microsoft.com/azure/virtual-network/virtual-networks-faq#how-small-and-how-large-can-vnets-and-subnets-be
