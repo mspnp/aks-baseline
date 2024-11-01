@@ -297,6 +297,16 @@ module alerts 'modules/alerts.bicep' = {
   ]
 }
 
+module pma 'modules/prometheusMetricAlerts.bicep' = {
+  name: 'pma'
+  params: {
+    clusterName: mc.name
+  }
+  dependsOn: [
+    amw
+  ]
+}
+
 resource skva 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
   name: 'KeyVaultAnalytics(${la.name})'
   location: location
