@@ -217,55 +217,6 @@ resource maHighNodeWorkingSetMemoryUtilization 'Microsoft.Insights/metricAlerts@
   }
 }
 
-resource maHighDiskUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Disk usage high for ${clusterName} CI-5'
-  location: 'global'
-  properties: {
-    autoMitigate: true
-    actions: []
-    criteria: {
-      allOf: [
-        {
-          criterionType: 'StaticThresholdCriterion'
-          dimensions: [
-            {
-              name: 'host'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-            {
-              name: 'device'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-          ]
-          metricName: 'DiskUsedPercentage'
-          metricNamespace: 'Insights.Container/nodes'
-          name: 'Metric1'
-          operator: 'GreaterThan'
-          threshold: 80
-          timeAggregation: 'Average'
-          skipMetricValidation: true
-        }
-      ]
-      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
-    }
-    description: 'This alert monitors disk usage for all nodes and storage devices.'
-    enabled: true
-    evaluationFrequency: 'PT1M'
-    scopes: [
-      mc.id
-    ]
-    severity: 3
-    targetResourceType: 'microsoft.containerservice/managedclusters'
-    windowSize: 'PT5M'
-  }
-}
-
 resource maNodesInNotReadyStatus 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Nodes in not ready status for ${clusterName} CI-3'
   location: 'global'
