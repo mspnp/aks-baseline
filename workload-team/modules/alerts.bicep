@@ -157,6 +157,25 @@ resource kubernetesAlertRuleGroupName_Pod_level 'Microsoft.AlertsManagement/prom
         }
         actions: []
       }
+      {
+        alert: 'KubePodReadyStateLow'
+        expression: 'sum by (cluster,namespace,deployment)(kube_deployment_status_replicas_ready) / sum by (cluster,namespace,deployment)(kube_deployment_spec_replicas) <.8 or sum by (cluster,namespace,deployment)(kube_daemonset_status_number_ready) / sum by (cluster,namespace,deployment)(kube_daemonset_status_desired_number_scheduled) <.8 '
+        for: 'PT5M'
+        annotations: {
+          description: 'Ready state of pods is less than 80%. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts).'
+        }
+        enabled: true
+        severity: 4
+        resolveConfiguration: {
+          autoResolved: true
+          timeToResolve: 'PT15M'
+        }
+        labels: {
+          severity: 'warning'
+        }
+        actions: []
+      }
+
     ]
   }
 }
@@ -258,55 +277,6 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
         }
       ]
     }
-  }
-}
-
-resource maPodsNotInReadyState 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Pods not in ready state for ${clusterName} CI-8'
-  location: 'global'
-  properties: {
-    autoMitigate: true
-    actions: []
-    criteria: {
-      allOf: [
-        {
-          criterionType: 'StaticThresholdCriterion'
-          dimensions: [
-            {
-              name: 'controllerName'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-            {
-              name: 'kubernetes namespace'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-          ]
-          metricName: 'PodReadyPercentage'
-          metricNamespace: 'Insights.Container/pods'
-          name: 'Metric1'
-          operator: 'LessThan'
-          threshold: 80
-          timeAggregation: 'Average'
-          skipMetricValidation: true
-        }
-      ]
-      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
-    }
-    description: 'This alert monitors for excessive pods not in the ready state.'
-    enabled: true
-    evaluationFrequency: 'PT1M'
-    scopes: [
-      mc.id
-    ]
-    severity: 3
-    targetResourceType: 'microsoft.containerservice/managedclusters'
-    windowSize: 'PT5M'
   }
 }
 
