@@ -446,24 +446,6 @@ resource kubernetesAlertRuleGroupName_Pod_level 'Microsoft.AlertsManagement/prom
         actions: []
       }
       {
-        alert: 'KubeContainerAverageMemoryHigh'
-        expression: 'avg by (namespace, controller, container, cluster)(((container_memory_working_set_bytes{container!="", image!="", container!="POD"} / on(namespace,cluster,pod,container) group_left kube_pod_container_resource_limits{resource="memory", node!=""})*on(namespace, pod, cluster) group_left(controller) label_replace(kube_pod_owner, "controller", "$1", "owner_name", "(.*)")) > .95)'
-        for: 'PT10M'
-        annotations: {
-          description: 'Average Memory usage per container is greater than 95%. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts).'
-        }
-        enabled: true
-        severity: 4
-        resolveConfiguration: {
-          autoResolved: true
-          timeToResolve: 'PT10M'
-        }
-        labels: {
-          severity: 'warning'
-        }
-        actions: []
-      }
-      {
         alert: 'KubeletPodStartUpLatencyHigh'
         expression: 'histogram_quantile(0.99, sum(rate(kubelet_pod_worker_duration_seconds_bucket{job="kubelet"}[5m])) by (cluster, instance, le)) * on(cluster, instance) group_left(node) kubelet_node_name{job="kubelet"} > 60'
         for: 'PT10M'

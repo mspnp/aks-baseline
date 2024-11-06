@@ -103,6 +103,24 @@ resource kubernetesAlertRuleGroupName_Pod_level 'Microsoft.AlertsManagement/prom
         }
         actions: []
       }
+      {
+        alert: 'KubeContainerAverageMemoryHigh'
+        expression: 'avg by (namespace, controller, container, cluster)(((container_memory_working_set_bytes{container!="", image!="", container!="POD"} / on(namespace,cluster,pod,container) group_left kube_pod_container_resource_limits{resource="memory", node!=""})*on(namespace, pod, cluster) group_left(controller) label_replace(kube_pod_owner, "controller", "$1", "owner_name", "(.*)")) > .95)'
+        for: 'PT10M'
+        annotations: {
+          description: 'Average Memory usage per container is greater than 95%. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts).'
+        }
+        enabled: true
+        severity: 4
+        resolveConfiguration: {
+          autoResolved: true
+          timeToResolve: 'PT10M'
+        }
+        labels: {
+          severity: 'warning'
+        }
+        actions: []
+      }
     ]
   }
 }
@@ -212,55 +230,6 @@ resource maHighNodeWorkingSetMemoryUtilization 'Microsoft.Insights/metricAlerts@
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
     }
     description: 'Node working set memory utilization across the cluster.'
-    enabled: true
-    evaluationFrequency: 'PT1M'
-    scopes: [
-      mc.id
-    ]
-    severity: 3
-    targetResourceType: 'microsoft.containerservice/managedclusters'
-    windowSize: 'PT5M'
-  }
-}
-
-resource maHighContainerWorkingSetMemoryUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Container working set memory usage violates the configured threshold for ${clusterName} CI-20'
-  location: 'global'
-  properties: {
-    autoMitigate: true
-    actions: []
-    criteria: {
-      allOf: [
-        {
-          criterionType: 'StaticThresholdCriterion'
-          dimensions: [
-            {
-              name: 'controllerName'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-            {
-              name: 'kubernetes namespace'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-          ]
-          metricName: 'memoryWorkingSetThresholdViolated'
-          metricNamespace: 'Insights.Container/containers'
-          name: 'Metric1'
-          operator: 'GreaterThan'
-          threshold: 0  // This threshold is defined in the container-azm-ms-agentconfig.yaml file.
-          timeAggregation: 'Average'
-          skipMetricValidation: true
-        }
-      ]
-      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
-    }
-    description: 'This alert monitors container working set memory usage. It uses the threshold defined in the config map.'
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
