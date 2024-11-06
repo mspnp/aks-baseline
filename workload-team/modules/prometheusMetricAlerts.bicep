@@ -72,24 +72,6 @@ resource kubernetesAlertRuleGroupName_Cluster_level 'Microsoft.AlertsManagement/
         actions: []
       }
       {
-        alert: 'KubeContainerOOMKilledCount'
-        expression: 'sum by (cluster,container,controller,namespace)(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} * on(cluster,namespace,pod) group_left(controller) label_replace(kube_pod_owner, "controller", "$1", "owner_name", "(.*)")) > 0'
-        for: 'PT5M'
-        annotations: {
-          description: 'Number of OOM killed containers is greater than 0. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/cluster-level-recommended-alerts).'
-        }
-        enabled: true
-        severity: 4
-        resolveConfiguration: {
-          autoResolved: true
-          timeToResolve: 'PT10M'
-        }
-        labels: {
-          severity: 'warning'
-        }
-        actions: []
-      }
-      {
         alert: 'KubeClientErrors'
         expression: '(sum(rate(rest_client_requests_total{code=~"5.."}[5m])) by (cluster, instance, job, namespace)  / sum(rate(rest_client_requests_total[5m])) by (cluster, instance, job, namespace)) > 0.01'
         for: 'PT15M'

@@ -177,6 +177,40 @@ resource kubernetesAlertRuleGroupName_Node_level 'Microsoft.AlertsManagement/pro
   }
 }
 
+resource kubernetesAlertRuleGroupName_Cluster_level 'Microsoft.AlertsManagement/prometheusRuleGroups@2023-03-01' = {
+  name: '${kubernetesAlertRuleGroupName}-Cluster-level'
+  location: location
+  properties: {
+    description: kubernetesAlertRuleGroupDescription
+    scopes: [
+      amw.id
+      mc.id
+    ]
+    clusterName: mc.name
+    interval: 'PT1M'
+    rules: [
+      {
+        alert: 'KubeContainerOOMKilledCount'
+        expression: 'sum by (cluster,container,controller,namespace)(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} * on(cluster,namespace,pod) group_left(controller) label_replace(kube_pod_owner, "controller", "$1", "owner_name", "(.*)")) > 0'
+        for: 'PT5M'
+        annotations: {
+          description: 'Number of OOM killed containers is greater than 0. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/cluster-level-recommended-alerts).'
+        }
+        enabled: true
+        severity: 4
+        resolveConfiguration: {
+          autoResolved: true
+          timeToResolve: 'PT10M'
+        }
+        labels: {
+          severity: 'warning'
+        }
+        actions: []
+      }
+    ]
+  }
+}
+
 resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
   name: 'PodFailedScheduledQuery'
   location: location
@@ -206,55 +240,6 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
         }
       ]
     }
-  }
-}
-
-resource maContainersGettingKilledOOM 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Containers getting OOM killed for ${clusterName} CI-6'
-  location: 'global'
-  properties: {
-    autoMitigate: true
-    actions: []
-    criteria: {
-      allOf: [
-        {
-          criterionType: 'StaticThresholdCriterion'
-          dimensions: [
-            {
-              name: 'kubernetes namespace'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-            {
-              name: 'controllerName'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-          ]
-          metricName: 'oomKilledContainerCount'
-          metricNamespace: 'Insights.Container/pods'
-          name: 'Metric1'
-          operator: 'GreaterThan'
-          threshold: 0
-          timeAggregation: 'Average'
-          skipMetricValidation: true
-        }
-      ]
-      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
-    }
-    description: 'This alert monitors number of containers killed due to out of memory (OOM) error.'
-    enabled: true
-    evaluationFrequency: 'PT1M'
-    scopes: [
-      mc.id
-    ]
-    severity: 3
-    targetResourceType: 'microsoft.containerservice/managedclusters'
-    windowSize: 'PT1M'
   }
 }
 
