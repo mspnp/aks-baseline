@@ -209,48 +209,6 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
   }
 }
 
-resource maHighNodeWorkingSetMemoryUtilization 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Node working set memory utilization high for ${clusterName} CI-2'
-  location: 'global'
-  properties: {
-    autoMitigate: true
-    actions: []
-    criteria: {
-      allOf: [
-        {
-          criterionType: 'StaticThresholdCriterion'
-          dimensions: [
-            {
-              name: 'host'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-          ]
-          metricName: 'memoryWorkingSetPercentage'
-          metricNamespace: 'Insights.Container/nodes'
-          name: 'Metric1'
-          operator: 'GreaterThan'
-          threshold: 80
-          timeAggregation: 'Average'
-          skipMetricValidation: true
-        }
-      ]
-      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
-    }
-    description: 'Node working set memory utilization across the cluster.'
-    enabled: true
-    evaluationFrequency: 'PT1M'
-    scopes: [
-      mc.id
-    ]
-    severity: 3
-    targetResourceType: 'microsoft.containerservice/managedclusters'
-    windowSize: 'PT5M'
-  }
-}
-
 resource maContainersGettingKilledOOM 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'Containers getting OOM killed for ${clusterName} CI-6'
   location: 'global'
