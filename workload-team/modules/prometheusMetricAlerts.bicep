@@ -338,24 +338,6 @@ resource kubernetesAlertRuleGroupName_Pod_level 'Microsoft.AlertsManagement/prom
         actions: []
       }
       {
-        alert: 'KubeJobStale'
-        expression: 'sum by(namespace,cluster)(kube_job_spec_completions{job="kube-state-metrics"}) - sum by(namespace,cluster)(kube_job_status_succeeded{job="kube-state-metrics"})  > 0 '
-        for: 'PT360M'
-        annotations: {
-          description: 'Number of stale jobs older than six hours is greater than 0. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts).'
-        }
-        enabled: true
-        severity: 4
-        resolveConfiguration: {
-          autoResolved: true
-          timeToResolve: 'PT15M'
-        }
-        labels: {
-          severity: 'warning'
-        }
-        actions: []
-      }
-      {
         alert: 'KubePodContainerRestart'
         expression: 'sum by (namespace, controller, container, cluster)(increase(kube_pod_container_status_restarts_total{job="kube-state-metrics"}[1h])* on(namespace, pod, cluster) group_left(controller) label_replace(kube_pod_owner, "controller", "$1", "owner_name", "(.*)")) > 0'
         for: 'PT15M'

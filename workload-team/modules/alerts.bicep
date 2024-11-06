@@ -1,3 +1,7 @@
+targetScope = 'resourceGroup'
+
+/*** PARAMETERS ***/
+
 @description('Location of the regional resources.')
 param location string
 
@@ -7,9 +11,22 @@ param clusterName string
 @description('Resource ID of the Log Analytics workspace.')
 param logAnalyticsWorkspaceResourceId string
 
+/*** VARIABLES ***/
+
+var kubernetesAlertRuleGroupName = 'KubernetesAlert-RecommendedMetricAlerts${clusterName}'
+var kubernetesAlertRuleGroupDescription = 'Kubernetes Alert RuleGroup-RecommendedMetricAlerts - 0.1'
+
+/*** EXISTING RESOURCES ***/
+
 resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' existing = {
   name: clusterName
 }
+
+resource amw 'Microsoft.Monitor/accounts@2023-04-03' existing = {
+  name: 'amw-${mc.name}'
+}
+
+/*** RESOURCES ***/
 
 resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' = {
   name: 'AllAzureAdvisorAlert'
@@ -35,6 +52,40 @@ resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' 
     }
     enabled: true
     description: 'All azure advisor alerts'
+  }
+}
+
+resource kubernetesAlertRuleGroupName_Pod_level 'Microsoft.AlertsManagement/prometheusRuleGroups@2023-03-01' = {
+  name: '${kubernetesAlertRuleGroupName}-Pod-level'
+  location: location
+  properties: {
+    description: kubernetesAlertRuleGroupDescription
+    scopes: [
+      amw.id
+      mc.id
+    ]
+    clusterName: mc.name
+    interval: 'PT1M'
+    rules: [
+      {
+        alert: 'KubeJobStale'
+        expression: 'sum by(namespace,cluster)(kube_job_spec_completions{job="kube-state-metrics"}) - sum by(namespace,cluster)(kube_job_status_succeeded{job="kube-state-metrics"})  > 0 '
+        for: 'PT360M'
+        annotations: {
+          description: 'Number of stale jobs older than six hours is greater than 0. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts).'
+        }
+        enabled: true
+        severity: 4
+        resolveConfiguration: {
+          autoResolved: true
+          timeToResolve: 'PT15M'
+        }
+        labels: {
+          severity: 'warning'
+        }
+        actions: []
+      }
+    ]
   }
 }
 
@@ -151,55 +202,6 @@ resource maHighNodeWorkingSetMemoryUtilization 'Microsoft.Insights/metricAlerts@
     severity: 3
     targetResourceType: 'microsoft.containerservice/managedclusters'
     windowSize: 'PT5M'
-  }
-}
-
-resource maJobsCompletedMoreThan6HoursAgo 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Jobs completed more than 6 hours ago for ${clusterName} CI-11'
-  location: 'global'
-  properties: {
-    autoMitigate: true
-    actions: []
-    criteria: {
-      allOf: [
-        {
-          criterionType: 'StaticThresholdCriterion'
-          dimensions: [
-            {
-              name: 'controllerName'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-            {
-              name: 'kubernetes namespace'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-          ]
-          metricName: 'completedJobsCount'
-          metricNamespace: 'Insights.Container/pods'
-          name: 'Metric1'
-          operator: 'GreaterThan'
-          threshold: 0
-          timeAggregation: 'Average'
-          skipMetricValidation: true
-        }
-      ]
-      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
-    }
-    description: 'This alert monitors completed jobs (more than 6 hours ago).'
-    enabled: true
-    evaluationFrequency: 'PT1M'
-    scopes: [
-      mc.id
-    ]
-    severity: 3
-    targetResourceType: 'microsoft.containerservice/managedclusters'
-    windowSize: 'PT1M'
   }
 }
 
