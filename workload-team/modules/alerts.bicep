@@ -139,6 +139,24 @@ resource kubernetesAlertRuleGroupName_Pod_level 'Microsoft.AlertsManagement/prom
         }
         actions: []
       }
+      {
+        alert: 'KubePVUsageHigh'
+        expression: 'avg by (namespace, controller, container, cluster)(((kubelet_volume_stats_used_bytes{job="kubelet"} / on(namespace,cluster,pod,container) group_left kubelet_volume_stats_capacity_bytes{job="kubelet"}) * on(namespace, pod, cluster) group_left(controller) label_replace(kube_pod_owner, "controller", "$1", "owner_name", "(.*)"))) > .8'
+        for: 'PT15M'
+        annotations: {
+          description: 'Average PV usage on pod {{ $labels.pod }} in container {{ $labels.container }}  is greater than 80%. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts).'
+        }
+        enabled: true
+        severity: 3
+        resolveConfiguration: {
+          autoResolved: true
+          timeToResolve: 'PT10M'
+        }
+        labels: {
+          severity: 'warning'
+        }
+        actions: []
+      }
     ]
   }
 }
@@ -240,55 +258,6 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
         }
       ]
     }
-  }
-}
-
-resource maHighPersistentVolumeUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Persistent volume usage high for ${clusterName} CI-18'
-  location: 'global'
-  properties: {
-    autoMitigate: true
-    actions: []
-    criteria: {
-      allOf: [
-        {
-          criterionType: 'StaticThresholdCriterion'
-          dimensions: [
-            {
-              name: 'podName'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-            {
-              name: 'kubernetesNamespace'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-          ]
-          metricName: 'pvUsageExceededPercentage'
-          metricNamespace: 'Insights.Container/persistentvolumes'
-          name: 'Metric1'
-          operator: 'GreaterThan'
-          threshold: 80
-          timeAggregation: 'Average'
-          skipMetricValidation: true
-        }
-      ]
-      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
-    }
-    description: 'This alert monitors persistent volume utilization.'
-    enabled: false
-    evaluationFrequency: 'PT1M'
-    scopes: [
-      mc.id
-    ]
-    severity: 3
-    targetResourceType: 'microsoft.containerservice/managedclusters'
-    windowSize: 'PT5M'
   }
 }
 

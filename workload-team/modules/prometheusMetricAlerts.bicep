@@ -410,24 +410,6 @@ resource kubernetesAlertRuleGroupName_Pod_level 'Microsoft.AlertsManagement/prom
         actions: []
       }
       {
-        alert: 'KubePVUsageHigh'
-        expression: 'avg by (namespace, controller, container, cluster)(((kubelet_volume_stats_used_bytes{job="kubelet"} / on(namespace,cluster,pod,container) group_left kubelet_volume_stats_capacity_bytes{job="kubelet"}) * on(namespace, pod, cluster) group_left(controller) label_replace(kube_pod_owner, "controller", "$1", "owner_name", "(.*)"))) > .8'
-        for: 'PT15M'
-        annotations: {
-          description: 'Average PV usage on pod {{ $labels.pod }} in container {{ $labels.container }}  is greater than 80%. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts).'
-        }
-        enabled: true
-        severity: 3
-        resolveConfiguration: {
-          autoResolved: true
-          timeToResolve: 'PT10M'
-        }
-        labels: {
-          severity: 'warning'
-        }
-        actions: []
-      }
-      {
         alert: 'KubeDeploymentReplicasMismatch'
         expression: '(  kube_deployment_spec_replicas{job="kube-state-metrics"}    >  kube_deployment_status_replicas_available{job="kube-state-metrics"}) and (  changes(kube_deployment_status_replicas_updated{job="kube-state-metrics"}[10m])    ==  0)'
         for: 'PT15M'
