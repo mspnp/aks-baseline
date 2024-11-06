@@ -85,6 +85,24 @@ resource kubernetesAlertRuleGroupName_Pod_level 'Microsoft.AlertsManagement/prom
         }
         actions: []
       }
+      {
+        alert: 'KubeContainerAverageCPUHigh'
+        expression: 'sum (rate(container_cpu_usage_seconds_total{image!="", container!="POD"}[5m])) by (pod,cluster,container,namespace) / sum(container_spec_cpu_quota{image!="", container!="POD"}/container_spec_cpu_period{image!="", container!="POD"}) by (pod,cluster,container,namespace) > .95'
+        for: 'PT5M'
+        annotations: {
+          description: 'Average CPU usage per container is greater than 95%. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts).'
+        }
+        enabled: true
+        severity: 4
+        resolveConfiguration: {
+          autoResolved: true
+          timeToResolve: 'PT15M'
+        }
+        labels: {
+          severity: 'warning'
+        }
+        actions: []
+      }
     ]
   }
 }
@@ -194,55 +212,6 @@ resource maHighNodeWorkingSetMemoryUtilization 'Microsoft.Insights/metricAlerts@
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
     }
     description: 'Node working set memory utilization across the cluster.'
-    enabled: true
-    evaluationFrequency: 'PT1M'
-    scopes: [
-      mc.id
-    ]
-    severity: 3
-    targetResourceType: 'microsoft.containerservice/managedclusters'
-    windowSize: 'PT5M'
-  }
-}
-
-resource maHighContainerCPUUsage 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Container CPU usage violates the configured threshold for ${clusterName} CI-19'
-  location: 'global'
-  properties: {
-    autoMitigate: true
-    actions: []
-    criteria: {
-      allOf: [
-        {
-          criterionType: 'StaticThresholdCriterion'
-          dimensions: [
-            {
-              name: 'controllerName'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-            {
-              name: 'kubernetes namespace'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-          ]
-          metricName: 'cpuThresholdViolated'
-          metricNamespace: 'Insights.Container/containers'
-          name: 'Metric1'
-          operator: 'GreaterThan'
-          threshold: 0  // This threshold is defined in the container-azm-ms-agentconfig.yaml file.
-          timeAggregation: 'Average'
-          skipMetricValidation: true
-        }
-      ]
-      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
-    }
-    description: 'This alert monitors container CPU usage. It uses the threshold defined in the config map.'
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
