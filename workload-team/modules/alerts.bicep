@@ -175,7 +175,24 @@ resource kubernetesAlertRuleGroupName_Pod_level 'Microsoft.AlertsManagement/prom
         }
         actions: []
       }
-
+      {
+        alert: 'KubePodContainerRestart'
+        expression: 'sum by (namespace, controller, container, cluster)(increase(kube_pod_container_status_restarts_total{job="kube-state-metrics"}[1h])* on(namespace, pod, cluster) group_left(controller) label_replace(kube_pod_owner, "controller", "$1", "owner_name", "(.*)")) > 0'
+        for: 'PT15M'
+        annotations: {
+          description: 'Pod container restarted in the last 1 hour. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts).'
+        }
+        enabled: true
+        severity: 4
+        resolveConfiguration: {
+          autoResolved: true
+          timeToResolve: 'PT10M'
+        }
+        labels: {
+          severity: 'warning'
+        }
+        actions: []
+      }
     ]
   }
 }
@@ -277,54 +294,5 @@ resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
         }
       ]
     }
-  }
-}
-
-resource maRestartingContainerCount 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Restarting container count for ${clusterName} CI-7'
-  location: 'global'
-  properties: {
-    autoMitigate: true
-    actions: []
-    criteria: {
-      allOf: [
-        {
-          criterionType: 'StaticThresholdCriterion'
-          dimensions: [
-            {
-              name: 'kubernetes namespace'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-            {
-              name: 'controllerName'
-              operator: 'Include'
-              values: [
-                '*'
-              ]
-            }
-          ]
-          metricName: 'restartingContainerCount'
-          metricNamespace: 'Insights.Container/pods'
-          name: 'Metric1'
-          operator: 'GreaterThan'
-          threshold: 0
-          timeAggregation: 'Average'
-          skipMetricValidation: true
-        }
-      ]
-      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
-    }
-    description: 'This alert monitors number of containers restarting across the cluster.'
-    enabled: true
-    evaluationFrequency: 'PT1M'
-    scopes: [
-      mc.id
-    ]
-    severity: 3
-    targetResourceType: 'Microsoft.ContainerService/managedClusters'
-    windowSize: 'PT1M'
   }
 }
