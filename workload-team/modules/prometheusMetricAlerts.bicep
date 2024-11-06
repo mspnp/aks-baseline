@@ -250,24 +250,6 @@ resource kubernetesAlertRuleGroupName_Node_level 'Microsoft.AlertsManagement/pro
     interval: 'PT1M'
     rules: [
       {
-        alert: 'KubeNodeUnreachable'
-        expression: '(kube_node_spec_taint{job="kube-state-metrics",key="node.kubernetes.io/unreachable",effect="NoSchedule"} unless ignoring(key,value) kube_node_spec_taint{job="kube-state-metrics",key=~"ToBeDeletedByClusterAutoscaler|cloud.google.com/impending-node-termination|aws-node-termination-handler/spot-itn"}) == 1'
-        for: 'PT15M'
-        annotations: {
-          description: '{{ $labels.node }} in {{ $labels.cluster}} is unreachable and some workloads may be rescheduled. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/node-level-recommended-alerts).'
-        }
-        enabled: true
-        severity: 3
-        resolveConfiguration: {
-          autoResolved: true
-          timeToResolve: 'PT10M'
-        }
-        labels: {
-          severity: 'warning'
-        }
-        actions: []
-      }
-      {
         alert: 'KubeNodeReadinessFlapping'
         expression: 'sum(changes(kube_node_status_condition{status="true",condition="Ready"}[15m])) by (cluster, node) > 2'
         for: 'PT15M'

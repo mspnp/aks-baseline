@@ -143,6 +143,40 @@ resource kubernetesAlertRuleGroupName_Pod_level 'Microsoft.AlertsManagement/prom
   }
 }
 
+resource kubernetesAlertRuleGroupName_Node_level 'Microsoft.AlertsManagement/prometheusRuleGroups@2023-03-01' = {
+  name: '${kubernetesAlertRuleGroupName}-Node-level'
+  location: location
+  properties: {
+    description: kubernetesAlertRuleGroupDescription
+    scopes: [
+      amw.id
+      mc.id
+    ]
+    clusterName: mc.name
+    interval: 'PT1M'
+    rules: [
+      {
+        alert: 'KubeNodeUnreachable'
+        expression: '(kube_node_spec_taint{job="kube-state-metrics",key="node.kubernetes.io/unreachable",effect="NoSchedule"} unless ignoring(key,value) kube_node_spec_taint{job="kube-state-metrics",key=~"ToBeDeletedByClusterAutoscaler|cloud.google.com/impending-node-termination|aws-node-termination-handler/spot-itn"}) == 1'
+        for: 'PT15M'
+        annotations: {
+          description: '{{ $labels.node }} in {{ $labels.cluster}} is unreachable and some workloads may be rescheduled. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/node-level-recommended-alerts).'
+        }
+        enabled: true
+        severity: 3
+        resolveConfiguration: {
+          autoResolved: true
+          timeToResolve: 'PT10M'
+        }
+        labels: {
+          severity: 'warning'
+        }
+        actions: []
+      }
+    ]
+  }
+}
+
 resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
   name: 'PodFailedScheduledQuery'
   location: location
@@ -206,48 +240,6 @@ resource maHighNodeWorkingSetMemoryUtilization 'Microsoft.Insights/metricAlerts@
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
     }
     description: 'Node working set memory utilization across the cluster.'
-    enabled: true
-    evaluationFrequency: 'PT1M'
-    scopes: [
-      mc.id
-    ]
-    severity: 3
-    targetResourceType: 'microsoft.containerservice/managedclusters'
-    windowSize: 'PT5M'
-  }
-}
-
-resource maNodesInNotReadyStatus 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Nodes in not ready status for ${clusterName} CI-3'
-  location: 'global'
-  properties: {
-    autoMitigate: true
-    actions: []
-    criteria: {
-      allOf: [
-        {
-          criterionType: 'StaticThresholdCriterion'
-          dimensions: [
-            {
-              name: 'status'
-              operator: 'Include'
-              values: [
-                'NotReady'
-              ]
-            }
-          ]
-          metricName: 'nodesCount'
-          metricNamespace: 'Insights.Container/nodes'
-          name: 'Metric1'
-          operator: 'GreaterThan'
-          threshold: 0
-          timeAggregation: 'Average'
-          skipMetricValidation: true
-        }
-      ]
-      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
-    }
-    description: 'Node status monitoring.'
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
