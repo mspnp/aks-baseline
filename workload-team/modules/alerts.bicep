@@ -121,6 +121,24 @@ resource kubernetesAlertRuleGroupName_Pod_level 'Microsoft.AlertsManagement/prom
         }
         actions: []
       }
+      {
+        alert: 'KubePodFailedState'
+        expression: 'sum by (cluster, namespace, controller) (kube_pod_status_phase{phase="failed"} * on(namespace, pod, cluster) group_left(controller) label_replace(kube_pod_owner, "controller", "$1", "owner_name", "(.*)"))  > 0'
+        for: 'PT5M'
+        annotations: {
+          description: 'Number of pods in failed state are greater than 0. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts).'
+        }
+        enabled: true
+        severity: 4
+        resolveConfiguration: {
+          autoResolved: true
+          timeToResolve: 'PT15M'
+        }
+        labels: {
+          severity: 'warning'
+        }
+        actions: []
+      }
     ]
   }
 }
@@ -230,48 +248,6 @@ resource maHighNodeWorkingSetMemoryUtilization 'Microsoft.Insights/metricAlerts@
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
     }
     description: 'Node working set memory utilization across the cluster.'
-    enabled: true
-    evaluationFrequency: 'PT1M'
-    scopes: [
-      mc.id
-    ]
-    severity: 3
-    targetResourceType: 'microsoft.containerservice/managedclusters'
-    windowSize: 'PT5M'
-  }
-}
-
-resource maPodsInFailedState 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'Pods in failed state for ${clusterName} CI-4'
-  location: 'global'
-  properties: {
-    autoMitigate: true
-    actions: []
-    criteria: {
-      allOf: [
-        {
-          criterionType: 'StaticThresholdCriterion'
-          dimensions: [
-            {
-              name: 'phase'
-              operator: 'Include'
-              values: [
-                'Failed'
-              ]
-            }
-          ]
-          metricName: 'podCount'
-          metricNamespace: 'Insights.Container/pods'
-          name: 'Metric1'
-          operator: 'GreaterThan'
-          threshold: 0
-          timeAggregation: 'Average'
-          skipMetricValidation: true
-        }
-      ]
-      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
-    }
-    description: 'Pod status monitoring.'
     enabled: true
     evaluationFrequency: 'PT1M'
     scopes: [
