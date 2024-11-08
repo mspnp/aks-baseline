@@ -54,7 +54,7 @@ The cluster now has an [Traefik configured with a TLS certificate](./09-secret-m
    exit
    ```
 
-   > From this container shell, you could also try to directly access the workload via `curl -I http://<aspnetapp-service-cluster-ip>`. Instead of getting back a `200 OK`, you'll receive a network timeout because of the [`allow-only-ingress-to-workload` network policy](./cluster-manifests/a0008/ingress-network-policy.yaml) that is in place.
+   > From this container shell, you could also try to directly access the workload via `curl -I http://<aspnetapp-service-cluster-ip>`. Instead of getting back a `200 OK`, you'll receive a network timeout because of the [`allow-only-ingress-to-workload` network policy](../../cluster-manifests/a0008/ingress-network-policy.yaml) that is in place.
 
 ### Next step
 

@@ -66,7 +66,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    kubectl get namespaces
    ```
 
-   This command shows you results that were due to the automatic bootstrapping process your cluster experienced due to the Flux GitOps extension. This content mirrors the content found in [`cluster-manifests`](./cluster-manifests), and commits made there will reflect in your cluster within minutes of making the change.
+   This command shows you results that were due to the automatic bootstrapping process your cluster experienced due to the Flux GitOps extension. This content mirrors the content found in [`cluster-manifests`](../../cluster-manifests), and commits made there will reflect in your cluster within minutes of making the change.
 
 The result is that `kubectl` was not required for any part of the bootstrapping process of a cluster. The usage of `kubectl`-based access should be reserved for emergency break-fix situations and not for day-to-day configuration operations on this cluster. By using Bicep files for Azure resource definitions, and the bootstrapping of manifests via the GitOps extension, all normal configuration activities can be performed without the need to use `kubectl`. You will however see us use it for the upcoming workload deployment. This is because the SDLC component of workloads are not in scope for this reference implementation, as this reference architecture is focused the infrastructure and baseline configuration.
 

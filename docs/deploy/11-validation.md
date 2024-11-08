@@ -46,7 +46,7 @@ When setting up [Microsoft Entra security groups](./03-microsoft-entra-id.md) yo
 
 If Azure RBAC is your cluster's Kubernetes RBAC backing store, then that is all that is needed.
 
-If instead Kubernetes RBAC is backed directly by Microsoft Entra ID, then you'll need to ensure that you've updated and applied the [`rbac.yaml`](./cluster-manifests/a0008/rbac.yaml) according to the instructions found at the end of the [Microsoft Entra ID configuration page](./03-microsoft-entra-id.md).
+If instead Kubernetes RBAC is backed directly by Microsoft Entra ID, then you'll need to ensure that you've updated and applied the [`rbac.yaml`](../../cluster-manifests/a0008/rbac.yaml) according to the instructions found at the end of the [Microsoft Entra ID configuration page](./03-microsoft-entra-id.md).
 
 No matter which backing store you use, the user assigned to the group will then be able to `az aks get-credentials` to the cluster and you can validate that user is limited to a *read only* view of the a0008 namespace.
 
@@ -135,10 +135,9 @@ You can also execute [queries](https://learn.microsoft.com/azure/azure-monitor/l
 
 ## Validate Azure Monitor for containers (Prometheus metrics)
 
-Azure Monitor is configured to [scrape Prometheus metrics](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-prometheus-integration) in your cluster. This reference implementation is configured to collect Prometheus metrics from two namespaces, as configured in [`container-azm-ms-agentconfig.yaml`](./cluster-baseline-settings/container-azm-ms-agentconfig.yaml). There are two pods configured to emit Prometheus metrics:
+Azure Monitor is configured to [scrape Prometheus metrics](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-prometheus-integration) in your cluster. This reference implementation is configured to collect Prometheus metrics from two namespaces, as configured in [`container-azm-ms-agentconfig.yaml`](../../cluster-manifests/kube-system/container-azm-ms-agentconfig.yaml). There are two pods configured to emit Prometheus metrics:
 
-- [Traefik](./workload/traefik.yaml) (in the `a0008` namespace)
-- [Kured](./cluster-baseline-settings/kured.yaml) (in the `cluster-baseline-settings` namespace)
+- [Traefik](../../workload/traefik.yaml) (in the `a0008` namespace)
 
 :bulb: This reference implementation ships with two queries (*All collected Prometheus information* and *Kubenertes node reboot requested*) in a Log Analytics Query Pack as an example of how you can write your own and manage them via ARM templates.
 
