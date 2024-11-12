@@ -38,4 +38,4 @@ Now that you understand the components involved and have identified the shared r
 
 ### Next step
 
-:arrow_forward: [Review additional information in the main README](./README.md#broom-clean-up-resources)
+:arrow_forward: [Review additional information in the main README](../../README.md#broom-clean-up-resources)

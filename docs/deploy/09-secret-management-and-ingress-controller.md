@@ -87,7 +87,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
    > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
 
-   > If you used your own fork of this GitHub repo, update the one `image:` value in [`traefik.yaml`](./workload/traefik.yaml) to reference your container registry instead of the default public container registry and change the following URL to point to yours as well.
+   > If you used your own fork of this GitHub repo, update the one `image:` value in [`traefik.yaml`](../../workload/traefik.yaml) to reference your container registry instead of the default public container registry and change the following URL to point to yours as well.
 
    :warning: Deploying the Traefik `traefik.yaml` file unmodified from this repo will be deploying your workload to take dependencies on a public container registry. This is generally okay for learning/testing, but not suitable for production. Before going to production, ensure *all* image references are from *your* container registry or another that you feel confident relying on.
 
