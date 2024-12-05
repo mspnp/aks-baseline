@@ -51,6 +51,17 @@ resource laAks 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
       dailyQuotaGb: -1 // No daily cap (configure alert below if enabled)
     }
   }
+
+  resource containerLogV2 'tables' = {
+    name: 'ContainerLogV2'
+    properties: {
+      totalRetentionInDays: 30
+      plan: 'Basic'
+      schema: {
+        name: 'ContainerLogV2'
+      }
+    }
+  }
 }
 
 // Add a alert rule if the log analytics workspace daily data cap has been reached.
