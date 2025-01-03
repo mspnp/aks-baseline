@@ -246,6 +246,100 @@ resource dcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2023-
   }
 }
 
+// A data collection rule that collects ContainerInsights logs from pods, nodes and cluster and configure Azure Log Analytics workspace as destination
+resource dcrContainerInsights 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
+  name: 'MSCI-${location}-${clusterName}'
+  kind: 'Linux'
+  location: location
+
+  properties: {
+    dataSources: {
+      extensions: [
+        {
+          name: 'ContainerInsightsExtension'
+          streams: [
+            'Microsoft-ContainerLog'
+            'Microsoft-KubeEvents'
+            'Microsoft-KubePodInventory'
+            'Microsoft-KubeNodeInventory'
+            'Microsoft-KubePVInventory'
+            'Microsoft-KubeServices'
+            'Microsoft-KubeMonAgentEvents'
+            'Microsoft-InsightsMetrics'
+            'Microsoft-ContainerInventory'
+            'Microsoft-ContainerNodeInventory'
+            'Microsoft-Perf'
+          ]
+          extensionSettings: {
+            dataCollectionSettings: {
+              interval: '1m'
+              namespaceFilteringMode: 'Exclude'
+              namespaces: [
+                'kube-system'
+                'gatekeeper-system'
+              ]
+              enableContainerLogV2: false
+            }
+          }
+          extensionName: 'ContainerInsights'
+        }
+      ]
+    }
+    destinations: {
+      logAnalytics: [
+        {
+          workspaceResourceId: la.id
+          name: la.name
+        }
+      ]
+    }
+    dataFlows: [
+      {
+        streams: [
+          'Microsoft-ContainerLog'
+          'Microsoft-KubeEvents'
+          'Microsoft-KubePodInventory'
+          'Microsoft-KubeNodeInventory'
+          'Microsoft-KubePVInventory'
+          'Microsoft-KubeServices'
+          'Microsoft-KubeMonAgentEvents'
+          'Microsoft-InsightsMetrics'
+          'Microsoft-ContainerInventory'
+          'Microsoft-ContainerNodeInventory'
+          'Microsoft-Perf'
+        ]
+        destinations: [
+          la.name
+        ]
+      }
+    ]
+  }
+}
+
+// A diagnostic setting for all Container Insights DCR logs to be sent to log analytics
+resource dcrContainerInsights_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: dcrContainerInsights
+  name: 'default'
+  properties: {
+    workspaceId: la.id
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+    ]
+  }
+}
+
+// Associate DCR for ContainerInsights to the AKS Cluster
+resource dcraContainerInsights 'Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11' = {
+  name: 'MSCI-${location}-${clusterName}'
+  scope: mc
+  properties: {
+    dataCollectionRuleId: dcrContainerInsights.id
+  }
+}
+
 // A query pack to hold any custom quries you may want to write to monitor your cluster or workloads
 resource qpBaselineQueryPack 'Microsoft.OperationalInsights/queryPacks@2019-09-01' = {
   location: location
@@ -809,6 +903,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     policies
 
     dcr
+    dcrContainerInsights
 
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
