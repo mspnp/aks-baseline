@@ -33,7 +33,7 @@ data:
           # kube-system,gatekeeper-system log collection are disabled by default in the absence of 'log_collection_settings.stderr' setting. If you want to enable kube-system,gatekeeper-system, remove them from the following setting.
           # If you want to continue to disable kube-system,gatekeeper-system log collection keep the namespaces in the following setting and add any other namespace you want to disable log collection to the array.
           # In the absense of this configmap, default value for exclude_namespaces = ["kube-system","gatekeeper-system"]
-          exclude_namespaces = ["kube-system","gatekeeper-system"]
+          # exclude_namespaces = ["kube-system","gatekeeper-system"]
 
        # [log_collection_settings.env_var]
           # In the absense of this configmap, default value for enabled is true
