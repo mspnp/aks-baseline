@@ -248,7 +248,7 @@ resource dcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2023-
 
 // A data collection rule that collects ContainerInsights logs from pods, nodes and cluster and configure Azure Log Analytics workspace as destination
 resource dcrContainerInsights 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
-  name: 'MSCI-${location}-${clusterName}'
+  name: 'MSCI-${location}-${mc.name}'
   kind: 'Linux'
   location: location
 
@@ -903,7 +903,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     policies
 
     dcr
-    dcrContainerInsights
 
     peKv
     kvPodMiIngressControllerKeyVaultReader_roleAssignment
