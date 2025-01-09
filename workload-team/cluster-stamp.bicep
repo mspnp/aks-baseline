@@ -182,7 +182,7 @@ resource dce 'Microsoft.Insights/dataCollectionEndpoints@2023-03-11' = {
   }
 }
 
-// A data collection rule that collects PrometheusMetrics from pods, nodes and cluster and configure Azure monitor workspace as destination  
+// A data collection rule that collects PrometheusMetrics from pods, nodes and cluster and configure Azure monitor workspace as destination
 resource dcr 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
   name: 'MSProm-${location}-${clusterName}'
   kind: 'Linux'
@@ -294,6 +294,7 @@ module alerts 'modules/alerts.bicep' = {
   }
   dependsOn: [
     sci
+    amw
   ]
 }
 
@@ -727,7 +728,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
           // A single * can be provided for each resource to allow any annotations, but this has severe performance implications
           // https://github.com/prometheus-community/helm-charts/blob/e68c764aa6c764ec5934c6812ff0eaa0877ba275/charts/kube-state-metrics/values.yaml#L342
           metricAnnotationsAllowList: ''
-          
+
           // Comma-separated list of more Kubernetes label keys that is used in the resource's kube_resource_labels metric kube_resource_labels metric.
           // For example, kube_pod_labels is the labels metric for the pods resource. By default this metric contains only name and namespace labels.
           // To include more labels, provide a list of resource names in their plural form and Kubernetes label keys that you want to allow for them.
