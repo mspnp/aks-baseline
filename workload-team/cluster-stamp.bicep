@@ -783,6 +783,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
         enabled: true
         config: {
           logAnalyticsWorkspaceResourceId: la.id
+          useAADAuth: 'true'
         }
       }
       aciConnectorLinux: {
@@ -983,17 +984,6 @@ resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssig
     roleDefinitionId: acrPullRole.id
     description: 'Allows AKS to pull container images from this ACR instance.'
     principalId: mc.properties.identityProfile.kubeletidentity.objectId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// Grant the Azure Monitor (fka as OMS) Agent's Managed Identity the metrics publisher role to push alerts
-resource mcAmaAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: mc
-  name: guid(mc.id, 'amagent', monitoringMetricsPublisherRole.id)
-  properties: {
-    roleDefinitionId: monitoringMetricsPublisherRole.id
-    principalId: mc.properties.addonProfiles.omsagent.identity.objectId
     principalType: 'ServicePrincipal'
   }
 }
