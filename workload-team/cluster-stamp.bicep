@@ -283,14 +283,7 @@ resource dcrContainerInsights 'Microsoft.Insights/dataCollectionRules@2023-03-11
             'uucp'
           ]
           logLevels: [
-            // 'Debug'
             'Info'
-            // 'Notice'
-            // 'Warning'
-            // 'Error'
-            // 'Critical'
-            // 'Alert'
-            // 'Emergency'
           ]
         }
       ]
