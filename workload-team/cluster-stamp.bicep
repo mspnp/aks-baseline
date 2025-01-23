@@ -246,6 +246,141 @@ resource dcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2023-
   }
 }
 
+// A data collection rule that collects ContainerInsights logs from pods, nodes and cluster and configure Azure Log Analytics workspace as destination
+resource dcrContainerInsights 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
+  name: 'MSCI-${location}-${mc.name}'
+  kind: 'Linux'
+  location: location
+
+  properties: {
+    dataSources: {
+      syslog: [
+        {
+          name: 'sysLogsDataSource'
+          streams: [
+            'Microsoft-Syslog'
+          ]
+          facilityNames: [
+            'auth'
+            'authpriv'
+            'cron'
+            'daemon'
+            'mark'
+            'kern'
+            'local0'
+            'local1'
+            'local2'
+            'local3'
+            'local4'
+            'local5'
+            'local6'
+            'local7'
+            'lpr'
+            'mail'
+            'news'
+            'syslog'
+            'user'
+            'uucp'
+          ]
+          logLevels: [
+            'Info'
+          ]
+        }
+      ]
+      extensions: [
+        {
+          name: 'ContainerInsightsExtension'
+          streams: [
+            'Microsoft-ContainerLogV2'
+            'Microsoft-KubeEvents'
+            'Microsoft-KubePodInventory'
+            'Microsoft-KubeNodeInventory'
+            'Microsoft-KubePVInventory'
+            'Microsoft-KubeServices'
+            'Microsoft-KubeMonAgentEvents'
+            'Microsoft-InsightsMetrics'
+            'Microsoft-ContainerInventory'
+            'Microsoft-ContainerNodeInventory'
+            'Microsoft-Perf'
+          ]
+          extensionSettings: {
+            dataCollectionSettings: {
+              interval: '1m'
+              namespaceFilteringMode: 'Exclude'
+              namespaces: [
+                'kube-system'
+                'gatekeeper-system'
+              ]
+              enableContainerLogV2: true
+            }
+          }
+          extensionName: 'ContainerInsights'
+        }
+      ]
+    }
+    destinations: {
+      logAnalytics: [
+        {
+          workspaceResourceId: la.id
+          name: la.name
+        }
+      ]
+    }
+    dataFlows: [
+      {
+        streams: [
+          'Microsoft-Syslog'
+        ]
+        destinations: [
+          la.name
+        ]
+      }
+      {
+        streams: [
+          'Microsoft-ContainerLogV2'
+          'Microsoft-KubeEvents'
+          'Microsoft-KubePodInventory'
+          'Microsoft-KubeNodeInventory'
+          'Microsoft-KubePVInventory'
+          'Microsoft-KubeServices'
+          'Microsoft-KubeMonAgentEvents'
+          'Microsoft-InsightsMetrics'
+          'Microsoft-ContainerInventory'
+          'Microsoft-ContainerNodeInventory'
+          'Microsoft-Perf'
+        ]
+        destinations: [
+          la.name
+        ]
+      }
+    ]
+  }
+}
+
+// A diagnostic setting for all Container Insights DCR logs to be sent to log analytics
+resource dcrContainerInsights_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: dcrContainerInsights
+  name: 'default'
+  properties: {
+    workspaceId: la.id
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+    ]
+  }
+}
+
+// Associate DCR for ContainerInsights to the AKS Cluster
+resource dcraContainerInsights 'Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11' = {
+  name: 'MSCI-${location}-${clusterName}'
+  scope: mc
+  properties: {
+    dataCollectionRuleId: dcrContainerInsights.id
+  }
+}
+
 // A query pack to hold any custom quries you may want to write to monitor your cluster or workloads
 resource qpBaselineQueryPack 'Microsoft.OperationalInsights/queryPacks@2019-09-01' = {
   location: location
@@ -640,6 +775,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
         enabled: true
         config: {
           logAnalyticsWorkspaceResourceId: la.id
+          useAADAuth: 'true'
         }
       }
       aciConnectorLinux: {
@@ -840,17 +976,6 @@ resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssig
     roleDefinitionId: acrPullRole.id
     description: 'Allows AKS to pull container images from this ACR instance.'
     principalId: mc.properties.identityProfile.kubeletidentity.objectId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// Grant the Azure Monitor (fka as OMS) Agent's Managed Identity the metrics publisher role to push alerts
-resource mcAmaAgentMonitoringMetricsPublisherRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: mc
-  name: guid(mc.id, 'amagent', monitoringMetricsPublisherRole.id)
-  properties: {
-    roleDefinitionId: monitoringMetricsPublisherRole.id
-    principalId: mc.properties.addonProfiles.omsagent.identity.objectId
     principalType: 'ServicePrincipal'
   }
 }
