@@ -291,7 +291,6 @@ resource dcrContainerInsights 'Microsoft.Insights/dataCollectionRules@2023-03-11
         {
           name: 'ContainerInsightsExtension'
           streams: [
-            //'Microsoft-ContainerLog'
             'Microsoft-ContainerLogV2'
             'Microsoft-KubeEvents'
             'Microsoft-KubePodInventory'
@@ -338,7 +337,6 @@ resource dcrContainerInsights 'Microsoft.Insights/dataCollectionRules@2023-03-11
       }
       {
         streams: [
-          //'Microsoft-ContainerLog'
           'Microsoft-ContainerLogV2'
           'Microsoft-KubeEvents'
           'Microsoft-KubePodInventory'
