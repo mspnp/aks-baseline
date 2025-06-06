@@ -79,12 +79,6 @@ resource clusterReaderRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' 
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied to a cluster to grant its monitoring agent's identity with publishing metrics and push alerts permissions.
-resource monitoringMetricsPublisherRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  name: '3913510d-42f4-4e42-8a64-420c390055eb'
-  scope: subscription()
-}
-
 // Built-in Azure RBAC role that can be applied to an Azure Container Registry to grant the authority pull container images. Granted to the AKS cluster's kubelet identity.
 resource acrPullRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: '7f951dda-4ed3-4680-a7ca-43fe172d538d'
