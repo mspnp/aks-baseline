@@ -701,8 +701,124 @@ resource hubFirewall_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'allLogs'
+        category: 'AzureFirewallApplicationRule'
         enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AzureFirewallNetworkRule'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AzureFirewallDnsProxy'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AZFWNetworkRule'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AZFWApplicationRule'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AZFWNatRule'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AZFWThreatIntel'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AZFWIdpsSignature'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AZFWDnsQuery'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AZFWFqdnResolveFailure'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AZFWFatFlow'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AZFWFlowTrace'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AZFWApplicationRuleAggregation'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AZFWNetworkRuleAggregation'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'AZFWNatRuleAggregation'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
       }
     ]
     metrics: [

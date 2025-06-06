@@ -26,7 +26,7 @@ resource spokeResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' exis
 resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
   scope: spokeResourceGroup
   name: last(split(targetVnetResourceId,'/'))
-  
+
   resource snetPrivateLinkEndpoints 'subnets' existing = {
     name: 'snet-privatelinkendpoints'
   }
@@ -223,8 +223,20 @@ resource acrAks_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-
     ]
     logs: [
       {
-        categoryGroup: 'allLogs'
+        category: 'ContainerRegistryRepositoryEvents'
         enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
+      {
+        category: 'ContainerRegistryLoginEvents'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
       }
     ]
   }
