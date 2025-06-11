@@ -74,7 +74,15 @@ resource nsgNodepoolSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSet
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'allLogs'
+        category: 'NetworkSecurityGroupEvent'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'NetworkSecurityGroupRuleCounter'
         enabled: true
         retentionPolicy: {
           days: 0
@@ -101,7 +109,15 @@ resource nsgInternalLoadBalancerSubnet_diagnosticsSettings 'Microsoft.Insights/d
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'allLogs'
+        category: 'NetworkSecurityGroupEvent'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'NetworkSecurityGroupRuleCounter'
         enabled: true
         retentionPolicy: {
           days: 0
@@ -199,7 +215,15 @@ resource nsgAppGwSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSettin
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'allLogs'
+        category: 'NetworkSecurityGroupEvent'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'NetworkSecurityGroupRuleCounter'
         enabled: true
         retentionPolicy: {
           days: 0
@@ -266,7 +290,15 @@ resource nsgPrivateLinkEndpointsSubnet_diagnosticsSettings 'Microsoft.Insights/d
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'allLogs'
+        category: 'NetworkSecurityGroupEvent'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'NetworkSecurityGroupRuleCounter'
         enabled: true
         retentionPolicy: {
           days: 0

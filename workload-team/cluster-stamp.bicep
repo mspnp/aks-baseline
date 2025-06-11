@@ -224,7 +224,7 @@ resource dcr_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-0
     workspaceId: la.id
     logs: [
       {
-        categoryGroup: 'allLogs'
+        category: 'LogErrors'
         enabled: true
         retentionPolicy: {
           enabled: false
@@ -363,7 +363,7 @@ resource dcrContainerInsights_diagnosticSettings 'Microsoft.Insights/diagnosticS
     workspaceId: la.id
     logs: [
       {
-        categoryGroup: 'allLogs'
+        category: 'LogErrors'
         enabled: true
         retentionPolicy: {
           enabled: false

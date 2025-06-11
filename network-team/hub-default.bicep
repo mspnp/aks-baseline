@@ -247,7 +247,15 @@ resource nsgBastionSubnet_diagnosticSettings 'Microsoft.Insights/diagnosticSetti
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'allLogs'
+        category: 'NetworkSecurityGroupEvent'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'NetworkSecurityGroupRuleCounter'
         enabled: true
         retentionPolicy: {
           days: 0
