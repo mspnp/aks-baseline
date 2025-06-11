@@ -57,8 +57,20 @@ resource laHub_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-0
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'audit'
+        category: 'Audit'
         enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'SummaryLogs'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
       }
     ]
     metrics: [
@@ -347,8 +359,28 @@ resource pipAzureFirewall_diagnosticSetting 'Microsoft.Insights/diagnosticSettin
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'audit'
+        category: 'DDoSProtectionNotifications'
         enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'DDoSMitigationFlowLogs'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'DDoSMitigationReports'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
       }
     ]
     metrics: [

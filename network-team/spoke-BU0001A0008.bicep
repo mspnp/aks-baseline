@@ -446,8 +446,28 @@ resource pipPrimaryClusterIp_diagnosticSetting 'Microsoft.Insights/diagnosticSet
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'audit'
+        category: 'DDoSProtectionNotifications'
         enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'DDoSMitigationFlowLogs'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'DDoSMitigationReports'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
       }
     ]
     metrics: [
