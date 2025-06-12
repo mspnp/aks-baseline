@@ -74,8 +74,20 @@ resource nsgNodepoolSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSet
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'allLogs'
+        category: 'NetworkSecurityGroupEvent'
         enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'NetworkSecurityGroupRuleCounter'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
       }
     ]
   }
@@ -97,8 +109,20 @@ resource nsgInternalLoadBalancerSubnet_diagnosticsSettings 'Microsoft.Insights/d
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'allLogs'
+        category: 'NetworkSecurityGroupEvent'
         enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'NetworkSecurityGroupRuleCounter'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
       }
     ]
   }
@@ -191,8 +215,20 @@ resource nsgAppGwSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSettin
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'allLogs'
+        category: 'NetworkSecurityGroupEvent'
         enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'NetworkSecurityGroupRuleCounter'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
       }
     ]
   }
@@ -254,8 +290,20 @@ resource nsgPrivateLinkEndpointsSubnet_diagnosticsSettings 'Microsoft.Insights/d
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'allLogs'
+        category: 'NetworkSecurityGroupEvent'
         enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'NetworkSecurityGroupRuleCounter'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
       }
     ]
   }
@@ -398,8 +446,28 @@ resource pipPrimaryClusterIp_diagnosticSetting 'Microsoft.Insights/diagnosticSet
     workspaceId: laHub.id
     logs: [
       {
-        categoryGroup: 'audit'
+        category: 'DDoSProtectionNotifications'
         enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'DDoSMitigationFlowLogs'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'DDoSMitigationReports'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
       }
     ]
     metrics: [
