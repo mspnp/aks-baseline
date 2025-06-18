@@ -172,18 +172,6 @@ Azure will generate alerts on the health of your cluster and adjacent resources.
 
 ### Steps
 
-An alert based on [Azure Monitor for containers information using a Kusto query](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-alerts) was configured in this reference implementation.
-
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
-1. Select *Alerts*, then *Alert Rules*.
-1. There is an alert titled "[your cluster name] Scheduled Query for Pod Failed Alert" that will be triggered based on the custom query response.
-
-An [Azure Advisor Alert](https://learn.microsoft.com/azure/advisor/advisor-overview) was configured as well in this reference implementation.
-
-1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
-1. Select *Alerts*, then *Alert Rules*.
-1. There is an alert called "AllAzureAdvisorAlert" that will be triggered based on new Azure Advisor alerts.
-
 A series of metric alerts were configured as well in this reference implementation.
 
 1. In the Azure Portal, navigate to your AKS cluster resource group (`rg-bu0001a0008`).
