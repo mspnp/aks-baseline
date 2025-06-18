@@ -204,8 +204,6 @@ If you configured your third-party images to be pulled from your Azure Container
    | where OperationName == 'Pull'
    ```
 
-1. You should see logs for kured. You'll see multiple for some as the image was pulled to multiple nodes to satisfy ReplicaSet/DaemonSet placement.
-
 ## Next step
 
 :arrow_forward: [Clean Up Azure Resources](./12-cleanup.md)

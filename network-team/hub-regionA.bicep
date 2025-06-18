@@ -682,8 +682,6 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' = {
                 'azurearcfork8s.azurecr.io' // required for a few of the images installed by the extension.
                 '*.docker.io' // Only required if you use the default bootstrapping manifests included in this repo.
                 '*.docker.com' // Only required if you use the default bootstrapping manifests included in this repo.
-                'ghcr.io' // Only required if you use the default bootstrapping manifests included in this repo. Kured is sourced from here by default.
-                'pkg-containers.githubusercontent.com' // Only required if you use the default bootstrapping manifests included in this repo. Kured is sourced from here by default.
               ]
               targetUrls: []
               destinationAddresses: []
