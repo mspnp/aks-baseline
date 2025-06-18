@@ -23,11 +23,11 @@ This section will help you to validate the workload is exposed correctly and res
    > :bulb: You can simulate this via a local hosts file modification. You're welcome to add a real DNS entry for your specific deployment's application domain name, if you have access to do so.
 
    Map the Azure Application Gateway public IP address to the application domain name. To do that, edit your hosts file (`C:\Windows\System32\drivers\etc\hosts` or `/etc/hosts`) and add the following record to the end:
-   
+
    ```
    ${APPGW_PUBLIC_IP} bicycle.${DOMAIN_NAME_AKS_BASELINE}
    ```
-   
+
    For example, your hosts file edit might look similar to this:
 
    ```
@@ -56,7 +56,7 @@ Built-in as well as custom policies are applied to the cluster as part of the [c
 - Azure Policy assignments with the [*audit* effect](https://learn.microsoft.com/azure/governance/policy/concepts/effects#audit) will create a warning in the activity log and show violations in the Azure Policy blade in the portal, providing an aggregated view of the compliance state and the option to identify violating resources.
 - Azure Policy assignments with the [*deny* effect](https://learn.microsoft.com/azure/governance/policy/concepts/effects#deny) will be enforced with the help of [Gatekeeper's admission controller webhook](https://open-policy-agent.github.io/gatekeeper/website/docs/) by denying API requests that would violate an Azure Policy otherwise.
 
-:bulb: Gatekeeper policies are implemented by using the [policy language 'Rego'](https://learn.microsoft.com/azure/governance/policy/concepts/policy-for-kubernetes#policy-language). To deploy the policies in this reference architecture with the Azure platform, the Rego specification is Base64-encoded and stored in a field of the Azure Policy resource defined in `nested_K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep`. It might be insightful to decode the string with a Base64 decoder of your choice and investigate the declarative implementation.
+:bulb: Gatekeeper policies are implemented by using the [policy language 'Rego'](https://learn.microsoft.com/azure/governance/policy/concepts/policy-for-kubernetes#policy-language). To deploy the policies in this reference architecture with the Azure platform, the Rego specification is Base64-encoded and stored in a field of the Azure Policy resource defined in `policy-K8sCustomIngressTlsHostsHaveDefinedDomainSuffix.bicep`. It might be insightful to decode the string with a Base64 decoder of your choice and investigate the declarative implementation.
 
 ### Steps
 
