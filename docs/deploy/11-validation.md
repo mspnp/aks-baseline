@@ -131,6 +131,7 @@ You can also execute [queries](https://learn.microsoft.com/azure/azure-monitor/l
 
 1. In the Azure Portal, navigate to your AKS cluster resource.
 1. Click *Logs* to see and query log data.
+
    :bulb: There are several examples on the *Kubernetes Services* category.
 
 ## Validate Azure Monitor for containers (Prometheus metrics)
