@@ -190,8 +190,10 @@ If you configured your third-party images to be pulled from your Azure Container
 
    ```kusto
    ContainerRegistryRepositoryEvents
-   | where OperationName == 'Pull'
+   | where OperationName == 'importImage'
    ```
+
+   > :bulb: you should see the `importImage` operation for the traefik image you imported earlier in the [Configure AKS Ingress controller with Azure Key Vault integration step](./09-secret-management-and-ingress-controller.md).
 
 ## Next step
 
