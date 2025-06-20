@@ -104,16 +104,16 @@ Your workload is placed behind a Web Application Firewall (WAF), which has rules
 ### Steps
 
 1. Browse to the site with the following appended to the URL: `?sql=DELETE%20FROM` (such as <https://bicycle.contoso.com/?sql=DELETE%20FROM>).
-1. Observe that your request was forbiden by Application Gateway.
+1. Observe that your request was blocked by Application Gateway's WAF rules and your workload never saw this potentially dangerous request.
 1. Blocked requests (along with other gateway data) will be visible in the attached Log Analytics workspace.
 
-   Browse to the Azure Application Gateway in the resource group `rg-bu0001-a0008` and navigate to the *Logs* blade. Execute the following query below to show WAF logs and see that the request was rejected due to a *403* (field *httpStatus_d*).
+   Browse to the Azure Application Gateway in the resource group `rg-bu0001-a0008` and navigate to the *Logs* blade. Execute the following query below to show WAF logs and see that the request was rejected due to a *SQL Injection Attack* (field *Message*).
 
    > :warning: Note that it may take a couple of minutes until the logs are transferred from the Application Gateway to the Log Analytics Workspace. So be a little patient if the query doesn't immediately return results after sending the HTTPS request in the former step.
 
    ```
    AzureDiagnostics
-   | where ResourceProvider == "MICROSOFT.NETWORK" and Category == "ApplicationGatewayAccessLog"
+   | where ResourceProvider == "MICROSOFT.NETWORK" and Category == "ApplicationGatewayFirewallLog"
    ```
 
 ## Validate cluster Azure Monitor insights and logs
