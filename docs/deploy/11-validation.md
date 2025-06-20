@@ -193,6 +193,8 @@ If you configured your third-party images to be pulled from your Azure Container
    | where OperationName == 'Pull'
    ```
 
+   :bulb: You should see `pull` entries for the images you deployed to your cluster, such as `traefik`.
+
 ## Next step
 
 :arrow_forward: [Clean Up Azure Resources](./12-cleanup.md)
