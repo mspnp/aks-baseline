@@ -66,14 +66,14 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
    ```bash
    # Import ingress controller image hosted in public container registries
-   az acr import --source docker.io/library/traefik:v3.1 -n $ACR_NAME_AKS_BASELINE --username YOUR_DOCKER_HUB_USERNAME --password YOUR_DOCKER_HUB_PASSWORD_OR_PERSONAL_ACCESS_TOKEN
+   az acr import --source docker.io/library/traefik:v3.4 -n $ACR_NAME_AKS_BASELINE --username YOUR_DOCKER_HUB_USERNAME --password YOUR_DOCKER_HUB_PASSWORD_OR_PERSONAL_ACCESS_TOKEN
    ```
 
    If you don't have a Docker Hub account, use the following command, but note that you might receive a rate limit failure and need to retry repeatedly:
 
    ```bash
    # Import ingress controller image hosted in public container registries
-   az acr import --source docker.io/library/traefik:v3.1 -n $ACR_NAME_AKS_BASELINE
+   az acr import --source docker.io/library/traefik:v3.4 -n $ACR_NAME_AKS_BASELINE
    ```
 
 1. When the cluster was deployed, the Bicep deployment decided on the fixed private IP address to use for the AKS internal load balancer ingress controller's service. Retrieve that IP address so we can configure it in the Traefik deployment, which will create the load balancer.

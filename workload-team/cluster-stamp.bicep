@@ -52,7 +52,7 @@ var aksIngressDomainName = 'aks-ingress.${domainName}'
 var aksBackendDomainName = 'bu0001a0008-00.${aksIngressDomainName}'
 var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPlaneAuthorizationTenantId)
 
-var kubernetesVersion = '1.30'
+var kubernetesVersion = '1.33'
 
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
 
