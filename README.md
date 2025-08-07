@@ -113,8 +113,6 @@ This implementation will not include every preview feature, but instead only tho
 
 The AKS baseline was used as the foundation for the following additional reference implementations. These build on the learnings of the AKS baseline and applies a specific Lens to the cluster to align a specific topology, requirement, or workload type.
 
-- [AKS baseline for multiregion clusters](https://github.com/mspnp/aks-baseline-multi-region)
-- [AKS baseline for regulated workloads](https://github.com/mspnp/aks-baseline-regulated)
 - [AKS baseline for microservices](https://github.com/mspnp/aks-fabrikam-dronedelivery)
 - [Azure landing zones, enterprise-scale reference implementation using Terraform](https://github.com/Azure/caf-terraform-landingzones-starter/tree/starter/enterprise_scale/construction_sets/aks/online/aks_secure_baseline)
 
