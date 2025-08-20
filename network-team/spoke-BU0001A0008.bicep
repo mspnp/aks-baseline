@@ -325,6 +325,7 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2023-11-01' = {
       {
         name: 'snet-clusternodes'
         properties: {
+          defaultOutboundAccess: false
           addressPrefix: '10.240.0.0/22'
           routeTable: {
             id: routeNextHopToFirewall.id
@@ -339,6 +340,7 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2023-11-01' = {
       {
         name: 'snet-clusteringressservices'
         properties: {
+          defaultOutboundAccess: false
           addressPrefix: '10.240.4.0/28'
           routeTable: {
             id: routeNextHopToFirewall.id
