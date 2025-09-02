@@ -292,18 +292,21 @@ resource vnetHub 'Microsoft.Network/virtualNetworks@2023-11-01' = {
       {
         name: 'AzureFirewallSubnet'
         properties: {
+          defaultOutboundAccess: false
           addressPrefix: hubVirtualNetworkAzureFirewallSubnetAddressSpace
         }
       }
       {
         name: 'GatewaySubnet'
         properties: {
+          defaultOutboundAccess: false
           addressPrefix: hubVirtualNetworkGatewaySubnetAddressSpace
         }
       }
       {
         name: 'AzureBastionSubnet'
         properties: {
+          defaultOutboundAccess: false
           addressPrefix: hubVirtualNetworkBastionSubnetAddressSpace
           networkSecurityGroup: {
             id: nsgBastionSubnet.id
