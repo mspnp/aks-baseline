@@ -9,7 +9,7 @@ This is the starting point for the instructions on deploying the [AKS baseline r
 
 1. An Azure subscription.
 
-   The subscription used in this deployment cannot be a [free account](https://azure.microsoft.com/free); it must be a standard EA, pay-as-you-go, or Visual Studio benefit subscription. This is because the resources deployed here are beyond the quotas of free subscriptions.
+   The subscription used in this deployment cannot be a [free account]( https://azure.microsoft.com/pricing/purchase-options/azure-account?cid=msft_learn); it must be a standard EA, pay-as-you-go, or Visual Studio benefit subscription. This is because the resources deployed here are beyond the quotas of free subscriptions.
 
    > :warning: The user or service principal initiating the deployment process *must* have the following minimal set of Azure role-based access control (RBAC) roles:
    >
