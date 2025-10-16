@@ -59,14 +59,6 @@ When designing your pipelines, be sure to isolate components by their lifecycle.
 
       - `containerRegistryName` - which you'll use in future steps when connecting the cluster to the container registry.
 
-1. Capture the output from the container registry that will be required in later steps.
-
-   ```bash
-   # Get your ACR instance name
-   export ACR_NAME_AKS_BASELINE=$(az deployment group show -g rg-bu0001a0008 -n acr-stamp --query properties.outputs.containerRegistryName.value -o tsv)
-   echo ACR_NAME_AKS_BASELINE: $ACR_NAME_AKS_BASELINE
-   ```
-
 ### Save your work in-progress
 
 ```bash
