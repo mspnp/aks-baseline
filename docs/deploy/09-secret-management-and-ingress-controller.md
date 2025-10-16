@@ -76,26 +76,6 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    az acr import --source docker.io/library/traefik:v3.4 -n $ACR_NAME_AKS_BASELINE
    ```
 
-1. Install the Traefik Ingress Controller.
-
-   > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
-
-   > If you used your own fork of this GitHub repo, update the one `image:` value in [`traefik.yaml`](../../workload/traefik.yaml) to reference your container registry instead of the default public container registry and change the following URL to point to yours as well.
-
-   :warning: Deploying the Traefik `traefik.yaml` file unmodified from this repo will be deploying your workload to take dependencies on a public container registry. This is generally okay for learning/testing, but not suitable for production. Before going to production, ensure *all* image references are from *your* container registry or another that you feel confident relying on.
-
-   ```bash
-   kubectl create -f workload/traefik.yaml
-   ```
-
-1. Wait for Traefik to be ready.
-
-   > During Traefik's pod creation process, Azure Key Vault will be accessed to get the required certs needed for pod volume mount (csi). This sometimes takes a bit of time but will eventually succeed if properly configured.
-
-   ```bash
-   kubectl wait -n a0008 --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s
-   ```
-
 ### Next step
 
 :arrow_forward: [Deploy the Workload](./10-workload.md)
