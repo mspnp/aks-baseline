@@ -789,7 +789,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2025-07-02-preview' = {
     }
     nodeResourceGroup: nodeResourceGroup.name
     enableRBAC: true
-    enablePodSecurityPolicy: false
     networkProfile: {
       networkPlugin: 'azure'
       networkPluginMode: 'overlay'
