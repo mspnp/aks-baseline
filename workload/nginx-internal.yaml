@@ -1,0 +1,27 @@
+#  ------------------------------------------------------------
+#   Copyright (c) Microsoft Corporation.  All rights reserved.
+#   Licensed under the MIT License (MIT). See License.txt in the repo root #  for license information.
+#  ------------------------------------------------------------
+
+apiVersion: approuting.kubernetes.azure.com/v1alpha1
+kind: NginxIngressController
+metadata:
+  name: nginx-internal
+  namespace: a0008
+  labels:
+    app.kubernetes.io/name: nginx-ingress-ilb
+    app.kubernetes.io/instance: nginx-ingress-ilb
+spec:
+  ingressClassName: nginx-internal
+  controllerNamePrefix: nginx-internal
+  loadBalancerAnnotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+  httpDisabled: "false"
+  scaling:
+    maxReplicas;: 3
+    minReplicas: 2
+  defaultSSLCertificate:
+    forceSSLRedirect: false
+    secret:
+      name: nginx-ingress-internal-aks-ingress-tls
+      namespace: a0008

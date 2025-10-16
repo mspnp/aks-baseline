@@ -41,15 +41,29 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
        objects:  |
          array:
            - |
-             objectName: traefik-ingress-internal-aks-ingress-tls
+             objectName: nginx-ingress-internal-aks-ingress-tls
              objectAlias: tls.crt
              objectType: cert
            - |
-             objectName: traefik-ingress-internal-aks-ingress-tls
+             objectName: nginx-ingress-internal-aks-ingress-tls
              objectAlias: tls.key
              objectType: secret
        tenantID: $TENANTID_AZURERBAC_AKS_BASELINE
    EOF
+   ```
+
+1. Create NGINX ingress controller with a private IP address and Internal Load Balancer
+
+   > Install the NGINX Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
+
+   ```bash
+   kubectl create -f workload/nginx-internal.yaml
+   ```
+
+1. Wait for NGINX ingress controller to be ready.
+
+   ```bash
+   kubectl wait -n a0008 --for=condition=ready pod --selector=app.kubernetes.io/name=nginx-ingress-ilb --timeout=90s
    ```
 
 ### Next step
