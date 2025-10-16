@@ -922,7 +922,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     }
     ingressProfile: {
       webAppRouting: {
-        enabled: false
+        enabled: true // enable application routing addon
       }
     }
   }
