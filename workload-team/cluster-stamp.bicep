@@ -673,7 +673,7 @@ module policies 'modules/policies.bicep' = {
   }
 }
 
-resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
+resource mc 'Microsoft.ContainerService/managedClusters@2025-07-02-preview' = {
   name: clusterName
   location: location
   tags: {
@@ -911,6 +911,9 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
         dnsZoneResourceIds: [
           pdzAksIngress.id // attach an aks ingress private DNS zone to the application routing add-on
         ]
+        nginx: {
+          defaultIngressControllerType: 'Internal' // create the nginx ingress controller with an internal load balancer
+        }
       }
     }
   }
