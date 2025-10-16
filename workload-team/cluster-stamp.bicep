@@ -39,9 +39,6 @@ param gitOpsBootstrappingRepoHttpsUrl string = 'https://github.com/mspnp/aks-bas
 @minLength(1)
 param gitOpsBootstrappingRepoBranch string = 'main'
 
-@description('The AKS cluster Internal Load Balancer IP Address')
-param clusterInternalLoadBalancerIpAddress string = '10.240.4.4'
-
 /*** VARIABLES ***/
 
 var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resourceGroup().id)
@@ -655,18 +652,6 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: aksIngressDomainName
   location: 'global'
 
-  resource aksIngressDomainName_bu0001a0008_00 'A' = {
-    name: 'bu0001a0008-00'
-    properties: {
-      ttl: 3600
-      aRecords: [
-        {
-          ipv4Address: clusterInternalLoadBalancerIpAddress
-        }
-      ]
-    }
-  }
-
   resource vnetlnk 'virtualNetworkLinks' = {
     name: 'to_${targetVirtualNetwork.name}'
     location: 'global'
@@ -923,6 +908,9 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     ingressProfile: {
       webAppRouting: {
         enabled: true // enable application routing addon
+        dnsZoneResourceIds: [
+          pdzAksIngress.id // attach an aks ingress private DNS zone to the application routing add-on
+        ]
       }
     }
   }
@@ -1383,4 +1371,3 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
 output aksClusterName string = clusterName
 output aksIngressControllerPodManagedIdentityClientId string = podmiIngressController.properties.clientId
 output keyVaultName string = kv.name
-output ilbIpAddress string = pdzAksIngress::aksIngressDomainName_bu0001a0008_00.properties.aRecords[0].ipv4Address
