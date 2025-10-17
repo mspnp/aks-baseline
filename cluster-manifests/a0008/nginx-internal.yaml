@@ -16,12 +16,7 @@ spec:
   controllerNamePrefix: nginx-internal
   loadBalancerAnnotations:
     service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-  httpDisabled: "false"
+  httpDisabled: false
   scaling:
-    maxReplicas;: 3
+    maxReplicas: 3
     minReplicas: 2
-  defaultSSLCertificate:
-    forceSSLRedirect: false
-    secret:
-      name: nginx-iternal-ingress-controller-tls
-      namespace: a0008

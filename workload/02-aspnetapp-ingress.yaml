@@ -7,14 +7,14 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: aspnetapp-ingress
-  namespace: a0008\
+  namespace: a0008
   annotations:
+    kubernetes.azure.com/tls-cert-keyvault-uri: <ingress-controller-keyvault-cert-uri>
     kubernetes.io/ingress.allow-http: "false"
     nginx.ingress.kubernetes.io/whitelist-source-range: "10.240.5.0/24"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/proxy-ssl-verify: "on"
     nginx.ingress.kubernetes.io/proxy-ssl-server-name: "on"
-    nginx.ingress.kubernetes.io/proxy-ssl-secret: "a0008/nginx-iternal-ingress-controller-tls"
     nginx.ingress.kubernetes.io/use-regex: "false"
     nginx.ingress.kubernetes.io/proxy-body-size: 4m
     nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
@@ -23,13 +23,14 @@ spec:
   tls:
   - hosts:
     - bu0001a0008-00.aks-ingress.contoso.com
+    secretName: keyvault-aspnetapp-ingress
   rules:
   - host: bu0001a0008-00.aks-ingress.contoso.com
     http:
       paths:
       - backend:
           service:
-            nam e: aspnetapp-service
+            name: aspnetapp-service
             port:
               number: 80
         path: /
