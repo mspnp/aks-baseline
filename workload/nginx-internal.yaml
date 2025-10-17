@@ -23,5 +23,5 @@ spec:
   defaultSSLCertificate:
     forceSSLRedirect: false
     secret:
-      name: nginx-ingress-internal-aks-ingress-tls
+      name: nginx-iternal-ingress-controller-tls
       namespace: a0008

@@ -32,8 +32,8 @@ The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
    :warning: Do not use the certificate created by this script for actual deployments. The use of self-signed certificates are provided for ease of illustration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, *even for development purposes*.
 
    ```bash
-   cat traefik-ingress-internal-aks-ingress-tls.crt traefik-ingress-internal-aks-ingress-tls.key > traefik-ingress-internal-aks-ingress-tls.pem
-   az keyvault certificate import -f traefik-ingress-internal-aks-ingress-tls.pem -n traefik-ingress-internal-aks-ingress-tls --vault-name $KEYVAULT_NAME_AKS_BASELINE
+   cat nginx-iternal-ingress-controller-tls.crt nginx-iternal-ingress-controller-tls.key > nginx-iternal-ingress-controller-tls.pem
+   az keyvault certificate import -f nginx-iternal-ingress-controller-tls.pem -n nginx-iternal-ingress-controller-tls --vault-name $KEYVAULT_NAME_AKS_BASELINE
    ```
 
 1. Remove Azure Key Vault import certificates permissions and network access for current user.
