@@ -586,6 +586,28 @@ resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Author
   }
 }
 
+// Grant the AKS cluster ingress profile web app routing's managed identity with Key Vault secret user role permissions;
+resource kvClusterWebAppRoutingSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: kv
+  name: guid(resourceGroup().id, 'cluster-webapprouting-ingress-controller', keyVaultSecretsUserRole.id)
+  properties: {
+    roleDefinitionId: keyVaultSecretsUserRole.id
+    principalId: mc.properties.ingressProfile.webAppRouting.identity.objectId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Grant the AKS cluster ingress profile web app routing's managed identity with Key Vault reader role permissions; this allows our ingress controller to pull certificates
+resource kvClusterWebAppRoutingKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: kv
+  name: guid(resourceGroup().id, 'cluster-webapprouting-ingress-controller', keyVaultReaderRole.id)
+  properties: {
+    roleDefinitionId: keyVaultReaderRole.id
+    principalId: mc.properties.ingressProfile.webAppRouting.identity.objectId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'modules/role-assignment-EnsureClusterIdentityHasRbacToSelfManagedResources.bicep' = {
   name: 'EnsureClusterIdentityHasRbacToSelfManagedResources'
   scope: targetResourceGroup
