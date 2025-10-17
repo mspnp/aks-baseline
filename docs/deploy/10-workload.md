@@ -1,10 +1,22 @@
 # Deploy the workload (ASP.NET Core Docker web app)
 
-The cluster now has an [Traefik configured with a TLS certificate](./09-secret-management-and-ingress-controller.md). The last step in the process is to deploy the workload, which will demonstrate the system's functions.
+The cluster now has an [NGINX web app routing configured](./09-secret-management-and-ingress-controller.md). The last step in the process is to deploy the workload, which will demonstrate the system's functions.
 
 ## Steps
 
 > :book: The Contoso workload team is about to conclude this journey, but they need an app to test their new infrastructure. For this task they've picked out the venerable [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/main/samples/aspnetapp).
+
+1. Customize the Azure KeyVault certificate URI of the Ingress resource.
+
+   ```bash
+   sed -i "s#<ingress-controller-keyvault-cert-uri>#${INGRESS_CONTROLLER_KV_CERT_URI}#g" workload/02-aspnetapp-ingress.yaml
+   ```
+
+   Note, that if you are on macOS, you might need to use the following command instead:
+
+   ```bash
+   sed -i '' 's/<ingress-controller-keyvault-cert-uri>/'"${INGRESS_CONTROLLER_KV_CERT_URI}"'/g' workload/02-aspnetapp-ingress.yaml
+   ```
 
 1. Customize the host name of the Ingress resource to match your custom domain. *(You can skip this step if domain was left as contoso.com.)*
 
@@ -34,13 +46,19 @@ The cluster now has an [Traefik configured with a TLS certificate](./09-secret-m
 
 1. Check your Ingress resource status as a way to confirm the AKS-managed Internal Load Balancer is functioning
 
-   > In this moment your Ingress Controller (Traefik) is reading your ingress resource object configuration, updating its status, and creating a router to fulfill the new exposed workloads route. Take a look at this and notice that the address is set with the Internal Load Balancer IP from the configured subnet.
+   > In this moment your Ingress Controller (NGINX) is reading your ingress resource object configuration, updating its status, and creating a router to fulfill the new exposed workloads route. Take a look at this and notice that the address is set with the Internal Load Balancer IP from the configured subnet.
 
    ```bash
    kubectl get ingress aspnetapp-ingress -n a0008
    ```
 
-   > At this point, the route to the workload is established, SSL offloading configured, a network policy is in place to only allow Traefik to connect to your workload, and Traefik is configured to only accept requests from App Gateway.
+   > At this point, the route to the workload is established, SSL offloading configured, a network policy is in place to only allow NGINX to connect to your workload, and NGINX is configured to only accept requests from App Gateway.
+
+1. Check the Ingress KeyVault attachment is working properly
+
+   ```bash
+   kubectl get secret/keyvault-aspnetapp-ingress -n a0008
+   ```
 
 1. Test direct workload access from unauthorized network locations. *Optional.*
 

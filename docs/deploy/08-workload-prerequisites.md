@@ -33,7 +33,7 @@ The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
 
    ```bash
    cat nginx-iternal-ingress-controller-tls.crt nginx-iternal-ingress-controller-tls.key > nginx-iternal-ingress-controller-tls.pem
-   az keyvault certificate import -f nginx-iternal-ingress-controller-tls.pem -n nginx-iternal-ingress-controller-tls --vault-name $KEYVAULT_NAME_AKS_BASELINE
+   export INGRESS_CONTROLLER_KV_CERT_URI=$(az keyvault certificate import -f nginx-iternal-ingress-controller-tls.pem -n nginx-iternal-ingress-controller-tls --vault-name $KEYVAULT_NAME_AKS_BASELINE --query id -o tsv)
    ```
 
 1. Remove Azure Key Vault import certificates permissions and network access for current user.
@@ -43,6 +43,23 @@ The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
    ```bash
    az keyvault network-rule remove -n $KEYVAULT_NAME_AKS_BASELINE --ip-address "${CURRENT_IP_ADDRESS}/32"
    az role assignment delete --ids $TEMP_ROLEASSIGNMENT_TO_UPLOAD_CERT
+   ```
+
+## Check NGINX ingress controller is up and runnning
+
+1. Ensure your bootstrapping process has created the following namespace.
+
+   ```bash
+   # press Ctrl-C once you receive a successful response
+   kubectl get ns a0008 -w
+   ```
+
+1. Wait for NGINX ingress controller to be ready.
+
+   > NGINX Ingress Controller has been installed using gitops, check whether it is up and running before procceding.
+
+   ```bash
+   kubectl get NginxIngressController/nginx-internal -n a0008 -o jsonpath='{range .status.conditions[*]}{.lastTransitionTime}{"\t"}{.status}{"\t"}{.type}{"\t"}{.message}{"\n"}{end}'
    ```
 
 ## Check Azure Policies are in place
