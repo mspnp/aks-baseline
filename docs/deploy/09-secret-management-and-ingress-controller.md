@@ -41,11 +41,11 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
        objects:  |
          array:
            - |
-             objectName: nginx-ingress-internal-aks-ingress-tls
+             objectName: nginx-iternal-ingress-controller-tls
              objectAlias: tls.crt
              objectType: cert
            - |
-             objectName: nginx-ingress-internal-aks-ingress-tls
+             objectName: nginx-iternal-ingress-controller-tls
              objectAlias: tls.key
              objectType: secret
        tenantID: $TENANTID_AZURERBAC_AKS_BASELINE

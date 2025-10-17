@@ -14,7 +14,7 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/proxy-ssl-verify: "on"
     nginx.ingress.kubernetes.io/proxy-ssl-server-name: "on"
-    nginx.ingress.kubernetes.io/proxy-ssl-secret: "a0008/nginx-ingress-internal-aks-ingress-tls"
+    nginx.ingress.kubernetes.io/proxy-ssl-secret: "a0008/nginx-iternal-ingress-controller-tls"
     nginx.ingress.kubernetes.io/use-regex: "false"
     nginx.ingress.kubernetes.io/proxy-body-size: 4m
     nginx.ingress.kubernetes.io/proxy-read-timeout: "120"

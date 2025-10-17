@@ -37,7 +37,7 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow these s
    > :book: Contoso Bicycle procured a standard CA certificate to be used with the AKS ingress controller. This one is not EV, because it won't be user-facing. The workload team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller.
 
    ```bash
-   openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out traefik-ingress-internal-aks-ingress-tls.crt -keyout traefik-ingress-internal-aks-ingress-tls.key -subj "/CN=*.aks-ingress.${DOMAIN_NAME_AKS_BASELINE}/O=Contoso AKS Ingress"
+   openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out nginx-iternal-ingress-controller-tls.crt -keyout nginx-iternal-ingress-controller-tls.key -subj "/CN=*.aks-ingress.${DOMAIN_NAME_AKS_BASELINE}/O=Contoso AKS Ingress"
    ```
 
 1. Base64 encode the AKS ingress controller certificate.
@@ -45,7 +45,7 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow these s
    :bulb: No matter if you used a certificate from your organization or you generated one from above, you'll need the public certificate (as `.crt` or `.cer`) to be Base64 encoded for proper storage in Key Vault later.
 
    ```bash
-   export AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE=$(cat traefik-ingress-internal-aks-ingress-tls.crt | base64 | tr -d '\n')
+   export AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE=$(cat nginx-iternal-ingress-controller-tls.crt | base64 | tr -d '\n')
    echo AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE: $AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE
    ```
 
