@@ -16,6 +16,7 @@ spec:
   controllerNamePrefix: nginx-internal
   loadBalancerAnnotations:
     service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-clusteringressservices"
   httpDisabled: false
   scaling:
     maxReplicas: 3
