@@ -82,20 +82,20 @@ resource acrPullRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existi
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied a Key Vault to grant with metadata, certificates, keys and secrets read privileges.  Granted to App Gateway's managed identity.
+// Built-in Azure RBAC role that is applied a Key Vault to grant with metadata, certificates, keys and secrets read privileges. Granted to App Gateway's managed identity and our web app routing profile's managed identiy.
 resource keyVaultReaderRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: '21090545-7ca7-4776-b22c-e363652d74d2'
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied to a Key Vault to grant with secrets content read privileges. Granted to both Key Vault and our workload's identity.
+// Built-in Azure RBAC role that is applied to a Key Vault to grant with secrets content read privileges. Granted to our web app routing profile's managed identiy.
 resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: '4633458b-17de-408a-b874-0445c86b69e6'
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied to a AKS cluster to grant with private DNS contributor. Granted to a private Cluster.
-resource privateDnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+// Built-in Azure RBAC role that is applied to a Private DNS Zone to grant with contributor privileges. Granted our web app routing profile's managed identiy.
+resource PrivateDnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
   scope: subscription()
 }
@@ -624,6 +624,17 @@ resource kvClusterWebAppRoutingKeyVaultReader_roleAssignment 'Microsoft.Authoriz
   }
 }
 
+// Grant the AKS cluster ingress profile web app routing's managed identity with Private DNS Zone Contributor role permissions; this allows our ingress controller to add records to the Private DNS Zone
+resource pdzClusterWebAppRoutingDNSZoneContributor_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: pdzAksIngress
+  name: guid(resourceGroup().id, 'cluster-webapprouting-ingress-controller-dns-zone-contributor', PrivateDnsZoneContributorRole.id)
+  properties: {
+    roleDefinitionId: PrivateDnsZoneContributorRole.id
+    principalId: mc.properties.ingressProfile.webAppRouting.identity.objectId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'modules/role-assignment-EnsureClusterIdentityHasRbacToSelfManagedResources.bicep' = {
   name: 'EnsureClusterIdentityHasRbacToSelfManagedResources'
   scope: targetResourceGroup
@@ -1006,7 +1017,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2025-07-02-preview' = {
 
     ndEnsureClusterIdentityHasRbacToSelfManagedResources
     pdzMiClusterControlPlaneDnsZoneContributorRole_roleAssignment
-    
+
     // Policies that we need in place before the cluster is deployed or pods are deployed to it.
     // They are not technically a dependency from the resource provider perspective,
     // but logically they need to be in place before workloads are, so forcing that here. This also
