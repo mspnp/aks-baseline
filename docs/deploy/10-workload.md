@@ -65,14 +65,16 @@ The cluster now has an [NGINX web app routing configured](./09-secret-management
    > You should expect a `403` HTTP response from your ingress controller if you attempt to connect to it *without* going through the App Gateway. Likewise, if any workload other than the ingress controller attempts to reach the workload, the traffic will be denied via network policies.
 
    ```bash
-   kubectl run curl -n a0008 -i --tty --rm --image=mcr.microsoft.com/devcontainers/base --overrides='[{"op":"add","path":"/spec/containers/0/resources","value":{"limits":{"cpu":"200m","memory":"128Mi"}}},{"op":"add","path":"/spec/containers/0/securityContext","value":{"readOnlyRootFilesystem": true}}]' --override-type json  --env="DOMAIN_NAME=${DOMAIN_NAME_AKS_BASELINE}"
+   kubectl run curl -n a0008 -i --tty --rm --image=mcr.microsoft.com/devcontainers/base --overrides='[{"op":"add","path":"/spec/containers/0/resources","value":{"limits":{"cpu":"200m","memory":"128Mi"}}},{"op":"add","path":"/spec/containers/0/securityContext","value":{"readOnlyRootFilesystem": true}}]' --override-type json --env="DOMAIN_NAME=${DOMAIN_NAME_AKS_BASELINE}"
 
    # From within the open shell now running on a container inside your cluster
    curl -kI https://bu0001a0008-00.aks-ingress.$DOMAIN_NAME -w '%{remote_ip}\n'
    exit
    ```
 
-   > From this container shell, you could also try to directly access the workload via `curl -I http://<aspnetapp-service-cluster-ip>`. Instead of getting back a `200 OK`, you'll receive a network timeout because of the [`allow-only-ingress-to-workload` network policy](../../cluster-manifests/a0008/ingress-network-policy.yaml) that is in place.
+   > From this container shell, you could also try to directly access the workload via:
+   > - `curl -I http://bu0001a0008-00.aks-ingress.$DOMAIN_NAME -w '%{remote_ip}\n'`. Instead of `403` you are now getting back a `308 Permanent Redirect` and the location will be with the https protocol instead.
+   > - `curl -I http://aspnetapp-service`. Instead of `403` you are now getting a timeout since a network policy in place only allow nginx-internal ingress controller to reach out your application.
 
 ### Next step
 
