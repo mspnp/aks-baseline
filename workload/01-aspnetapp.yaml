@@ -48,6 +48,8 @@ spec:
       containers:
       - name: aspnet-webapp-sample
         image: mcr.microsoft.com/dotnet/samples:aspnetapp
+        ports:
+          - containerPort: 8080
         imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: false
