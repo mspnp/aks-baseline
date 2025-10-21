@@ -40,10 +40,10 @@ spec:
             podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: app.kubernetes.io/name
+                - key: app.kubernetes.io/component
                   operator: In
                   values:
-                  - traefik-ingress-ilb
+                  - ingress-controller
               topologyKey: "kubernetes.io/hostname"
       containers:
       - name: aspnet-webapp-sample
@@ -68,7 +68,7 @@ spec:
         - name: ASPNETCORE_URLS
           value: "http://*:8080"
       nodeSelector:
-       agentpool: npuser01
+        agentpool: npuser01
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
