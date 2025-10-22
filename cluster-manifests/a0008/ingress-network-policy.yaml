@@ -9,8 +9,10 @@ spec:
       app.kubernetes.io/name: aspnetapp
   ingress:
   - from:
-    - namespaceSelector: {}
-      podSelector:
+    - namespaceSelector:
         matchLabels:
-          app.kubernetes.io/name: traefik-ingress-ilb
-          app.kubernetes.io/instance: traefik-ingress-ilb
+          kubernetes.io/metadata.name: app-routing-system
+    - podSelector:
+        matchLabels:
+          app: nginx-internal-0
+          app.kubernetes.io/component: ingress-controller
