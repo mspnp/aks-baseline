@@ -141,12 +141,8 @@ resource paAKSLinuxRestrictive 'Microsoft.Authorization/policyAssignments@2024-0
 
           // Known violations
           // K8sAzureAllowedSeccomp
-          //  - Traefik, no profile defined
           //  - aspnetapp-deployment, no profile defined
-          // K8sAzureVolumeTypes
-          //  - Traefik, uses csi
           // K8sAzureAllowedUsersGroups
-          //  - Traefik, no supplementalGroups, no fsGroup
           //  = aspnetapp-deployment, no supplementalGroups, no fsGroup
           'a0008'
         ]
@@ -244,10 +240,10 @@ resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2024
     policyDefinitionId: pdEnforceResourceLimits.id
     parameters: {
       cpuLimit: {
-        value: '500m' // traefik-ingress-controller = 200m, aspnet-webapp-sample = 100m
+        value: '500m' // aspnet-webapp-sample = 100m
       }
       memoryLimit: {
-        value: '256Mi' // aspnet-webapp-sample = 256Mi, traefik-ingress-controller = 128Mi
+        value: '256Mi' // aspnet-webapp-sample = 256Mi
       }
       excludedNamespaces: {
         value: [
