@@ -1,6 +1,6 @@
 # End-to-end validation
 
-Now that you have a workload deployed, the [ASP.NET Core sample web app](./10-workload.md), you can start validating and exploring this reference implementation of the [AKS baseline cluster](../../). In addition to the workload, there is some observability validation you can perform as well.
+Now that you have a workload deployed, the [ASP.NET Core sample web app](./09-workload.md), you can start validating and exploring this reference implementation of the [AKS baseline cluster](../../). In addition to the workload, there is some observability validation you can perform as well.
 
 ## Validate the web app
 
@@ -197,4 +197,4 @@ If you configured your third-party images to be pulled from your Azure Container
 
 ## Next step
 
-:arrow_forward: [Clean Up Azure Resources](./12-cleanup.md)
+:arrow_forward: [Clean Up Azure Resources](./11-cleanup.md)

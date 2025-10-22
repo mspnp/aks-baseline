@@ -1,6 +1,6 @@
 # Deploy the workload (ASP.NET Core Docker web app)
 
-The cluster now has an [NGINX web app routing configured](./09-secret-management-and-ingress-controller.md). The last step in the process is to deploy the workload, which will demonstrate the system's functions.
+Previously you have configured [workload prerequisites](./08-workload-prerequisites.md). The last step in the process is to deploy the workload, which will demonstrate the system's functions.
 
 ## Steps
 
@@ -78,4 +78,4 @@ The cluster now has an [NGINX web app routing configured](./09-secret-management
 
 ### Next step
 
-:arrow_forward: [End-to-End Validation](./11-validation.md)
+:arrow_forward: [End-to-End Validation](./10-validation.md)

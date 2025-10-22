@@ -45,7 +45,7 @@ The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
    az role assignment delete --ids $TEMP_ROLEASSIGNMENT_TO_UPLOAD_CERT
    ```
 
-## Check NGINX ingress controller is up and runnning
+## Check internal NGINX ingress controller is up and runnning
 
 1. Ensure your bootstrapping process has created the following namespace.
 
@@ -103,4 +103,4 @@ The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
 
 ### Next step
 
-:arrow_forward: [Configure AKS Ingress Controller with Azure Key Vault integration](./09-secret-management-and-ingress-controller.md)
+:arrow_forward: [Deploy the Workload](./09-workload.md)
