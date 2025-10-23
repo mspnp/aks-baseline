@@ -16,13 +16,27 @@ Now that your [Azure Container Registry instance is deployed and ready to suppor
    echo GITOPS_CURRENT_BRANCH_NAME: $GITOPS_CURRENT_BRANCH_NAME
    ```
 
+1. Identify your jump box image.
+
+   ```bash
+   # If you used a pre-existing image and not the one built by this walk through, replace the command below with the resource id of that image.
+   RESOURCEID_IMAGE_JUMPBOX=$(az deployment group show -g rg-bu0001a0008 -n CreateJumpBoxImageTemplate --query 'properties.outputs.distributedImageResourceId.value' -o tsv)
+   echo RESOURCEID_IMAGE_JUMPBOX: $RESOURCEID_IMAGE_JUMPBOX
+   ```
+
+1. Convert your jump box cloud-init (users) file to Base64.
+
+   ```bash
+   CLOUDINIT_BASE64=$(base64 jumpBoxCloudInit.yml | tr -d '\n')
+   ````
+
 1. Deploy the cluster ARM template.
 
    :warning: By default, this deployment will allow unrestricted access to your cluster's API Server. You can limit access to the API Server to a set of well-known IP addresses (i.e., a jump box subnet (connected to by Azure Bastion), build agents, or any other networks you'll administer the cluster from) by setting the `clusterAuthorizedIPRanges` parameter in all deployment options. This setting will also affect traffic originating from within the cluster trying to use the API server, so you will also need to include *all* of the public IPs used by your egress Azure Firewall. For more information, see [Secure access to the API server using authorized IP address ranges](https://learn.microsoft.com/azure/aks/api-server-authorized-ip-ranges#create-an-aks-cluster-with-api-server-authorized-ip-ranges-enabled).
 
    ```bash
    # [This takes about 18 minutes.]
-   az deployment group create -g rg-bu0001a0008 -f workload-team/cluster-stamp.bicep -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE} clusterAdminMicrosoftEntraGroupObjectId=${MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE} a0008NamespaceReaderMicrosoftEntraGroupObjectId=${MEIDOBJECTID_GROUP_A0008_READER_AKS_BASELINE} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC_AKS_BASELINE} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_AKS_BASELINE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE} domainName=${DOMAIN_NAME_AKS_BASELINE} gitOpsBootstrappingRepoHttpsUrl=${GITOPS_REPOURL} gitOpsBootstrappingRepoBranch=${GITOPS_CURRENT_BRANCH_NAME}
+   az deployment group create -g rg-bu0001a0008 -f workload-team/cluster-stamp.bicep -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE} clusterAdminMicrosoftEntraGroupObjectId=${MEIDOBJECTID_GROUP_CLUSTERADMIN_AKS_BASELINE} a0008NamespaceReaderMicrosoftEntraGroupObjectId=${MEIDOBJECTID_GROUP_A0008_READER_AKS_BASELINE} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC_AKS_BASELINE} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE_AKS_BASELINE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE} domainName=${DOMAIN_NAME_AKS_BASELINE} gitOpsBootstrappingRepoHttpsUrl=${GITOPS_REPOURL} gitOpsBootstrappingRepoBranch=${GITOPS_CURRENT_BRANCH_NAME} jumpBoxImageResourceId=${RESOURCEID_IMAGE_JUMPBOX} jumpBoxCloudInitAsBase64=${CLOUDINIT_BASE64}
    ```
 
    > Alternatively, you could have updated the [`azuredeploy.parameters.prod.bicepparam`](../../workload-team/azuredeploy.parameters.prod.bicepparam) file and deployed as above, using `-p "@azuredeploy.parameters.prod.bicepparam"` instead of providing the individual key-value pairs.
