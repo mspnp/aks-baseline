@@ -42,6 +42,14 @@ param gitOpsBootstrappingRepoBranch string = 'main'
 @description('The AKS cluster Internal Load Balancer IP Address')
 param clusterInternalLoadBalancerIpAddress string = '10.240.4.4'
 
+@description('The Azure resource ID of a VM image that will be used for the jump box.')
+@minLength(70)
+param jumpBoxImageResourceId string
+
+@description('A cloud init file (starting with #cloud-config) as a base 64 encoded string used to perform image customization on the jump box VMs. Used for user-management in this context.')
+@minLength(100)
+param jumpBoxCloudInitAsBase64 string
+
 /*** VARIABLES ***/
 
 var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resourceGroup().id)
@@ -53,6 +61,8 @@ var aksBackendDomainName = 'bu0001a0008-00.${aksIngressDomainName}'
 var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPlaneAuthorizationTenantId)
 
 var kubernetesVersion = '1.34'
+
+var jumpBoxDefaultAdminUserName = uniqueString(clusterName, resourceGroup().id)
 
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
 
@@ -151,6 +161,13 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
   resource snetApplicationGateway 'subnets' existing = {
     name: 'snet-applicationgateway'
   }
+
+  // spoke virtual network's subnet for managment ops
+  resource snetManagmentOps 'subnets' existing = {
+    name: 'snet-management-ops'
+  }
+}
+
 }
 
 /*** RESOURCES ***/
@@ -1373,7 +1390,141 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
       {
         category: 'ApplicationGatewayFirewallLog'
         enabled: true
+      } 
+    ]
+  }
+}
+
+resource omsVmInsights 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
+  name: 'VMInsights(${la.name})'
+  location: location
+  properties: {
+    workspaceResourceId: la.id
+  }
+  plan: {
+    name: 'VMInsights(${la.name})'
+    product: 'OMSGallery/VMInsights'
+    promotionCode: ''
+    publisher: 'Microsoft'
+  }
+}
+
+@description('The compute for operations jumpboxes; these machines are assigned to cluster operator users')
+resource vmssJumpboxes 'Microsoft.Compute/virtualMachineScaleSets@2025-04-01' = {
+  name: 'vmss-jumpboxes'
+  location: location
+  zones: pickZones('Microsoft.Compute', 'virtualMachineScaleSets', location, 3)
+  sku: {
+    name: 'Standard_D2s_v3'
+    tier: 'Standard'
+    capacity: 2
+  }
+  properties: {
+    additionalCapabilities: {
+      ultraSSDEnabled: false
+    }
+    overprovision: false
+    singlePlacementGroup: true
+    upgradePolicy: {
+      mode: 'Automatic'
+    }
+    zoneBalance: false
+    virtualMachineProfile: {
+      diagnosticsProfile: {
+        bootDiagnostics: {
+          enabled: true
+        }
       }
+      osProfile: {
+        computerNamePrefix: 'aksjmp'
+        linuxConfiguration: {
+          disablePasswordAuthentication: true
+          provisionVMAgent: true
+          ssh: {
+            publicKeys: [
+              {
+                path: '/home/${jumpBoxDefaultAdminUserName}/.ssh/authorized_keys'
+                keyData: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCcFvQl2lYPcK1tMB3Tx2R9n8a7w5MJCSef14x0ePRFr9XISWfCVCNKRLM3Al/JSlIoOVKoMsdw5farEgXkPDK5F+SKLss7whg2tohnQNQwQdXit1ZjgOXkis/uft98Cv8jDWPbhwYj+VH/Aif9rx8abfjbvwVWBGeA/OnvfVvXnr1EQfdLJgMTTh+hX/FCXCqsRkQcD91MbMCxpqk8nP6jmsxJBeLrgfOxjH8RHEdSp4fF76YsRFHCi7QOwTE/6U+DpssgQ8MTWRFRat97uTfcgzKe5MOfuZHZ++5WFBgaTr1vhmSbXteGiK7dQXOk2cLxSvKkzeaiju9Jy6hoSl5oMygUVd5fNPQ94QcqTkMxZ9tQ9vPWOHwbdLRD31Ses3IBtDV+S6ehraiXf/L/e0jRUYk8IL/J543gvhOZ0hj2sQqTj9XS2hZkstZtrB2ywrJzV5ByETUU/oF9OsysyFgnaQdyduVqEPHaqXqnJvBngqqas91plyT3tSLMez3iT0s= unused-generated-by-azure'
+              }
+            ]
+          }
+        }
+        customData: jumpBoxCloudInitAsBase64
+        adminUsername: jumpBoxDefaultAdminUserName
+      }
+      storageProfile: {
+        osDisk: {
+          createOption: 'FromImage'
+          caching: 'ReadOnly'
+          diffDiskSettings: {
+            option: 'Local'
+          }
+          osType: 'Linux'
+        }
+        imageReference: {
+          id: jumpBoxImageResourceId
+        }
+      }
+      networkProfile: {
+        networkInterfaceConfigurations: [
+          {
+            name: 'vnet-spoke-BU0001A0008-00-nic01'
+            properties: {
+              primary: true
+              enableIPForwarding: false
+              enableAcceleratedNetworking: false
+              networkSecurityGroup: null
+              ipConfigurations: [
+                {
+                  name: 'default'
+                  properties: {
+                    primary: true
+                    privateIPAddressVersion: 'IPv4'
+                    publicIPAddressConfiguration: null
+                    subnet: {
+                      id: targetVirtualNetwork::snetManagmentOps.id
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+  dependsOn: [
+    omsVmInsights
+  ]
+
+  resource extOmsAgentForLinux 'extensions' = {
+    name: 'OMSExtension'
+    properties: {
+      publisher: 'Microsoft.EnterpriseCloud.Monitoring'
+      type: 'OmsAgentForLinux'
+      typeHandlerVersion: '1.13'
+      autoUpgradeMinorVersion: true
+      settings: {
+        stopOnMultipleConnections: true
+        azureResourceId: vmssJumpboxes.id
+        workspaceId: la.properties.customerId
+      }
+      protectedSettings: {
+        workspaceKey: la.listKeys().primarySharedKey
+      }
+    }
+  }
+
+  resource extDependencyAgentLinux 'extensions' = {
+    name: 'DependencyAgentLinux'
+    properties: {
+      publisher: 'Microsoft.Azure.Monitoring.DependencyAgent'
+      type: 'DependencyAgentLinux'
+      typeHandlerVersion: '9.10'
+      autoUpgradeMinorVersion: true
+    }
+    dependsOn: [
+      extOmsAgentForLinux
     ]
   }
 }
