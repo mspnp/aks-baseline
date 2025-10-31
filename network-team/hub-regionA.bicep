@@ -6,6 +6,10 @@ targetScope = 'resourceGroup'
 @minLength(1)
 param nodepoolSubnetResourceIds array
 
+@description('Subnet resource IDs for all AKS Jumpboxes in all attached spokes to allow necessary outbound traffic through the firewall.')
+@minLength(79)
+param aksJumpboxSubnetResourceId string
+
 @description('The hub\'s regional affinity. All resources tied to this hub will also be homed in this region. The network team maintains an approved regional list which is a subset of zones with Availability Zone support. Defaults to the resource group\'s location for higher availability.')
 param location string = resourceGroup().location
 
@@ -28,6 +32,26 @@ param hubVirtualNetworkGatewaySubnetAddressSpace string = '10.200.0.64/27'
 @maxLength(18)
 @minLength(10)
 param hubVirtualNetworkBastionSubnetAddressSpace string = '10.200.0.128/26'
+
+/*** EXISTING RESOURCES ***/
+
+@description('The resource group name containing the spoke virtual networks.')
+resource rgSpokes 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
+  name: split(aksJumpboxSubnetResourceId, '/')[4]
+  scope: subscription()
+}
+
+@description('AKS Spoke Virtual Network BU0001A0008-00')
+resource vnetSpoke 'Microsoft.Network/virtualNetworks@2024-10-01' existing = {
+  name: split(aksJumpboxSubnetResourceId, '/')[8]
+  scope: rgSpokes
+}
+
+@description('AKS Jumpbox subnet')
+resource aksJumpboxSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-10-01' existing = {
+  parent: vnetSpoke
+  name: last(split(aksJumpboxSubnetResourceId, '/'))
+}
 
 /*** RESOURCES ***/
 
@@ -408,6 +432,17 @@ resource ipgNodepoolSubnet 'Microsoft.Network/ipGroups@2023-11-01' = {
   }
 }
 
+@description('This holds IP addresses of known AKS Jumpboxs in attached spokes.')
+resource aksJumpbox_ipgroup 'Microsoft.Network/ipGroups@2024-10-01' = {
+  name: 'ipg-${location}-AksJumpboxes'
+  location: location
+  properties: {
+    ipAddresses: [
+      aksJumpboxSubnet.properties.addressPrefix
+    ]
+  }
+}
+
 // Azure Firewall starter policy
 resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' = {
   name: 'fw-policies-${location}'
@@ -692,6 +727,112 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' = {
               sourceAddresses: []
               sourceIpGroups: [
                 ipgNodepoolSubnet.id
+              ]
+            }
+          ]
+        }
+        {
+          ruleCollectionType: 'FirewallPolicyFilterRuleCollection'
+          name: 'aks-jumpbox'
+          priority: 450
+          action: {
+            type: 'Allow'
+          }
+          rules: [
+            {
+              ruleType: 'ApplicationRule'
+              name: 'az-login'
+              description: 'Allow jumpboxes to perform az login.'
+              sourceIpGroups: [
+                aksJumpbox_ipgroup.id
+              ]
+              protocols: [
+                {
+                  protocolType: 'Https'
+                  port: 443
+                }
+              ]
+              targetFqdns: [
+                #disable-next-line no-hardcoded-env-urls
+                'login.microsoftonline.com'
+              ]
+            }
+            {
+              ruleType: 'ApplicationRule'
+              name: 'az-management-api'
+              description: 'Allow jumpboxes to communicate with Azure management APIs.'
+              sourceIpGroups: [
+                aksJumpbox_ipgroup.id
+              ]
+              protocols: [
+                {
+                  protocolType: 'Https'
+                  port: 443
+                }
+              ]
+              targetFqdns: [
+                #disable-next-line no-hardcoded-env-urls
+                'management.azure.com'
+              ]
+            }
+            {
+              ruleType: 'ApplicationRule'
+              name: 'az-cli-extensions'
+              description: 'Allow jumpboxes query az cli status and download extensions'
+              sourceIpGroups: [
+                aksJumpbox_ipgroup.id
+              ]
+              protocols: [
+                {
+                  protocolType: 'Https'
+                  port: 443
+                }
+              ]
+              targetFqdns: [
+                'aka.ms'
+                #disable-next-line no-hardcoded-env-urls
+                'azurecliprod.blob.core.windows.net'
+                #disable-next-line no-hardcoded-env-urls
+                'azcliextensionsync.blob.core.windows.net'
+              ]
+            }
+            {
+              ruleType: 'ApplicationRule'
+              name: 'github'
+              description: 'Allow pulling things down from GitHub. [Only a requirement of this walkthrough because we deploy some manifests that you clone from your repo.]'
+              sourceIpGroups: [
+                aksJumpbox_ipgroup.id
+              ]
+              protocols: [
+                {
+                  protocolType: 'Https'
+                  port: 443
+                }
+              ]
+              targetFqdns: [
+                'github.com'
+                '*.github.io'
+                'raw.githubusercontent.com'
+              ]
+            }
+            {
+              ruleType: 'ApplicationRule'
+              name: 'azure-monitor-addon'
+              description: 'Required for Azure Monitor Extension on Jumpbox.'
+              sourceIpGroups: [
+                aksJumpbox_ipgroup.id
+              ]
+              protocols: [
+                {
+                  protocolType: 'Https'
+                  port: 443
+                }
+              ]
+              targetFqdns: [
+                '*.ods.opinsights.azure.com'
+                '*.oms.opinsights.azure.com'
+                '${location}.monitoring.azure.com'
+                '*.agentsvc.azure-automation.net'
               ]
             }
           ]
