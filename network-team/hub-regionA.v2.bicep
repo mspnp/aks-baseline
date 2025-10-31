@@ -26,9 +26,6 @@ param azureGatewaySubnetAddressSpace string = '10.200.0.64/27'
 @maxLength(18)
 param azureBastionSubnetAddressSpace string = '10.200.0.96/27'
 
-@description('Flow Logs are enabled by default, if for some reason they cause conflicts with flow log policies already in place in your subscription, you can disable them by passing "false" to this parameter.')
-param deployFlowLogResources bool = true
-
 /*** VARIABLES ***/
 
 @description('The hub\'s regional affinity. All resources tied to this hub will also be homed in this region. The network team maintains an approved regional list which is a subset of regions with Availability Zone support. Defaults to the resource group\'s location for higher availability.')
@@ -37,14 +34,14 @@ var location = resourceGroup().location
 /*** EXISTING RESOURCES ***/
 
 @description('The resource group name containing virtual network in which Azure Image Builder will drop the compute into to perform the image build.')
-resource rgBuilderVirutalNetwork 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
+resource rgSpokeVirtualNetwork 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
   scope: subscription()
   name: split(aksImageBuilderSubnetResourceId, '/')[4]
 }
 
 @description('AKS Spoke Virtual Network')
 resource aksSpokeVnet 'Microsoft.Network/virtualNetworks@2022-01-01' existing = {
-  scope: rgBuilderVirutalNetwork
+  scope: rgSpokeVirtualNetwork
   name: split(aksImageBuilderSubnetResourceId, '/')[8]
 }
 
@@ -457,7 +454,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' existing = {
               name: 'to-azuremanagement'
               description: 'This for AIB VMs to communicate with Azure management API.'
               sourceIpGroups: [
-                resourceId('Microsoft.Network/ipGroups', imageBuilder_ipgroups.name)
+                imageBuilder_ipgroups.id
               ]
               protocols: [
                 {
@@ -475,7 +472,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' existing = {
               name: 'to-blobstorage'
               description: 'This is required as the Proxy VM and Packer VM both read and write from transient storage accounts (no ability to know what storage accounts before the process starts.)'
               sourceIpGroups: [
-                resourceId('Microsoft.Network/ipGroups', imageBuilder_ipgroups.name)
+                imageBuilder_ipgroups.id
               ]
               protocols: [
                 {
@@ -493,7 +490,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' existing = {
               name: 'apt-get'
               description: 'This is required as the Packer VM performs a package upgrade. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn\'t do this.]'
               sourceIpGroups: [
-                resourceId('Microsoft.Network/ipGroups', imageBuilder_ipgroups.name)
+                imageBuilder_ipgroups.id
               ]
               protocols: [
                 {
@@ -517,7 +514,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' existing = {
               name: 'install-azcli'
               description: 'This is required as the Packer VM needs to install Azure CLI. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn\'t do this.]'
               sourceIpGroups: [
-                resourceId('Microsoft.Network/ipGroups', imageBuilder_ipgroups.name)
+                imageBuilder_ipgroups.id
               ]
               protocols: [
                 {
@@ -538,7 +535,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' existing = {
               name: 'install-k8scli'
               description: 'This is required as the Packer VM needs to install k8s cli tooling. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn\'t do this.]'
               sourceIpGroups: [
-                resourceId('Microsoft.Network/ipGroups', imageBuilder_ipgroups.name)
+                imageBuilder_ipgroups.id
               ]
               protocols: [
                 {
@@ -560,7 +557,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' existing = {
               name: 'install-helm'
               description: 'This is required as the Packer VM needs to install helm cli. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn\'t do this.]'
               sourceIpGroups: [
-                resourceId('Microsoft.Network/ipGroups', imageBuilder_ipgroups.name)
+                imageBuilder_ipgroups.id
               ]
               protocols: [
                 {
@@ -580,7 +577,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' existing = {
               name: 'install-flux'
               description: 'This is required as the Packer VMs needs to install flux cli. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn\'t do this.]'
               sourceIpGroups: [
-                resourceId('Microsoft.Network/ipGroups', imageBuilder_ipgroups.name)
+                imageBuilder_ipgroups.id
               ]
               protocols: [
                 {
@@ -601,7 +598,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' existing = {
               name: 'install-terraform'
               description: 'This is required as the Packer VMs needs to install HashiCorp Terraform cli. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn\'t do this.]'
               sourceIpGroups: [
-                resourceId('Microsoft.Network/ipGroups', imageBuilder_ipgroups.name)
+                imageBuilder_ipgroups.id
               ]
               protocols: [
                 {

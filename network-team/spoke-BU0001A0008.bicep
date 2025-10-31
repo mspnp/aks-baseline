@@ -24,6 +24,10 @@ resource hubResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' existi
 resource hubVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
   scope: hubResourceGroup
   name: last(split(hubVnetResourceId,'/'))
+
+  resource azureBastionSubnet 'subnets' existing = {
+    name: 'AzureBastionSubnet'
+  }
 }
 
 // This is the firewall that was deployed in 'hub-default.bicep'
@@ -309,6 +313,109 @@ resource nsgPrivateLinkEndpointsSubnet_diagnosticsSettings 'Microsoft.Insights/d
   }
 }
 
+@description('NSG blocking all inbound traffic other than port 22 for jumpbox access.')
+resource nsgManagementOpsSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' = {
+    name: 'nsg-vnet-spoke-${orgAppId}-01-management-ops'
+    location: location
+    properties: {
+        securityRules: [
+            {
+                name: 'AllowSshFromHubBastionInBound'
+                properties: {
+                    description: 'Allow our Azure Bastion users in.'
+                    protocol: 'Tcp'
+                    sourcePortRange: '*'
+                    sourceAddressPrefix: hubVirtualNetwork::azureBastionSubnet.properties.addressPrefix
+                    destinationPortRange: '22'
+                    destinationAddressPrefix: '*'
+                    access: 'Allow'
+                    priority: 100
+                    direction: 'Inbound'
+                }
+            }
+            {
+                name: 'DenyAllInBound'
+                properties: {
+                    description: 'Deny remaining traffic.'
+                    protocol: '*'
+                    sourcePortRange: '*'
+                    sourceAddressPrefix: '*'
+                    destinationPortRange: '*'
+                    destinationAddressPrefix: '*'
+                    access: 'Deny'
+                    priority: 1000
+                    direction: 'Inbound'
+                }
+            }
+            {
+                name: 'Allow443InternetOutBound'
+                properties: {
+                    protocol: 'Tcp'
+                    sourcePortRange: '*'
+                    sourceAddressPrefix: '*'
+                    destinationPortRange: '443'
+                    destinationAddressPrefix: 'Internet'
+                    access: 'Allow'
+                    priority: 100
+                    direction: 'Outbound'
+                }
+            }
+            {
+                name: 'Allow443VnetOutBound'
+                properties: {
+                    protocol: 'Tcp'
+                    sourcePortRange: '*'
+                    sourceAddressPrefix: 'VirtualNetwork'
+                    destinationPortRange: '443'
+                    destinationAddressPrefix: 'VirtualNetwork'
+                    access: 'Allow'
+                    priority: 110
+                    direction: 'Outbound'
+                }
+            }
+            {
+                name: 'DenyAllOutBound'
+                properties: {
+                    protocol: '*'
+                    sourcePortRange: '*'
+                    sourceAddressPrefix: '*'
+                    destinationPortRange: '*'
+                    destinationAddressPrefix: '*'
+                    access: 'Deny'
+                    priority: 1000
+                    direction: 'Outbound'
+                }
+            }
+        ]
+    }
+}
+
+resource nsgManagementOpsSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: nsgManagementOpsSubnet
+  name: 'default'
+  properties: {
+    workspaceId: laHub.id
+    logs: [
+      {
+        category: 'NetworkSecurityGroupEvent'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+      {
+        category: 'NetworkSecurityGroupRuleCounter'
+        enabled: true
+        retentionPolicy: {
+          days: 0
+          enabled: false
+        }
+      }
+    ]
+  }
+}
+
 // The spoke virtual network.
 // 65,536 (-reserved) IPs available to the workload, split across two subnets for AKS,
 // one for App Gateway and one for Private Link endpoints.
@@ -376,11 +483,30 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2023-11-01' = {
           privateLinkServiceNetworkPolicies: 'Enabled'
         }
       }
+      {
+          name: 'snet-management-ops'
+          properties: {
+              defaultOutboundAccess: false
+              addressPrefix: '10.240.6.0/28'
+              routeTable: {
+                  id: routeNextHopToFirewall.id
+              }
+              networkSecurityGroup: {
+                  id: nsgManagementOpsSubnet.id
+              }
+              privateEndpointNetworkPolicies: 'Disabled'
+              privateLinkServiceNetworkPolicies: 'Disabled'
+          }
+      }
     ]
   }
 
   resource snetClusterNodes 'subnets' existing = {
     name: 'snet-clusternodes'
+  }
+
+  resource snetManagementOps 'subnets' existing = {
+    name: 'snet-management-ops'
   }
 }
 
@@ -489,4 +615,5 @@ output clusterVnetResourceId string = vnetSpoke.id
 output nodepoolSubnetResourceIds array = [
   vnetSpoke::snetClusterNodes.id
 ]
+output jumpboxSubnetResourceId string = vnetSpoke::snetManagementOps.id
 output appGwPublicIpAddress string = pipPrimaryClusterIp.properties.ipAddress
