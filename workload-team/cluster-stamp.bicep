@@ -168,6 +168,9 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
   }
 }
 
+resource pdzMc 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
+  scope: targetResourceGroup
+  name: 'privatelink.${location}.azmk8s.io'
 }
 
 /*** RESOURCES ***/
@@ -611,6 +614,7 @@ module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'modules/role-assign
   scope: targetResourceGroup
   params: {
     miClusterControlPlanePrincipalId: miClusterControlPlane.properties.principalId
+    clusterControlPlaneIdentityName: miClusterControlPlane.name
     targetVirtualNetworkName: targetVirtualNetwork.name
   }
 }
@@ -860,7 +864,9 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     }
     apiServerAccessProfile: {
       authorizedIPRanges: clusterAuthorizedIPRanges
-      enablePrivateCluster: false
+      enablePrivateCluster: true
+      privateDNSZone: pdzMc.id
+      enablePrivateClusterPublicFQDN: false
     }
     podIdentityProfile: {
       enabled: false // Using Microsoft Entra Workload IDs for pod identities.
@@ -1528,7 +1534,6 @@ resource vmssJumpboxes 'Microsoft.Compute/virtualMachineScaleSets@2025-04-01' = 
     ]
   }
 }
-
 /*** OUTPUTS ***/
 
 output aksClusterName string = clusterName

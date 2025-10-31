@@ -609,6 +609,26 @@ resource pipPrimaryClusterIp_diagnosticSetting 'Microsoft.Insights/diagnosticSet
   }
 }
 
+@description('Enables AKS Private Link on vnet.')
+resource aksPrivateDnsZones 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+    name: 'privatelink.${location}.azmk8s.io'
+    location: 'global'
+    properties: {}
+}
+
+@description('Enabling hub vnet private zone DNS lookup for private AKS - used by azure firewall\'s dns proxy.')
+resource aksPrivateDnsZones_virtualNetworkLink_toClusterVNet 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+    name: 'to_${last(split(hubVnetResourceId, '/'))}'
+    parent: aksPrivateDnsZones
+    location: 'global'
+    properties: {
+        virtualNetwork: {
+            id: hubVnetResourceId
+        }
+        registrationEnabled: false
+    }
+}
+
 /*** OUTPUTS ***/
 
 output clusterVnetResourceId string = vnetSpoke.id
