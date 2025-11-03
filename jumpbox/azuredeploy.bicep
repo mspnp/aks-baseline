@@ -62,7 +62,7 @@ resource imageBuilderImageCreationRoleDefinition 'Microsoft.Authorization/roleDe
   name: imageBuilderImageCreationRoleGuid
 }
 
-@description('The resource gorup that will be the destination for the virtual machine image.')
+@description('The resource group that will be the destination for the virtual machine image.')
 resource rgImageDestination 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
   scope: subscription()
   name: imageDestinationResourceGroupName

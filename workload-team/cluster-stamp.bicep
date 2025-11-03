@@ -162,8 +162,8 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
     name: 'snet-applicationgateway'
   }
 
-  // spoke virtual network's subnet for managment ops
-  resource snetManagmentOps 'subnets' existing = {
+  // spoke virtual network's subnet for management ops
+  resource snetManagementOps 'subnets' existing = {
     name: 'snet-management-ops'
   }
 }
@@ -1488,7 +1488,7 @@ resource vmssJumpboxes 'Microsoft.Compute/virtualMachineScaleSets@2025-04-01' = 
                     privateIPAddressVersion: 'IPv4'
                     publicIPAddressConfiguration: null
                     subnet: {
-                      id: targetVirtualNetwork::snetManagmentOps.id
+                      id: targetVirtualNetwork::snetManagementOps.id
                     }
                   }
                 }
