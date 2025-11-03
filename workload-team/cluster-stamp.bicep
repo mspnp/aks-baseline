@@ -702,7 +702,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
       {
         name: 'npsystem'
         count: 3
-        vmSize: 'Standard_DS2_v2'
+        vmSize: 'Standard_D2s_v5'
         osDiskSizeGB: 80
         osDiskType: 'Ephemeral'
         osType: 'Linux'
@@ -735,7 +735,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
       {
         name: 'npuser01'
         count: 2
-        vmSize: 'Standard_DS3_v2'
+        vmSize: 'Standard_D8s_v5'
         osDiskSizeGB: 120
         osDiskType: 'Ephemeral'
         osType: 'Linux'
