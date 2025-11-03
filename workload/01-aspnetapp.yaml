@@ -21,7 +21,8 @@ spec:
         app.kubernetes.io/name: aspnetapp
     spec:
       automountServiceAccountToken: false
-      securityContext: {}
+      securityContext:
+        fsGroup: 2000 # Supplemental group ID (shared by all containers for created/mounted files/volumes)
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
