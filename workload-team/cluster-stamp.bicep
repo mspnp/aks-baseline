@@ -52,7 +52,7 @@ var aksIngressDomainName = 'aks-ingress.${domainName}'
 var aksBackendDomainName = 'bu0001a0008-00.${aksIngressDomainName}'
 var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPlaneAuthorizationTenantId)
 
-var kubernetesVersion = '1.33'
+var kubernetesVersion = '1.34'
 
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
 
@@ -702,8 +702,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
       {
         name: 'npsystem'
         count: 3
-        vmSize: 'Standard_DS2_v2'
-        osDiskSizeGB: 80
+        vmSize: 'Standard_D2d_v5'
+        osDiskSizeGB: 64
         osDiskType: 'Ephemeral'
         osType: 'Linux'
         osSKU: 'AzureLinux'
@@ -735,7 +735,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
       {
         name: 'npuser01'
         count: 2
-        vmSize: 'Standard_DS3_v2'
+        vmSize: 'Standard_D4d_v5'
         osDiskSizeGB: 120
         osDiskType: 'Ephemeral'
         osType: 'Linux'
