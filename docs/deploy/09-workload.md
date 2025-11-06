@@ -1,12 +1,12 @@
 # Deploy the workload (ASP.NET Core Docker web app)
 
-Previously you have configured [workload prerequisites](./08-workload-prerequisites.md). The last step in the process is to deploy the workload, which will demonstrate the system's functions.
+The customer now has its [prerequisite components](./08-workload-prerequisites.md), including the NGINX ingress controller. The last step in the process is to deploy the workload, which will demonstrate the system's functions.
 
 ## Steps
 
 > :book: The Contoso workload team is about to conclude this journey, but they need an app to test their new infrastructure. For this task they've picked out the venerable [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/main/samples/aspnetapp).
 
-1. Customize the Azure KeyVault certificate URI of the Ingress resource.
+1. Customize the Azure Key Vault certificate URI of the Ingress resource.
 
    ```bash
    sed -i "s#<ingress-controller-keyvault-cert-uri>#${INGRESS_CONTROLLER_KV_CERT_URI}#g" workload/02-aspnetapp-ingress.yaml
@@ -54,7 +54,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
    > At this point, the route to the workload is established, SSL offloading configured, a network policy is in place to only allow NGINX to connect to your workload, and NGINX is configured to only accept requests from App Gateway.
 
-1. Check the Ingress KeyVault attachment is working properly
+1. Check the Ingress Key Vault attachment is working properly
 
    ```bash
    kubectl get secret/keyvault-aspnetapp-ingress -n a0008
@@ -73,7 +73,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    ```
 
    > From this container shell, you could also try to directly access the workload via:
-   > - `curl -I http://bu0001a0008-00.aks-ingress.$DOMAIN_NAME -w '%{remote_ip}\n'`. Instead of `403` you are now getting back a `308 Permanent Redirect` and the location will be with the https protocol instead.
+   > - `curl -I http://bu0001a0008-00.aks-ingress.$DOMAIN_NAME -w '%{remote_ip}\n'`. Instead of `403` you are now getting back a `308 Permanent Redirect` and the new location uses the HTTPS protocol instead.
    > - `curl -I http://aspnetapp-service`. Instead of `403` you are now getting a timeout since a network policy in place only allow nginx-internal ingress controller to reach out your application.
 
 ### Next step

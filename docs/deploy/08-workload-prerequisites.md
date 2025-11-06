@@ -56,7 +56,7 @@ The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
 
 1. Wait for NGINX ingress controller to be ready.
 
-   > NGINX Ingress Controller has been installed using gitops, check whether it is up and running before procceding.
+   > NGINX Ingress Controller has been installed using GitOps. Wait for it to be up and running before proceeding.
 
    ```bash
    kubectl get NginxIngressController/nginx-internal -n a0008 -o jsonpath='{range .status.conditions[*]}{.lastTransitionTime}{"\t"}{.status}{"\t"}{.type}{"\t"}{.message}{"\n"}{end}'

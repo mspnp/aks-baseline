@@ -552,7 +552,7 @@ resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authoriz
   }
 }
 
-// Grant the AKS cluster ingress profile web app routing's managed identity with Key Vault secret user role permissions;
+// Grant the AKS cluster ingress profile web app routing's managed identity with Key Vault secret user role permissions.
 resource kvClusterWebAppRoutingSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: kv
   name: guid(resourceGroup().id, 'cluster-webapprouting-ingress-controller', keyVaultSecretsUserRole.id)
@@ -907,7 +907,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2025-07-02-preview' = {
       webAppRouting: {
         enabled: true // enable application routing addon
         dnsZoneResourceIds: [
-          pdzAksIngress.id // attach an aks ingress private DNS zone to the application routing add-on
+          pdzAksIngress.id // attach an AKS ingress private DNS zone to the application routing add-on
         ]
         nginx: {
           defaultIngressControllerType: 'Internal' // create the nginx ingress controller with an internal load balancer
