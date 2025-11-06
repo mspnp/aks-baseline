@@ -504,7 +504,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' = {
                 ipgNodepoolSubnet.id
               ]
               destinationAddresses: [
-                'AzureCloud.${location}' // Ideally you'd list your AKS server endpoints in appliction rules, instead of this wide-ranged rule
+                'AzureCloud.${location}' // Ideally you'd list your AKS server endpoints in appliction rules, instead of this wide-ranged rule. Addiontally, please take into account that some AzureCloud tags don't have regional names formatted according to the normal schema.
               ]
               destinationIpGroups: []
               destinationFqdns: []
@@ -525,7 +525,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' = {
                 ipgNodepoolSubnet.id
               ]
               destinationAddresses: [
-                'AzureCloud.${location}' // Ideally you'd list your AKS server endpoints in appliction rules, instead of this wide-ranged rule
+                'AzureCloud.${location}' // Ideally you'd list your AKS server endpoints in appliction rules, instead of this wide-ranged rule. Addiontally, please take into account that some AzureCloud tags don't have regional names formatted according to the normal schema.
               ]
               destinationIpGroups: []
               destinationFqdns: []
