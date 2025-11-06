@@ -191,7 +191,7 @@ If you configured your third-party images to be pulled from your Azure Container
    | where OperationName == 'Pull'
    ```
 
-   :bulb: Currently there is no `pull` entries for images. All the images deployed are managed by AKS.
+   :bulb: Immediately after the cluster is deployed, there are no log events for image `pull` operations. All the images deployed are managed by AKS.
 
 ## Next step
 
