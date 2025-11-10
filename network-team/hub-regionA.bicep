@@ -28,10 +28,10 @@ param hubVirtualNetworkAzureFirewallSubnetAddressSpace string = '10.200.0.0/26'
 @minLength(10)
 param hubVirtualNetworkGatewaySubnetAddressSpace string = '10.200.0.64/27'
 
-@description('Optional. A /26 under the virtual network address space for regional Azure Bastion. Defaults to 10.200.0.128/26')
+@description('A /27 under the VNet Address Space for regional Azure Bastion')
 @maxLength(18)
 @minLength(10)
-param hubVirtualNetworkBastionSubnetAddressSpace string = '10.200.0.128/26'
+param hubVirtualNetworkBastionSubnetAddressSpace string = '10.200.0.96/27'
 
 /*** EXISTING RESOURCES ***/
 
