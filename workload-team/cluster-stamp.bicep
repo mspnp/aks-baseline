@@ -867,6 +867,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
       enablePrivateCluster: true
       privateDNSZone: pdzMc.id
       enablePrivateClusterPublicFQDN: false
+      enableVnetIntegration: false
+      subnetId: null
     }
     podIdentityProfile: {
       enabled: false // Using Microsoft Entra Workload IDs for pod identities.
