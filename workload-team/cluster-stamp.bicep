@@ -107,6 +107,12 @@ resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2022-0
   scope: subscription()
 }
 
+// Built-in Azure RBAC role that is applied to a AKS cluster to grant with private DNS contributor. Granted to a private Cluster.
+resource privateDnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
+  scope: subscription()
+}
+
 /*** EXISTING RESOURCE GROUP RESOURCES ***/
 
 // Useful to think of these as resources that are not tied to the lifecycle of any individual
@@ -166,11 +172,6 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
   resource snetManagementOps 'subnets' existing = {
     name: 'snet-management-ops'
   }
-}
-
-resource pdzMc 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
-  scope: targetResourceGroup
-  name: 'privatelink.${location}.azmk8s.io'
 }
 
 /*** RESOURCES ***/
@@ -609,6 +610,18 @@ resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Author
   }
 }
 
+@description('Grant the AKS cluster managed identity to attach custom DNS zone with Private Link information to this virtual network.')
+resource pdzMiClusterControlPlaneDnsZoneContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: pdzMc
+  name: guid(pdzMc.id, privateDnsZoneContributorRole.id, miClusterControlPlane.name)
+  properties: {
+    roleDefinitionId: privateDnsZoneContributorRole.id
+    description: 'Allows cluster identity to attach custom DNS zone with Private Link information to this virtual network.'
+    principalId: miClusterControlPlane.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'modules/role-assignment-EnsureClusterIdentityHasRbacToSelfManagedResources.bicep' = {
   name: 'EnsureClusterIdentityHasRbacToSelfManagedResources'
   scope: targetResourceGroup
@@ -672,6 +685,59 @@ resource peKv 'Microsoft.Network/privateEndpoints@2023-11-01' = {
   }
 }
 
+@description('Enables AKS Private Link on vnet.')
+resource pdzMc 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+    name: 'privatelink.${location}.azmk8s.io'
+    location: 'global'
+    properties: {}
+}
+
+module aksApiServerDomainName 'modules/records.bicep' = {
+  name: 'bu0001a0008-00-Arecord'
+  params: {
+    location: location
+    targetNetworkInterfaceResourceId: peMc.properties.networkInterfaces[0].id
+  }
+}
+
+resource peMc 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+  name: 'pe-${mc.name}'
+  location: location
+  properties: {
+    subnet: {
+      id: targetVirtualNetwork::snetPrivatelinkendpoints.id
+    }
+    privateLinkServiceConnections: [
+      {
+        name: 'to_${targetVirtualNetwork.name}'
+        properties: {
+          privateLinkServiceId: mc.id
+          groupIds: [
+            'management'
+          ]
+        }
+      }
+    ]
+  }
+
+  resource pdnszg 'privateDnsZoneGroups' = {
+    name: 'default'
+    properties: {
+      privateDnsZoneConfigs: [
+        {
+          name: 'privatelink-aks-io'
+          properties: {
+            privateDnsZoneId: pdzMc.id
+          }
+        }
+      ]
+    }
+    dependsOn: [
+      aksApiServerDomainName
+    ]
+  }
+}
+
 resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: aksIngressDomainName
   location: 'global'
@@ -718,7 +784,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
   }
   properties: {
     kubernetesVersion: kubernetesVersion
-    dnsPrefix: uniqueString(subscription().subscriptionId, resourceGroup().id, clusterName)
+    fqdnSubdomain: 'bu0001a0008-00'
     agentPoolProfiles: [
       {
         name: 'npsystem'
@@ -863,11 +929,11 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
       'skip-nodes-with-system-pods': 'true'
     }
     apiServerAccessProfile: {
-      authorizedIPRanges: clusterAuthorizedIPRanges
-      enablePrivateCluster: true
-      privateDNSZone: pdzMc.id
+      authorizedIPRanges: clusterAuthorizedIPRanges // IP authorized ranges can't be applied to the private API server endpoint, they only apply to the public API server.
       enablePrivateClusterPublicFQDN: false
+      enablePrivateCluster: true
       enableVnetIntegration: false
+      privateDNSZone: pdzMc.id
       subnetId: null
     }
     podIdentityProfile: {
@@ -965,6 +1031,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     sci
 
     ndEnsureClusterIdentityHasRbacToSelfManagedResources
+    pdzMiClusterControlPlaneDnsZoneContributorRole_roleAssignment
 
     // Policies that we need in place before the cluster is deployed or pods are deployed to it.
     // They are not technically a dependency from the resource provider perspective,

@@ -16,11 +16,6 @@ param clusterControlPlaneIdentityName string
 @minLength(1)
 param targetVirtualNetworkName string
 
-/*** VARIABLES ***/
-
-@description('AKS Service, Node Pools, and supporting services (KeyVault, App Gateway, etc) region. This needs to be the same region as the vnet provided in these parameters.')
-var location = resourceGroup().location
-
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
 
 resource networkContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
@@ -34,10 +29,6 @@ resource dnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04
 }
 
 /*** EXISTING HUB RESOURCES ***/
-
-resource pdzMc 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
-  name: 'privatelink.${location}.azmk8s.io'
-}
 
 resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
   name: targetVirtualNetworkName
@@ -83,17 +74,6 @@ resource snetClusterIngressServicesMiClusterControlPlaneSecretsUserRole_roleAssi
   properties: {
     roleDefinitionId: networkContributorRole.id
     description: 'Allows cluster identity to join load balancers (ingress resources) to this subnet.'
-    principalId: miClusterControlPlanePrincipalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource pdzMcPrivatelinkAzmk8sIoMiClusterControlPlaneDnsZoneContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  scope: pdzMc
-  name: guid(pdzMc.id, dnsZoneContributorRole.id, clusterControlPlaneIdentityName)
-  properties: {
-    roleDefinitionId: dnsZoneContributorRole.id
-    description: 'Allows cluster identity to manage zone Entries for cluster\'s Private Link configuration.'
     principalId: miClusterControlPlanePrincipalId
     principalType: 'ServicePrincipal'
   }
