@@ -1421,7 +1421,7 @@ resource vmssJumpboxes 'Microsoft.Compute/virtualMachineScaleSets@2025-04-01' = 
   location: location
   zones: pickZones('Microsoft.Compute', 'virtualMachineScaleSets', location, 3)
   sku: {
-    name: 'Standard_D2s_v3'
+    name: 'Standard_D2d_v5'
     tier: 'Standard'
     capacity: 2
   }
