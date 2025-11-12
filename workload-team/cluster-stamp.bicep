@@ -610,18 +610,6 @@ resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Author
   }
 }
 
-@description('Grant the AKS cluster managed identity to attach custom DNS zone with Private Link information to this virtual network.')
-resource pdzMiClusterControlPlaneDnsZoneContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: pdzMc
-  name: guid(pdzMc.id, privateDnsZoneContributorRole.id, miClusterControlPlane.name)
-  properties: {
-    roleDefinitionId: privateDnsZoneContributorRole.id
-    description: 'Allows cluster identity to attach custom DNS zone with Private Link information to this virtual network.'
-    principalId: miClusterControlPlane.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
 module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'modules/role-assignment-EnsureClusterIdentityHasRbacToSelfManagedResources.bicep' = {
   name: 'EnsureClusterIdentityHasRbacToSelfManagedResources'
   scope: targetResourceGroup
@@ -690,6 +678,18 @@ resource pdzMc 'Microsoft.Network/privateDnsZones@2024-06-01' = {
     name: 'privatelink.${location}.azmk8s.io'
     location: 'global'
     properties: {}
+
+    @description('Enabling spoke vnet private zone DNS lookup for private AKS - used by azure firewall\'s dns proxy.')
+    resource vnetlnk 'virtualNetworkLinks' = {
+      name: 'to_${targetVirtualNetwork.name}'
+      location: 'global'
+      properties: {
+        virtualNetwork: {
+          id: targetVirtualNetwork.id
+        }
+        registrationEnabled: false
+      }
+    }
 }
 
 module aksApiServerDomainName 'modules/records.bicep' = {
@@ -697,6 +697,7 @@ module aksApiServerDomainName 'modules/records.bicep' = {
   params: {
     location: location
     targetNetworkInterfaceResourceId: peMc.properties.networkInterfaces[0].id
+    fqdnSubdomain: split(mc.properties.privateFQDN, '.')[0]
   }
 }
 
@@ -784,7 +785,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
   }
   properties: {
     kubernetesVersion: kubernetesVersion
-    fqdnSubdomain: 'bu0001a0008-00'
+    dnsPrefix: uniqueString(subscription().subscriptionId, resourceGroup().id, clusterName)
     agentPoolProfiles: [
       {
         name: 'npsystem'
@@ -933,7 +934,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
       enablePrivateClusterPublicFQDN: false
       enablePrivateCluster: true
       enableVnetIntegration: false
-      privateDNSZone: pdzMc.id
+      privateDNSZone: 'System'
       subnetId: null
     }
     podIdentityProfile: {
@@ -1031,7 +1032,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     sci
 
     ndEnsureClusterIdentityHasRbacToSelfManagedResources
-    pdzMiClusterControlPlaneDnsZoneContributorRole_roleAssignment
 
     // Policies that we need in place before the cluster is deployed or pods are deployed to it.
     // They are not technically a dependency from the resource provider perspective,
