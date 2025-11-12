@@ -8,6 +8,9 @@ param location string
 @description('Resource Id of the Private Endpoint Network Interface.')
 param targetNetworkInterfaceResourceId string
 
+@description('The AKS api server private fqdn subdomain')
+param fqdnSubdomain string
+
 /*** EXISTING RESOURCES ***/
 
 resource pdzMc 'Microsoft.Network/privateDnsZones@2024-06-01' existing = {
@@ -18,7 +21,7 @@ resource pdzMc 'Microsoft.Network/privateDnsZones@2024-06-01' existing = {
 
 resource aksApiServerDomainName 'Microsoft.Network/privateDnsZones/A@2024-06-01' = {
   parent: pdzMc
-  name: 'bu0001a0008-00'
+  name: fqdnSubdomain
   properties: {
     ttl: 3600
     aRecords: [
