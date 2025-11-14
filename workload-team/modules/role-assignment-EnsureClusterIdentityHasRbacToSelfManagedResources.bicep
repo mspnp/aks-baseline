@@ -39,6 +39,11 @@ resource snetClusterNodes 'Microsoft.Network/virtualNetworks/subnets@2023-11-01'
   name: 'snet-clusternodes'
 }
 
+resource snetPrivateCluster 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
+  parent: targetVirtualNetwork
+  name: 'snet-privatecluster'
+}
+
 resource snetClusterIngress 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
   parent: targetVirtualNetwork
   name: 'snet-clusteringressservices'
@@ -63,6 +68,17 @@ resource snetClusterNodesMiClusterControlPlaneNetworkContributorRole_roleAssignm
   properties: {
     roleDefinitionId: networkContributorRole.id
     description: 'Allows cluster identity to join the nodepool vmss resources to this subnet.'
+    principalId: miClusterControlPlanePrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource snetPrivateClusterMiClusterControlPlaneNetworkContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: snetPrivateCluster
+  name: guid(snetPrivateCluster.id, networkContributorRole.id, miClusterControlPlanePrincipalId)
+  properties: {
+    roleDefinitionId: networkContributorRole.id
+    description: 'Allows cluster identity to join the private cluster resources to this subnet.'
     principalId: miClusterControlPlanePrincipalId
     principalType: 'ServicePrincipal'
   }
