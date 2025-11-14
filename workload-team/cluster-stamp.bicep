@@ -172,6 +172,11 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
   resource snetManagementOps 'subnets' existing = {
     name: 'snet-management-ops'
   }
+
+  // Spoke virutual network's subnet for private cluster
+  resource snetPrivateCluster 'subnets' existing = {
+    name: 'snet-privatecluster'
+  }
 }
 
 /*** RESOURCES ***/
@@ -675,67 +680,32 @@ resource peKv 'Microsoft.Network/privateEndpoints@2023-11-01' = {
 
 @description('Enables AKS Private Link on vnet.')
 resource pdzMc 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-    name: 'privatelink.${location}.azmk8s.io'
+  name: 'privatelink.${location}.azmk8s.io'
+  location: 'global'
+  properties: {}
+
+  @description('Enabling spoke vnet private zone DNS lookup for private AKS - used by azure firewall\'s dns proxy.')
+  resource vnetlnk 'virtualNetworkLinks' = {
+    name: 'to_${targetVirtualNetwork.name}'
     location: 'global'
-    properties: {}
-
-    @description('Enabling spoke vnet private zone DNS lookup for private AKS - used by azure firewall\'s dns proxy.')
-    resource vnetlnk 'virtualNetworkLinks' = {
-      name: 'to_${targetVirtualNetwork.name}'
-      location: 'global'
-      properties: {
-        virtualNetwork: {
-          id: targetVirtualNetwork.id
-        }
-        registrationEnabled: false
-      }
-    }
-}
-
-module aksApiServerDomainName 'modules/records.bicep' = {
-  name: 'bu0001a0008-00-Arecord'
-  params: {
-    location: location
-    targetNetworkInterfaceResourceId: peMc.properties.networkInterfaces[0].id
-    fqdnSubdomain: split(mc.properties.privateFQDN, '.')[0]
-  }
-}
-
-resource peMc 'Microsoft.Network/privateEndpoints@2023-11-01' = {
-  name: 'pe-${mc.name}'
-  location: location
-  properties: {
-    subnet: {
-      id: targetVirtualNetwork::snetPrivatelinkendpoints.id
-    }
-    privateLinkServiceConnections: [
-      {
-        name: 'to_${targetVirtualNetwork.name}'
-        properties: {
-          privateLinkServiceId: mc.id
-          groupIds: [
-            'management'
-          ]
-        }
-      }
-    ]
-  }
-
-  resource pdnszg 'privateDnsZoneGroups' = {
-    name: 'default'
     properties: {
-      privateDnsZoneConfigs: [
-        {
-          name: 'privatelink-aks-io'
-          properties: {
-            privateDnsZoneId: pdzMc.id
-          }
-        }
-      ]
+      virtualNetwork: {
+        id: targetVirtualNetwork.id
+      }
+      registrationEnabled: false
     }
-    dependsOn: [
-      aksApiServerDomainName
-    ]
+  }
+}
+
+@description('Grant the AKS cluster managed identity to attach custom DNS zone with Private Link information to this virtual network.')
+resource pdzMiClusterControlPlaneDnsZoneContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: pdzMc
+  name: guid(pdzMc.id, privateDnsZoneContributorRole.id, miClusterControlPlane.name)
+  properties: {
+    roleDefinitionId: privateDnsZoneContributorRole.id
+    description: 'Allows cluster identity to attach custom DNS zone with Private Link information to this virtual network.'
+    principalId: miClusterControlPlane.properties.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
@@ -933,9 +903,9 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
       authorizedIPRanges: clusterAuthorizedIPRanges // IP authorized ranges can't be applied to the private API server endpoint, they only apply to the public API server.
       enablePrivateClusterPublicFQDN: false
       enablePrivateCluster: true
-      enableVnetIntegration: false
-      privateDNSZone: 'System'
-      subnetId: null
+      enableVnetIntegration: true
+      privateDNSZone: pdzMc.id
+      subnetId: targetVirtualNetwork::snetPrivateCluster.id
     }
     podIdentityProfile: {
       enabled: false // Using Microsoft Entra Workload IDs for pod identities.
@@ -1032,7 +1002,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     sci
 
     ndEnsureClusterIdentityHasRbacToSelfManagedResources
-
+    pdzMiClusterControlPlaneDnsZoneContributorRole_roleAssignment
     // Policies that we need in place before the cluster is deployed or pods are deployed to it.
     // They are not technically a dependency from the resource provider perspective,
     // but logically they need to be in place before workloads are, so forcing that here. This also

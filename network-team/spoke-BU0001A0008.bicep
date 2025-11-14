@@ -71,6 +71,15 @@ resource nsgNodepoolSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' 
   }
 }
 
+// Default NSG on the AKS private cluster subnet. Feel free to constrict further.
+resource nsgPrivateClusterSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
+  name: 'nsg-${clusterVNetName}-privatecluster'
+  location: location
+  properties: {
+    securityRules: []
+  }
+}
+
 resource nsgNodepoolSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: nsgNodepoolSubnet
   name: 'default'
@@ -497,6 +506,29 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2023-11-01' = {
               privateEndpointNetworkPolicies: 'Disabled'
               privateLinkServiceNetworkPolicies: 'Disabled'
           }
+      }
+      {
+        name: 'snet-privatecluster'
+        properties: {
+          defaultOutboundAccess: false
+          addressPrefix: '10.240.7.0/28'
+          routeTable: {
+            id: routeNextHopToFirewall.id
+          }
+          networkSecurityGroup: {
+            id: nsgPrivateClusterSubnet.id
+          }
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Disabled'
+          delegations: [
+            {
+              name: 'delegation'
+              properties: {
+                serviceName: 'Microsoft.ContainerService/managedClusters'
+              }
+            }
+          ]
+        }
       }
     ]
   }
