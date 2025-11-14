@@ -4,21 +4,21 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
 
 ## Steps
 
-1. Get the AKS Ingress Controller managed identity details.
+1. *From your Azure Bastion connection*, get the AKS Ingress Controller managed identity details.
 
    ```bash
    INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerPodManagedIdentityClientId.value -o tsv)
    echo INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID: $INGRESS_CONTROLLER_WORKLOAD_IDENTITY_CLIENT_ID
    ```
 
-1. Ensure your bootstrapping process has created the following namespace.
+1. *From your Azure Bastion connection*, ensure your bootstrapping process has created the following namespace.
 
    ```bash
    # press Ctrl-C once you receive a successful response
    kubectl get ns a0008 -w
    ```
 
-1. Create the ingress controller's Secret Provider Class resource.
+1. *From your Azure Bastion connection*, create the ingress controller's Secret Provider Class resource.
 
    > The ingress controller will be exposing the wildcard TLS certificate you created in a prior step. It uses the Azure Key Vault CSI Provider to mount the certificate which is managed and stored in Azure Key Vault. Once mounted, Traefik can use it.
    >
@@ -76,14 +76,14 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    az acr import --source docker.io/library/traefik:v3.4 -n $ACR_NAME_AKS_BASELINE
    ```
 
-1. When the cluster was deployed, the Bicep deployment decided on the fixed private IP address to use for the AKS internal load balancer ingress controller's service. Retrieve that IP address so we can configure it in the Traefik deployment, which will create the load balancer.
+1. *From your Azure Bastion connection*, when the cluster was deployed, the Bicep deployment decided on the fixed private IP address to use for the AKS internal load balancer ingress controller's service. Retrieve that IP address so we can configure it in the Traefik deployment, which will create the load balancer.
 
    ```bash
    INGRESS_CONTROLLER_SERVICE_ILB_IPV4_ADDRESS_BU0001A0008=$(az deployment group show -g rg-bu0001a0008 -n cluster-stamp --query properties.outputs.ilbIpAddress.value -o tsv)
    echo INGRESS_CONTROLLER_SERVICE_ILB_IPV4_ADDRESS_BU0001A0008: $INGRESS_CONTROLLER_SERVICE_ILB_IPV4_ADDRESS_BU0001A0008
    ```
 
-1. Install the Traefik Ingress Controller.
+1. *From your Azure Bastion connection*, install the Traefik Ingress Controller.
 
    > Install the Traefik Ingress Controller; it will use the mounted TLS certificate provided by the CSI driver, which is the in-cluster secret management solution.
 
@@ -97,7 +97,7 @@ Previously you have configured [workload prerequisites](./08-workload-prerequisi
    kubectl create -f workload/traefik.yaml
    ```
 
-1. Wait for Traefik to be ready.
+1. *From your Azure Bastion connection*, wait for Traefik to be ready.
 
    > During Traefik's pod creation process, Azure Key Vault will be accessed to get the required certs needed for pod volume mount (csi). This sometimes takes a bit of time but will eventually succeed if properly configured.
 
