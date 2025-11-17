@@ -347,6 +347,10 @@ resource vnetHub 'Microsoft.Network/virtualNetworks@2023-11-01' = {
   resource azureFirewallSubnet 'subnets' existing = {
     name: 'AzureFirewallSubnet'
   }
+
+  resource azureBastionSubnet 'subnets' existing = {
+    name: 'AzureBastionSubnet'
+  }
 }
 
 resource vnetHub_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -422,6 +426,64 @@ resource pipAzureFirewall_diagnosticSetting 'Microsoft.Insights/diagnosticSettin
     ]
   }
 }]
+
+@description('The public IP for the regional hub\'s Azure Bastion service.')
+resource pipAzureBastion 'Microsoft.Network/publicIPAddresses@2024-10-01' = {
+  name: 'pip-ab-${location}'
+  location: location
+  sku: {
+    name: 'Standard'
+  }
+  zones: [
+    '1'
+    '2'
+    '3'
+  ]
+  properties: {
+    publicIPAllocationMethod: 'Static'
+    idleTimeoutInMinutes: 4
+    publicIPAddressVersion: 'IPv4'
+  }
+}
+
+resource azureBastion 'Microsoft.Network/bastionHosts@2024-10-01' = {
+  name: 'ab-${location}'
+  location: location
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    enableTunneling: true
+    ipConfigurations: [
+      {
+        name: 'hub-subnet'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: vnetHub::azureBastionSubnet.id
+          }
+          publicIPAddress: {
+            id: pipAzureBastion.id
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource azureBastion_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: azureBastion
+  properties: {
+    workspaceId: laHub.id
+    logs: [
+      {
+        category: 'BastionAuditLogs'
+        enabled: true
+      }
+    ]
+  }
+}
 
 // This holds IP addresses of known nodepool subnets in spokes.
 resource ipgNodepoolSubnet 'Microsoft.Network/ipGroups@2023-11-01' = {
@@ -739,6 +801,67 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' = {
             type: 'Allow'
           }
           rules: [
+            {
+              ruleType: 'ApplicationRule'
+              name: 'az-cli-install'
+              description: 'Allow jumpboxes to install the az-cli.'
+              sourceIpGroups: [
+                aksJumpbox_ipgroup.id
+              ]
+              protocols: [
+                {
+                  protocolType: 'Https'
+                  port: 443
+                }
+                {
+                  protocolType: 'Http'
+                  port: 80
+                }
+              ]
+              targetFqdns: [
+                #disable-next-line no-hardcoded-env-urls
+                'pypi.python.org'
+                'pypi.org'
+                'files.pythonhosted.org'
+                'azure.archive.ubuntu.com'
+                'packages.microsoft.com'
+                'archive.ubuntu.com'
+                'security.ubuntu.com'
+                'aka.ms'
+                #disable-next-line no-hardcoded-env-urls
+                'azurecliextensionsync.blob.core.windows.net'
+                #disable-next-line no-hardcoded-env-urls
+                'azurecliprod.blob.core.windows.net'
+              ]
+            }
+            {
+              ruleType: 'ApplicationRule'
+              name: 'az-aks-kubectl-install'
+              description: 'Allow jumpboxes to install kubectl.'
+              sourceIpGroups: [
+                aksJumpbox_ipgroup.id
+              ]
+              protocols: [
+                {
+                  protocolType: 'Https'
+                  port: 443
+                }
+                {
+                  protocolType: 'Http'
+                  port: 80
+                }
+              ]
+              targetFqdns: [
+                #disable-next-line no-hardcoded-env-urls
+                'storage.googleapis.com'
+                'azure.microsoft.com'
+                'objects.githubusercontent.com'
+                'api.github.com'
+                'github-releases.githubusercontent.com'
+                'release-assets.githubusercontent.com'
+                'github.com'
+              ]
+            }
             {
               ruleType: 'ApplicationRule'
               name: 'az-login'
