@@ -102,9 +102,7 @@ The following two resource groups will be created and populated with networking 
 
    ```bash
    RESOURCEID_SUBNET_NODEPOOLS=$(az deployment group show -g rg-enterprise-networking-spokes-${LOCATION_AKS_BASELINE} -n spoke-BU0001A0008 --query properties.outputs.nodepoolSubnetResourceIds.value -o json)
-   RESOURCEID_SUBNET_JUMPBOX=$(az deployment group show -g rg-enterprise-networking-spokes-${LOCATION_AKS_BASELINE}  -n spoke-BU0001A0008 --query properties.outputs.jumpboxSubnetResourceId.value -o tsv)
    echo RESOURCEID_SUBNET_NODEPOOLS: $RESOURCEID_SUBNET_NODEPOOLS
-   echo RESOURCEID_SUBNET_JUMPBOX: $RESOURCEID_SUBNET_JUMPBOX
    ```
 
 1. Update the shared, regional hub deployment to account for the networking requirements of the upcoming workload in the spoke.
@@ -113,7 +111,7 @@ The following two resource groups will be created and populated with networking 
 
    ```bash
    # [This takes about 15 minutes to run.]
-   az deployment group create -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -f ./network-team/hub-regionA.bicep -p nodepoolSubnetResourceIds="${RESOURCEID_SUBNET_NODEPOOLS}" aksJumpboxSubnetResourceId="${RESOURCEID_SUBNET_JUMPBOX}"
+   az deployment group create -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -f ./network-team/hub-regionA.bicep -p nodepoolSubnetResourceIds="${RESOURCEID_SUBNET_NODEPOOLS}"
    ```
 
    > :book: At this point the networking team has delivered a spoke in which BU 0001's workload team can lay down their AKS cluster (ID: A0008). The networking team provides the necessary information to the workload team for them to reference in their infrastructure-as-code artifacts.

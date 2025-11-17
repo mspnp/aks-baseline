@@ -42,17 +42,6 @@ param gitOpsBootstrappingRepoBranch string = 'main'
 @description('The AKS cluster Internal Load Balancer IP Address')
 param clusterInternalLoadBalancerIpAddress string = '10.240.4.4'
 
-@description('Specifies the name of the administrator account on the jump box. Cannot end in "."\n\nDisallowed values: "administrator", "admin", "user", "user1", "test", "user2", "test1", "user3", "admin1", "1", "123", "a", "actuser", "adm", "admin2", "aspnet", "backup", "console", "david", "guest", "john", "owner", "root", "server", "sql", "support", "support_388945a0", "sys", "test2", "test3", "user4", "user5".\n\nDefault: vmadmin')
-@minLength(4)
-@maxLength(20)
-param jumpBoxAdminName string = 'vmadmin'
-
-@description('Specifies the password of the administrator account on the jump box.\n\nComplexity requirements: 3 out of 4 conditions below need to be fulfilled:\n- Has lower characters\n- Has upper characters\n- Has a digit\n- Has a special character\n\nDisallowed values: "abc@123", "P@$$w0rd", "P@ssw0rd", "P@ssword123", "Pa$$word", "pass@word1", "Password!", "Password1", "Password22", "iloveyou!"')
-@secure()
-@minLength(8)
-@maxLength(123)
-param jumpBoxAdminPassword string
-
 /*** VARIABLES ***/
 
 var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resourceGroup().id)
@@ -902,7 +891,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     }
     apiServerAccessProfile: {
       authorizedIPRanges: clusterAuthorizedIPRanges // IP authorized ranges can't be applied to the private API server endpoint, they only apply to the public API server.
-      enablePrivateClusterPublicFQDN: false
+      enablePrivateClusterPublicFQDN: true
       enablePrivateCluster: true
       enableVnetIntegration: true
       privateDNSZone: pdzMc.id
@@ -1456,119 +1445,6 @@ resource omsVmInsights 'Microsoft.OperationsManagement/solutions@2015-11-01-prev
   }
 }
 
-@description('The compute for operations jumpboxes; these machines are assigned to cluster operator users')
-resource vmssJumpboxes 'Microsoft.Compute/virtualMachineScaleSets@2025-04-01' = {
-  name: 'vmss-jumpboxes'
-  location: location
-  zones: pickZones('Microsoft.Compute', 'virtualMachineScaleSets', location, 3)
-  sku: {
-    name: 'Standard_D2d_v5'
-    tier: 'Standard'
-    capacity: 2
-  }
-  properties: {
-    additionalCapabilities: {
-      ultraSSDEnabled: false
-    }
-    overprovision: false
-    singlePlacementGroup: true
-    upgradePolicy: {
-      mode: 'Automatic'
-    }
-    zoneBalance: false
-    virtualMachineProfile: {
-      diagnosticsProfile: {
-        bootDiagnostics: {
-          enabled: true
-        }
-      }
-      osProfile: {
-        computerNamePrefix: 'aksjmp'
-        linuxConfiguration: {
-          disablePasswordAuthentication: false
-        }
-        adminUsername: jumpBoxAdminName
-        adminPassword: jumpBoxAdminPassword
-      }
-      storageProfile: {
-        osDisk: {
-          createOption: 'FromImage'
-          caching: 'ReadOnly'
-          diffDiskSettings: {
-            option: 'Local'
-          }
-          osType: 'Linux'
-        }
-        imageReference: {
-          offer: 'UbuntuServer'
-          publisher: 'Canonical'
-          sku: '18_04-lts-gen2'
-          version: 'latest'
-        }
-      }
-      networkProfile: {
-        networkInterfaceConfigurations: [
-          {
-            name: 'vnet-spoke-BU0001A0008-00-nic01'
-            properties: {
-              primary: true
-              enableIPForwarding: false
-              enableAcceleratedNetworking: false
-              networkSecurityGroup: null
-              ipConfigurations: [
-                {
-                  name: 'default'
-                  properties: {
-                    primary: true
-                    privateIPAddressVersion: 'IPv4'
-                    publicIPAddressConfiguration: null
-                    subnet: {
-                      id: targetVirtualNetwork::snetManagementOps.id
-                    }
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    }
-  }
-  dependsOn: [
-    omsVmInsights
-  ]
-
-  resource extOmsAgentForLinux 'extensions' = {
-    name: 'OMSExtension'
-    properties: {
-      publisher: 'Microsoft.EnterpriseCloud.Monitoring'
-      type: 'OmsAgentForLinux'
-      typeHandlerVersion: '1.13'
-      autoUpgradeMinorVersion: true
-      settings: {
-        stopOnMultipleConnections: true
-        azureResourceId: vmssJumpboxes.id
-        workspaceId: la.properties.customerId
-      }
-      protectedSettings: {
-        workspaceKey: la.listKeys().primarySharedKey
-      }
-    }
-  }
-
-  resource extDependencyAgentLinux 'extensions' = {
-    name: 'DependencyAgentLinux'
-    properties: {
-      publisher: 'Microsoft.Azure.Monitoring.DependencyAgent'
-      type: 'DependencyAgentLinux'
-      typeHandlerVersion: '9.10'
-      autoUpgradeMinorVersion: true
-    }
-    dependsOn: [
-      extOmsAgentForLinux
-    ]
-  }
-}
 /*** OUTPUTS ***/
 
 output aksClusterName string = clusterName

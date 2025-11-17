@@ -55,7 +55,7 @@ The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
 >
 > Beyond that, internal governance requires the team to ensure that any public endpoint is exposed through a fully qualified domain name that ends with a company-owned domain suffix. To enforce this requirement for all endpoints exposed by the cluster's ingress controller, they define a custom policy using [Gatekeeper](https://open-policy-agent.github.io/gatekeeper/website/docs/) and use the capability to [deploy it via Azure Policy](https://learn.microsoft.com/azure/aks/use-azure-policy#create-and-assign-a-custom-policy-definition) to their cluster.
 
-1. *From your Azure Bastion connection*, confirm policies are applied to the AKS cluster
+1. Confirm policies are applied to the AKS cluster
 
    ```bash
    kubectl get constrainttemplate

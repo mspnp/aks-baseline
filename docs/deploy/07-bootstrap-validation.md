@@ -6,7 +6,7 @@ Now that the [AKS cluster](./06-aks-cluster.md) has been deployed, the next step
 
 ### Jump box access is validated
 
-Because the cluster is private, your cluster cannot be directly accessed locally. You'll validate controlled jump box access for direct ops against the cluster if needed.
+Because the cluster is private, your cluster cannot be directly accessed locally. Therefore, you'll connect to Azure Kubernetes Service (AKS) private cluster securely using Azure Bastion's native client tunneling feature.
 
 ## Steps
 
@@ -16,42 +16,25 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 - Cluster-wide configuration of Azure Monitor for Containers
 - The workload's namespace named `a0008`
 
-1. Connect to a jump box node via Azure Bastion.
-
-   If this is the first time you've used Azure Bastion, here is a detailed walk through of this process.
-
-   1. Open the Azure Portal.
-   1. Navigate to the ***rg-bu0001a0008** resource group.
-   1. Click on the virtual machine Scale Set resource named **vmss-jumpboxes**.
-   1. Click Instances.
-   1. Click the name of any of the two listed instances. Such as **vmss-jumpboxes_0**
-   1. Click **Connect** -> **Bastion** -> **Use Bastion**.
-   1. Fill in the username field with the user you passed as argument when deploying the cluster. By default it is **vmadmin**
-   1. Use the password you entered when deploying the cluster.
-   1. Click **Connect**.
-   1. For enhanced "copy-on-select" & "paste-on-right-click" support, your browser may request your permission to support those features. It's recommended that you **Allow** that feature. If you don't, you'll have to use the **>>** flyout on the screen to perform copy and paste actions.
-   1. Welcome to your jump box!
-
-      > :warning: The jump box deployed in this walkthrough has only ephemeral disks attached, in which content written to disk will not survive planned or unplanned restarts of the host. Never store anything of value on these jump boxes. They are expected to be fully ephemeral in nature, and in fact could be scaled-to-zero when not in use.
-
-1. *From your Azure Bastion connection*, install prequisites to install az-cli
+1. Open the tunnel to your AKS Cluster.
 
    ```bash
-   sudo apt-get update && sudo apt-get install -y libssl-dev libffi-dev python3-dev build-essential
+   BASTIONHOST_RESOURCEID=$(az deployment group show -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -n hub-regionA --query properties.outputs.bastionHostResourceId.value -o tsv)
+   echo BASTIONHOST_RESOURCEID: $BASTIONHOST_RESOURCEID
+
+   az aks bastion -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME --bastion $BASTIONHOST_RESOURCEID
    ```
 
-1. *From your Azure Bastion connection*, install latest [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) (must be at least 2.40).
-
-1. *From your Azure Bastion connection*, install `kubectl` 1.33 or newer. (`kubectl` supports ±1 Kubernetes version.)
+1. Install `kubectl` 1.33 or newer. (`kubectl` supports ±1 Kubernetes version.)
 
    ```bash
-   sudo -E env "PATH=$PATH" az aks install-cli
+   sudo az aks install-cli
    kubectl version --client
    ```
 
    > Starting with `kubectl` 1.24, you must also have the `kubelogin` credential (exec) plug-in available for Microsoft Entra ID authentication. Installing `kubectl` via `az aks install-cli` does this already, but if you install `kubectl` in a different way, make sure `kubelogin` is [installed](https://github.com/Azure/kubelogin#getting-started).
 
-1. *From your Azure Bastion connection*, sign in to your Azure RBAC tenant and select your subscription.
+1. sign in to your Azure RBAC tenant and select your subscription.
 
    The following command will perform a device login. Ensure you're logging in with the Microsoft Entra user that has access to your AKS resources (that is, the one you did your deployment with.)
 
@@ -69,14 +52,14 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    > :warning: Your organization may have a conditional access policies in place that forbids access to Azure resources [from non corporate-managed devices](https://learn.microsoft.com/entra/identity/conditional-access/concept-conditional-access-grant). This jump box as deployed in these steps might trigger that policy. If that is the case, you'll need to work with your IT Security organization to provide an alterative access mechanism or temporary solution.
 
-1. *From your Azure Bastion connection*, get the cluster name.
+1. Get the cluster name.
 
    ```bash
    AKS_CLUSTER_NAME=$(az aks list -g rg-bu0001a0008 --query '[0].name' -o tsv)
    echo AKS_CLUSTER_NAME: $AKS_CLUSTER_NAME
    ```
 
-1. *From your Azure Bastion connection*, validate there are no available image upgrades. As this AKS cluster was recently deployed, it's unlikely that new images are available. Only a race condition between publication of new available images and the deployment image fetch could result into a different state.
+1. Validate there are no available image upgrades. As this AKS cluster was recently deployed, it's unlikely that new images are available. Only a race condition between publication of new available images and the deployment image fetch could result into a different state.
 
    ```bash
    az aks nodepool get-upgrades -n npuser01 --cluster-name $AKS_CLUSTER_NAME -g rg-bu0001a0008 && \
@@ -89,7 +72,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    > Node image updates are shipped on a weekly cadence by default. This AKS cluster is configured to have its maintenance window for node image updates every Tuesday at 9PM. If a node image is released outside of this maintenance window, the nodes will be updated on the next scheduled occurrence. For AKS nodes that require more frequent updates, consider changing the auto-upgrade channel to `SecurityPatch` and configuring a daily maintenance window.
 
-1. *From your Azure Bastion connection*, get AKS `kubectl` credentials.
+1. Get AKS `kubectl` credentials.
 
    > In the [Microsoft Entra ID Integration](03-microsoft-entra-id.md) step, we placed our cluster under Microsoft Entra group-backed RBAC. This is the first time we are seeing this configuration being used. The `az aks get-credentials` command sets your `kubectl` context so that you can issue commands against your cluster. Even when you have enabled Microsoft Entra ID integration with your AKS cluster, an Azure user has sufficient permissions on the cluster resource can still access your AKS cluster by using the `--admin` switch to this command. Using this switch *bypasses* Microsoft Entra ID and uses client certificate authentication instead; that isn't what we want to happen. So in order to prevent that practice, local account access such as `clusterAdmin` or `clusterMonitoringUser`) is expressly disabled.
    >
@@ -110,7 +93,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes refer to the [related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).
 
-1. *From your Azure Bastion connection*, validate your cluster is bootstrapped. The Flux extension for AKS has already run the bootstrapping process. Among other things, it's created the workload's namespace named `a0008`:
+1. Validate your cluster is bootstrapped. The Flux extension for AKS has already run the bootstrapping process. Among other things, it's created the workload's namespace named `a0008`:
 
    ```bash
    kubectl get namespaces
