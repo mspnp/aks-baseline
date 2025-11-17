@@ -42,13 +42,16 @@ param gitOpsBootstrappingRepoBranch string = 'main'
 @description('The AKS cluster Internal Load Balancer IP Address')
 param clusterInternalLoadBalancerIpAddress string = '10.240.4.4'
 
-@description('The Azure resource ID of a VM image that will be used for the jump box.')
-@minLength(70)
-param jumpBoxImageResourceId string
+@description('Specifies the name of the administrator account on the jump box. Cannot end in "."\n\nDisallowed values: "administrator", "admin", "user", "user1", "test", "user2", "test1", "user3", "admin1", "1", "123", "a", "actuser", "adm", "admin2", "aspnet", "backup", "console", "david", "guest", "john", "owner", "root", "server", "sql", "support", "support_388945a0", "sys", "test2", "test3", "user4", "user5".\n\nDefault: vmadmin')
+@minLength(4)
+@maxLength(20)
+param jumpBoxAdminName string = 'vmadmin'
 
-@description('A cloud init file (starting with #cloud-config) as a base 64 encoded string used to perform image customization on the jump box VMs. Used for user-management in this context.')
-@minLength(100)
-param jumpBoxCloudInitAsBase64 string
+@description('Specifies the password of the administrator account on the jump box.\n\nComplexity requirements: 3 out of 4 conditions below need to be fulfilled:\n- Has lower characters\n- Has upper characters\n- Has a digit\n- Has a special character\n\nDisallowed values: "abc@123", "P@$$w0rd", "P@ssw0rd", "P@ssword123", "Pa$$word", "pass@word1", "Password!", "Password1", "Password22", "iloveyou!"')
+@secure()
+@minLength(8)
+@maxLength(123)
+param jumpBoxAdminPassword string
 
 /*** VARIABLES ***/
 
@@ -61,8 +64,6 @@ var aksBackendDomainName = 'bu0001a0008-00.${aksIngressDomainName}'
 var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPlaneAuthorizationTenantId)
 
 var kubernetesVersion = '1.34'
-
-var jumpBoxDefaultAdminUserName = uniqueString(clusterName, resourceGroup().id)
 
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
 
@@ -1483,19 +1484,10 @@ resource vmssJumpboxes 'Microsoft.Compute/virtualMachineScaleSets@2025-04-01' = 
       osProfile: {
         computerNamePrefix: 'aksjmp'
         linuxConfiguration: {
-          disablePasswordAuthentication: true
-          provisionVMAgent: true
-          ssh: {
-            publicKeys: [
-              {
-                path: '/home/${jumpBoxDefaultAdminUserName}/.ssh/authorized_keys'
-                keyData: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCcFvQl2lYPcK1tMB3Tx2R9n8a7w5MJCSef14x0ePRFr9XISWfCVCNKRLM3Al/JSlIoOVKoMsdw5farEgXkPDK5F+SKLss7whg2tohnQNQwQdXit1ZjgOXkis/uft98Cv8jDWPbhwYj+VH/Aif9rx8abfjbvwVWBGeA/OnvfVvXnr1EQfdLJgMTTh+hX/FCXCqsRkQcD91MbMCxpqk8nP6jmsxJBeLrgfOxjH8RHEdSp4fF76YsRFHCi7QOwTE/6U+DpssgQ8MTWRFRat97uTfcgzKe5MOfuZHZ++5WFBgaTr1vhmSbXteGiK7dQXOk2cLxSvKkzeaiju9Jy6hoSl5oMygUVd5fNPQ94QcqTkMxZ9tQ9vPWOHwbdLRD31Ses3IBtDV+S6ehraiXf/L/e0jRUYk8IL/J543gvhOZ0hj2sQqTj9XS2hZkstZtrB2ywrJzV5ByETUU/oF9OsysyFgnaQdyduVqEPHaqXqnJvBngqqas91plyT3tSLMez3iT0s= unused-generated-by-azure'
-              }
-            ]
-          }
+          disablePasswordAuthentication: false
         }
-        customData: jumpBoxCloudInitAsBase64
-        adminUsername: jumpBoxDefaultAdminUserName
+        adminUsername: jumpBoxAdminName
+        adminPassword: jumpBoxAdminPassword
       }
       storageProfile: {
         osDisk: {
@@ -1507,7 +1499,10 @@ resource vmssJumpboxes 'Microsoft.Compute/virtualMachineScaleSets@2025-04-01' = 
           osType: 'Linux'
         }
         imageReference: {
-          id: jumpBoxImageResourceId
+          offer: 'UbuntuServer'
+          publisher: 'Canonical'
+          sku: '18_04-lts-gen2'
+          version: 'latest'
         }
       }
       networkProfile: {

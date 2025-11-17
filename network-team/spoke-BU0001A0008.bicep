@@ -324,7 +324,7 @@ resource nsgPrivateLinkEndpointsSubnet_diagnosticsSettings 'Microsoft.Insights/d
 
 @description('NSG blocking all inbound traffic other than port 22 for jumpbox access.')
 resource nsgManagementOpsSubnet 'Microsoft.Network/networkSecurityGroups@2021-05-01' = {
-    name: 'nsg-vnet-spoke-${orgAppId}-01-management-ops'
+    name: 'nsg-vnet-spoke-${orgAppId}-00-management-ops'
     location: location
     properties: {
         securityRules: [
@@ -357,6 +357,19 @@ resource nsgManagementOpsSubnet 'Microsoft.Network/networkSecurityGroups@2021-05
                 }
             }
             {
+                name: 'Allow80InternetOutBound'
+                properties: {
+                    protocol: 'Tcp'
+                    sourcePortRange: '*'
+                    sourceAddressPrefix: '*'
+                    destinationPortRange: '80'
+                    destinationAddressPrefix: 'Internet'
+                    access: 'Allow'
+                    priority: 100
+                    direction: 'Outbound'
+                }
+            }
+            {
                 name: 'Allow443InternetOutBound'
                 properties: {
                     protocol: 'Tcp'
@@ -365,7 +378,7 @@ resource nsgManagementOpsSubnet 'Microsoft.Network/networkSecurityGroups@2021-05
                     destinationPortRange: '443'
                     destinationAddressPrefix: 'Internet'
                     access: 'Allow'
-                    priority: 100
+                    priority: 110
                     direction: 'Outbound'
                 }
             }
@@ -378,7 +391,7 @@ resource nsgManagementOpsSubnet 'Microsoft.Network/networkSecurityGroups@2021-05
                     destinationPortRange: '443'
                     destinationAddressPrefix: 'VirtualNetwork'
                     access: 'Allow'
-                    priority: 110
+                    priority: 120
                     direction: 'Outbound'
                 }
             }

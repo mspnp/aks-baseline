@@ -21,19 +21,35 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    If this is the first time you've used Azure Bastion, here is a detailed walk through of this process.
 
    1. Open the Azure Portal.
-   1. Navigate to the ***rg-bu0001a0008-\<region\>** resource group.
+   1. Navigate to the ***rg-bu0001a0008** resource group.
    1. Click on the virtual machine Scale Set resource named **vmss-jumpboxes**.
    1. Click Instances.
    1. Click the name of any of the two listed instances. Such as **vmss-jumpboxes_0**
    1. Click **Connect** -> **Bastion** -> **Use Bastion**.
-   1. Fill in the username field with one of the users from your customized `jumpBoxCloudInit.yml` file. Such as **opsuser01**
-   1. Select **SSH Private Key from Local File** and select your private key file (such as `opsuser01.key`) for that specific user.
-   1. Provide your SSH passphrase in **SSH Passphrase** if your private key is protected with one.
+   1. Fill in the username field with the user you passed as argument when deploying the cluster. By default it is **vmadmin**
+   1. Use the password you entered when deploying the cluster.
    1. Click **Connect**.
    1. For enhanced "copy-on-select" & "paste-on-right-click" support, your browser may request your permission to support those features. It's recommended that you **Allow** that feature. If you don't, you'll have to use the **>>** flyout on the screen to perform copy and paste actions.
    1. Welcome to your jump box!
 
       > :warning: The jump box deployed in this walkthrough has only ephemeral disks attached, in which content written to disk will not survive planned or unplanned restarts of the host. Never store anything of value on these jump boxes. They are expected to be fully ephemeral in nature, and in fact could be scaled-to-zero when not in use.
+
+1. *From your Azure Bastion connection*, install prequisites to install az-cli
+
+   ```bash
+   sudo apt-get update && sudo apt-get install -y libssl-dev libffi-dev python3-dev build-essential
+   ```
+
+1. *From your Azure Bastion connection*, install latest [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) (must be at least 2.40).
+
+1. *From your Azure Bastion connection*, install `kubectl` 1.33 or newer. (`kubectl` supports ±1 Kubernetes version.)
+
+   ```bash
+   sudo -E env "PATH=$PATH" az aks install-cli
+   kubectl version --client
+   ```
+
+   > Starting with `kubectl` 1.24, you must also have the `kubelogin` credential (exec) plug-in available for Microsoft Entra ID authentication. Installing `kubectl` via `az aks install-cli` does this already, but if you install `kubectl` in a different way, make sure `kubelogin` is [installed](https://github.com/Azure/kubelogin#getting-started).
 
 1. *From your Azure Bastion connection*, sign in to your Azure RBAC tenant and select your subscription.
 
