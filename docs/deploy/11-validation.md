@@ -60,7 +60,7 @@ Built-in as well as custom policies are applied to the cluster as part of the [c
 
 ### Steps
 
-1. *From your Azure Bastion connection*, try to add a second `Ingress` resource to your workload namespace with the following command.
+1. Try to add a second `Ingress` resource to your workload namespace with the following command.
 
    Notice that the host value specified in the `rules` and the `tls` sections defines a domain name with suffix `invalid-domain.com` rather than the domain suffix you defined for your setup when you [created your certificates](./02-ca-certificates.md)).
 
