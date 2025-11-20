@@ -668,13 +668,13 @@ resource peKv 'Microsoft.Network/privateEndpoints@2023-11-01' = {
   }
 }
 
-@description('Enables AKS Private Link on vnet.')
+@description('Enables AKS Private Link on the virtual network.')
 resource pdzMc 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.${location}.azmk8s.io'
   location: 'global'
   properties: {}
 
-  @description('Enabling spoke vnet private zone DNS lookup for private AKS - used by azure firewall\'s dns proxy.')
+  @description('Enable spoke virtual network private zone DNS lookup for private AKS - used by Azure Firewall\'s DNS proxy.')
   resource vnetlnk 'virtualNetworkLinks' = {
     name: 'to_${targetVirtualNetwork.name}'
     location: 'global'
@@ -1426,7 +1426,7 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
       {
         category: 'ApplicationGatewayFirewallLog'
         enabled: true
-      } 
+      }
     ]
   }
 }
