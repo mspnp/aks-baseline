@@ -6,7 +6,7 @@ The cluster now has an [Traefik configured with a TLS certificate](./09-secret-m
 
 > :book: The Contoso workload team is about to conclude this journey, but they need an app to test their new infrastructure. For this task they've picked out the venerable [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/main/samples/aspnetapp).
 
-1. Clone/download this repo locally
+1. Clone/download this repo locally.
 
    > :twisted_rightwards_arrows: If you have forked this reference implementation repo, you'll be able to customize some of the files and commands for a more personalized and production-like experience; ensure references to this Git repository mentioned throughout the walk-through are updated to use your own fork.
    >
@@ -67,13 +67,13 @@ The cluster now has an [Traefik configured with a TLS certificate](./09-secret-m
 
    > From this container shell, you could also try to directly access the workload via `curl -I http://<aspnetapp-service-cluster-ip>`. Instead of getting back a `200 OK`, you'll receive a network timeout because of the [`allow-only-ingress-to-workload` network policy](../../cluster-manifests/a0008/ingress-network-policy.yaml) that is in place.
 
-1. From this point on, close the Bastion tunnel to your AKS private cluster
+1. Because you've finished managing your cluster, close the Azure Bastion tunnel:
 
    ```bash
    exit
    ```
 
-   > You can re-open a Bastion tunnel later when you require access to the AKS private cluster API server.
+   > You can re-open an Azure Bastion tunnel later when you require access to the AKS private cluster's API server.
 
 ### Next step
 

@@ -6,7 +6,7 @@ Now that the [AKS cluster](./06-aks-cluster.md) has been deployed, the next step
 
 ### Jump box access is validated
 
-Because the cluster is private, your cluster cannot be directly accessed locally. Therefore, you'll connect to Azure Kubernetes Service (AKS) private cluster securely using Azure Bastion's native client tunneling feature.
+Because the cluster is private, you can't directly access it from the internet. Therefore, you'll connect to Azure Kubernetes Service (AKS) private cluster securely using Azure Bastion's native client tunneling feature.
 
 ## Steps
 
@@ -34,7 +34,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    > Starting with `kubectl` 1.24, you must also have the `kubelogin` credential (exec) plug-in available for Microsoft Entra ID authentication. Installing `kubectl` via `az aks install-cli` does this already, but if you install `kubectl` in a different way, make sure `kubelogin` is [installed](https://github.com/Azure/kubelogin#getting-started).
 
-1. sign in to your Azure RBAC tenant and select your subscription.
+1. Sign in to your Azure RBAC tenant and select your subscription.
 
    The following command will perform a device login. Ensure you're logging in with the Microsoft Entra user that has access to your AKS resources (that is, the one you did your deployment with.)
 
