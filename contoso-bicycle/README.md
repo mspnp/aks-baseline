@@ -85,7 +85,7 @@ The web service's host should have these capabilities.
 
 - Deploy the AKS cluster into an existing Azure Virtual Network spoke. Use the existing Azure Firewall in the regional hub for securing outgoing traffic from the cluster.
 - Traffic from public-facing website is required to be encrypted. This encryption is implemented with Azure Application Gateway with integrated web application firewall (WAF).
-- Use Traefik as the Kubernetes ingress controller.
+- Use NGINX as the Kubernetes ingress controller.
 - The workload is stateless. No data will be persisted inside the cluster.
 - Azure Network Policy will be enabled for use, even though there's a single workload in one line-of-business.
 - Azure Container Registry will be used for the container image registry. The cluster will access the registry through Azure Private Link.

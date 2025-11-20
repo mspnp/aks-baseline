@@ -39,9 +39,6 @@ param gitOpsBootstrappingRepoHttpsUrl string = 'https://github.com/mspnp/aks-bas
 @minLength(1)
 param gitOpsBootstrappingRepoBranch string = 'main'
 
-@description('The AKS cluster Internal Load Balancer IP Address')
-param clusterInternalLoadBalancerIpAddress string = '10.240.4.4'
-
 /*** VARIABLES ***/
 
 var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resourceGroup().id)
@@ -85,17 +82,24 @@ resource acrPullRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existi
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied a Key Vault to grant with metadata, certificates, keys and secrets read privileges.  Granted to App Gateway's managed identity.
+// Built-in Azure RBAC role that is applied a Key Vault to grant with metadata, certificates, keys and secrets read privileges. Granted to App Gateway's managed identity and our web app routing profile's managed identity.
 resource keyVaultReaderRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: '21090545-7ca7-4776-b22c-e363652d74d2'
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied to a Key Vault to grant with secrets content read privileges. Granted to both Key Vault and our workload's identity.
+// Built-in Azure RBAC role that is applied to a Key Vault to grant with secrets content read privileges. Granted to our web app routing profile's managed identity.
 resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: '4633458b-17de-408a-b874-0445c86b69e6'
   scope: subscription()
 }
+
+// Built-in Azure RBAC role that is applied to a Private DNS Zone to grant with contributor privileges. Granted our web app routing profile's managed identity.
+resource PrivateDnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
+  scope: subscription()
+}
+
 
 /*** EXISTING RESOURCE GROUP RESOURCES ***/
 
@@ -463,24 +467,6 @@ resource miAppGatewayFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@
   location: location
 }
 
-// User Managed Identity for the cluster's ingress controller pods via Workload Identity. Used for Azure Key Vault Access.
-resource podmiIngressController 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: 'podmi-ingress-controller'
-  location: location
-
-  // Workload identity service account federation
-  resource federatedCreds 'federatedIdentityCredentials' = {
-    name: 'ingress-controller'
-    properties: {
-      issuer: mc.properties.oidcIssuerProfile.issuerURL
-      subject: 'system:serviceaccount:a0008:traefik-ingress-controller'
-      audiences: [
-        'api://AzureADTokenExchange'
-      ]
-    }
-  }
-}
-
 resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: 'kv-${clusterName}'
   location: location
@@ -507,7 +493,6 @@ resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
   dependsOn: [
     miAppGatewayFrontend
-    podmiIngressController
   ]
 
   resource kvsAppGwIngressInternalAksIngressTls 'secrets' = {
@@ -567,24 +552,35 @@ resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authoriz
   }
 }
 
-// Grant the AKS cluster ingress controller's managed workload identity with Key Vault reader role permissions; this allows our ingress controller to pull certificates.
-resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+// Grant the AKS cluster ingress profile web app routing's managed identity with Key Vault secret user role permissions.
+resource kvClusterWebAppRoutingSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: kv
-  name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultSecretsUserRole.id)
+  name: guid(resourceGroup().id, 'cluster-webapprouting-ingress-controller', keyVaultSecretsUserRole.id)
   properties: {
     roleDefinitionId: keyVaultSecretsUserRole.id
-    principalId: podmiIngressController.properties.principalId
+    principalId: mc.properties.ingressProfile.webAppRouting.identity.objectId
     principalType: 'ServicePrincipal'
   }
 }
 
-// Grant the AKS cluster ingress controller's managed workload identity with Key Vault reader role permissions; this allows our ingress controller to pull certificates
-resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+// Grant the AKS cluster ingress profile web app routing's managed identity with Key Vault reader role permissions; this allows our ingress controller to pull certificates
+resource kvClusterWebAppRoutingKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: kv
-  name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultReaderRole.id)
+  name: guid(resourceGroup().id, 'cluster-webapprouting-ingress-controller', keyVaultReaderRole.id)
   properties: {
     roleDefinitionId: keyVaultReaderRole.id
-    principalId: podmiIngressController.properties.principalId
+    principalId: mc.properties.ingressProfile.webAppRouting.identity.objectId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Grant the AKS cluster ingress profile web app routing's managed identity with Private DNS Zone Contributor role permissions; this allows our ingress controller to add records to the Private DNS Zone
+resource pdzClusterWebAppRoutingDNSZoneContributor_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: pdzAksIngress
+  name: guid(resourceGroup().id, 'cluster-webapprouting-ingress-controller-dns-zone-contributor', PrivateDnsZoneContributorRole.id)
+  properties: {
+    roleDefinitionId: PrivateDnsZoneContributorRole.id
+    principalId: mc.properties.ingressProfile.webAppRouting.identity.objectId
     principalType: 'ServicePrincipal'
   }
 }
@@ -655,18 +651,6 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: aksIngressDomainName
   location: 'global'
 
-  resource aksIngressDomainName_bu0001a0008_00 'A' = {
-    name: 'bu0001a0008-00'
-    properties: {
-      ttl: 3600
-      aRecords: [
-        {
-          ipv4Address: clusterInternalLoadBalancerIpAddress
-        }
-      ]
-    }
-  }
-
   resource vnetlnk 'virtualNetworkLinks' = {
     name: 'to_${targetVirtualNetwork.name}'
     location: 'global'
@@ -688,7 +672,7 @@ module policies 'modules/policies.bicep' = {
   }
 }
 
-resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
+resource mc 'Microsoft.ContainerService/managedClusters@2025-07-02-preview' = {
   name: clusterName
   location: location
   tags: {
@@ -804,7 +788,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     }
     nodeResourceGroup: nodeResourceGroup.name
     enableRBAC: true
-    enablePodSecurityPolicy: false
     networkProfile: {
       networkPlugin: 'azure'
       networkPluginMode: 'overlay'
@@ -922,7 +905,13 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     }
     ingressProfile: {
       webAppRouting: {
-        enabled: false
+        enabled: true // enable application routing addon
+        dnsZoneResourceIds: [
+          pdzAksIngress.id // attach an AKS ingress private DNS zone to the application routing add-on
+        ]
+        nginx: {
+          defaultIngressControllerType: 'Internal' // create the nginx ingress controller with an internal load balancer
+        }
       }
     }
   }
@@ -950,8 +939,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     dcr
 
     peKv
-    kvPodMiIngressControllerKeyVaultReader_roleAssignment
-    kvPodMiIngressControllerSecretsUserRole_roleAssignment
   ]
 
   resource os_maintenanceConfigurations 'maintenanceConfigurations' = {
@@ -1381,6 +1368,4 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
 /*** OUTPUTS ***/
 
 output aksClusterName string = clusterName
-output aksIngressControllerPodManagedIdentityClientId string = podmiIngressController.properties.clientId
 output keyVaultName string = kv.name
-output ilbIpAddress string = pdzAksIngress::aksIngressDomainName_bu0001a0008_00.properties.aRecords[0].ipv4Address

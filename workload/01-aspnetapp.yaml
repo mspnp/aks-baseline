@@ -22,8 +22,7 @@ spec:
     spec:
       automountServiceAccountToken: false
       securityContext:
-        runAsUser: 10001
-        runAsGroup: 3000
+        fsGroup: 2000 # Supplemental group ID (shared by all containers for created/mounted files/volumes)
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -40,19 +39,50 @@ spec:
             podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: app.kubernetes.io/name
+                - key: app.kubernetes.io/component
                   operator: In
                   values:
-                  - traefik-ingress-ilb
+                  - ingress-controller
               topologyKey: "kubernetes.io/hostname"
       containers:
       - name: aspnet-webapp-sample
         image: mcr.microsoft.com/dotnet/samples:aspnetapp
+        ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
         imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 6
+          httpGet:
+            path: /Environment
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /Environment
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 10001
+          runAsGroup: 3000
+          seccompProfile:
+            type: RuntimeDefault
           capabilities:
+            add:
+              - NET_BIND_SERVICE # when running containers as non-root users, if a service within the container needs to listen on a well-known port (e.g., HTTP on port 80, HTTPS on port 443), the NET_BIND_SERVICE capability must be explicitly granted to the container.
             drop:
               - all
         resources:
@@ -66,7 +96,7 @@ spec:
         - name: ASPNETCORE_URLS
           value: "http://*:8080"
       nodeSelector:
-       agentpool: npuser01
+        agentpool: npuser01
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget

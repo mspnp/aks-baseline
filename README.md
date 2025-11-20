@@ -42,7 +42,6 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 - [Flux GitOps Operator](https://fluxcd.io) *[AKS-managed extension]*
 - [ImageCleaner (Eraser)](https://learn.microsoft.com/azure/aks/image-cleaner) *[AKS-managed add-on]*
 - [Secrets Store CSI Driver for Kubernetes](https://learn.microsoft.com/azure/aks/csi-secrets-store-driver) *[AKS-managed add-on]*
-- [Traefik Ingress Controller](https://doc.traefik.io/traefik/v3.4/routing/providers/kubernetes-ingress/)
 
 ![Network diagram depicting a hub-spoke network with two peered VNets and main Azure resources used in the architecture.](https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks/images/secure-baseline-architecture.svg)
 
@@ -83,20 +82,19 @@ We perform the prior steps manually here for you to understand the involved comp
 Without a workload deployed to the cluster it will be hard to see how these decisions come together to work as a reliable application platform for your business. The deployment of this workload would typically follow a CI/CD pattern and may involve even more advanced deployment strategies (such as blue/green). The following steps represent a manual deployment, suitable for illustration purposes of this infrastructure.
 
 - [ ] Just like the cluster, there are [workload prerequisites to address](./docs/deploy/08-workload-prerequisites.md)
-- [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./docs/deploy/09-secret-management-and-ingress-controller.md)
-- [ ] [Deploy the workload](./docs/deploy/10-workload.md)
+- [ ] [Deploy the workload](./docs/deploy/09-workload.md)
 
 ### 5. :checkered_flag: Validate
 
 Now that the cluster and the sample workload is deployed; it's time to look at how the cluster is functioning.
 
-- [ ] [Perform end-to-end deployment validation](./docs/deploy/11-validation.md)
+- [ ] [Perform end-to-end deployment validation](./docs/deploy/10-validation.md)
 
 ## :broom: Clean up resources
 
 Most of the Azure resources deployed in the prior steps will incur ongoing charges unless removed.
 
-- [ ] [Clean up all resources](./docs/deploy/12-cleanup.md)
+- [ ] [Clean up all resources](./docs/deploy/11-cleanup.md)
 
 ## Preview and additional features
 
