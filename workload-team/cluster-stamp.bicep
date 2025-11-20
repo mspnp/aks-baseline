@@ -1431,20 +1431,6 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
   }
 }
 
-resource omsVmInsights 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  name: 'VMInsights(${la.name})'
-  location: location
-  properties: {
-    workspaceResourceId: la.id
-  }
-  plan: {
-    name: 'VMInsights(${la.name})'
-    product: 'OMSGallery/VMInsights'
-    promotionCode: ''
-    publisher: 'Microsoft'
-  }
-}
-
 /*** OUTPUTS ***/
 
 output aksClusterName string = clusterName
