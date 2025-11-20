@@ -2,9 +2,7 @@
 
 Now that the [AKS cluster](./06-aks-cluster.md) has been deployed, the next step to validate that your cluster has been placed under a GitOps management solution, Flux in this case.
 
-## Expected results
-
-### Jump box access is validated
+## Expected results: AKS API server access is validated
 
 Because the cluster is private, you can't directly access it from the internet. Therefore, you'll connect to Azure Kubernetes Service (AKS) private cluster securely using Azure Bastion's native client tunneling feature.
 
