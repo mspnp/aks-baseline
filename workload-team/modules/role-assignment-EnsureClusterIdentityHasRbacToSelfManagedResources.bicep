@@ -7,6 +7,11 @@ targetScope = 'resourceGroup'
 @maxLength(36)
 param miClusterControlPlanePrincipalId string
 
+@description('The AKS Control Plane Principal Name to be used to create unique role assignments names.')
+@minLength(3)
+@maxLength(128)
+param clusterControlPlaneIdentityName string
+
 @description('The regional network spoke VNet Resource name that the cluster is being joined to, so it can be used to discover subnets during role assignments.')
 @minLength(1)
 param targetVirtualNetworkName string
@@ -15,6 +20,11 @@ param targetVirtualNetworkName string
 
 resource networkContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   name: '4d97b98b-1d4f-4787-a291-c67834d212e7'
+  scope: subscription()
+}
+
+resource dnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
   scope: subscription()
 }
 
@@ -29,6 +39,11 @@ resource snetClusterNodes 'Microsoft.Network/virtualNetworks/subnets@2023-11-01'
   name: 'snet-clusternodes'
 }
 
+resource snetPrivateCluster 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
+  parent: targetVirtualNetwork
+  name: 'snet-privatecluster'
+}
+
 resource snetClusterIngress 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
   parent: targetVirtualNetwork
   name: 'snet-clusteringressservices'
@@ -36,12 +51,34 @@ resource snetClusterIngress 'Microsoft.Network/virtualNetworks/subnets@2023-11-0
 
 /*** RESOURCES ***/
 
+resource vnetMiClusterControlPlaneDnsZoneContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  scope: targetVirtualNetwork
+  name: guid(targetVirtualNetwork.id, dnsZoneContributorRole.id, clusterControlPlaneIdentityName)
+  properties: {
+    roleDefinitionId: dnsZoneContributorRole.id
+    description: 'Allows cluster identity to attach custom DNS zone with Private Link information to this virtual network.'
+    principalId: miClusterControlPlanePrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 resource snetClusterNodesMiClusterControlPlaneNetworkContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: snetClusterNodes
   name: guid(snetClusterNodes.id, networkContributorRole.id, miClusterControlPlanePrincipalId)
   properties: {
     roleDefinitionId: networkContributorRole.id
     description: 'Allows cluster identity to join the nodepool vmss resources to this subnet.'
+    principalId: miClusterControlPlanePrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource snetPrivateClusterMiClusterControlPlaneNetworkContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: snetPrivateCluster
+  name: guid(snetPrivateCluster.id, networkContributorRole.id, miClusterControlPlanePrincipalId)
+  properties: {
+    roleDefinitionId: networkContributorRole.id
+    description: 'Allows cluster identity to join the private cluster resources to this subnet.'
     principalId: miClusterControlPlanePrincipalId
     principalType: 'ServicePrincipal'
   }

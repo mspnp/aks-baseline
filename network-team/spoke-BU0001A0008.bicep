@@ -24,6 +24,10 @@ resource hubResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' existi
 resource hubVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
   scope: hubResourceGroup
   name: last(split(hubVnetResourceId,'/'))
+
+  resource azureBastionSubnet 'subnets' existing = {
+    name: 'AzureBastionSubnet'
+  }
 }
 
 // This is the firewall that was deployed in 'hub-default.bicep'
@@ -61,6 +65,15 @@ resource routeNextHopToFirewall 'Microsoft.Network/routeTables@2023-11-01' = {
 // Default NSG on the AKS nodepools. Feel free to constrict further.
 resource nsgNodepoolSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
   name: 'nsg-${clusterVNetName}-nodepools'
+  location: location
+  properties: {
+    securityRules: []
+  }
+}
+
+// Default NSG on the AKS private cluster subnet. Feel free to constrict further.
+resource nsgPrivateClusterSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
+  name: 'nsg-${clusterVNetName}-privatecluster'
   location: location
   properties: {
     securityRules: []
@@ -374,6 +387,29 @@ resource vnetSpoke 'Microsoft.Network/virtualNetworks@2023-11-01' = {
           }
           privateEndpointNetworkPolicies: 'Disabled'
           privateLinkServiceNetworkPolicies: 'Enabled'
+        }
+      }
+      {
+        name: 'snet-privatecluster'
+        properties: {
+          defaultOutboundAccess: false
+          addressPrefix: '10.240.7.0/28'
+          routeTable: {
+            id: routeNextHopToFirewall.id
+          }
+          networkSecurityGroup: {
+            id: nsgPrivateClusterSubnet.id
+          }
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Disabled'
+          delegations: [
+            {
+              name: 'delegation'
+              properties: {
+                serviceName: 'Microsoft.ContainerService/managedClusters'
+              }
+            }
+          ]
         }
       }
     ]

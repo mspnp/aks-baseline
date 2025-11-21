@@ -2,6 +2,10 @@
 
 Now that the [AKS cluster](./06-aks-cluster.md) has been deployed, the next step to validate that your cluster has been placed under a GitOps management solution, Flux in this case.
 
+## Expected results: AKS API server access is validated
+
+Because the cluster is private, you can't directly access it from the internet. Therefore, you'll connect to Azure Kubernetes Service (AKS) private cluster securely using Azure Bastion's native client tunneling feature.
+
 ## Steps
 
 GitOps allows a team to author Kubernetes manifest files, persist them in their Git repo, and have them automatically apply to their cluster as changes occur. This reference implementation is focused on the baseline cluster, so Flux is managing cluster-level concerns. This is distinct from workload-level concerns, which would be possible as well to manage via Flux and would typically be done by additional Flux configuration in the cluster. The namespace `cluster-baseline-settings` will be used to provide a logical division of the cluster bootstrap configuration from workload configuration. Examples of manifests that are applied:
@@ -9,6 +13,15 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 - Cluster role bindings for the AKS-managed Microsoft Entra ID integration
 - Cluster-wide configuration of Azure Monitor for Containers
 - The workload's namespace named `a0008`
+
+1. Open the tunnel to your AKS Cluster.
+
+   ```bash
+   BASTIONHOST_RESOURCEID=$(az deployment group show -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -n hub-regionA --query properties.outputs.bastionHostResourceId.value -o tsv)
+   echo BASTIONHOST_RESOURCEID: $BASTIONHOST_RESOURCEID
+
+   az aks bastion -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME --bastion $BASTIONHOST_RESOURCEID
+   ```
 
 1. Install `kubectl` 1.33 or newer. (`kubectl` supports ±1 Kubernetes version.)
 
@@ -18,6 +31,24 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    ```
 
    > Starting with `kubectl` 1.24, you must also have the `kubelogin` credential (exec) plug-in available for Microsoft Entra ID authentication. Installing `kubectl` via `az aks install-cli` does this already, but if you install `kubectl` in a different way, make sure `kubelogin` is [installed](https://github.com/Azure/kubelogin#getting-started).
+
+1. Sign in to your Azure RBAC tenant and select your subscription.
+
+   The following command will perform a device login. Ensure you're logging in with the Microsoft Entra user that has access to your AKS resources (that is, the one you did your deployment with.)
+
+   ```bash
+   az login
+   # This will give you a link to https://microsoft.com/devicelogin where you can enter
+   # the provided code and perform authentication.
+
+   # Ensure you're on the correct subscription
+   az account show
+
+   # If not, select the correct subscription
+   # az account set -s <subscription name or id>
+   ```
+
+   > :warning: Your organization may have a conditional access policies in place that forbids access to Azure resources [from non corporate-managed devices](https://learn.microsoft.com/entra/identity/conditional-access/concept-conditional-access-grant). This jump box as deployed in these steps might trigger that policy. If that is the case, you'll need to work with your IT Security organization to provide an alterative access mechanism or temporary solution.
 
 1. Get the cluster name.
 
