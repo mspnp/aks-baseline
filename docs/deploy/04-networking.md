@@ -44,11 +44,13 @@ The following two resource groups will be created and populated with networking 
    ```bash
    # Update this to be where you want your resources, networking and eventually cluster, to be deployed
    # Please select a location that supports availability zones, as this reference implementation depends on it
-   export LOCATION_AKS_BASELINE=eastus2
+   export LOCATION_AKS_BASELINE=eastus
 
    # [This takes less than one minute to run.]
    az group create -n rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -l $LOCATION_AKS_BASELINE
    ```
+
+   > :warning: This reference implementation leverages AKS API Server Vnet Integration, which is broadly available across most of the current GA public cloud regions. The `LOCATION_AKS_BASELINE` environment variable is reused when creating the application team resources (including the AKS cluster). Therefore, before you begin, confirm that your target region is supported. For more information, see [API Server VNet Integration](https://learn.microsoft.com/azure/aks/api-server-vnet-integration#availability).
 
 1. Create the networking spokes resource group.
 
@@ -61,9 +63,9 @@ The following two resource groups will be created and populated with networking 
 
 1. Create the regional network hub.
 
-   > :book: When the networking team created the regional hub for eastus2, it didn't have any spokes yet defined, yet the networking team always lays out a base hub following a standard pattern (defined in `hub-default.bicep`). A hub always contains an Azure Firewall (with some org-wide policies), Azure Bastion, a gateway subnet for VPN connectivity, and Azure Monitor for network observability. They follow Microsoft's recommended sizing for the subnets.
+   > :book: When the networking team created the regional hub for eastus, it didn't have any spokes yet defined, yet the networking team always lays out a base hub following a standard pattern (defined in `hub-default.bicep`). A hub always contains an Azure Firewall (with some org-wide policies), Azure Bastion, a gateway subnet for VPN connectivity, and Azure Monitor for network observability. They follow Microsoft's recommended sizing for the subnets.
    >
-   > The networking team has decided that `10.200.[0-9].0` will be where all regional hubs are homed on their organization's network space. The `eastus2` hub (created below) will be `10.200.0.0/24`.
+   > The networking team has decided that `10.200.[0-9].0` will be where all regional hubs are homed on their organization's network space. The `eastus` hub (created below) will be `10.200.0.0/24`.
    >
    > Note: The subnets for Azure Bastion and cross-premises connectivity are deployed in this reference architecture, but the resources are not deployed. Since this reference implementation is expected to be deployed isolated from existing infrastructure; these IP addresses should not conflict with any existing networking you have, even if those IP addresses overlap. If you need to connect the reference implementation to existing networks, you will need to adjust the IP space as per your requirements as to not conflict in the reference ARM templates.
 
@@ -74,7 +76,7 @@ The following two resource groups will be created and populated with networking 
 
    The hub deployment emits the following output:
 
-      - `hubVnetId` - which you'll query in future steps when creating connected regional spokes. Such as, `/subscriptions/[id]/resourceGroups/rg-enterprise-networking-hubs-eastus2/providers/Microsoft.Network/virtualNetworks/vnet-eastus2-hub`
+      - `hubVnetId` - which you'll query in future steps when creating connected regional spokes. Such as, `/subscriptions/[id]/resourceGroups/rg-enterprise-networking-hubs-eastus/providers/Microsoft.Network/virtualNetworks/vnet-eastus-hub`
 
 1. Capture the output from the hub network deployment that will be required in later steps.
 
@@ -95,8 +97,8 @@ The following two resource groups will be created and populated with networking 
    The spoke network deployment emits the following outputs:
 
      - `appGwPublicIpAddress` - The public IP address of the Azure Application Gateway (WAF) that will receive traffic for your workload.
-     - `clusterVnetResourceId` - The resource ID of the virtual network where the cluster, App Gateway, and related resources will be deployed. Such as, `/subscriptions/[id]/resourceGroups/rg-enterprise-networking-spokes-eastus2/providers/Microsoft.Network/virtualNetworks/vnet-spoke-BU0001A0008-00`
-     - `nodepoolSubnetResourceIds` - An array containing the subnet resource IDs of the AKS node pools in the spoke. Such as, `[ "/subscriptions/[id]/resourceGroups/rg-enterprise-networking-spokes-eastus2/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-clusternodes"]`
+     - `clusterVnetResourceId` - The resource ID of the virtual network where the cluster, App Gateway, and related resources will be deployed. Such as, `/subscriptions/[id]/resourceGroups/rg-enterprise-networking-spokes-eastus/providers/Microsoft.Network/virtualNetworks/vnet-spoke-BU0001A0008-00`
+     - `nodepoolSubnetResourceIds` - An array containing the subnet resource IDs of the AKS node pools in the spoke. Such as, `[ "/subscriptions/[id]/resourceGroups/rg-enterprise-networking-spokes-eastus/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00/subnets/snet-clusternodes"]`
 
 1. Capture the output from the spoke network deployment that will be required in later steps.
 
@@ -107,7 +109,7 @@ The following two resource groups will be created and populated with networking 
 
 1. Update the shared, regional hub deployment to account for the networking requirements of the upcoming workload in the spoke.
 
-   > :book: Now that their regional hub has its first spoke, the hub can no longer run off of the generic hub template. The networking team creates a named hub template (such as, `hub-eastus2.bicep`) to forever represent this specific hub and the features this specific hub needs in order to support its spokes' requirements. As new spokes are attached and new requirements arise for the regional hub, they will be added to this template file.
+   > :book: Now that their regional hub has its first spoke, the hub can no longer run off of the generic hub template. The networking team creates a named hub template (such as, `hub-eastus.bicep`) to forever represent this specific hub and the features this specific hub needs in order to support its spokes' requirements. As new spokes are attached and new requirements arise for the regional hub, they will be added to this template file.
 
    ```bash
    # [This takes about 15 minutes to run.]

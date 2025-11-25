@@ -1,6 +1,6 @@
 using 'cluster-stamp.bicep'
 
-param location = 'eastus2'
+param location = 'eastus'
 
 param targetVnetResourceId = '/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes-[region]/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00'
 
