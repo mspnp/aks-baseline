@@ -14,15 +14,6 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 - Cluster-wide configuration of Azure Monitor for Containers
 - The workload's namespace named `a0008`
 
-1. Open the tunnel to your AKS Cluster.
-
-   ```bash
-   BASTIONHOST_RESOURCEID=$(az deployment group show -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -n hub-regionA --query properties.outputs.bastionHostResourceId.value -o tsv)
-   echo BASTIONHOST_RESOURCEID: $BASTIONHOST_RESOURCEID
-
-   az aks bastion -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME --bastion $BASTIONHOST_RESOURCEID
-   ```
-
 1. Install `kubectl` 1.33 or newer. (`kubectl` supports ±1 Kubernetes version.)
 
    ```bash
@@ -37,6 +28,15 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    ```bash
    AKS_CLUSTER_NAME=$(az aks list -g rg-bu0001a0008 --query '[0].name' -o tsv)
    echo AKS_CLUSTER_NAME: $AKS_CLUSTER_NAME
+   ```
+
+1. Open the tunnel to your AKS Cluster.
+
+   ```bash
+   BASTIONHOST_RESOURCEID=$(az deployment group show -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -n hub-regionA --query properties.outputs.bastionHostResourceId.value -o tsv)
+   echo BASTIONHOST_RESOURCEID: $BASTIONHOST_RESOURCEID
+
+   az aks bastion -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME --bastion $BASTIONHOST_RESOURCEID
    ```
 
 1. Validate there are no available image upgrades. As this AKS cluster was recently deployed, it's unlikely that new images are available. Only a race condition between publication of new available images and the deployment image fetch could result into a different state.
