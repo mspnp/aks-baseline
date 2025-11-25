@@ -32,7 +32,7 @@ This does not configure anything related to workload identity. This configuratio
    > :bulb: Skip the `az login` command if you plan to use your current user account's Microsoft Entra ID tenant for Kubernetes authorization. *Using the same tenant is common.*
 
    ```bash
-   az login -t <Replace-With-ClusterApi-AzureAD-TenantId> --allow-no-subscriptions
+   az login -t <Replace-With-ClusterApi-EntraID-TenantId> --allow-no-subscriptions
    export TENANTID_K8SRBAC_AKS_BASELINE=$(az account show --query tenantId -o tsv)
    echo TENANTID_K8SRBAC_AKS_BASELINE: $TENANTID_K8SRBAC_AKS_BASELINE
    ```
