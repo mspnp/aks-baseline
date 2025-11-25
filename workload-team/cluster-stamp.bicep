@@ -668,7 +668,7 @@ resource peKv 'Microsoft.Network/privateEndpoints@2023-11-01' = {
   }
 }
 
-@description('Enables AKS Private Link on the virtual network.')
+@description('Enables AKS Private Link on the virtual network, which enables private access to the cluster\'s API server.')
 resource pdzMc 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.${location}.azmk8s.io'
   location: 'global'
