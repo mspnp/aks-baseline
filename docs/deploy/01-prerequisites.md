@@ -28,6 +28,15 @@ This is the starting point for the instructions on deploying the [AKS baseline r
 
    [![Launch Azure Cloud Shell](https://learn.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
+1. Install `kubectl` 1.33 or newer. (`kubectl` supports ±1 Kubernetes version.)
+
+   ```bash
+   sudo az aks install-cli
+   kubectl version --client
+   ```
+
+   > Starting with `kubectl` 1.24, you must also have the `kubelogin` credential (exec) plug-in available for Microsoft Entra ID authentication. Installing `kubectl` via `az aks install-cli` does this already, but if you install `kubectl` in a different way, make sure `kubelogin` is [installed](https://github.com/Azure/kubelogin#getting-started).
+
 1. Clone/download this repo locally, or even better fork this repository.
 
    > :twisted_rightwards_arrows: If you have forked this reference implementation repo, you'll be able to customize some of the files and commands for a more personalized and production-like experience; ensure references to this Git repository mentioned throughout the walk-through are updated to use your own fork.

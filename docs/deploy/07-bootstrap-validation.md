@@ -14,15 +14,6 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 - Cluster-wide configuration of Azure Monitor for Containers
 - The workload's namespace named `a0008`
 
-1. Install `kubectl` 1.33 or newer. (`kubectl` supports ±1 Kubernetes version.)
-
-   ```bash
-   sudo az aks install-cli
-   kubectl version --client
-   ```
-
-   > Starting with `kubectl` 1.24, you must also have the `kubelogin` credential (exec) plug-in available for Microsoft Entra ID authentication. Installing `kubectl` via `az aks install-cli` does this already, but if you install `kubectl` in a different way, make sure `kubelogin` is [installed](https://github.com/Azure/kubelogin#getting-started).
-
 1. Get the cluster name.
 
    ```bash
