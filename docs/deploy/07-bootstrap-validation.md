@@ -21,15 +21,6 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    echo AKS_CLUSTER_NAME: $AKS_CLUSTER_NAME
    ```
 
-1. Open the tunnel to your AKS Cluster.
-
-   ```bash
-   BASTIONHOST_RESOURCEID=$(az deployment group show -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -n hub-regionA --query properties.outputs.bastionHostResourceId.value -o tsv)
-   echo BASTIONHOST_RESOURCEID: $BASTIONHOST_RESOURCEID
-
-   az aks bastion -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME --bastion $BASTIONHOST_RESOURCEID
-   ```
-
 1. Validate there are no available image upgrades. As this AKS cluster was recently deployed, it's unlikely that new images are available. Only a race condition between publication of new available images and the deployment image fetch could result into a different state.
 
    ```bash
@@ -42,6 +33,15 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    > The AKS nodes are configured to receive weekly updates automatically which include security patches, kernel updates, and node images updates. The AKS cluster version won't be updated automatically since production clusters should be updated manually after testing in lower environments.
 
    > Node image updates are shipped on a weekly cadence by default. This AKS cluster is configured to have its maintenance window for node image updates every Tuesday at 9PM. If a node image is released outside of this maintenance window, the nodes will be updated on the next scheduled occurrence. For AKS nodes that require more frequent updates, consider changing the auto-upgrade channel to `SecurityPatch` and configuring a daily maintenance window.
+
+1. Open the tunnel to your AKS Cluster.
+
+   ```bash
+   BASTIONHOST_RESOURCEID=$(az deployment group show -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -n hub-regionA --query properties.outputs.bastionHostResourceId.value -o tsv)
+   echo BASTIONHOST_RESOURCEID: $BASTIONHOST_RESOURCEID
+
+   az aks bastion -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME --bastion $BASTIONHOST_RESOURCEID
+   ```
 
 1. Get AKS `kubectl` credentials.
 
