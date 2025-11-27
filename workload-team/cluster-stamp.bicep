@@ -97,6 +97,12 @@ resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2022-0
   scope: subscription()
 }
 
+// Built-in Azure RBAC role that is applied to a AKS cluster to grant with private DNS contributor. Granted to a private Cluster.
+resource privateDnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
+  scope: subscription()
+}
+
 /*** EXISTING RESOURCE GROUP RESOURCES ***/
 
 // Useful to think of these as resources that are not tied to the lifecycle of any individual
@@ -150,6 +156,16 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
   // Spoke virutual network's subnet for application gateway
   resource snetApplicationGateway 'subnets' existing = {
     name: 'snet-applicationgateway'
+  }
+
+  // spoke virtual network's subnet for management ops
+  resource snetManagementOps 'subnets' existing = {
+    name: 'snet-management-ops'
+  }
+
+  // Spoke virutual network's subnet for private cluster
+  resource snetPrivateCluster 'subnets' existing = {
+    name: 'snet-privatecluster'
   }
 }
 
@@ -594,6 +610,7 @@ module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'modules/role-assign
   scope: targetResourceGroup
   params: {
     miClusterControlPlanePrincipalId: miClusterControlPlane.properties.principalId
+    clusterControlPlaneIdentityName: miClusterControlPlane.name
     targetVirtualNetworkName: targetVirtualNetwork.name
   }
 }
@@ -648,6 +665,37 @@ resource peKv 'Microsoft.Network/privateEndpoints@2023-11-01' = {
         }
       ]
     }
+  }
+}
+
+@description('Enables AKS Private Link on the virtual network, which enables private access to the cluster\'s API server.')
+resource pdzMc 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+  name: 'privatelink.${location}.azmk8s.io'
+  location: 'global'
+  properties: {}
+
+  @description('Enable spoke virtual network private zone DNS lookup for private AKS - used by Azure Firewall\'s DNS proxy.')
+  resource vnetlnk 'virtualNetworkLinks' = {
+    name: 'to_${targetVirtualNetwork.name}'
+    location: 'global'
+    properties: {
+      virtualNetwork: {
+        id: targetVirtualNetwork.id
+      }
+      registrationEnabled: false
+    }
+  }
+}
+
+@description('Grant the AKS cluster managed identity to attach custom DNS zone with Private Link information to this virtual network.')
+resource pdzMiClusterControlPlaneDnsZoneContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: pdzMc
+  name: guid(pdzMc.id, privateDnsZoneContributorRole.id, miClusterControlPlane.name)
+  properties: {
+    roleDefinitionId: privateDnsZoneContributorRole.id
+    description: 'Allows cluster identity to attach custom DNS zone with Private Link information to this virtual network.'
+    principalId: miClusterControlPlane.properties.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
@@ -842,8 +890,13 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
       'skip-nodes-with-system-pods': 'true'
     }
     apiServerAccessProfile: {
-      authorizedIPRanges: clusterAuthorizedIPRanges
-      enablePrivateCluster: false
+      authorizedIPRanges: clusterAuthorizedIPRanges // IP authorized ranges can't be applied to the private API server endpoint, they only apply to the public API server.
+      enablePrivateClusterPublicFQDN: true
+      enablePrivateCluster: true
+      enableVnetIntegration: true
+      privateDNSZone: pdzMc.id
+      subnetId: targetVirtualNetwork::snetPrivateCluster.id
+      disableRunCommand: true
     }
     podIdentityProfile: {
       enabled: false // Using Microsoft Entra Workload IDs for pod identities.
@@ -940,7 +993,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     sci
 
     ndEnsureClusterIdentityHasRbacToSelfManagedResources
-
+    pdzMiClusterControlPlaneDnsZoneContributorRole_roleAssignment
+    
     // Policies that we need in place before the cluster is deployed or pods are deployed to it.
     // They are not technically a dependency from the resource provider perspective,
     // but logically they need to be in place before workloads are, so forcing that here. This also

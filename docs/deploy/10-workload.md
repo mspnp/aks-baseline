@@ -56,6 +56,14 @@ The cluster now has an [Traefik configured with a TLS certificate](./09-secret-m
 
    > From this container shell, you could also try to directly access the workload via `curl -I http://<aspnetapp-service-cluster-ip>`. Instead of getting back a `200 OK`, you'll receive a network timeout because of the [`allow-only-ingress-to-workload` network policy](../../cluster-manifests/a0008/ingress-network-policy.yaml) that is in place.
 
+1. Because you've finished managing your cluster, close the Azure Bastion tunnel:
+
+   ```bash
+   exit
+   ```
+
+   > You can re-open an Azure Bastion tunnel later when you require access to the AKS private cluster's API server.
+
 ### Next step
 
 :arrow_forward: [End-to-End Validation](./11-validation.md)

@@ -2,6 +2,10 @@
 
 Now that the [AKS cluster](./06-aks-cluster.md) has been deployed, the next step to validate that your cluster has been placed under a GitOps management solution, Flux in this case.
 
+## Expected results: AKS API server access is validated
+
+Because the cluster is private, you can't directly access it from the internet. Therefore, you'll connect to Azure Kubernetes Service (AKS) private cluster securely using Azure Bastion's native client tunneling feature.
+
 ## Steps
 
 GitOps allows a team to author Kubernetes manifest files, persist them in their Git repo, and have them automatically apply to their cluster as changes occur. This reference implementation is focused on the baseline cluster, so Flux is managing cluster-level concerns. This is distinct from workload-level concerns, which would be possible as well to manage via Flux and would typically be done by additional Flux configuration in the cluster. The namespace `cluster-baseline-settings` will be used to provide a logical division of the cluster bootstrap configuration from workload configuration. Examples of manifests that are applied:
@@ -10,19 +14,10 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 - Cluster-wide configuration of Azure Monitor for Containers
 - The workload's namespace named `a0008`
 
-1. Install `kubectl` 1.33 or newer. (`kubectl` supports ±1 Kubernetes version.)
-
-   ```bash
-   sudo az aks install-cli
-   kubectl version --client
-   ```
-
-   > Starting with `kubectl` 1.24, you must also have the `kubelogin` credential (exec) plug-in available for Microsoft Entra ID authentication. Installing `kubectl` via `az aks install-cli` does this already, but if you install `kubectl` in a different way, make sure `kubelogin` is [installed](https://github.com/Azure/kubelogin#getting-started).
-
 1. Get the cluster name.
 
    ```bash
-   AKS_CLUSTER_NAME=$(az aks list -g rg-bu0001a0008 --query '[0].name' -o tsv)
+   export AKS_CLUSTER_NAME=$(az aks list -g rg-bu0001a0008 --query '[0].name' -o tsv)
    echo AKS_CLUSTER_NAME: $AKS_CLUSTER_NAME
    ```
 
@@ -39,26 +34,28 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    > Node image updates are shipped on a weekly cadence by default. This AKS cluster is configured to have its maintenance window for node image updates every Tuesday at 9PM. If a node image is released outside of this maintenance window, the nodes will be updated on the next scheduled occurrence. For AKS nodes that require more frequent updates, consider changing the auto-upgrade channel to `SecurityPatch` and configuring a daily maintenance window.
 
-1. Get AKS `kubectl` credentials.
+1. Open the tunnel to your AKS Cluster.
 
-   > In the [Microsoft Entra ID Integration](03-microsoft-entra-id.md) step, we placed our cluster under Microsoft Entra group-backed RBAC. This is the first time we are seeing this configuration being used. The `az aks get-credentials` command sets your `kubectl` context so that you can issue commands against your cluster. Even when you have enabled Microsoft Entra ID integration with your AKS cluster, an Azure user has sufficient permissions on the cluster resource can still access your AKS cluster by using the `--admin` switch to this command. Using this switch *bypasses* Microsoft Entra ID and uses client certificate authentication instead; that isn't what we want to happen. So in order to prevent that practice, local account access such as `clusterAdmin` or `clusterMonitoringUser`) is expressly disabled.
+   > In the [Microsoft Entra ID Integration](03-microsoft-entra-id.md) step, we placed our cluster under Microsoft Entra group-backed RBAC. This is the first time we are seeing this configuration being used. The `az aks get-credentials` or the `az aks bastion` commands fetch a `kubeconfig` containing references to the AKS cluster you have created earlier so that you can issue commands against it. Even when you have enabled Microsoft Entra ID integration with your AKS cluster, an Azure user has sufficient permissions on the cluster resource can still access your AKS cluster by adding the `--admin` switch to either command. Using this switch *bypasses* Microsoft Entra ID and uses client certificate authentication instead; that isn't what we want to happen. So in order to prevent that practice, local account access such as `clusterAdmin` or `clusterMonitoringUser`) is expressly disabled.
    >
    > In a following step, you'll log in with a user that has been added to the Microsoft Entra security group used to back the Kubernetes RBAC admin role. Executing the first `kubectl` command below will invoke the Microsoft Entra ID login process to authorize the *user of your choice*, which will then be authenticated against Kubernetes RBAC to perform the action. The user you choose to log in with *must be a member of the Microsoft Entra group bound* to the `cluster-admin` ClusterRole. For simplicity you could either use the "break-glass" admin user created in [Microsoft Entra ID Integration](03-microsoft-entra-id.md) (`bu0001a0008-admin`) or any user you assigned to the `cluster-admin` group assignment in your [`cluster-rbac.yaml`](../../cluster-manifests/cluster-rbac.yaml) file.
 
    ```bash
-   az aks get-credentials -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME
+   BASTIONHOST_RESOURCEID=$(az deployment group show -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -n hub-regionA --query properties.outputs.bastionHostResourceId.value -o tsv)
+   echo BASTIONHOST_RESOURCEID: $BASTIONHOST_RESOURCEID
+
+   az aks bastion -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME --bastion $BASTIONHOST_RESOURCEID
    ```
 
-   :warning: At this point two important steps are happening:
+   > :exclamation: This command launches a subshell as a temporary, isolated environment to access the AKS API server. This is usually harmless, but environment changes made inside it won’t persist, and any variables or configuration will be discarded when the subshell exits.
 
-      - The `az aks get-credentials` command will be fetch a `kubeconfig` containing references to the AKS cluster you have created earlier.
-      - To *actually* use the cluster you will need to authenticate. For that, run any `kubectl` commands which at this stage will prompt you to authenticate against Microsoft Entra ID. For example, run the following command:
+1. Authenticate into your cluster by running the following command.
 
-         ```bash
-         kubectl get nodes
-         ```
+   ```bash
+   kubectl get nodes
+   ```
 
-   Once the authentication happens successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes refer to the [related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).
+   Once the authentication process completes successfully, some new items will be added to your `kubeconfig` file such as an `access-token` with an expiration period. For more information on how this process works in Kubernetes refer to the [related documentation](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).
 
 1. Validate your cluster is bootstrapped. The Flux extension for AKS has already run the bootstrapping process. Among other things, it's created the workload's namespace named `a0008`:
 

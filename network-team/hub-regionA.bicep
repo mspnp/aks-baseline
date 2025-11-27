@@ -24,10 +24,10 @@ param hubVirtualNetworkAzureFirewallSubnetAddressSpace string = '10.200.0.0/26'
 @minLength(10)
 param hubVirtualNetworkGatewaySubnetAddressSpace string = '10.200.0.64/27'
 
-@description('Optional. A /26 under the virtual network address space for regional Azure Bastion. Defaults to 10.200.0.128/26')
+@description('A /27 under the VNet Address Space for regional Azure Bastion')
 @maxLength(18)
 @minLength(10)
-param hubVirtualNetworkBastionSubnetAddressSpace string = '10.200.0.128/26'
+param hubVirtualNetworkBastionSubnetAddressSpace string = '10.200.0.96/27'
 
 /*** RESOURCES ***/
 
@@ -215,6 +215,7 @@ resource nsgBastionSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' =
           sourcePortRange: '*'
           sourceAddressPrefix: 'VirtualNetwork'
           destinationPortRanges: [
+            '443'
             '8080'
             '5701'
           ]
@@ -323,6 +324,10 @@ resource vnetHub 'Microsoft.Network/virtualNetworks@2023-11-01' = {
   resource azureFirewallSubnet 'subnets' existing = {
     name: 'AzureFirewallSubnet'
   }
+
+  resource azureBastionSubnet 'subnets' existing = {
+    name: 'AzureBastionSubnet'
+  }
 }
 
 resource vnetHub_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -398,6 +403,64 @@ resource pipAzureFirewall_diagnosticSetting 'Microsoft.Insights/diagnosticSettin
     ]
   }
 }]
+
+@description('The public IP for the regional hub\'s Azure Bastion service.')
+resource pipAzureBastion 'Microsoft.Network/publicIPAddresses@2024-10-01' = {
+  name: 'pip-ab-${location}'
+  location: location
+  sku: {
+    name: 'Standard'
+  }
+  zones: [
+    '1'
+    '2'
+    '3'
+  ]
+  properties: {
+    publicIPAllocationMethod: 'Static'
+    idleTimeoutInMinutes: 4
+    publicIPAddressVersion: 'IPv4'
+  }
+}
+
+resource azureBastion 'Microsoft.Network/bastionHosts@2024-10-01' = {
+  name: 'ab-${location}'
+  location: location
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    enableTunneling: true
+    ipConfigurations: [
+      {
+        name: 'hub-subnet'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: vnetHub::azureBastionSubnet.id
+          }
+          publicIPAddress: {
+            id: pipAzureBastion.id
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource azureBastion_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: azureBastion
+  properties: {
+    workspaceId: laHub.id
+    logs: [
+      {
+        category: 'BastionAuditLogs'
+        enabled: true
+      }
+    ]
+  }
+}
 
 // This holds IP addresses of known nodepool subnets in spokes.
 resource ipgNodepoolSubnet 'Microsoft.Network/ipGroups@2023-11-01' = {
@@ -878,3 +941,4 @@ resource hubFirewall_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2
 /*** OUTPUTS ***/
 
 output hubVnetId string = vnetHub.id
+output bastionHostResourceId string = azureBastion.id
