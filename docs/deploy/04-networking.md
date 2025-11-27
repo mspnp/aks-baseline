@@ -50,7 +50,7 @@ The following two resource groups will be created and populated with networking 
    az group create -n rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -l $LOCATION_AKS_BASELINE
    ```
 
-   > :warning: This reference implementation leverages AKS API Server Vnet Integration, which is broadly available across most of the current GA public cloud regions. The `LOCATION_AKS_BASELINE` environment variable is reused when creating the application team resources (including the AKS cluster). Therefore, before you begin, confirm that your target region is supported. For more information, see [API Server VNet Integration](https://learn.microsoft.com/azure/aks/api-server-vnet-integration#availability).
+   > :warning: This reference implementation leverages AKS API Server virtual network Integration, which is broadly available across most of the current GA public cloud regions. The `LOCATION_AKS_BASELINE` environment variable is reused when creating the application team resources (including the AKS cluster). Therefore, before you begin, confirm that your target region is supported. For more information, see [API Server VNet Integration](https://learn.microsoft.com/azure/aks/api-server-vnet-integration#availability).
 
 1. Create the networking spokes resource group.
 
