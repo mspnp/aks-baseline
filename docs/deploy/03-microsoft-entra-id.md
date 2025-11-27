@@ -33,6 +33,11 @@ This does not configure anything related to workload identity. This configuratio
 
    ```bash
    az login -t <Replace-With-ClusterApi-EntraID-TenantId> --allow-no-subscriptions
+   ```
+
+1. Query and save the Kubernetes cluster's tenant ID.
+
+   ```bash
    export TENANTID_K8SRBAC_AKS_BASELINE=$(az account show --query tenantId -o tsv)
    echo TENANTID_K8SRBAC_AKS_BASELINE: $TENANTID_K8SRBAC_AKS_BASELINE
    ```
