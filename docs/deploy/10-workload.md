@@ -6,17 +6,6 @@ The cluster now has an [Traefik configured with a TLS certificate](./09-secret-m
 
 > :book: The Contoso workload team is about to conclude this journey, but they need an app to test their new infrastructure. For this task they've picked out the venerable [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/main/samples/aspnetapp).
 
-1. Clone/download this repo locally.
-
-   > :twisted_rightwards_arrows: If you have forked this reference implementation repo, you'll be able to customize some of the files and commands for a more personalized and production-like experience; ensure references to this Git repository mentioned throughout the walk-through are updated to use your own fork.
-   >
-   > Make sure you use HTTPS (and not SSH) to clone the repository. (The remote URL will later be used to configure GitOps using Flux which requires an HTTPS endpoint to work properly.)
-
-   ```bash
-   git clone https://github.com/mspnp/aks-baseline.git
-   cd aks-baseline
-   ```
-
 1. Customize the host name of the Ingress resource to match your custom domain. *(You can skip this step if domain was left as contoso.com.)*
 
    ```bash
