@@ -891,7 +891,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     }
     apiServerAccessProfile: {
       authorizedIPRanges: clusterAuthorizedIPRanges // IP authorized ranges can't be applied to the private API server endpoint, they only apply to the public API server.
-      enablePrivateClusterPublicFQDN: true
+      enablePrivateClusterPublicFQDN: false
       enablePrivateCluster: true
       enableVnetIntegration: true
       privateDNSZone: pdzMc.id
