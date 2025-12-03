@@ -942,3 +942,4 @@ resource hubFirewall_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2
 
 output hubVnetId string = vnetHub.id
 output bastionHostResourceId string = azureBastion.id
+output bastionHostPIP string = pipAzureBastion.properties.ipAddress
