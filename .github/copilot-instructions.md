@@ -291,3 +291,15 @@ grep -rE "(password|secret|key)\s*[:=]\s*['\"][^'\"]+['\"]" --include="*.bicep" 
 ---
 
 ## Best Practices for This Instructions File
+
+This file follows [GitHub's recommendations](https://github.blog/ai-and-ml/github-copilot/5-tips-for-writing-better-custom-instructions-for-copilot/) for copilot-instructions.md:
+
+| Section | Best Practice | Status |
+|---------|---------------|--------|
+| **Project Overview** | Elevator pitch—what it is, who it's for, key features | ✅ |
+| **Tech Stack** | List languages, frameworks, tools with brief context | ✅ |
+| **Coding Guidelines** | Imperative rules, do's/don'ts, naming conventions | ✅ |
+| **Project Structure** | Directory layout with descriptions | ✅ |
+| **Resources** | Scripts, tools, documentation, MCP servers | ✅ |
+| **Concise & Direct** | Use bullets and tables, avoid verbose prose | ✅ |
+| **Examples** | Code snippets showing common patterns | ✅ |
