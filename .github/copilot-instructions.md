@@ -30,3 +30,39 @@ This repository is the **reference implementation** for the [Azure Kubernetes Se
 ### Manifests
 
 - **Kustomize** - Workload manifest composition (`workload/kustomization.yaml`)
+- **Kubernetes YAML** - Cluster baseline configurations
+
+## Architecture Overview
+
+This is an **infrastructure-focused** implementation using a hub-spoke network topology. It does not focus on workloads—the sample ASP.NET Core app exists only to demonstrate the infrastructure.
+
+### Network Topology
+
+- **Hub VNet** (`network-team/hub-regionA.bicep`): Central connectivity containing Azure Firewall (managed egress), Azure Bastion (secure management access), and a gateway subnet for VPN/ExpressRoute.
+- **Spoke VNet** (`network-team/spoke-BU0001A0008.bicep`): Contains the AKS cluster with dedicated subnets for Application Gateway, ingress resources, cluster nodes, Private Link endpoints, and the API server (private cluster).
+
+### Team Separation Model
+
+The directory structure models organizational separation of duties:
+
+| Directory | Team | Purpose |
+|-----------|------|---------|
+| `network-team/` | Networking | Hub-spoke topology, firewall rules, VNet peering |
+| `workload-team/` | Platform/DevOps | AKS cluster, ACR, Key Vault, App Gateway, monitoring |
+| `cluster-manifests/` | Platform/DevOps | Kubernetes baseline configs deployed via Flux GitOps |
+| `workload/` | Application | Sample workload manifests (Kustomize) |
+
+### Key Components
+
+- **AKS** with Azure CNI Overlay, system/user node pool separation, Microsoft Entra ID integration, Azure RBAC for Kubernetes authorization
+- **Azure Application Gateway** with WAF for ingress, terminating external TLS
+- **Traefik** as the internal ingress controller, terminating internal TLS
+- **Azure Firewall** controlling all egress traffic via UDRs
+- **Flux GitOps** for cluster bootstrapping from `cluster-manifests/`
+- **Azure Key Vault** with Secrets Store CSI Driver for certificate/secret management
+- **Private cluster** with API server VNet integration
+
+### Traffic Flow
+
+1. Client → Application Gateway (TLS termination, WAF inspection)
+2. App Gateway → Internal Load Balancer (re-encrypted with wildcard cert)
