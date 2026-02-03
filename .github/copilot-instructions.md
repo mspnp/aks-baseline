@@ -87,3 +87,42 @@ az deployment group create -g rg-enterprise-networking-spokes \
   -p hubVnetResourceId=$HUB_VNET_ID
 
 # Deploy AKS cluster and supporting services
+az deployment group create -g rg-bu0001a0008 \
+  -f workload-team/cluster-stamp.bicep \
+  -p targetVnetResourceId=$SPOKE_VNET_ID \
+  -p clusterAdminMicrosoftEntraGroupObjectId=$CLUSTER_ADMIN_GROUP_ID ...
+```
+
+## Conventions
+
+### Bicep Files
+
+- Use `@description()` decorators on all parameters
+- Parameters: camelCase (e.g., `targetVnetResourceId`)
+- Resource names: kebab-case with location suffix for multi-region support (e.g., `vnet-${location}-hub`, `la-hub-${location}`). This convention enables deploying the same templates across different Azure regions.
+- Always configure diagnostic settings to send logs to Log Analytics
+- Modules live in `modules/` subdirectories
+
+### Kubernetes Manifests
+
+- **Workload namespace**: `a0008` (derived from business unit identifier "BU0001A0008")
+- **Cluster-wide configs**: `cluster-baseline-settings` namespace
+- Use `app.kubernetes.io/name` labels consistently
+- User workloads target node pool `npuser01` via `nodeSelector`
+- Security contexts: non-root user, drop all capabilities, disable privilege escalation
+
+### Naming
+
+- "Contoso Bicycle" is a fictional company providing narrative context
+- Domain pattern: `bu0001a0008-00.aks-ingress.contoso.com` for internal ingress
+- Resource naming follows pattern: `{resource-type}-{purpose}-{location}` or `{resource-type}-{unique-string}`
+
+## Resources
+
+### Deployment Documentation
+
+Follow the numbered sequence in `docs/deploy/` (01-12)—each step builds on the previous:
+
+| Step | File | Purpose |
+|------|------|---------|
+| 01 | `01-prerequisites.md` | Azure subscription, tooling, permissions |
