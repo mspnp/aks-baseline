@@ -134,3 +134,160 @@ Follow the numbered sequence in `docs/deploy/` (01-12)—each step builds on the
 | 07 | `07-bootstrap-validation.md` | Cluster bootstrapping validation |
 | 08 | `08-workload-prerequisites.md` | Workload identity and secrets |
 | 09 | `09-secret-management-and-ingress-controller.md` | Traefik and Key Vault setup |
+| 10 | `10-workload.md` | Sample application deployment |
+| 11 | `11-validation.md` | End-to-end validation |
+| 12 | `12-cleanup.md` | Resource cleanup |
+
+### Scripts
+
+- `saveenv.sh` - Saves environment variables for session continuity
+
+### Architecture Diagrams
+
+- `docs/aks-baseline_details.drawio.svg` - Detailed architecture overview
+- `network-team/network-topology.drawio` - Network topology diagram
+
+### Related Resources
+
+- [Azure Architecture Center - AKS Baseline](https://aka.ms/architecture/aks-baseline) - Companion guidance
+- [AKS Baseline Automation](https://github.com/Azure/aks-baseline-automation) - CI/CD pipeline examples
+- [Contoso Bicycle context](./contoso-bicycle/README.md) - Fictional company requirements
+
+## Validation
+
+Since this is an IaC reference implementation (not application code), there are no unit tests. Validation is performed through:
+
+1. **Bicep compilation** - `az bicep build -f <file>.bicep`
+2. **What-if deployment** - `az deployment group what-if -g <rg> -f <file>.bicep`
+3. **Sequential deployment** - Follow docs/deploy steps in order
+4. **End-to-end validation** - See `docs/deploy/11-validation.md`
+
+## Pull Request Authoring Guidelines
+
+When Copilot creates or assists with PRs in this repository, follow these guidelines:
+
+### PR Title Format
+
+Follow conventional commits with scope and area:
+
+```
+<type> (<scope>): [<area>] <imperative description>
+```
+
+**Types:**
+- `feat` - New feature or capability
+- `fix` - Bug fix or correction
+- `docs` - Documentation only changes
+- `refactor` - Code change that neither fixes a bug nor adds a feature
+- `chore` - Maintenance tasks, dependency updates
+
+**Scopes:**
+- `docs` - Documentation changes
+- `iac` - Infrastructure as Code (Bicep templates)
+- `k8s` - Kubernetes manifests
+- `misc` - Other changes
+
+**Areas:**
+- `networking` - Hub, spoke, firewall, peering (`network-team/`)
+- `cluster` - AKS cluster, ACR, Key Vault (`workload-team/`)
+- `workload` - Application manifests (`workload/`, `cluster-manifests/`)
+- `misc` - Cross-cutting or other
+
+**Examples:**
+```
+feat (iac): [networking] add NSG rules for Azure Bastion
+fix (iac): [cluster] correct Key Vault RBAC role assignment
+docs (docs): [cluster] clarify bootstrap validation steps
+refactor (k8s): [workload] consolidate ingress annotations
+chore (misc): [misc] update Kubernetes version to 1.34
+```
+
+### PR Description Structure
+
+```markdown
+## Summary
+[Brief description of what changed and why]
+
+## Changes
+- [ ] Bicep templates modified: `path/to/file.bicep`
+- [ ] Kubernetes manifests modified: `path/to/manifest.yaml`
+- [ ] Documentation updated: `docs/deploy/XX-step.md`
+
+## Validation Steps
+
+### For Bicep Changes
+1. Compile the template:
+   ```bash
+   az bicep build -f <modified-file>.bicep
+   ```
+2. Run what-if to preview changes:
+   ```bash
+   az deployment group what-if -g <resource-group> -f <modified-file>.bicep -p <parameters>
+   ```
+3. Verify no breaking changes to existing deployments
+
+### For Kubernetes Manifest Changes
+1. Validate YAML syntax:
+   ```bash
+   kubectl apply --dry-run=client -f <modified-file>.yaml
+   ```
+2. If cluster exists, validate against cluster:
+   ```bash
+   kubectl apply --dry-run=server -f <modified-file>.yaml
+   ```
+3. Verify Kustomize builds successfully:
+   ```bash
+   kubectl kustomize workload/
+   ```
+
+### For Documentation Changes
+1. Verify all referenced files/paths exist
+2. Verify Azure CLI commands are syntactically correct
+3. Ensure step numbering remains sequential
+
+## Testing Checklist
+- [ ] Bicep compiles without errors
+- [ ] No secrets or credentials in code
+- [ ] Naming conventions followed (see Conventions section)
+- [ ] Diagnostic settings configured for new resources
+- [ ] Documentation updated if behavior changes
+```
+
+### What Copilot Should Include in PRs
+
+1. **Context**: Reference the related issue, architecture decision, or Azure documentation
+2. **Scope**: Keep changes atomic—one logical change per PR
+3. **Testing Evidence**: Include output of validation commands when possible
+4. **Deployment Impact**: Note if changes require redeployment of existing resources
+5. **Breaking Changes**: Clearly flag any breaking changes to parameters or outputs
+
+### Common Validation Commands
+
+```bash
+# Validate all Bicep files in a directory
+find . -name "*.bicep" -exec az bicep build -f {} \;
+
+# Lint Bicep with best practices
+az bicep lint -f <file>.bicep
+
+# Validate Kubernetes manifests
+kubectl apply --dry-run=client -f cluster-manifests/ -R
+
+# Build Kustomize output
+kubectl kustomize workload/
+
+# Check for hardcoded secrets (should return nothing)
+grep -rE "(password|secret|key)\s*[:=]\s*['\"][^'\"]+['\"]" --include="*.bicep" --include="*.yaml"
+```
+
+### PR Labels to Consider
+
+- `bicep` - Changes to infrastructure templates
+- `kubernetes` - Changes to cluster manifests
+- `documentation` - Changes to deployment docs
+- `breaking-change` - Requires action from users with existing deployments
+- `security` - Security-related changes
+
+---
+
+## Best Practices for This Instructions File
