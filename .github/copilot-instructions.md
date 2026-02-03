@@ -202,6 +202,30 @@ refactor (k8s): [workload] consolidate ingress annotations
 chore (misc): [misc] update Kubernetes version to 1.34
 ```
 
+### Commit Message Format
+
+Individual commits within a PR use simple imperative style:
+
+```
+<lowercase imperative description>
+
+<detailed explanation of what and why>
+```
+
+**Guidelines:**
+- Start with lowercase verb (add, fix, update, remove, refactor)
+- Keep first line under 50 characters
+- Add blank line before detailed description
+
+**Examples:**
+```
+add Tech Stack section
+
+Document the complete technology stack used in this reference implementation:
+- Infrastructure as Code: Bicep, Azure CLI, ARM
+- Azure Services: AKS, Firewall, App Gateway, Key Vault, ACR, Monitor, Entra ID
+```
+
 ### PR Description Structure
 
 ```markdown
@@ -303,3 +327,5 @@ This file follows [GitHub's recommendations](https://github.blog/ai-and-ml/githu
 | **Resources** | Scripts, tools, documentation, MCP servers | ✅ |
 | **Concise & Direct** | Use bullets and tables, avoid verbose prose | ✅ |
 | **Examples** | Code snippets showing common patterns | ✅ |
+| **PR Authoring** | Title format, description structure, validation steps | ✅ |
+| **Commit Messages** | Simple imperative style, lowercase, detailed body | ✅ |
