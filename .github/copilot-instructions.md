@@ -66,3 +66,24 @@ The directory structure models organizational separation of duties:
 
 1. Client → Application Gateway (TLS termination, WAF inspection)
 2. App Gateway → Internal Load Balancer (re-encrypted with wildcard cert)
+3. Load Balancer → Traefik ingress controller (TLS termination)
+4. Traefik → Workload pods (HTTP)
+
+All egress flows through Azure Firewall with explicit allow rules.
+
+## Deployment
+
+Deployments are executed via Azure CLI with Bicep—follow the numbered docs in `docs/deploy/` (01-12) sequentially.
+
+```bash
+# Deploy hub network
+az deployment group create -g rg-enterprise-networking-hubs \
+  -f network-team/hub-regionA.bicep \
+  -p nodepoolSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID']"
+
+# Deploy spoke network  
+az deployment group create -g rg-enterprise-networking-spokes \
+  -f network-team/spoke-BU0001A0008.bicep \
+  -p hubVnetResourceId=$HUB_VNET_ID
+
+# Deploy AKS cluster and supporting services
