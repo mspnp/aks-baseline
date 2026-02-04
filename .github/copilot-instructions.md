@@ -104,7 +104,6 @@ az deployment group create -g rg-bu0001a0008 \
 
 ### Naming
 
-- "Contoso Bicycle" is a fictional company providing narrative context
 - Domain pattern: `bu0001a0008-00.aks-ingress.contoso.com` for internal ingress
 - Resource naming follows pattern: `{resource-type}-{purpose}-{location}` or `{resource-type}-{unique-string}`
 
