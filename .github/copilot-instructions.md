@@ -109,25 +109,6 @@ az deployment group create -g rg-bu0001a0008 \
 
 ## Resources
 
-### Deployment Documentation
-
-Follow the numbered sequence in `docs/deploy/` (01-12)—each step builds on the previous:
-
-| Step | File | Purpose |
-|------|------|---------|
-| 01 | `01-prerequisites.md` | Azure subscription, tooling, permissions |
-| 02 | `02-ca-certificates.md` | TLS certificate generation |
-| 03 | `03-microsoft-entra-id.md` | Identity and RBAC planning |
-| 04 | `04-networking.md` | Hub-spoke network deployment |
-| 05 | `05-bootstrap-prep.md` | GitOps and Flux preparation |
-| 06 | `06-aks-cluster.md` | AKS cluster deployment |
-| 07 | `07-bootstrap-validation.md` | Cluster bootstrapping validation |
-| 08 | `08-workload-prerequisites.md` | Workload identity and secrets |
-| 09 | `09-secret-management-and-ingress-controller.md` | Traefik and Key Vault setup |
-| 10 | `10-workload.md` | Sample application deployment |
-| 11 | `11-validation.md` | End-to-end validation |
-| 12 | `12-cleanup.md` | Resource cleanup |
-
 ### Scripts
 
 - `saveenv.sh` - Saves environment variables for session continuity
