@@ -92,7 +92,7 @@ az deployment group create -g rg-bu0001a0008 \
 - Parameters: camelCase (e.g., `targetVnetResourceId`)
 - Resource names: kebab-case with location suffix for multi-region support (e.g., `vnet-${location}-hub`, `la-hub-${location}`). This convention enables deploying the same templates across different Azure regions.
 - Always configure diagnostic settings to send logs to Log Analytics
-- Modules live in `modules/` subdirectories
+- Modules live in `modules/` subdirectories when used. This reference implementation intentionally uses minimal modularization to keep templates readable and self-contained. Modularize further for reusability in production deployments.
 
 ### Kubernetes Manifests
 
