@@ -8,13 +8,12 @@ This repository is the **reference implementation** for the [Azure Kubernetes Se
 
 - **Bicep** - All Azure infrastructure definitions
 - **Azure CLI** - Deployment execution via `az deployment group create`
-- **Azure Resource Manager** - Underlying deployment engine
 
 ### Azure Services
 
-- **AKS** (v1.34) - Kubernetes cluster with Azure CNI Overlay networking
+- **AKS** - Kubernetes cluster with Azure CNI Overlay networking
 - **Azure Firewall** (Premium) - Egress traffic control and threat intelligence
-- **Azure Application Gateway** (v2 with WAF) - Ingress and TLS termination
+- **Azure Application Gateway** (with WAF) - Ingress and TLS termination
 - **Azure Key Vault** - Secrets and certificate management
 - **Azure Container Registry** - Private container image storage
 - **Azure Monitor / Log Analytics** - Observability and diagnostics
@@ -73,7 +72,7 @@ All egress flows through Azure Firewall with explicit allow rules.
 
 ## Deployment
 
-Deployments are executed via Azure CLI with Bicep—follow the numbered docs in `docs/deploy/` (01-12) sequentially.
+Deployments are executed via Azure CLI with Bicep—follow the numbered docs in `docs/deploy/` sequentially.
 
 ```bash
 # Deploy hub network
@@ -81,7 +80,7 @@ az deployment group create -g rg-enterprise-networking-hubs \
   -f network-team/hub-regionA.bicep \
   -p nodepoolSubnetResourceIds="['$NODEPOOL_SUBNET_RESOURCE_ID']"
 
-# Deploy spoke network  
+# Deploy spoke network
 az deployment group create -g rg-enterprise-networking-spokes \
   -f network-team/spoke-BU0001A0008.bicep \
   -p hubVnetResourceId=$HUB_VNET_ID
