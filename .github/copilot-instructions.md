@@ -53,16 +53,6 @@ The directory structure models organizational separation of duties:
 | `cluster-manifests/` | Platform/DevOps | Kubernetes baseline configs deployed via Flux GitOps |
 | `workload/` | Application | Sample workload manifests (Kustomize) |
 
-### Key Components
-
-- **AKS** with Azure CNI Overlay, system/user node pool separation, Microsoft Entra ID integration, Azure RBAC for Kubernetes authorization
-- **Azure Application Gateway** with WAF for ingress, terminating external TLS
-- **Traefik** as the internal ingress controller, terminating internal TLS
-- **Azure Firewall** controlling all egress traffic via UDRs
-- **Flux GitOps** for cluster bootstrapping from `cluster-manifests/`
-- **Azure Key Vault** with Secrets Store CSI Driver for certificate/secret management
-- **Private cluster** with API server VNet integration
-
 ### Traffic Flow
 
 1. Client → Application Gateway (TLS termination, WAF inspection)
