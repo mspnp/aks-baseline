@@ -42,6 +42,8 @@ This is an **infrastructure-focused** implementation using a hub-spoke network t
 
 ### Team Separation Model
 
+> **Note:** This repository is written "in world" as a reference implementation for the fictional company "Contoso Bicycle." It assumes organizational separation of duties typical in enterprises—networking, platform, and application teams operating independently. The identifier `BU0001A0008` represents a fictional workload tracking convention (Business Unit 0001, Application 0008) that large organizations use to track workloads across cost centers and other common boundaries.
+
 The directory structure models organizational separation of duties:
 
 | Directory | Team | Purpose |
