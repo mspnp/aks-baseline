@@ -4,3 +4,6 @@
 *.pfx
 *.pem
 aks_baseline.env
+
+# Ignore Bicep build artifacts
+*.json

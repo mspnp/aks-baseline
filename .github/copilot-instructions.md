@@ -170,7 +170,7 @@ feat (iac): [networking] add NSG rules for Azure Bastion
 fix (iac): [cluster] correct Key Vault RBAC role assignment
 docs (docs): [cluster] clarify bootstrap validation steps
 refactor (k8s): [workload] consolidate ingress annotations
-chore (misc): [misc] update Kubernetes version to 1.34
+chore (misc): [misc] update Kubernetes version to 1.34.2
 ```
 
 ### Commit Message Format

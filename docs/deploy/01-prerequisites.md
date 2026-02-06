@@ -28,7 +28,7 @@ This is the starting point for the instructions on deploying the [AKS baseline r
 
    [![Launch Azure Cloud Shell](https://learn.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
-1. Install `kubectl` 1.33 or newer. (`kubectl` supports ±1 Kubernetes version.)
+1. Install `kubectl` 1.34 or newer. (`kubectl` supports ±1 Kubernetes version.)
 
    ```bash
    sudo az aks install-cli
