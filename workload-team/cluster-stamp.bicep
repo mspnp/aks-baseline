@@ -736,7 +736,7 @@ module policies 'modules/policies.bicep' = {
   }
 }
 
-resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
+resource mc 'Microsoft.ContainerService/managedClusters@2025-10-01' = {
   name: clusterName
   location: location
   tags: {
@@ -852,7 +852,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     }
     nodeResourceGroup: nodeResourceGroup.name
     enableRBAC: true
-    enablePodSecurityPolicy: false
     networkProfile: {
       networkPlugin: 'azure'
       networkPluginMode: 'overlay'
@@ -891,7 +890,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
     }
     apiServerAccessProfile: {
       authorizedIPRanges: clusterAuthorizedIPRanges // IP authorized ranges can't be applied to the private API server endpoint, they only apply to the public API server.
-      enablePrivateClusterPublicFQDN: true
+      enablePrivateClusterPublicFQDN: false
       enablePrivateCluster: true
       enableVnetIntegration: true
       privateDNSZone: pdzMc.id
@@ -959,9 +958,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' = {
       }
       azureKeyVaultKms: {
         enabled: false // Not enabled in the this deployment, as it is not used. Enable as needed.
-      }
-      nodeRestriction: {
-        enabled: true // https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#noderestriction
       }
       defender: {
         logAnalyticsWorkspaceResourceId: la.id
