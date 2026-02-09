@@ -4,7 +4,3 @@
 *.pfx
 *.pem
 aks_baseline.env
-
-# Ignore Bicep build artifacts (ARM JSON templates)
-workload-team/*.json
-network-team/*.json
