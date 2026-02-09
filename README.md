@@ -24,7 +24,7 @@ Finally, this implementation uses the [ASP.NET Core Docker sample web app](https
 
 #### Azure platform
 
-- AKS v1.34.2
+- AKS v1.34
   - System and user [node pool separation](https://learn.microsoft.com/azure/aks/use-system-pools)
   - [AKS-managed Microsoft Entra ID integration](https://learn.microsoft.com/azure/aks/managed-aad)
   - Microsoft Entra ID-backed Kubernetes RBAC (*local user accounts disabled*)
