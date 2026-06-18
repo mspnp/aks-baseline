@@ -81,7 +81,7 @@ The SecretProviderClass and TLS sync Deployment were deployed via Flux GitOps du
 > - The [Azure Policy for Kubernetes built-in restricted initiative](https://learn.microsoft.com/azure/aks/use-pod-security-on-azure-policy#built-in-policy-initiatives).
 > - Five more [built-in individual Azure policies](https://learn.microsoft.com/azure/aks/policy-samples#microsoftcontainerservice) that enforce that pods perform resource requests, define trusted container registries, mandate that root filesystem access is read-only, enforce the usage of internal load balancers, and enforce HTTPS-only Kubernetes Ingress objects.
 >
-> Beyond that, internal governance requires the team to ensure that any public endpoint is exposed through a fully qualified domain name that ends with a company-owned domain suffix. To enforce this requirement for all endpoints exposed by the cluster's ingress controller, they define a custom policy using [Gatekeeper](https://open-policy-agent.github.io/gatekeeper/website/docs/) and use the capability to [deploy it via Azure Policy](https://learn.microsoft.com/azure/aks/use-azure-policy#create-and-assign-a-custom-policy-definition) to their cluster.
+> Beyond that, internal governance requires the team to ensure that any public endpoint is exposed through a fully qualified domain name that ends with a company-owned domain suffix. To enforce this requirement for all endpoints exposed by the cluster's gateway, they define a custom policy using [Gatekeeper](https://open-policy-agent.github.io/gatekeeper/website/docs/) and use the capability to [deploy it via Azure Policy](https://learn.microsoft.com/azure/aks/use-azure-policy#create-and-assign-a-custom-policy-definition) to their cluster.
 
 1. Confirm policies are applied to the AKS cluster
 

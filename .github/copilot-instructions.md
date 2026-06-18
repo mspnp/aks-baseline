@@ -22,7 +22,7 @@ This repository is the **reference implementation** for the [Azure Kubernetes Se
 ### Kubernetes Components
 
 - **Flux** (AKS-managed extension) - GitOps operator for cluster bootstrapping
-- **Traefik** - Ingress controller for internal traffic routing
+- **Gateway API** (AKS App Routing with Istio) - Ingress via Envoy gateway proxy
 - **Secrets Store CSI Driver** (AKS add-on) - Key Vault integration
 - **Azure Workload Identity** (AKS add-on) - Pod identity management
 
@@ -57,8 +57,8 @@ The directory structure models organizational separation of duties:
 
 1. Client → Application Gateway (TLS termination, WAF inspection)
 2. App Gateway → Internal Load Balancer (re-encrypted with wildcard cert)
-3. Load Balancer → Traefik ingress controller (TLS termination)
-4. Traefik → Workload pods (HTTP)
+3. Load Balancer → Envoy gateway proxy (TLS termination)
+4. Envoy → Workload pods (HTTP)
 
 All egress flows through Azure Firewall with explicit allow rules.
 

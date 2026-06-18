@@ -1,6 +1,6 @@
-# Generate your client-facing and AKS ingress controller TLS certificates
+# Generate your client-facing and AKS gateway TLS certificates
 
-Now that you have the [prerequisites](./01-prerequisites.md) met, follow these steps to create the TLS certificates that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS ingress controller. If you already have access to appropriate certificates, or can procure them from your organization, consider doing so and skipping the certificate generation steps. **The following steps generate self-signed certs for instructive purposes only. Don't use them for a real production cluster.**
+Now that you have the [prerequisites](./01-prerequisites.md) met, follow these steps to create the TLS certificates that Azure Application Gateway will serve for clients connecting to your web app as well as the AKS gateway proxy. If you already have access to appropriate certificates, or can procure them from your organization, consider doing so and skipping the certificate generation steps. **The following steps generate self-signed certs for instructive purposes only. Don't use them for a real production cluster.**
 
 ## Steps
 
@@ -12,7 +12,7 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow these s
 
 1. Generate a client-facing, self-signed TLS certificate.
 
-   > :book: Contoso Bicycle needs to procure a CA certificate for the web site. As this is going to be a user-facing site, they purchase an EV cert from their CA. This will serve in front of the Azure Application Gateway. They will also procure another one, a standard cert, to be used with the AKS Ingress Controller. This one is not EV, as it will not be user facing.
+   > :book: Contoso Bicycle needs to procure a CA certificate for the web site. As this is going to be a user-facing site, they purchase an EV cert from their CA. This will serve in front of the Azure Application Gateway. They will also procure another one, a standard cert, to be used with the AKS gateway proxy. This one is not EV, as it will not be user facing.
 
    :warning: Do not use the certificate created by this script for actual deployments. The use of self-signed certificates is for demonstration purposes only. For your cluster, use your organization's requirements for procurement and lifetime management of TLS certificates, *even for development purposes*.
 
@@ -32,15 +32,15 @@ Now that you have the [prerequisites](./01-prerequisites.md) met, follow these s
    echo APP_GATEWAY_LISTENER_CERTIFICATE_AKS_BASELINE: $APP_GATEWAY_LISTENER_CERTIFICATE_AKS_BASELINE
    ```
 
-1. Generate the wildcard certificate for the AKS ingress controller.
+1. Generate the wildcard certificate for the AKS gateway proxy.
 
-   > :book: Contoso Bicycle procured a standard CA certificate to be used with the AKS ingress controller. This one is not EV, because it won't be user-facing. The workload team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller.
+   > :book: Contoso Bicycle procured a standard CA certificate to be used with the AKS gateway proxy. This one is not EV, because it won't be user-facing. The workload team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the gateway.
 
    ```bash
    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out aks-ingress-tls.crt -keyout aks-ingress-tls.key -subj "/CN=*.aks-ingress.${DOMAIN_NAME_AKS_BASELINE}/O=Contoso AKS Ingress"
    ```
 
-1. Base64 encode the AKS ingress controller certificate.
+1. Base64 encode the AKS gateway certificate.
 
    :bulb: No matter if you used a certificate from your organization or you generated one from above, you'll need the public certificate (as `.crt` or `.cer`) to be Base64 encoded for proper storage in Key Vault later.
 
