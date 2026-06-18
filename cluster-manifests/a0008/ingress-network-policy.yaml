@@ -9,10 +9,6 @@ spec:
       app.kubernetes.io/name: aspnetapp
   ingress:
   - from:
-    - namespaceSelector:
-        matchLabels:
-          kubernetes.io/metadata.name: app-routing-system
     - podSelector:
         matchLabels:
-          app: nginx-internal-0
-          app.kubernetes.io/component: ingress-controller
+          gateway.networking.k8s.io/gateway-name: bu0001a0008-gateway
