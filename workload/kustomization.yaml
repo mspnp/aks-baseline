@@ -3,11 +3,4 @@ kind: Kustomization
 
 resources:
 - 01-aspnetapp.yaml
-- 02-aspnetapp-ingress.yaml
-
-patches:
-- target:
-    kind: Ingress
-    name: aspnetapp-ingress
-    version: v1
-  path: aspnetapp-ingress-patch.yaml
+- 02-aspnetapp-httproute.yaml
