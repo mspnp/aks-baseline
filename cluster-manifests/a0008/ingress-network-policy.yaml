@@ -12,3 +12,36 @@ spec:
     - podSelector:
         matchLabels:
           gateway.networking.k8s.io/gateway-name: bu0001a0008-gateway
+---
+# Restricts ingress to the Envoy gateway proxy to only the Application Gateway
+# subnet and the cluster nodes subnet. This is the NetworkPolicy equivalent of
+# the L7 source IP filtering that Istio AuthorizationPolicy provides when using
+# the full service mesh. In meshless mode (approuting-istio), Istio CRDs are not
+# available, so L3/L4 NetworkPolicy with ipBlock is the enforcement mechanism.
+#
+# Azure NSG on snet-clusteringressservices provides defense-in-depth at the
+# virtual network layer.
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-only-appgw-to-gateway-proxy
+  namespace: a0008
+spec:
+  podSelector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: bu0001a0008-gateway
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 10.240.5.0/24 # snet-applicationgateway
+    - ipBlock:
+        cidr: 10.240.0.0/22 # snet-clusternodes (kube-proxy may masquerade source IP)
+    - ipBlock:
+        cidr: 168.63.129.16/32 # Azure Load Balancer health probes
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 15021 # Envoy health check port
