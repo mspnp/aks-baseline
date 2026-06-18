@@ -38,7 +38,7 @@ This section will help you to validate the workload is exposed correctly and res
 
    > :bulb: Remember to include the protocol prefix `https://` in the URL you type in the address bar of your browser. A TLS warning will be present due to using a self-signed certificate. You can ignore it or import the self-signed cert (`appgw.pfx`) to your user's trusted root store.
 
-   Refresh the web page a couple of times and observe the value `Host name` displayed at the bottom of the page. As the NGINX Ingress Controller balances the requests between the two pods hosting the web page, the host name will change from one pod name to the other throughout your queries.
+   Refresh the web page a couple of times and observe the value `Host name` displayed at the bottom of the page. As the gateway proxy balances the requests between the two pods hosting the web page, the host name will change from one pod name to the other throughout your queries.
 
 ## Validate reader access to the a0008 namespace. *Optional.*
 
@@ -61,6 +61,8 @@ Built-in as well as custom policies are applied to the cluster as part of the [c
 ### Steps
 
 1. Try to add a second `Ingress` resource to your workload namespace with the following command.
+
+   > :bulb: Even though this reference implementation uses Gateway API for routing, Gatekeeper policies still enforce domain-suffix rules on `Ingress` resources to prevent any workload from creating non-compliant ingress definitions in the cluster.
 
    Notice that the host value specified in the `rules` and the `tls` sections defines a domain name with suffix `invalid-domain.com` rather than the domain suffix you defined for your setup when you [created your certificates](./02-ca-certificates.md)).
 

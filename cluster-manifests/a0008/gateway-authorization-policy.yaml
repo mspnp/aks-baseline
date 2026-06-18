@@ -1,0 +1,26 @@
+#  ------------------------------------------------------------
+#   Copyright (c) Microsoft Corporation.  All rights reserved.
+#   Licensed under the MIT License (MIT). See License.txt in the repo root #  for license information.
+#  ------------------------------------------------------------
+
+# Restrict gateway proxy traffic to only allow requests originating from the
+# Application Gateway subnet.  This is the Gateway API equivalent of NGINX's
+# whitelist-source-range annotation.  Envoy returns 403 RBAC: access denied
+# for requests from any other source.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-only-appgw-subnet
+  namespace: a0008
+  labels:
+    app.kubernetes.io/name: bu0001a0008-gateway
+spec:
+  selector:
+    matchLabels:
+      istio.io/gateway-name: bu0001a0008-gateway
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        ipBlocks:
+        - "10.240.5.0/24"
