@@ -841,7 +841,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-04-01' = {
       azureKeyvaultSecretsProvider: {
         enabled: true
         config: {
-          enableSecretRotation: 'false'
+          enableSecretRotation: 'true'
+          rotationPollInterval: '2m'
         }
       }
     }
@@ -1171,6 +1172,14 @@ resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurati
         retryIntervalInSeconds: 300
         prune: true
         force: false
+        postBuild: {
+          substitute: {
+            CONTAINER_REGISTRY_URL: acr.properties.loginServer
+            KEY_VAULT_NAME: kv.name
+            CSI_IDENTITY_CLIENT_ID: mc.properties.addonProfiles.azureKeyvaultSecretsProvider.identity.clientId
+            TENANT_ID: subscription().tenantId
+          }
+        }
       }
     }
   }
@@ -1437,3 +1446,5 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
 
 output aksClusterName string = clusterName
 output keyVaultName string = kv.name
+output aksCSISecretsStoreIdentityClientId string = mc.properties.addonProfiles.azureKeyvaultSecretsProvider.identity.clientId
+output containerRegistryLoginServer string = acr.properties.loginServer

@@ -282,3 +282,5 @@ resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2023-11-01
 }
 
 /*** OUTPUTS ***/
+
+output containerRegistryName string = acrAks.name

@@ -1,16 +1,16 @@
 # Workload prerequisites
 
-The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping up the infrastructure focus of the [AKS baseline reference implementation](../../). Follow the steps in this article to import the TLS certificate that the ingress controller will serve so that Application Gateway can connect to your web app.
+The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping up the infrastructure focus of the [AKS baseline reference implementation](../../). Follow the steps in this article to import the TLS certificate that the gateway proxy will serve so that Application Gateway can connect to your web app, and configure the CSI Secrets Store integration.
 
 ## Steps
 
-## Import the wildcard certificate for the AKS ingress controller to Azure Key Vault
+## Import the wildcard certificate for the AKS gateway proxy to Azure Key Vault
 
-> :book: Contoso Bicycle procured a standard CA certificate to be used with the AKS ingress controller. This one is not EV, because it won't be user-facing.
+> :book: Contoso Bicycle procured a standard CA certificate to be used with the AKS gateway proxy. This one is not EV, because it won't be user-facing.
 
 1. Obtain the Azure Key Vault details, then give the current user the permissions and network access to import certificates.
 
-   > :book: The workload team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the ingress controller. They use Azure Key Vault to import and manage the lifecycle of this certificate.
+   > :book: The workload team decides to use a wildcard certificate of `*.aks-ingress.contoso.com` for the gateway proxy. They use Azure Key Vault to import and manage the lifecycle of this certificate.
 
    ```bash
    export KEYVAULT_NAME_AKS_BASELINE=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.keyVaultName.value -o tsv)
@@ -25,7 +25,7 @@ The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
    az keyvault network-rule add -n $KEYVAULT_NAME_AKS_BASELINE --ip-address ${CURRENT_IP_ADDRESS}
    ```
 
-1. Import the AKS ingress controller's wildcard certificate for `*.aks-ingress.contoso.com`.
+1. Import the AKS gateway proxy's wildcard certificate for `*.aks-ingress.contoso.com`.
 
    :warning: If you already have access to an [appropriate certificate](https://learn.microsoft.com/azure/key-vault/certificates/certificate-scenarios#formats-of-import-we-support), or can procure one from your organization, consider using it for this step. For more information, take a look at the [import certificate tutorial using Azure Key Vault](https://learn.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate#import-a-certificate-to-key-vault).
 
@@ -45,7 +45,9 @@ The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
    az role assignment delete --ids $TEMP_ROLEASSIGNMENT_TO_UPLOAD_CERT
    ```
 
-## Check internal NGINX ingress controller is up and running
+## Validate the TLS sync and gateway controller readiness
+
+The SecretProviderClass and TLS sync Deployment were deployed via Flux GitOps during cluster bootstrapping. The [Azure Key Vault Provider for Secrets Store CSI Driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure) requires a pod to mount the CSI volume in order to create and maintain the Kubernetes Secret. The TLS sync pod keeps the Secret alive independently of workload pod lifecycle.
 
 1. Ensure your bootstrapping process has created the following namespace.
 
@@ -54,12 +56,21 @@ The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
    kubectl get ns a0008 -w
    ```
 
-1. Wait for NGINX ingress controller to be ready.
+1. Wait for the TLS sync pod to be running and the Secret to be created.
 
-   > NGINX Ingress Controller has been installed using GitOps. Wait for it to be up and running before proceeding.
+   > Once the TLS sync pod mounts the CSI volume referencing the SecretProviderClass, the driver syncs the certificate from Azure Key Vault and creates the `bu0001a0008-ingress-tls` Kubernetes Secret. This may take up to two minutes.
 
    ```bash
-   kubectl get NginxIngressController/nginx-internal -n a0008 -o jsonpath='{range .status.conditions[*]}{.lastTransitionTime}{"\t"}{.status}{"\t"}{.type}{"\t"}{.message}{"\n"}{end}'
+   kubectl wait -n a0008 --for=condition=available deployment/tls-sync --timeout=120s
+   kubectl wait --for=jsonpath='{.type}'=kubernetes.io/tls secret/bu0001a0008-ingress-tls -n a0008 --timeout=120s
+   ```
+
+1. Wait for the Istio gateway controller to be ready.
+
+   > The gateway controller was installed by the application routing add-on with Gateway API support. Wait for it to be running before proceeding to create your Gateway resource.
+
+   ```bash
+   kubectl wait -n app-routing-system --for=condition=available deployment --all --timeout=120s
    ```
 
 ## Check Azure Policies are in place
