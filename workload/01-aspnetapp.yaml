@@ -39,10 +39,10 @@ spec:
             podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: app.kubernetes.io/component
+                - key: gateway.networking.k8s.io/gateway-name
                   operator: In
                   values:
-                  - ingress-controller
+                  - bu0001a0008-gateway
               topologyKey: "kubernetes.io/hostname"
       containers:
       - name: aspnet-webapp-sample
