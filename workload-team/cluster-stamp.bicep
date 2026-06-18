@@ -696,9 +696,9 @@ resource pdzMc 'Microsoft.Network/privateDnsZones@2024-06-01' = {
 @description('Grant the AKS cluster managed identity to attach custom DNS zone with Private Link information to this virtual network.')
 resource pdzMiClusterControlPlaneDnsZoneContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: pdzMc
-  name: guid(pdzMc.id, privateDnsZoneContributorRole.id, miClusterControlPlane.name)
+  name: guid(pdzMc.id, PrivateDnsZoneContributorRole.id, miClusterControlPlane.name)
   properties: {
-    roleDefinitionId: privateDnsZoneContributorRole.id
+    roleDefinitionId: PrivateDnsZoneContributorRole.id
     description: 'Allows cluster identity to attach custom DNS zone with Private Link information to this virtual network.'
     principalId: miClusterControlPlane.properties.principalId
     principalType: 'ServicePrincipal'
