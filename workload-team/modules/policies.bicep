@@ -240,10 +240,10 @@ resource paEnforceResourceLimits 'Microsoft.Authorization/policyAssignments@2024
     policyDefinitionId: pdEnforceResourceLimits.id
     parameters: {
       cpuLimit: {
-        value: '500m' // aspnet-webapp-sample = 100m
+        value: '2' // aspnet-webapp-sample = 100m, Envoy gateway proxy (managed by AKS) = 2
       }
       memoryLimit: {
-        value: '256Mi' // aspnet-webapp-sample = 256Mi
+        value: '1Gi' // aspnet-webapp-sample = 256Mi, Envoy gateway proxy (managed by AKS) = 1Gi
       }
       excludedNamespaces: {
         value: [
