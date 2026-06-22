@@ -6,6 +6,10 @@ targetScope = 'resourceGroup'
 @minLength(79)
 param targetVnetResourceId string
 
+@description('The regional hub VNet Resource ID that the spoke is peered to. Used to link the AKS private DNS zone so that Azure Bastion in the hub can resolve the private API server endpoint.')
+@minLength(79)
+param hubVnetResourceId string
+
 @description('Microsoft Entra group in the identified tenant that will be granted the highly privileged cluster-admin role. If Azure RBAC is used, then this group will get a role assignment to Azure RBAC, else it will be assigned directly to the cluster\'s admin group.')
 param clusterAdminMicrosoftEntraGroupObjectId string
 
@@ -167,6 +171,20 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
   resource snetPrivateCluster 'subnets' existing = {
     name: 'snet-privatecluster'
   }
+}
+
+/*** EXISTING HUB RESOURCES ***/
+
+// Hub resource group
+resource hubResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
+  scope: subscription()
+  name: split(hubVnetResourceId, '/')[4]
+}
+
+// Hub virtual network
+resource hubVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
+  scope: hubResourceGroup
+  name: last(split(hubVnetResourceId, '/'))
 }
 
 /*** RESOURCES ***/
@@ -681,6 +699,18 @@ resource pdzMc 'Microsoft.Network/privateDnsZones@2024-06-01' = {
     properties: {
       virtualNetwork: {
         id: targetVirtualNetwork.id
+      }
+      registrationEnabled: false
+    }
+  }
+
+  @description('Enable hub virtual network private zone DNS lookup for private AKS - required for Azure Bastion to resolve the private API server endpoint.')
+  resource vnetlnkHub 'virtualNetworkLinks' = {
+    name: 'to_${hubVirtualNetwork.name}'
+    location: 'global'
+    properties: {
+      virtualNetwork: {
+        id: hubVirtualNetwork.id
       }
       registrationEnabled: false
     }

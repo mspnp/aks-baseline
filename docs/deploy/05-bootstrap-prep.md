@@ -48,6 +48,15 @@ When designing your pipelines, be sure to isolate components by their lifecycle.
    echo RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE: $RESOURCEID_VNET_CLUSTERSPOKE_AKS_BASELINE
    ```
 
+1. Get the hub virtual network's resource ID.
+
+   > :book: The AKS private DNS zone must be linked to the hub virtual network so that Azure Bastion can resolve the private API server endpoint.
+
+   ```bash
+   export RESOURCEID_VNET_HUB_AKS_BASELINE=$(az deployment group show -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -n hub-regionA --query properties.outputs.hubVnetId.value -o tsv)
+   echo RESOURCEID_VNET_HUB_AKS_BASELINE: $RESOURCEID_VNET_HUB_AKS_BASELINE
+   ```
+
 1. Deploy the container registry and non-stamp resources template.
 
    ```bash
