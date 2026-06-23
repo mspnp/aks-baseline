@@ -976,6 +976,9 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-04-01' = {
             mode: 'Enabled' // internal load balancer configuration is expressed on the Gateway resource via infrastructure.annotations
           }
         }
+        nginx: {
+          mode: 'Disabled' // suppress the default NGINX ingress controller; this cluster uses Gateway API exclusively
+        }
         dnsZoneResourceIds: [
           pdzAksIngress.id // attach an AKS ingress private DNS zone to the application routing add-on
         ]
