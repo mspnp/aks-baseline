@@ -33,9 +33,14 @@ spec:
                 values:
                 - aspnetapp
             topologyKey: "kubernetes.io/hostname"
+        # The managed Envoy gateway proxy runs on the system node pool while workload
+        # pods target the user node pool. Because they can never share the same node,
+        # zone-level affinity is the closest co-location achievable. Without this,
+        # the scheduler may place workload pods in zones that have no proxy replica,
+        # forcing every request through that path to cross availability zone boundaries.
         podAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
+          - weight: 100
             podAffinityTerm:
               labelSelector:
                 matchExpressions:
@@ -43,7 +48,7 @@ spec:
                   operator: In
                   values:
                   - bu0001a0008-gateway
-              topologyKey: "kubernetes.io/hostname"
+              topologyKey: "topology.kubernetes.io/zone"
       containers:
       - name: aspnet-webapp-sample
         image: mcr.microsoft.com/dotnet/samples:aspnetapp
