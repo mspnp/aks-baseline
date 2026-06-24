@@ -989,6 +989,9 @@ resource mc 'Microsoft.ContainerService/managedClusters@2025-10-01' = {
       azureKeyVaultKms: {
         enabled: false // Not enabled in the this deployment, as it is not used. Enable as needed.
       }
+      nodeRestriction: {
+        enabled: true // https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#noderestriction
+      }
       defender: {
         logAnalyticsWorkspaceResourceId: la.id
         securityMonitoring: {
