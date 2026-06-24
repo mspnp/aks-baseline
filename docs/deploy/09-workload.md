@@ -44,7 +44,7 @@ The customer now has its [prerequisite components](./08-workload-prerequisites.m
 
 1. Create the DNS A record for the gateway proxy internal load balancer.
 
-   > :warning: The application routing add-on's external-dns component currently uses `--source=ingress` and does not watch Gateway API resources. Until `--source=gateway-httproute` support is added, you must manually create DNS records that map your ingress hostname to the gateway proxy's internal load balancer IP address. This step will be removed once the add-on supports automatic DNS record management for Gateway API resources.
+   > :book: The built-in external-dns component deployed with the application routing add-on watches only Ingress resources. To automate DNS record management for Gateway API resources, deploy a [`ClusterExternalDNS` or `ExternalDNS`](https://learn.microsoft.com/azure/aks/app-routing-gateway-api-dns-tls) custom resource. That path requires Microsoft Entra Workload Identity infrastructure (a user-assigned managed identity, federated identity credentials, and a dedicated ServiceAccount). This reference implementation uses a static DNS record to keep the identity footprint minimal.
 
    ```bash
    GATEWAY_IP=$(kubectl get gateway bu0001a0008-gateway -n a0008 -o jsonpath='{.status.addresses[0].value}')

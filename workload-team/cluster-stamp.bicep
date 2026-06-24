@@ -589,7 +589,8 @@ resource kvClusterWebAppRoutingKeyVaultReader_roleAssignment 'Microsoft.Authoriz
   }
 }
 
-// Grant the AKS cluster web app routing's managed identity with Private DNS Zone Contributor role permissions; this allows the gateway controller to add records to the Private DNS Zone
+// Grant the AKS cluster web app routing's managed identity with Private DNS Zone Contributor role permissions; this allows the built-in external-dns instance to reconcile DNS records for Ingress resources.
+// Gateway API DNS automation (ClusterExternalDNS/ExternalDNS) uses a separate Workload Identity path instead.
 resource pdzClusterWebAppRoutingDNSZoneContributor_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: pdzAksIngress
   name: guid(resourceGroup().id, 'cluster-webapprouting-gateway-controller-dns-zone-contributor', PrivateDnsZoneContributorRole.id)
