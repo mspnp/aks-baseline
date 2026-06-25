@@ -100,7 +100,7 @@ resource keyVaultCertificateUserRole 'Microsoft.Authorization/roleDefinitions@20
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied to a Private DNS Zone to grant with contributor privileges. Granted our web app routing profile's managed identity.
+// Built-in Azure RBAC role that is applied to a Private DNS Zone to grant with contributor privileges. Granted our web app routing profile's managed identity, which uses it to modify the DNS zone.
 resource PrivateDnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
   scope: subscription()
