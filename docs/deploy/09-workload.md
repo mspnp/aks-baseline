@@ -51,7 +51,7 @@ The customer now has its [prerequisite components](./08-workload-prerequisites.m
    az network private-dns record-set a add-record -g rg-enterprise-networking-spokes -z "aks-ingress.${DOMAIN_NAME_AKS_BASELINE}" -n bu0001a0008-00 -a $GATEWAY_IP
    ```
 
-1. Check the HTTPRoute is accepted by the Gateway
+1. Check the HTTPRoute is accepted by the Gateway.
 
    ```bash
    kubectl get httproute aspnetapp-route -n a0008 -o jsonpath='{range .status.parents[*]}{.controllerName}{"\t"}{.conditions[*].type}={.conditions[*].status}{"\n"}{end}'
