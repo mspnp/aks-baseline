@@ -176,13 +176,13 @@ resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exi
 /*** EXISTING HUB RESOURCES ***/
 
 // Hub resource group
-resource hubResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
+resource hubResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   scope: subscription()
   name: split(hubVnetResourceId, '/')[4]
 }
 
 // Hub virtual network
-resource hubVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
+resource hubVirtualNetwork 'Microsoft.Network/virtualNetworks@2025-07-01' existing = {
   scope: hubResourceGroup
   name: last(split(hubVnetResourceId, '/'))
 }
