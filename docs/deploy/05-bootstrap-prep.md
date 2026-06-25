@@ -61,7 +61,7 @@ When designing your pipelines, be sure to isolate components by their lifecycle.
 
 1. Import the TLS sync pod image to your container registry.
 
-   > :book: Public container registries are subject to faults such as outages (no SLA) or request throttling. To minimize these risks, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry. The TLS sync pod image must be available before cluster creation because Flux deploys it immediately during bootstrapping.
+   > :book: Public container registries are subject to faults such as outages and request throttling. Public registries typically have no SLA. To minimize these risks, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry. The TLS sync pod image must be available before cluster creation because Flux deploys it immediately during bootstrapping.
 
    ```bash
    ACR_NAME_AKS_BASELINE=$(az deployment group show --resource-group rg-bu0001a0008 -n acr-stamp --query properties.outputs.containerRegistryName.value -o tsv)
