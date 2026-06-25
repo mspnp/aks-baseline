@@ -101,7 +101,7 @@ resource keyVaultCertificateUserRole 'Microsoft.Authorization/roleDefinitions@20
 }
 
 // Built-in Azure RBAC role that is applied to a Private DNS Zone to grant with contributor privileges. Granted our web app routing profile's managed identity, which uses it to modify the DNS zone.
-resource PrivateDnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource privateDnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
   scope: subscription()
 }
@@ -593,9 +593,9 @@ resource kvClusterWebAppRoutingKeyVaultReader_roleAssignment 'Microsoft.Authoriz
 // Gateway API DNS automation (ClusterExternalDNS/ExternalDNS) uses a separate Workload Identity path instead.
 resource pdzClusterWebAppRoutingDNSZoneContributor_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: pdzAksIngress
-  name: guid(resourceGroup().id, 'cluster-webapprouting-gateway-controller-dns-zone-contributor', PrivateDnsZoneContributorRole.id)
+  name: guid(resourceGroup().id, 'cluster-webapprouting-gateway-controller-dns-zone-contributor', privateDnsZoneContributorRole.id)
   properties: {
-    roleDefinitionId: PrivateDnsZoneContributorRole.id
+    roleDefinitionId: privateDnsZoneContributorRole.id
     principalId: mc.properties.ingressProfile.webAppRouting.identity.objectId
     principalType: 'ServicePrincipal'
   }
@@ -697,9 +697,9 @@ resource pdzMc 'Microsoft.Network/privateDnsZones@2024-06-01' = {
 @description('Grant the AKS cluster managed identity to attach custom DNS zone with Private Link information to this virtual network.')
 resource pdzMiClusterControlPlaneDnsZoneContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: pdzMc
-  name: guid(pdzMc.id, PrivateDnsZoneContributorRole.id, miClusterControlPlane.name)
+  name: guid(pdzMc.id, privateDnsZoneContributorRole.id, miClusterControlPlane.name)
   properties: {
-    roleDefinitionId: PrivateDnsZoneContributorRole.id
+    roleDefinitionId: privateDnsZoneContributorRole.id
     description: 'Allows cluster identity to attach custom DNS zone with Private Link information to this virtual network.'
     principalId: miClusterControlPlane.properties.principalId
     principalType: 'ServicePrincipal'
