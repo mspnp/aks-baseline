@@ -1,6 +1,6 @@
 # Deploy the workload (ASP.NET Core Docker web app)
 
-The customer now has its [prerequisite components](./08-workload-prerequisites.md), including the Gateway resource and TLS certificate sync. The last step in the process is to deploy the workload, which will demonstrate the system's functions.
+The customer now has their [prerequisite components](./08-workload-prerequisites.md), including the Gateway resource and TLS certificate sync. The last step in the process is to deploy the workload, which will demonstrate the system's functions.
 
 ## Steps
 
