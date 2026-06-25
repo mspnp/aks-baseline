@@ -94,7 +94,7 @@ resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2022-0
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied to a Key Vault to grant certificate read privileges. Granted to the CSI Secrets Store Driver managed identity for objectType: cert.
+// Built-in Azure RBAC role that is applied to a Key Vault to grant certificate read privileges. Granted to the CSI Secrets Store Driver managed identity so it can use certificates.
 resource keyVaultCertificateUserRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: 'db79e9a7-68ee-4b58-9aeb-b90e7c24fcba'
   scope: subscription()
