@@ -47,7 +47,7 @@ The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
 
 ## Validate the TLS sync and gateway controller readiness
 
-The SecretProviderClass and TLS sync Deployment were deployed via Flux GitOps during cluster bootstrapping. The [Azure Key Vault Provider for Secrets Store CSI Driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure) requires a pod to mount the CSI volume in order to create and maintain the Kubernetes Secret. The TLS sync pod keeps the Secret alive independently of workload pod lifecycle.
+The SecretProviderClass and TLS sync Deployment were deployed via Flux GitOps during cluster bootstrapping. The [Azure Key Vault Provider for Secrets Store CSI Driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure) requires a pod to mount the CSI volume in order to create and maintain the Kubernetes Secret. The pod itself is a dummy and doesn't do any actual work. The TLS sync pod keeps the Secret alive independently of workload pod lifecycle. For more information, see [Secure ingress traffic with the application routing Gateway API implementation](https://learn.microsoft.com/azure/aks/app-routing-gateway-api-tls).
 
 1. Ensure your bootstrapping process has created the following namespace.
 
