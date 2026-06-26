@@ -69,7 +69,8 @@ This does not configure anything related to workload identity. This configuratio
    ```bash
    TENANTDOMAIN_K8SRBAC=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
    MEIDOBJECTNAME_USER_CLUSTERADMIN=bu0001a000800-admin
-   MEIDOBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${MEIDOBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${MEIDOBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-sign-in --password ChangeMebu0001a0008AdminChangeMe --query id -o tsv)
+   MEIDPASS_USER_CLUSTERADMIN='<Enter a password for the break-glass admin user that meets Microsoft Entra ID password policies>'
+   MEIDOBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${MEIDOBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${MEIDOBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-sign-in --password "${MEIDPASS_USER_CLUSTERADMIN}" --query id -o tsv)
    echo TENANTDOMAIN_K8SRBAC: $TENANTDOMAIN_K8SRBAC
    echo MEIDOBJECTNAME_USER_CLUSTERADMIN: $MEIDOBJECTNAME_USER_CLUSTERADMIN
    echo MEIDOBJECTID_USER_CLUSTERADMIN: $MEIDOBJECTID_USER_CLUSTERADMIN

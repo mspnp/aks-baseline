@@ -4,6 +4,8 @@ param location = 'eastus'
 
 param targetVnetResourceId = '/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-spokes-[region]/providers/Microsoft.Network/virtualNetworks/vnet-hub-spoke-BU0001A0008-00'
 
+param hubVnetResourceId = '/subscriptions/[subscription id]/resourceGroups/rg-enterprise-networking-hubs-[region]/providers/Microsoft.Network/virtualNetworks/vnet-[region]-hub'
+
 param clusterAdminMicrosoftEntraGroupObjectId = '[guid--security-group-objectid-that-will-become-cluster-admin]'
 
 param a0008NamespaceReaderMicrosoftEntraGroupObjectId = '[guid--security-group-objectid-that-will-become-namespace-a0008-reader]'
