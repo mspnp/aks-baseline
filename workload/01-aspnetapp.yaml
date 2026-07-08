@@ -22,8 +22,7 @@ spec:
     spec:
       automountServiceAccountToken: false
       securityContext:
-        runAsUser: 10001
-        runAsGroup: 3000
+        fsGroup: 2000 # Supplemental group ID (shared by all containers for created/mounted files/volumes)
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -34,25 +33,61 @@ spec:
                 values:
                 - aspnetapp
             topologyKey: "kubernetes.io/hostname"
+        # The managed Envoy gateway proxy runs on the system node pool while workload
+        # pods target the user node pool. Because they can never share the same node,
+        # zone-level affinity is the closest co-location achievable. Without this,
+        # the scheduler may place workload pods in zones that have no proxy replica,
+        # forcing every request through that path to cross availability zone boundaries.
         podAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
+          - weight: 100
             podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: app.kubernetes.io/name
+                - key: gateway.networking.k8s.io/gateway-name
                   operator: In
                   values:
-                  - traefik-ingress-ilb
-              topologyKey: "kubernetes.io/hostname"
+                  - bu0001a0008-gateway
+              topologyKey: "topology.kubernetes.io/zone"
       containers:
       - name: aspnet-webapp-sample
         image: mcr.microsoft.com/dotnet/samples:aspnetapp
+        ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
         imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 6
+          httpGet:
+            path: /Environment
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /Environment
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 10001
+          runAsGroup: 3000
+          seccompProfile:
+            type: RuntimeDefault
           capabilities:
+            add:
+              - NET_BIND_SERVICE # when running containers as non-root users, if a service within the container needs to listen on a well-known port (e.g., HTTP on port 80, HTTPS on port 443), the NET_BIND_SERVICE capability must be explicitly granted to the container.
             drop:
               - all
         resources:
@@ -66,7 +101,7 @@ spec:
         - name: ASPNETCORE_URLS
           value: "http://*:8080"
       nodeSelector:
-       agentpool: npuser01
+        agentpool: npuser01
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget

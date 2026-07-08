@@ -23,7 +23,7 @@ param k8sControlPlaneAuthorizationTenantId string
 @secure()
 param appGatewayListenerCertificate string
 
-@description('The Base64 encoded AKS Ingress Controller public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate.')
+@description('The Base64 encoded AKS gateway proxy public certificate (as .crt or .cer) to be stored in Azure Key Vault as secret and referenced by Azure Application Gateway as a trusted root certificate.')
 param aksIngressControllerCertificate string
 
 @description('IP ranges authorized to contact the Kubernetes API server. Passing an empty array will result in no IP restrictions. If any are provided, remember to also provide the public IP of the egress Azure Firewall otherwise your nodes will not be able to talk to the API server (e.g. Flux).')
@@ -42,9 +42,6 @@ param gitOpsBootstrappingRepoHttpsUrl string = 'https://github.com/mspnp/aks-bas
 @description('You cluster will be bootstrapped from this branch in the identified git repo.')
 @minLength(1)
 param gitOpsBootstrappingRepoBranch string = 'main'
-
-@description('The AKS cluster Internal Load Balancer IP Address')
-param clusterInternalLoadBalancerIpAddress string = '10.240.4.4'
 
 /*** VARIABLES ***/
 
@@ -89,19 +86,25 @@ resource acrPullRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existi
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied a Key Vault to grant with metadata, certificates, keys and secrets read privileges.  Granted to App Gateway's managed identity.
+// Built-in Azure RBAC role that is applied a Key Vault to grant with metadata, certificates, keys and secrets read privileges. Granted to App Gateway's managed identity and our web app routing profile's managed identity.
 resource keyVaultReaderRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: '21090545-7ca7-4776-b22c-e363652d74d2'
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied to a Key Vault to grant with secrets content read privileges. Granted to both Key Vault and our workload's identity.
+// Built-in Azure RBAC role that is applied to a Key Vault to grant with secrets content read privileges. Granted to our web app routing profile's managed identity.
 resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: '4633458b-17de-408a-b874-0445c86b69e6'
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied to a AKS cluster to grant with private DNS contributor. Granted to a private Cluster.
+// Built-in Azure RBAC role that is applied to a Key Vault to grant certificate read privileges. Granted to the CSI Secrets Store Driver managed identity so it can use certificates.
+resource keyVaultCertificateUserRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  name: 'db79e9a7-68ee-4b58-9aeb-b90e7c24fcba'
+  scope: subscription()
+}
+
+// Built-in Azure RBAC role that is applied to a Private DNS Zone to grant with contributor privileges. Granted our web app routing profile's managed identity, which uses it to modify the DNS zone.
 resource privateDnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
   scope: subscription()
@@ -497,24 +500,6 @@ resource miAppGatewayFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@
   location: location
 }
 
-// User Managed Identity for the cluster's ingress controller pods via Workload Identity. Used for Azure Key Vault Access.
-resource podmiIngressController 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: 'podmi-ingress-controller'
-  location: location
-
-  // Workload identity service account federation
-  resource federatedCreds 'federatedIdentityCredentials' = {
-    name: 'ingress-controller'
-    properties: {
-      issuer: mc.properties.oidcIssuerProfile.issuerURL
-      subject: 'system:serviceaccount:a0008:traefik-ingress-controller'
-      audiences: [
-        'api://AzureADTokenExchange'
-      ]
-    }
-  }
-}
-
 resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: 'kv-${clusterName}'
   location: location
@@ -541,7 +526,6 @@ resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
   dependsOn: [
     miAppGatewayFrontend
-    podmiIngressController
   ]
 
   resource kvsAppGwIngressInternalAksIngressTls 'secrets' = {
@@ -601,24 +585,47 @@ resource kvMiAppGatewayFrontendKeyVaultReader_roleAssignment 'Microsoft.Authoriz
   }
 }
 
-// Grant the AKS cluster ingress controller's managed workload identity with Key Vault reader role permissions; this allows our ingress controller to pull certificates.
-resource kvPodMiIngressControllerSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+// Grant the AKS cluster web app routing's managed identity with Key Vault secret user role permissions.
+resource kvClusterWebAppRoutingSecretsUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: kv
-  name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultSecretsUserRole.id)
+  name: guid(resourceGroup().id, 'cluster-webapprouting-gateway-controller', keyVaultSecretsUserRole.id)
   properties: {
     roleDefinitionId: keyVaultSecretsUserRole.id
-    principalId: podmiIngressController.properties.principalId
+    principalId: mc.properties.ingressProfile.webAppRouting.identity.objectId
     principalType: 'ServicePrincipal'
   }
 }
 
-// Grant the AKS cluster ingress controller's managed workload identity with Key Vault reader role permissions; this allows our ingress controller to pull certificates
-resource kvPodMiIngressControllerKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+// Grant the AKS cluster web app routing's managed identity with Key Vault reader role permissions; this allows the gateway controller to pull certificates
+resource kvClusterWebAppRoutingKeyVaultReader_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: kv
-  name: guid(resourceGroup().id, 'podmi-ingress-controller', keyVaultReaderRole.id)
+  name: guid(resourceGroup().id, 'cluster-webapprouting-gateway-controller', keyVaultReaderRole.id)
   properties: {
     roleDefinitionId: keyVaultReaderRole.id
-    principalId: podmiIngressController.properties.principalId
+    principalId: mc.properties.ingressProfile.webAppRouting.identity.objectId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Grant the AKS cluster web app routing's managed identity with Private DNS Zone Contributor role permissions; this allows the built-in external-dns instance to reconcile DNS records for Ingress resources.
+// Gateway API DNS automation (ClusterExternalDNS/ExternalDNS) uses a separate Workload Identity path instead.
+resource pdzClusterWebAppRoutingDNSZoneContributor_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: pdzAksIngress
+  name: guid(resourceGroup().id, 'cluster-webapprouting-gateway-controller-dns-zone-contributor', privateDnsZoneContributorRole.id)
+  properties: {
+    roleDefinitionId: privateDnsZoneContributorRole.id
+    principalId: mc.properties.ingressProfile.webAppRouting.identity.objectId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Grant the AKS CSI Secrets Store Driver managed identity with Key Vault certificate user role permissions; the SecretProviderClass uses objectType: cert which requires certificate read access
+resource kvCsiSecretsStoreCertificateUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: kv
+  name: guid(resourceGroup().id, 'csi-secrets-store-driver', keyVaultCertificateUserRole.id)
+  properties: {
+    roleDefinitionId: keyVaultCertificateUserRole.id
+    principalId: mc.properties.addonProfiles.azureKeyvaultSecretsProvider.identity.objectId
     principalType: 'ServicePrincipal'
   }
 }
@@ -733,18 +740,6 @@ resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: aksIngressDomainName
   location: 'global'
 
-  resource aksIngressDomainName_bu0001a0008_00 'A' = {
-    name: 'bu0001a0008-00'
-    properties: {
-      ttl: 3600
-      aRecords: [
-        {
-          ipv4Address: clusterInternalLoadBalancerIpAddress
-        }
-      ]
-    }
-  }
-
   resource vnetlnk 'virtualNetworkLinks' = {
     name: 'to_${targetVirtualNetwork.name}'
     location: 'global'
@@ -766,7 +761,8 @@ module policies 'modules/policies.bicep' = {
   }
 }
 
-resource mc 'Microsoft.ContainerService/managedClusters@2025-10-01' = {
+#disable-next-line BCP081
+resource mc 'Microsoft.ContainerService/managedClusters@2026-04-01' = {
   name: clusterName
   location: location
   tags: {
@@ -876,7 +872,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2025-10-01' = {
       azureKeyvaultSecretsProvider: {
         enabled: true
         config: {
-          enableSecretRotation: 'false'
+          enableSecretRotation: 'true'
+          rotationPollInterval: '2m'
         }
       }
     }
@@ -989,9 +986,6 @@ resource mc 'Microsoft.ContainerService/managedClusters@2025-10-01' = {
       azureKeyVaultKms: {
         enabled: false // Not enabled in the this deployment, as it is not used. Enable as needed.
       }
-      nodeRestriction: {
-        enabled: true // https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#noderestriction
-      }
       defender: {
         logAnalyticsWorkspaceResourceId: la.id
         securityMonitoring: {
@@ -1003,8 +997,22 @@ resource mc 'Microsoft.ContainerService/managedClusters@2025-10-01' = {
       enabled: true
     }
     ingressProfile: {
+      gatewayAPI: {
+        installation: 'Standard' // install managed Gateway API CRDs
+      }
       webAppRouting: {
-        enabled: false
+        enabled: true // enable application routing add-on with Gateway API (Istio gateway controller + Envoy gateway proxy)
+        gatewayAPIImplementations: {
+          appRoutingIstio: {
+            mode: 'Enabled' // internal load balancer configuration is expressed on the Gateway resource via infrastructure.annotations
+          }
+        }
+        nginx: {
+          mode: 'Disabled' // suppress the default NGINX ingress controller; this cluster uses Gateway API exclusively
+        }
+        dnsZoneResourceIds: [
+          pdzAksIngress.id // attach an AKS ingress private DNS zone to the application routing add-on
+        ]
       }
     }
   }
@@ -1023,7 +1031,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2025-10-01' = {
 
     ndEnsureClusterIdentityHasRbacToSelfManagedResources
     pdzMiClusterControlPlaneDnsZoneContributorRole_roleAssignment
-    
+
     // Policies that we need in place before the cluster is deployed or pods are deployed to it.
     // They are not technically a dependency from the resource provider perspective,
     // but logically they need to be in place before workloads are, so forcing that here. This also
@@ -1033,10 +1041,9 @@ resource mc 'Microsoft.ContainerService/managedClusters@2025-10-01' = {
     dcr
 
     peKv
-    kvPodMiIngressControllerKeyVaultReader_roleAssignment
-    kvPodMiIngressControllerSecretsUserRole_roleAssignment
   ]
 
+  #disable-next-line BCP081
   resource os_maintenanceConfigurations 'maintenanceConfigurations' = {
     name: 'aksManagedNodeOSUpgradeSchedule'
     properties: {
@@ -1199,6 +1206,14 @@ resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurati
         retryIntervalInSeconds: 300
         prune: true
         force: false
+        postBuild: {
+          substitute: {
+            CONTAINER_REGISTRY_URL: acr.properties.loginServer
+            KEY_VAULT_NAME: kv.name
+            CSI_IDENTITY_CLIENT_ID: mc.properties.addonProfiles.azureKeyvaultSecretsProvider.identity.clientId
+            TENANT_ID: subscription().tenantId
+          }
+        }
       }
     }
   }
@@ -1464,6 +1479,6 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
 /*** OUTPUTS ***/
 
 output aksClusterName string = clusterName
-output aksIngressControllerPodManagedIdentityClientId string = podmiIngressController.properties.clientId
 output keyVaultName string = kv.name
-output ilbIpAddress string = pdzAksIngress::aksIngressDomainName_bu0001a0008_00.properties.aRecords[0].ipv4Address
+output aksCSISecretsStoreIdentityClientId string = mc.properties.addonProfiles.azureKeyvaultSecretsProvider.identity.clientId
+output containerRegistryLoginServer string = acr.properties.loginServer

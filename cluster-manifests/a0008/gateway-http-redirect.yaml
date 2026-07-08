@@ -1,0 +1,25 @@
+#  ------------------------------------------------------------
+#   Copyright (c) Microsoft Corporation.  All rights reserved.
+#   Licensed under the MIT License (MIT). See License.txt in the repo root #  for license information.
+#  ------------------------------------------------------------
+
+# Redirect all HTTP traffic to HTTPS. This HTTPRoute is bound to the HTTP
+# listener on the Gateway and returns a 301 Permanent Redirect, ensuring
+# clients always use the encrypted endpoint.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-to-https-redirect
+  namespace: a0008
+  labels:
+    app.kubernetes.io/name: bu0001a0008-gateway
+spec:
+  parentRefs:
+  - name: bu0001a0008-gateway
+    sectionName: http
+  rules:
+  - filters:
+    - type: RequestRedirect
+      requestRedirect:
+        scheme: https
+        statusCode: 301

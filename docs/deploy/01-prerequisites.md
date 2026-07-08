@@ -54,6 +54,17 @@ This is the starting point for the instructions on deploying the [AKS baseline r
 
    > :warning: Some shells may have the `openssl` command aliased for LibreSSL. LibreSSL will not work with the instructions found here. You can check this by running `openssl version` and you should see output that says `OpenSSL <version>` and not `LibreSSL <version>`.
 
+1. Register the preview feature for the application routing add-on with Gateway API (Istio).
+
+   > This reference implementation uses the application routing add-on with managed Istio as the gateway controller. This feature requires the `AppRoutingIstioGatewayAPIPreview` feature flag to be registered on your subscription.
+
+   ```bash
+   az feature register --namespace Microsoft.ContainerService --name AppRoutingIstioGatewayAPIPreview
+   az provider register -n Microsoft.ContainerService
+   ```
+
+   > :clock10: Feature registration propagates quickly (usually seconds). You can verify with: `az feature show --namespace Microsoft.ContainerService --name AppRoutingIstioGatewayAPIPreview --query properties.state -o tsv` — it should say `Registered`.
+
 ### Next step
 
 :arrow_forward: [Generate your client-facing TLS certificate](./02-ca-certificates.md)

@@ -1,6 +1,6 @@
 # End-to-end validation
 
-Now that you have a workload deployed, the [ASP.NET Core sample web app](./10-workload.md), you can start validating and exploring this reference implementation of the [AKS baseline cluster](../../). In addition to the workload, there is some observability validation you can perform as well.
+Now that you have a workload deployed, the [ASP.NET Core sample web app](./09-workload.md), you can start validating and exploring this reference implementation of the [AKS baseline cluster](../../). In addition to the workload, there is some observability validation you can perform as well.
 
 ## Validate the web app
 
@@ -38,7 +38,7 @@ This section will help you to validate the workload is exposed correctly and res
 
    > :bulb: Remember to include the protocol prefix `https://` in the URL you type in the address bar of your browser. A TLS warning will be present due to using a self-signed certificate. You can ignore it or import the self-signed cert (`appgw.pfx`) to your user's trusted root store.
 
-   Refresh the web page a couple of times and observe the value `Host name` displayed at the bottom of the page. As the Traefik Ingress Controller balances the requests between the two pods hosting the web page, the host name will change from one pod name to the other throughout your queries.
+   Refresh the web page a couple of times and observe the value `Host name` displayed at the bottom of the page. As the gateway proxy balances the requests between the two pods hosting the web page, the host name will change from one pod name to the other throughout your queries.
 
 ## Validate reader access to the a0008 namespace. *Optional.*
 
@@ -61,6 +61,8 @@ Built-in as well as custom policies are applied to the cluster as part of the [c
 ### Steps
 
 1. Try to add a second `Ingress` resource to your workload namespace with the following command.
+
+   > :bulb: Even though this reference implementation uses Gateway API for routing, Gatekeeper policies still enforce domain-suffix rules on `Ingress` resources to prevent any workload from creating non-compliant ingress definitions in the cluster.
 
    Notice that the host value specified in the `rules` and the `tls` sections defines a domain name with suffix `invalid-domain.com` rather than the domain suffix you defined for your setup when you [created your certificates](./02-ca-certificates.md)).
 
@@ -136,9 +138,7 @@ You can also execute [queries](https://learn.microsoft.com/azure/azure-monitor/l
 
 ## Validate Azure Monitor for containers (Prometheus metrics)
 
-Azure Monitor is configured to [scrape Prometheus metrics](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-prometheus-integration) in your cluster. This reference implementation is configured to collect Prometheus metrics from two namespaces, as configured in [`container-azm-ms-agentconfig.yaml`](../../cluster-manifests/kube-system/container-azm-ms-agentconfig.yaml). There are two pods configured to emit Prometheus metrics:
-
-- [Traefik](../../workload/traefik.yaml) (in the `a0008` namespace)
+Azure Monitor is configured to [scrape Prometheus metrics](https://learn.microsoft.com/azure/azure-monitor/insights/container-insights-prometheus-integration) in your cluster. This reference implementation is configured to collect Prometheus metrics from two namespaces, as configured in [`container-azm-ms-agentconfig.yaml`](../../cluster-manifests/kube-system/container-azm-ms-agentconfig.yaml).
 
 :bulb: This reference implementation ships with two queries (*All collected Prometheus information* and *Kubenertes node reboot requested*) in a Log Analytics Query Pack as an example of how you can write your own and manage them via ARM templates.
 
@@ -193,8 +193,8 @@ If you configured your third-party images to be pulled from your Azure Container
    | where OperationName == 'Pull'
    ```
 
-   :bulb: You should see `pull` entries for the images you deployed to your cluster, such as `traefik`.
+   :bulb: Immediately after the cluster is deployed, there are no log events for image `pull` operations. All the images deployed are managed by AKS.
 
 ## Next step
 
-:arrow_forward: [Clean Up Azure Resources](./12-cleanup.md)
+:arrow_forward: [Clean Up Azure Resources](./11-cleanup.md)

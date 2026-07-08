@@ -68,12 +68,15 @@ When designing your pipelines, be sure to isolate components by their lifecycle.
 
       - `containerRegistryName` - which you'll use in future steps when connecting the cluster to the container registry.
 
-1. Capture the output from the container registry that will be required in later steps.
+1. Import the TLS sync pod image to your container registry.
+
+   > :book: Public container registries are subject to faults such as outages and request throttling. Public registries typically have no SLA. To minimize these risks, store all applicable container images in a registry that you control, such as the SLA-backed Azure Container Registry. The TLS sync pod image must be available before cluster creation because Flux deploys it immediately during bootstrapping.
 
    ```bash
-   # Get your ACR instance name
-   export ACR_NAME_AKS_BASELINE=$(az deployment group show -g rg-bu0001a0008 -n acr-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   ACR_NAME_AKS_BASELINE=$(az deployment group show --resource-group rg-bu0001a0008 -n acr-stamp --query properties.outputs.containerRegistryName.value -o tsv)
    echo ACR_NAME_AKS_BASELINE: $ACR_NAME_AKS_BASELINE
+
+   az acr import --source mcr.microsoft.com/azurelinux/busybox:1.36 -n $ACR_NAME_AKS_BASELINE
    ```
 
 ### Save your work in-progress

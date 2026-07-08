@@ -55,7 +55,7 @@ Nodes are assigned IP addresses from within the spoke virtual network's subnet, 
 ## Additional considerations
 
 - [AKS System Nodepool] and [AKS User Nodepool] subnet:  multitenant or other advanced workloads may have nodepool isolation requirements that might demand more (and likely smaller) subnets.
-- [AKS Internal Load Balancer subnet]: multitenant, multiple SSL termination rules, single PPE supporting dev/QA/UAT, and so on could lead to needing more ingress controllers, but for baseline, we should start with one.
+- [AKS Internal Load Balancer subnet]: multitenant, multiple SSL termination rules, single PPE supporting dev/QA/UAT, and so on could lead to needing more gateway proxies, but for baseline, we should start with one.
 - [Private Endpoints] subnet: Private Links are created for Azure Container Registry and Azure Key Vault, so these Azure services can be accessed using Private Endpoints within the spoke virtual network. There are multiple [Private Link deployment options]; in this implementation they are deployed to a dedicated subnet within the spoke virtual network.
 
 [27]: https://learn.microsoft.com/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gwsub
