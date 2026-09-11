@@ -39,7 +39,7 @@ param domainName string = 'contoso.com'
 @minLength(9)
 param gitOpsBootstrappingRepoHttpsUrl string = 'https://github.com/mspnp/aks-baseline'
 
-@description('You cluster will be bootstrapped from this branch in the identified git repo.')
+@description('Your cluster will be bootstrapped from this branch in the identified git repo.')
 @minLength(1)
 param gitOpsBootstrappingRepoBranch string = 'main'
 
@@ -761,6 +761,9 @@ module policies 'modules/policies.bicep' = {
   }
 }
 
+// Specify the `AzureLinux` OS SKU without a version suffix.
+// AKS resolves an unsuffixed OS SKU to the most recent validated Azure Linux version for your cluster's Kubernetes version, so a major operating system upgrade arrives with your Kubernetes upgrade and requires no separate migration.
+// For more information, see https://learn.microsoft.com/en-us/azure/aks/upgrade-os-version
 #disable-next-line BCP081
 resource mc 'Microsoft.ContainerService/managedClusters@2026-04-01' = {
   name: clusterName
