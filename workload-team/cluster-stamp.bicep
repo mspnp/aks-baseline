@@ -98,12 +98,6 @@ resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2022-0
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied to a Key Vault to grant certificate read privileges. Granted to the CSI Secrets Store Driver managed identity so it can use certificates.
-resource keyVaultCertificateUserRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  name: 'db79e9a7-68ee-4b58-9aeb-b90e7c24fcba'
-  scope: subscription()
-}
-
 // Built-in Azure RBAC role that is applied to a Private DNS Zone to grant with contributor privileges. Granted our web app routing profile's managed identity, which uses it to modify the DNS zone.
 resource privateDnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
