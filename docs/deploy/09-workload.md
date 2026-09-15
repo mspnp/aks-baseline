@@ -42,13 +42,19 @@ The customer now has their [prerequisite components](./08-workload-prerequisites
 
    > At this point, the route to the workload is established, TLS termination is configured on the gateway proxy, and network policies are in place to only allow the Envoy proxy to connect to your workload and to only allow traffic from the Application Gateway subnet to reach the gateway proxy.
 
-1. Create the DNS A record for the gateway proxy internal load balancer.
+1. Verify automatic DNS record reconciliation.
 
-   > :book: The built-in external-dns component deployed with the application routing add-on watches only Ingress resources. To automate DNS record management for Gateway API resources, deploy a [`ClusterExternalDNS` or `ExternalDNS`](https://learn.microsoft.com/azure/aks/app-routing-gateway-api-dns-tls) custom resource. That path requires Microsoft Entra Workload Identity infrastructure (a user-assigned managed identity, federated identity credentials, and a dedicated ServiceAccount). This reference implementation uses a static DNS record to keep the identity footprint minimal.
+   > :book: The Application Routing operator deploys a managed `external-dns` instance that watches Gateway and HTTPRoute resources in the `a0008` namespace and publishes A records to the attached private DNS zone automatically. The [`ExternalDNS`](https://learn.microsoft.com/azure/aks/app-routing-gateway-api-dns-tls) custom resource was deployed via Flux GitOps during cluster bootstrapping as part of the [cluster manifests](../../cluster-manifests/a0008/2-external-dns.yaml). It authenticates to Azure DNS through the Microsoft Entra Workload Identity chain: a namespace-scoped ServiceAccount bound via federated identity credentials to a user-assigned managed identity with the `DNS Zone Contributor` role on the target private DNS zone.
 
    ```bash
-   GATEWAY_IP=$(kubectl get gateway bu0001a0008-gateway -n a0008 -o jsonpath='{.status.addresses[0].value}')
-   az network private-dns record-set a add-record -g rg-enterprise-networking-spokes -z "aks-ingress.${DOMAIN_NAME_AKS_BASELINE}" -n bu0001a0008-00 -a $GATEWAY_IP
+   # Confirm the ExternalDNS CR was applied by Flux
+   kubectl get externaldns demo-ns-dns -n a0008
+
+   # Confirm the managed external-dns instance is running
+   kubectl get pods -l app.kubernetes.io/name=external-dns -n a0008
+
+   # Confirm the A record was published to the private DNS zone
+   az network private-dns record-set a list -g rg-enterprise-networking-spokes -z "aks-ingress.${DOMAIN_NAME_AKS_BASELINE}" -o table
    ```
 
 1. Check the HTTPRoute is accepted by the Gateway.
