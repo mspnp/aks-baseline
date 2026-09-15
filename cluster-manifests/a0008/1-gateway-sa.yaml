@@ -1,0 +1,22 @@
+#  ------------------------------------------------------------
+#   Copyright (c) Microsoft Corporation.  All rights reserved.
+#   Licensed under the MIT License (MIT). See License.txt in the repo root #  for license information.
+#  ------------------------------------------------------------
+
+# ServiceAccount bound to a user-assigned managed identity via Microsoft Entra
+# Workload Identity. The Application Routing operator uses this identity chain
+# for automatic TLS certificate synchronization from Azure Key Vault and DNS
+# record reconciliation via ExternalDNS.
+#
+# The azure.workload.identity/client-id annotation associates this SA with the
+# UAMI (mi-app-routing-workload) created in cluster-stamp.bicep. Pods using
+# this SA will have a projected service account token volume injected by the
+# AKS workload identity mutating webhook, enabling OIDC token exchange against
+# the cluster's issuer URL.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: approuting-gateway-sa
+  namespace: a0008
+  annotations:
+    azure.workload.identity/client-id: "${MI_APP_ROUTING_CLIENT_ID}"

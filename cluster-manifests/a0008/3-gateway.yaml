@@ -29,8 +29,9 @@ spec:
     protocol: HTTPS
     tls:
       mode: Terminate
-      certificateRefs:
-      - name: bu0001a0008-ingress-tls
+      options:
+        kubernetes.azure.com/tls-cert-keyvault-uri: "https://${KEY_VAULT_NAME}.vault.azure.net/certificates/aks-ingress-tls"
+        kubernetes.azure.com/tls-cert-service-account: approuting-gateway-sa
     allowedRoutes:
       namespaces:
         from: Same

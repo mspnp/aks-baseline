@@ -1,0 +1,28 @@
+#  ------------------------------------------------------------
+#   Copyright (c) Microsoft Corporation.  All rights reserved.
+#   Licensed under the MIT License (MIT). See License.txt in the repo root #  for license information.
+#  ------------------------------------------------------------
+
+# Namespace-scoped ExternalDNS custom resource that triggers the Application
+# Routing operator to deploy a managed external-dns instance. The operator
+# watches Gateway and HTTPRoute resources within this namespace and publishes
+# A records to the attached private DNS zone automatically.
+#
+# Authentication uses the Workload Identity chain: the ServiceAccount
+# approuting-gateway-sa is bound via federated identity credentials to a
+# user-assigned managed identity with the DNS Zone Contributor role on the
+# target private DNS zone.
+apiVersion: approuting.kubernetes.azure.com/v1alpha1
+kind: ExternalDNS
+metadata:
+  name: demo-ns-dns
+  namespace: a0008
+spec:
+  resourceName: demo-ns-dns
+  dnsZoneResourceIDs:
+    - "${DNS_ZONE_RESOURCE_ID}"
+  resourceTypes:
+    - gateway
+  identity:
+    type: workloadIdentity
+    serviceAccount: approuting-gateway-sa
