@@ -9,10 +9,12 @@
 # record reconciliation via ExternalDNS.
 #
 # The azure.workload.identity/client-id annotation associates this SA with the
-# UAMI (mi-app-routing-workload) created in cluster-stamp.bicep. Pods using
-# this SA will have a projected service account token volume injected by the
-# AKS workload identity mutating webhook, enabling OIDC token exchange against
-# the cluster's issuer URL.
+# UAMI (mi-app-routing-workload) created in cluster-stamp.bicep. The
+# azure.workload.identity/use: "true" label instructs the AKS workload identity
+# mutating webhook to project a federated token into pods that consume this
+# ServiceAccount, enabling OIDC token exchange against the cluster's issuer URL.
+# Both the annotation and the label are required for the Application Routing
+# operator's TLS and DNS integrations to authenticate to Azure successfully.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -20,3 +22,5 @@ metadata:
   namespace: a0008
   annotations:
     azure.workload.identity/client-id: "${MI_APP_ROUTING_CLIENT_ID}"
+  labels:
+    azure.workload.identity/use: "true"
