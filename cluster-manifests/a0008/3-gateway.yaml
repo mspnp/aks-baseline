@@ -24,7 +24,7 @@ spec:
       service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-clusteringressservices"
   listeners:
   - name: https
-    hostname: "bu0001a0008-00.aks-ingress.contoso.com"
+    hostname: "${AKS_BACKEND_DOMAIN_NAME}"
     port: 443
     protocol: HTTPS
     tls:
@@ -36,7 +36,7 @@ spec:
       namespaces:
         from: Same
   - name: http
-    hostname: "bu0001a0008-00.aks-ingress.contoso.com"
+    hostname: "${AKS_BACKEND_DOMAIN_NAME}"
     port: 80
     protocol: HTTP
     allowedRoutes:

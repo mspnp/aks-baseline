@@ -1262,6 +1262,7 @@ resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurati
             TENANT_ID: subscription().tenantId
             MI_APP_ROUTING_CLIENT_ID: miAppRoutingWorkload.properties.clientId
             DNS_ZONE_RESOURCE_ID: pdzAksIngress.id
+            AKS_BACKEND_DOMAIN_NAME: aksBackendDomainName
           }
         }
       }

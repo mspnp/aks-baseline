@@ -49,7 +49,7 @@ The customer now has their [prerequisite components](./08-workload-prerequisites
 
    ```bash
    # Confirm the ExternalDNS CR was applied by Flux
-   kubectl get externaldns aks-ingress.contoso.com -n a0008
+   kubectl get externaldns bu0001a0008-00.aks-ingress.${DOMAIN_NAME_AKS_BASELINE} -n a0008
 
    # Confirm the managed external-dns instance is running
    kubectl get pods -l app=external-dns-private -n app-routing-system

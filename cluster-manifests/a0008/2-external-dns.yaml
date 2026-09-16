@@ -15,10 +15,10 @@
 apiVersion: approuting.kubernetes.azure.com/v1alpha1
 kind: ExternalDNS
 metadata:
-  name: aks-ingress.contoso.com
+  name: approuting-gateway-external-dns
   namespace: a0008
 spec:
-  resourceName: aks-ingress.contoso.com
+  resourceName: approuting-gateway-external-dns
   dnsZoneResourceIDs:
     - "${DNS_ZONE_RESOURCE_ID}"
   resourceTypes:
