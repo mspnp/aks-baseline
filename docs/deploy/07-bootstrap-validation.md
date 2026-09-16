@@ -44,7 +44,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    BASTIONHOST_RESOURCEID=$(az deployment group show -g rg-enterprise-networking-hubs-${LOCATION_AKS_BASELINE} -n hub-regionA --query properties.outputs.bastionHostResourceId.value -o tsv)
    echo BASTIONHOST_RESOURCEID: $BASTIONHOST_RESOURCEID
 
-   az aks bastion -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME --bastion $BASTIONHOST_RESOURCEID
+   az aks bastion tunnel -g rg-bu0001a0008 -n $AKS_CLUSTER_NAME --bastion $BASTIONHOST_RESOURCEID
    ```
 
    > :exclamation: This command launches a subshell as a temporary, isolated environment to access the AKS API server. This is usually harmless, but environment changes made inside it won’t persist, and any variables or configuration will be discarded when the subshell exits.
