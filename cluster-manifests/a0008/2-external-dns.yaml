@@ -15,10 +15,10 @@
 apiVersion: approuting.kubernetes.azure.com/v1alpha1
 kind: ExternalDNS
 metadata:
-  name: demo-ns-dns
+  name: aks-ingress.contoso.com
   namespace: a0008
 spec:
-  resourceName: demo-ns-dns
+  resourceName: aks-ingress.contoso.com
   dnsZoneResourceIDs:
     - "${DNS_ZONE_RESOURCE_ID}"
   resourceTypes:
