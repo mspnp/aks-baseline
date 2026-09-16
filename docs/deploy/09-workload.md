@@ -34,9 +34,10 @@ The customer now has their [prerequisite components](./08-workload-prerequisites
 
 1. Check your Gateway resource status as a way to confirm the AKS-managed Internal Load Balancer is functioning
 
-   > The gateway controller has reconciled the Gateway resource, provisioned an Envoy proxy, and created an internal load balancer on the configured subnet. Verify the Gateway is created and has an IP address assigned.
+   > The gateway controller has reconciled the Gateway resource, provisioned an Envoy proxy, and created an internal load balancer on the configured subnet. Verify the Gateway is programmed and has an IP address assigned.
 
    ```bash
+   kubectl wait gateway/bu0001a0008-gateway -n a0008 --for=condition=programmed --timeout=120s
    kubectl get gateway bu0001a0008-gateway -n a0008
    ```
 
