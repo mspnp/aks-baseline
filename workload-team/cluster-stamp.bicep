@@ -894,7 +894,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
     enableRBAC: true
     networkProfile: {
       networkPlugin: 'azure' // Azure CNI for native pod IP address management
-      networkPluginMode: 'overlay' // Overlay mode — pods get IPs from the PodCIDR, not subnet; enables full subnet utilization for node pools
+      networkPluginMode: 'overlay' // Overlay mode , pods get IPs from the PodCIDR, not subnet; enables full subnet utilization for node pools
       podCidr: '192.168.0.0/16' // Must not overlap with VNet subnets or peer network ranges
       networkPolicy: 'azure' // Azure Network Policies (not Calico or upstream Kubernetes built-in)
       outboundType: 'userDefinedRouting' // NAT gateway via UDR for egress, not standard load balancer; route table is pre-provisioned on the cluster subnet
@@ -915,7 +915,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
       'max-empty-bulk-delete': '10'
       'max-graceful-termination-sec': '600'
       'max-node-provision-time': '15m'
-      'max-total-unready-percentage': '45'
+      'max-total-unready-percentage': '45' // 3-node min cluster: ~2 nodes could be unready before scale-out triggers. During rolling upgrades with maxSurge='33%', this compounds the capacity gap. A lower threshold (e.g., 33%) would trigger scale-out sooner to refill lost capacity during rolling upgrades, at the cost of extra node provisioning and spend while nodes sit idle between upgrade batches.
       'new-pod-scale-up-delay': '0s'
       'ok-total-unready-count': '3'
       'scale-down-delay-after-add': '10m'
