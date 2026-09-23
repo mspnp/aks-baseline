@@ -65,6 +65,16 @@ This is the starting point for the instructions on deploying the [AKS baseline r
 
    > :clock10: Feature registration propagates quickly (usually seconds). You can verify with: `az feature show --namespace Microsoft.ContainerService --name AppRoutingIstioGatewayAPIPreview --query properties.state -o tsv` — it should say `Registered`.
 
+7. Register the preview feature for automatic availability zone placement on node pools.
+
+   > Production node pools use `auto` zone placement (not explicit zones) for SKU/region resilience. This requires the VmssAutomaticZonePlacement feature flag registered on Microsoft.Compute and an API version of `2026-01-02-preview` or later. The cluster-stamp.bicep already uses API version `2026-06-01`, which satisfies this requirement.
+
+   ```bash
+   az feature register --namespace Microsoft.Compute --name VmssAutomaticZonePlacement
+   ```
+
+   > :clock10: Feature registration propagates quickly (usually seconds). You can verify with: `az feature show --namespace Microsoft.Compute --name VmssAutomaticZonePlacement --query properties.state -o tsv` — it should say `Registered` before creating or scaling the cluster.
+
 ### Next step
 
 :arrow_forward: [Generate your client-facing TLS certificate](./02-ca-certificates.md)
