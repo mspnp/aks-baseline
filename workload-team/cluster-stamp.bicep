@@ -490,7 +490,8 @@ resource skva 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
   }
 }
 
-// The control plane identity used by the cluster. Used for networking access (VNET joining and DNS updating)
+// The control plane identity used by the cluster. Used for networking access (VNET joining and DNS updating).
+// Using preview API (@2025-05-31-preview) for assignmentRestrictions and isolationScope (defense in depth).
 resource miClusterControlPlane 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-05-31-preview' = {
   name: 'mi-${clusterName}-controlplane'
   location: location
@@ -505,6 +506,7 @@ resource miClusterControlPlane 'Microsoft.ManagedIdentity/userAssignedIdentities
 }
 
 // User Managed Identity that App Gateway is assigned. Used for Azure Key Vault Access.
+// Using preview API (@2025-05-31-preview) for assignmentRestrictions and isolationScope (defense in depth).
 resource miAppGatewayFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-05-31-preview' = {
   name: 'mi-appgateway-frontend'
   location: location
