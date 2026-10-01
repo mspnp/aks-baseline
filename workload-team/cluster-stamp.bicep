@@ -57,7 +57,7 @@ var kubernetesVersion = '1.36.0'
 
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
 
-resource nodeResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
+resource nodeResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   name: 'rg-${clusterName}-nodepools'
   scope: subscription()
 }
@@ -117,14 +117,15 @@ resource privateDnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@
 // resources that would exist before & after any individual cluster is deployed or is removed
 // from the solution.
 
-// Azure Container Registry
-resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
+// The Container Registry that the AKS cluster will be authorized to use to pull images.
+// Using preview API (@2026-03-01-preview) for softDeletePolicy (image deletion safety net).
+resource acr 'Microsoft.ContainerRegistry/registries@2026-03-01-preview' existing = {
   scope: resourceGroup()
   name: 'acraks${subRgUniqueString}'
 }
 
 // Log Analytics Workspace
-resource la 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
+resource la 'Microsoft.OperationalInsights/workspaces@2025-07-01' existing = {
   scope: resourceGroup()
   name: 'la-${clusterName}'
 }
@@ -132,7 +133,8 @@ resource la 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
 // Kubernetes namespace: a0008 -- this doesn't technically exist prior to deployment, but is required as a resource reference later in the template
 // to support Azure RBAC-managed API Server access, scoped to the namespace level.
 #disable-next-line BCP081 // this namespaces child type doesn't have a defined bicep type yet.
-resource nsA0008 'Microsoft.ContainerService/managedClusters/namespaces@2022-01-02-preview' existing = {
+// Using preview API (@2025-02-02-preview) as no stable version exists for this child resource type.
+resource nsA0008 'Microsoft.ContainerService/managedClusters/namespaces@2025-02-02-preview' existing = {
   parent: mc
   name: 'a0008'
 }
@@ -140,13 +142,13 @@ resource nsA0008 'Microsoft.ContainerService/managedClusters/namespaces@2022-01-
 /*** EXISTING SPOKE RESOURCES ***/
 
 // Spoke resource group
-resource targetResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
+resource targetResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   scope: subscription()
   name: split(targetVnetResourceId, '/')[4]
 }
 
 // Spoke virtual network
-resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
+resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2025-07-01' existing = {
   scope: targetResourceGroup
   name: last(split(targetVnetResourceId, '/'))
 
@@ -193,7 +195,7 @@ resource hubVirtualNetwork 'Microsoft.Network/virtualNetworks@2025-07-01' existi
 /*** RESOURCES ***/
 
 // An Azure Monitor workspace where cluster metrics related to Prometheus are collected
-resource amw 'Microsoft.Monitor/accounts@2023-04-03' = {
+resource amw 'Microsoft.Monitor/accounts@2025-10-03' = {
   name: 'amw-${clusterName}'
   location: location
   properties: {
@@ -202,7 +204,7 @@ resource amw 'Microsoft.Monitor/accounts@2023-04-03' = {
 }
 
 // A data collection endpoint to process Prometheus scraped metrics so they can be ingested by Azure Monitor
-resource dce 'Microsoft.Insights/dataCollectionEndpoints@2023-03-11' = {
+resource dce 'Microsoft.Insights/dataCollectionEndpoints@2024-03-11' = {
   name: 'MSProm-${location}-${clusterName}'
   location: location
   kind: 'Linux'
@@ -214,7 +216,7 @@ resource dce 'Microsoft.Insights/dataCollectionEndpoints@2023-03-11' = {
 }
 
 // A data collection rule that collects PrometheusMetrics from pods, nodes and cluster and configure Azure monitor workspace as destination
-resource dcr 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
+resource dcr 'Microsoft.Insights/dataCollectionRules@2024-03-11' = {
   name: 'MSProm-${location}-${clusterName}'
   kind: 'Linux'
   location: location
@@ -273,7 +275,7 @@ resource dcr_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-0
 }
 
 // Associate a data collection rule to the AKS Cluster
-resource dcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11' = {
+resource dcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2024-03-11' = {
   name: 'MSProm-${location}-${clusterName}'
   scope: mc
   properties: {
@@ -282,7 +284,7 @@ resource dcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2023-
 }
 
 // A data collection rule that collects ContainerInsights logs from pods, nodes and cluster and configure Azure Log Analytics workspace as destination
-resource dcrContainerInsights 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {
+resource dcrContainerInsights 'Microsoft.Insights/dataCollectionRules@2024-03-11' = {
   name: 'MSCI-${location}-${mc.name}'
   kind: 'Linux'
   location: location
@@ -412,7 +414,7 @@ resource dcrContainerInsights_diagnosticSettings 'Microsoft.Insights/diagnosticS
 }
 
 // Associate DCR for ContainerInsights to the AKS Cluster
-resource dcraContainerInsights 'Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11' = {
+resource dcraContainerInsights 'Microsoft.Insights/dataCollectionRuleAssociations@2024-03-11' = {
   name: 'MSCI-${location}-${clusterName}'
   scope: mc
   properties: {
@@ -421,14 +423,14 @@ resource dcraContainerInsights 'Microsoft.Insights/dataCollectionRuleAssociation
 }
 
 // A query pack to hold any custom quries you may want to write to monitor your cluster or workloads
-resource qpBaselineQueryPack 'Microsoft.OperationalInsights/queryPacks@2019-09-01' = {
+resource qpBaselineQueryPack 'Microsoft.OperationalInsights/queryPacks@2025-07-01' = {
   location: location
   name: 'AKS baseline bundled queries'
   properties: {}
 }
 
 // Example query that shows all scraped Prometheus metrics
-resource qPrometheusAll 'Microsoft.OperationalInsights/queryPacks/queries@2019-09-01' = {
+resource qPrometheusAll 'Microsoft.OperationalInsights/queryPacks/queries@2025-07-01' = {
   parent: qpBaselineQueryPack
   name: guid(resourceGroup().id, 'PrometheusAll', clusterName)
   properties: {
@@ -488,19 +490,37 @@ resource skva 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
   }
 }
 
-// The control plane identity used by the cluster. Used for networking access (VNET joining and DNS updating)
-resource miClusterControlPlane 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+// The control plane identity used by the cluster. Used for networking access (VNET joining and DNS updating).
+// Using preview API (@2025-05-31-preview) for assignmentRestrictions and isolationScope (defense in depth).
+resource miClusterControlPlane 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-05-31-preview' = {
   name: 'mi-${clusterName}-controlplane'
   location: location
+  properties: {
+    assignmentRestrictions: {
+      providers: [
+        'Microsoft.ContainerService/managedClusters'
+      ]
+    }
+    isolationScope: 'Regional'
+  }
 }
 
 // User Managed Identity that App Gateway is assigned. Used for Azure Key Vault Access.
-resource miAppGatewayFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+// Using preview API (@2025-05-31-preview) for assignmentRestrictions and isolationScope (defense in depth).
+resource miAppGatewayFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-05-31-preview' = {
   name: 'mi-appgateway-frontend'
   location: location
+  properties: {
+    assignmentRestrictions: {
+      providers: [
+        'Microsoft.Network/applicationGateways'
+      ]
+    }
+    isolationScope: 'Regional'
+  }
 }
 
-resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
+resource kv 'Microsoft.KeyVault/vaults@2026-02-01' = {
   name: 'kv-${clusterName}'
   location: location
   properties: {
@@ -641,7 +661,7 @@ module ndEnsureClusterIdentityHasRbacToSelfManagedResources 'modules/role-assign
 }
 
 // Enabling Azure Key Vault Private Link support.
-resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+resource pdzKv 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.vaultcore.azure.net'
   location: 'global'
 
@@ -658,13 +678,14 @@ resource pdzKv 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 }
 
-resource peKv 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+resource peKv 'Microsoft.Network/privateEndpoints@2025-07-01' = {
   name: 'pe-${kv.name}'
   location: location
   properties: {
     subnet: {
       id: targetVirtualNetwork::snetPrivatelinkendpoints.id
     }
+    ipVersionType: 'IPv4'
     privateLinkServiceConnections: [
       {
         name: 'to_${targetVirtualNetwork.name}'
@@ -736,7 +757,7 @@ resource pdzMiClusterControlPlaneDnsZoneContributorRole_roleAssignment 'Microsof
   }
 }
 
-resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+resource pdzAksIngress 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: aksIngressDomainName
   location: 'global'
 
@@ -762,7 +783,7 @@ module policies 'modules/policies.bicep' = {
 }
 
 #disable-next-line BCP081
-resource mc 'Microsoft.ContainerService/managedClusters@2026-04-01' = {
+resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
   name: clusterName
   location: location
   tags: {
@@ -988,6 +1009,9 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-04-01' = {
       }
       defender: {
         logAnalyticsWorkspaceResourceId: la.id
+        securityGating: {
+          enabled: true
+        }
         securityMonitoring: {
           enabled: true
         }
@@ -1147,11 +1171,12 @@ resource mc_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
 }
 
 // Ensures that flux add-on (extension) is installed.
-resource mcFlux_extension 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
+resource mcFlux_extension 'Microsoft.KubernetesConfiguration/extensions@2025-03-01' = {
   scope: mc
   name: 'flux'
   properties: {
     extensionType: 'microsoft.flux'
+    autoUpgradeMode: 'compatible'
     autoUpgradeMinorVersion: true
     releaseTrain: 'Stable'
     scope: {
@@ -1175,10 +1200,11 @@ resource mcFlux_extension 'Microsoft.KubernetesConfiguration/extensions@2023-05-
 }
 
 // Bootstraps your cluster using content from your repo.
-resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurations@2023-05-01' = {
+resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurations@2025-04-01' = {
   scope: mc
   name: 'bootstrap'
   properties: {
+    waitForReconciliation: false
     scope: 'cluster'
     namespace: 'flux-system'
     sourceKind: 'GitRepository'
@@ -1231,7 +1257,7 @@ module ndEnsureClusterUserAssignedHasRbacToManageVMSS 'modules/role-assignment-E
   }
 }
 
-resource st 'Microsoft.EventGrid/systemTopics@2022-06-15' = {
+resource st 'Microsoft.EventGrid/systemTopics@2025-02-15' = {
   name: clusterName
   location: location
   properties: {
@@ -1260,7 +1286,7 @@ resource st_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
   }
 }
 
-resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2023-11-01' = {
+resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2025-07-01' = {
   name: 'waf-${clusterName}'
   location: location
   properties: {
@@ -1286,7 +1312,7 @@ resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPo
   }
 }
 
-resource agw 'Microsoft.Network/applicationGateways@2023-11-01' = {
+resource agw 'Microsoft.Network/applicationGateways@2025-07-01' = {
   name: agwName
   location: location
   identity: {

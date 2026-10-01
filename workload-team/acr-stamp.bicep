@@ -18,12 +18,12 @@ var subRgUniqueString = uniqueString('aks', subscription().subscriptionId, resou
 
 /*** EXISTING RESOURCES ***/
 
-resource spokeResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
+resource spokeResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   scope: subscription()
   name: split(targetVnetResourceId,'/')[4]
 }
 
-resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
+resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2025-07-01' existing = {
   scope: spokeResourceGroup
   name: last(split(targetVnetResourceId,'/'))
 
@@ -37,7 +37,7 @@ resource spokeVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' exis
 // This Log Analytics workspace will be the log sink for all resources in the cluster resource group.
 // This includes ACR, the AKS cluster, Key Vault, etc.
 // It also is the Container Insights log sink for the AKS cluster.
-resource laAks 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+resource laAks 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   name: 'la-aks-${subRgUniqueString}'
   location: location
   properties: {
@@ -68,7 +68,7 @@ resource laAks 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
 // Logging costs can be a significant part of any architecture, and putting a cap on
 // a logging sink (none of which are applied here), can help keep costs in check but
 // you run a risk of losing critical data.
-resource sqrDailyDataCapBreach 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
+resource sqrDailyDataCapBreach 'Microsoft.Insights/scheduledQueryRules@2026-03-01' = {
   name: 'Daily data cap breached for workspace ${laAks.name} CIQ-1'
   location: location
   properties: {
@@ -99,12 +99,12 @@ resource sqrDailyDataCapBreach 'Microsoft.Insights/scheduledQueryRules@2022-06-1
 }
 
 // Apply the built-in 'Container registries should have anonymous authentication disabled' policy. Azure RBAC only is allowed.
-resource pdAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyDefinitions@2021-06-01' existing = {
+resource pdAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyDefinitions@2026-06-01' existing = {
   name: '9f2dea28-e834-476c-99c5-3507b4728395'
   scope: tenant()
 }
 
-resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2024-04-01' = {
+resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2026-06-01' = {
   name: guid(resourceGroup().id, pdAnonymousContainerRegistryAccessDisallowed.id)
   location: 'global'
   scope: resourceGroup()
@@ -122,12 +122,12 @@ resource paAnonymousContainerRegistryAccessDisallowed 'Microsoft.Authorization/p
 }
 
 // Apply the built-in 'Container registries should have local admin account disabled' policy. Azure RBAC only is allowed.
-resource pdAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyDefinitions@2021-06-01' existing = {
+resource pdAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyDefinitions@2026-06-01' existing = {
   name: 'dc921057-6b28-4fbe-9b83-f7bec05db6c2'
   scope: tenant()
 }
 
-resource paAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2024-04-01' = {
+resource paAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorization/policyAssignments@2026-06-01' = {
   name: guid(resourceGroup().id, pdAdminAccountContainerRegistryAccessDisallowed.id)
   location: 'global'
   scope: resourceGroup()
@@ -145,7 +145,7 @@ resource paAdminAccountContainerRegistryAccessDisallowed 'Microsoft.Authorizatio
 }
 
 // Azure Container Registry will be exposed via Private Link, set up the related Private DNS zone and virtual network link to the spoke.
-resource dnsPrivateZoneAcr 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+resource dnsPrivateZoneAcr 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.azurecr.io'
   location: 'global'
   properties: {}
@@ -163,7 +163,8 @@ resource dnsPrivateZoneAcr 'Microsoft.Network/privateDnsZones@2020-06-01' = {
 }
 
 // The Container Registry that the AKS cluster will be authorized to use to pull images.
-resource acrAks 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
+// Using preview API (@2026-03-01-preview) for softDeletePolicy (image deletion safety net).
+resource acrAks 'Microsoft.ContainerRegistry/registries@2026-03-01-preview' = {
   name: 'acraks${subRgUniqueString}'
   location: location
   dependsOn: [
@@ -183,6 +184,9 @@ resource acrAks 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
     policies: {
       quarantinePolicy: {
         status: 'disabled'
+      }
+      softDeletePolicy: {
+        retentionDays: 7
       }
       trustPolicy: {
         type: 'Notary'
@@ -243,7 +247,7 @@ resource acrAks_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-
 }
 
 // Expose Azure Container Registry via Private Link, into the cluster nodes virtual network.
-resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2025-07-01' = {
   name: 'pe-${acrAks.name}'
   location: location
   dependsOn: [
@@ -253,6 +257,7 @@ resource privateEndpointAcrToVnet 'Microsoft.Network/privateEndpoints@2023-11-01
     subnet: {
       id: spokeVirtualNetwork::snetPrivateLinkEndpoints.id
     }
+    ipVersionType: 'IPv4'
     privateLinkServiceConnections: [
       {
         name: 'to_${spokeVirtualNetwork.name}'

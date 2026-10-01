@@ -16,12 +16,12 @@ var clusterVNetName = 'vnet-spoke-${orgAppId}-00'
 /*** EXISTING HUB RESOURCES ***/
 
 // This is 'rg-enterprise-networking-hubs-$region' if using the default values in the walkthrough
-resource hubResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' existing = {
+resource hubResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   scope: subscription()
   name: split(hubVnetResourceId,'/')[4]
 }
 
-resource hubVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
+resource hubVirtualNetwork 'Microsoft.Network/virtualNetworks@2025-07-01' existing = {
   scope: hubResourceGroup
   name: last(split(hubVnetResourceId,'/'))
 
@@ -31,13 +31,13 @@ resource hubVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existi
 }
 
 // This is the firewall that was deployed in 'hub-default.bicep'
-resource hubFirewall 'Microsoft.Network/azureFirewalls@2023-11-01' existing = {
+resource hubFirewall 'Microsoft.Network/azureFirewalls@2025-07-01' existing = {
   scope: hubResourceGroup
   name: 'fw-${location}'
 }
 
 // This is the networking log analytics workspace (in the hub)
-resource laHub 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
+resource laHub 'Microsoft.OperationalInsights/workspaces@2025-07-01' existing = {
   scope: hubResourceGroup
   name: 'la-hub-${location}'
 }
@@ -45,10 +45,11 @@ resource laHub 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = 
 /*** RESOURCES ***/
 
 // Next hop to the regional hub's Azure Firewall
-resource routeNextHopToFirewall 'Microsoft.Network/routeTables@2023-11-01' = {
+resource routeNextHopToFirewall 'Microsoft.Network/routeTables@2025-07-01' = {
   name: 'route-to-${location}-hub-fw'
   location: location
   properties: {
+    disablePeeringRoute: 'All'
     routes: [
       {
         name: 'r-nexthop-to-fw'
@@ -63,7 +64,7 @@ resource routeNextHopToFirewall 'Microsoft.Network/routeTables@2023-11-01' = {
 }
 
 // Default NSG on the AKS nodepools. Feel free to constrict further.
-resource nsgNodepoolSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
+resource nsgNodepoolSubnet 'Microsoft.Network/networkSecurityGroups@2025-07-01' = {
   name: 'nsg-${clusterVNetName}-nodepools'
   location: location
   properties: {
@@ -72,7 +73,7 @@ resource nsgNodepoolSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' 
 }
 
 // Default NSG on the AKS private cluster subnet. Feel free to constrict further.
-resource nsgPrivateClusterSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
+resource nsgPrivateClusterSubnet 'Microsoft.Network/networkSecurityGroups@2025-07-01' = {
   name: 'nsg-${clusterVNetName}-privatecluster'
   location: location
   properties: {
@@ -107,7 +108,7 @@ resource nsgNodepoolSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSet
 }
 
 // Default NSG on the AKS internal load balancer subnet. Feel free to constrict further.
-resource nsgInternalLoadBalancerSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
+resource nsgInternalLoadBalancerSubnet 'Microsoft.Network/networkSecurityGroups@2025-07-01' = {
   name: 'nsg-${clusterVNetName}-aksilbs'
   location: location
   properties: {
@@ -142,7 +143,7 @@ resource nsgInternalLoadBalancerSubnet_diagnosticsSettings 'Microsoft.Insights/d
 }
 
 // NSG on the Application Gateway subnet.
-resource nsgAppGwSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
+resource nsgAppGwSubnet 'Microsoft.Network/networkSecurityGroups@2025-07-01' = {
   name: 'nsg-${clusterVNetName}-appgw'
   location: location
   properties: {
@@ -248,7 +249,7 @@ resource nsgAppGwSubnet_diagnosticsSettings 'Microsoft.Insights/diagnosticSettin
 }
 
 // NSG on the Private Link subnet.
-resource nsgPrivateLinkEndpointsSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
+resource nsgPrivateLinkEndpointsSubnet 'Microsoft.Network/networkSecurityGroups@2025-07-01' = {
   name: 'nsg-${clusterVNetName}-privatelinkendpoints'
   location: location
   properties: {
@@ -325,7 +326,7 @@ resource nsgPrivateLinkEndpointsSubnet_diagnosticsSettings 'Microsoft.Insights/d
 // The spoke virtual network.
 // 65,536 (-reserved) IPs available to the workload, split across two subnets for AKS,
 // one for App Gateway and one for Private Link endpoints.
-resource vnetSpoke 'Microsoft.Network/virtualNetworks@2023-11-01' = {
+resource vnetSpoke 'Microsoft.Network/virtualNetworks@2025-07-01' = {
   name: clusterVNetName
   location: location
   properties: {
@@ -461,7 +462,7 @@ resource vnetSpoke_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@202
 
 // Used as primary public entry point for cluster. Expected to be assigned to an Azure Application Gateway.
 // This is a public facing IP, and would be best behind a DDoS Policy (not deployed simply for cost considerations)
-resource pipPrimaryClusterIp 'Microsoft.Network/publicIPAddresses@2023-11-01' = {
+resource pipPrimaryClusterIp 'Microsoft.Network/publicIPAddresses@2025-07-01' = {
   name: 'pip-${orgAppId}-00'
   location: location
   sku: {

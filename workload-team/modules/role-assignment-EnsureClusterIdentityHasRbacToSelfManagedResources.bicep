@@ -18,7 +18,7 @@ param targetVirtualNetworkName string
 
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
 
-resource networkContributorRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+resource networkContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: '4d97b98b-1d4f-4787-a291-c67834d212e7'
   scope: subscription()
 }
@@ -30,28 +30,28 @@ resource dnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04
 
 /*** EXISTING HUB RESOURCES ***/
 
-resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
+resource targetVirtualNetwork 'Microsoft.Network/virtualNetworks@2025-07-01' existing = {
   name: targetVirtualNetworkName
 }
 
-resource snetClusterNodes 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
+resource snetClusterNodes 'Microsoft.Network/virtualNetworks/subnets@2025-07-01' existing = {
   parent: targetVirtualNetwork
   name: 'snet-clusternodes'
 }
 
-resource snetPrivateCluster 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
+resource snetPrivateCluster 'Microsoft.Network/virtualNetworks/subnets@2025-07-01' existing = {
   parent: targetVirtualNetwork
   name: 'snet-privatecluster'
 }
 
-resource snetClusterIngress 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
+resource snetClusterIngress 'Microsoft.Network/virtualNetworks/subnets@2025-07-01' existing = {
   parent: targetVirtualNetwork
   name: 'snet-clusteringressservices'
 }
 
 /*** RESOURCES ***/
 
-resource vnetMiClusterControlPlaneDnsZoneContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+resource vnetMiClusterControlPlaneDnsZoneContributorRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: targetVirtualNetwork
   name: guid(targetVirtualNetwork.id, dnsZoneContributorRole.id, clusterControlPlaneIdentityName)
   properties: {

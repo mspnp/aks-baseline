@@ -18,17 +18,17 @@ var kubernetesAlertRuleGroupDescription = 'Kubernetes Alert RuleGroup-Recommende
 
 /*** EXISTING RESOURCES ***/
 
-resource mc 'Microsoft.ContainerService/managedClusters@2024-03-02-preview' existing = {
+resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' existing = {
   name: clusterName
 }
 
-resource amw 'Microsoft.Monitor/accounts@2023-04-03' existing = {
+resource amw 'Microsoft.Monitor/accounts@2025-10-03' existing = {
   name: 'amw-${mc.name}'
 }
 
 /*** RESOURCES ***/
 
-resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2020-10-01' = {
+resource alaRgRecommendations 'Microsoft.Insights/activityLogAlerts@2026-01-01' = {
   name: 'AllAzureAdvisorAlert'
   location: 'Global'
   properties: {
@@ -644,7 +644,7 @@ resource kubernetesAlertRuleGroupName_Cluster_level 'Microsoft.AlertsManagement/
   }
 }
 
-resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2022-06-15' = {
+resource sqrPodFailed 'Microsoft.Insights/scheduledQueryRules@2026-03-01' = {
   name: 'PodFailedScheduledQuery'
   location: location
   properties: {

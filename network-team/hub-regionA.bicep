@@ -33,7 +33,7 @@ param hubVirtualNetworkBastionSubnetAddressSpace string = '10.200.0.96/27'
 
 // This Log Analytics workspace stores logs from the regional hub network, its spokes, and bastion.
 // Log analytics is a regional resource, as such there will be one workspace per hub (region)
-resource laHub 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+resource laHub 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   name: 'la-hub-${location}'
   location: location
   properties: {
@@ -87,7 +87,7 @@ resource laHub_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-0
 }
 
 // NSG around the Azure Bastion Subnet.
-resource nsgBastionSubnet 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
+resource nsgBastionSubnet 'Microsoft.Network/networkSecurityGroups@2025-07-01' = {
   name: 'nsg-${location}-bastion'
   location: location
   properties: {
@@ -284,7 +284,7 @@ resource nsgBastionSubnet_diagnosticSettings 'Microsoft.Insights/diagnosticSetti
 }
 
 // The regional hub network
-resource vnetHub 'Microsoft.Network/virtualNetworks@2023-11-01' = {
+resource vnetHub 'Microsoft.Network/virtualNetworks@2025-07-01' = {
   name: 'vnet-${location}-hub'
   location: location
   properties: {
@@ -346,7 +346,7 @@ resource vnetHub_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-
 
 // Allocate three IP addresses to the firewall
 var numFirewallIpAddressesToAssign = 3
-resource pipsAzureFirewall 'Microsoft.Network/publicIPAddresses@2023-11-01' = [for i in range(0, numFirewallIpAddressesToAssign): {
+resource pipsAzureFirewall 'Microsoft.Network/publicIPAddresses@2025-07-01' = [for i in range(0, numFirewallIpAddressesToAssign): {
   name: 'pip-fw-${location}-${padLeft(i, 2, '0')}'
   location: location
   sku: {
@@ -405,7 +405,7 @@ resource pipAzureFirewall_diagnosticSetting 'Microsoft.Insights/diagnosticSettin
 }]
 
 @description('The public IP for the regional hub\'s Azure Bastion service.')
-resource pipAzureBastion 'Microsoft.Network/publicIPAddresses@2024-10-01' = {
+resource pipAzureBastion 'Microsoft.Network/publicIPAddresses@2025-07-01' = {
   name: 'pip-ab-${location}'
   location: location
   sku: {
@@ -423,7 +423,7 @@ resource pipAzureBastion 'Microsoft.Network/publicIPAddresses@2024-10-01' = {
   }
 }
 
-resource azureBastion 'Microsoft.Network/bastionHosts@2024-10-01' = {
+resource azureBastion 'Microsoft.Network/bastionHosts@2025-07-01' = {
   name: 'ab-${location}'
   location: location
   sku: {
@@ -463,7 +463,7 @@ resource azureBastion_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@
 }
 
 // This holds IP addresses of known nodepool subnets in spokes.
-resource ipgNodepoolSubnet 'Microsoft.Network/ipGroups@2023-11-01' = {
+resource ipgNodepoolSubnet 'Microsoft.Network/ipGroups@2025-07-01' = {
   name: 'ipg-${location}-AksNodepools'
   location: location
   properties: {
@@ -472,7 +472,7 @@ resource ipgNodepoolSubnet 'Microsoft.Network/ipGroups@2023-11-01' = {
 }
 
 // Azure Firewall starter policy
-resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' = {
+resource fwPolicy 'Microsoft.Network/firewallPolicies@2025-07-01' = {
   name: 'fw-policies-${location}'
   location: location
   dependsOn: [
@@ -763,7 +763,7 @@ resource fwPolicy 'Microsoft.Network/firewallPolicies@2023-11-01' = {
 }
 
 // This is the regional Azure Firewall that all regional spoke networks can egress through.
-resource hubFirewall 'Microsoft.Network/azureFirewalls@2023-11-01' = {
+resource hubFirewall 'Microsoft.Network/azureFirewalls@2025-07-01' = {
   name: 'fw-${location}'
   location: location
   zones: [

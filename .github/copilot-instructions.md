@@ -88,6 +88,14 @@ az deployment group create -g rg-bu0001a0008 \
 
 ### Bicep Files
 
+- Preview API versions should generally be avoided. If a preview API version is used intentionally, add an inline comment above the resource declaration using this format:
+  ```bicep
+  // Using preview API (@<version>) for <property/feature> (<reason>).
+  ```
+  Examples:
+  - `// Using preview API (@2026-03-01-preview) for softDeletePolicy (image deletion safety net).`
+  - `// Using preview API (@2025-05-31-preview) for assignmentRestrictions and isolationScope (defense in depth).`
+  - `// Using preview API (@2025-02-02-preview) as no stable version exists for this child resource type.`
 - Use `@description()` decorators on all parameters
 - Parameters: camelCase (e.g., `targetVnetResourceId`)
 - Resource names: kebab-case with location suffix for multi-region support (e.g., `vnet-${location}-hub`, `la-hub-${location}`). This convention enables deploying the same templates across different Azure regions.
