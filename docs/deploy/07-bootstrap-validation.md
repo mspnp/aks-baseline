@@ -28,7 +28,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
    az aks nodepool show -n npuser01 --cluster-name $AKS_CLUSTER_NAME -g rg-bu0001a0008 --query nodeImageVersion
    ```
 
-   > Typically, base node images don't contain a suffix with a date (i.e. `AKSUbuntu-2204gen2containerd`). If the `nodeImageVersion` value looks like `AKSUbuntu-2204gen2containerd-202402.26.0` a SecurityPatch or NodeImage upgrade has been applied to the AKS node.
+   > AKS node image versions include a date-based version (for example, `AKSAzureLinux-V3gen2-202604.07.0`). To verify that no image upgrade is available, compare this `nodeImageVersion` with the `latestNodeImageVersion` returned by the preceding `az aks nodepool get-upgrades` command; the values should match.
 
    > The AKS nodes are configured to receive weekly updates automatically which include security patches, kernel updates, and node images updates. The AKS cluster version won't be updated automatically since production clusters should be updated manually after testing in lower environments.
 
