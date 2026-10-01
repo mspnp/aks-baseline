@@ -37,6 +37,13 @@ This is the starting point for the instructions on deploying the [AKS baseline r
 
    > Starting with `kubectl` 1.24, you must also have the `kubelogin` credential (exec) plug-in available for Microsoft Entra ID authentication. Installing `kubectl` via `az aks install-cli` does this already, but if you install `kubectl` in a different way, make sure `kubelogin` is [installed](https://github.com/Azure/kubelogin#getting-started).
 
+1. Install `aks-preview` and `bastion` az cli extensions
+
+   ```bash
+   az extension add --name aks-preview
+   az extension add --name bastion
+   ```
+
 1. Clone/download this repo locally, or even better fork this repository.
 
    > :twisted_rightwards_arrows: If you have forked this reference implementation repo, you'll be able to customize some of the files and commands for a more personalized and production-like experience; ensure references to this Git repository mentioned throughout the walk-through are updated to use your own fork.

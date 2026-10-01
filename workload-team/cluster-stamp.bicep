@@ -98,12 +98,6 @@ resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2022-0
   scope: subscription()
 }
 
-// Built-in Azure RBAC role that is applied to a Key Vault to grant certificate read privileges. Granted to the CSI Secrets Store Driver managed identity so it can use certificates.
-resource keyVaultCertificateUserRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  name: 'db79e9a7-68ee-4b58-9aeb-b90e7c24fcba'
-  scope: subscription()
-}
-
 // Built-in Azure RBAC role that is applied to a Private DNS Zone to grant with contributor privileges. Granted our web app routing profile's managed identity, which uses it to modify the DNS zone.
 resource privateDnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
@@ -520,6 +514,23 @@ resource miAppGatewayFrontend 'Microsoft.ManagedIdentity/userAssignedIdentities@
   }
 }
 
+// User-Assigned Managed Identity for Application Routing Workload Identity
+resource miAppRoutingWorkload 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
+  name: 'mi-app-routing-workload'
+  location: location
+}
+
+// Federated identity credential binding the gateway namespace ServiceAccount to the Workload Identity UAMI
+resource fiAppRoutingWorkload 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials@2024-11-30' = {
+  name: 'app-routing-gateway-sa'
+  parent: miAppRoutingWorkload
+  properties: {
+    issuer: mc.properties.oidcIssuerProfile.issuerURL
+    subject: 'system:serviceaccount:a0008:approuting-gateway-sa'  // must match name + namespace in 1-gateway-sa.yaml
+    audiences: ['api://AzureADTokenExchange']
+  }
+}
+
 resource kv 'Microsoft.KeyVault/vaults@2026-02-01' = {
   name: 'kv-${clusterName}'
   location: location
@@ -639,13 +650,24 @@ resource pdzClusterWebAppRoutingDNSZoneContributor_roleAssignment 'Microsoft.Aut
   }
 }
 
-// Grant the AKS CSI Secrets Store Driver managed identity with Key Vault certificate user role permissions; the SecretProviderClass uses objectType: cert which requires certificate read access
-resource kvCsiSecretsStoreCertificateUserRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+// Grant Workload Identity UAMI with Key Vault Secrets User for TLS cert sync via operator-managed SecretProviderClass
+resource kvAppRoutingWorkloadSecretsUser_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: kv
-  name: guid(resourceGroup().id, 'csi-secrets-store-driver', keyVaultCertificateUserRole.id)
+  name: guid(resourceGroup().id, 'app-routing-workload-secrets-user', keyVaultSecretsUserRole.id)
   properties: {
-    roleDefinitionId: keyVaultCertificateUserRole.id
-    principalId: mc.properties.addonProfiles.azureKeyvaultSecretsProvider.identity.objectId
+    roleDefinitionId: keyVaultSecretsUserRole.id
+    principalId: miAppRoutingWorkload.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Grant Workload Identity UAMI with DNS Zone Contributor for automatic record reconciliation
+resource pdzAppRoutingWorkloadDNSZoneContributor_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: pdzAksIngress
+  name: guid(resourceGroup().id, 'app-routing-workload-dns-zone-contributor', privateDnsZoneContributorRole.id)
+  properties: {
+    roleDefinitionId: privateDnsZoneContributorRole.id
+    principalId: miAppRoutingWorkload.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
@@ -893,7 +915,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
       azureKeyvaultSecretsProvider: {
         enabled: true
         config: {
-          enableSecretRotation: 'true'
+          enableSecretRotation: 'true'  // Hot-swap mounted cert files on rotation without pod restart
           rotationPollInterval: '2m'
         }
       }
@@ -1236,8 +1258,11 @@ resource mc_fluxConfiguration 'Microsoft.KubernetesConfiguration/fluxConfigurati
           substitute: {
             CONTAINER_REGISTRY_URL: acr.properties.loginServer
             KEY_VAULT_NAME: kv.name
-            CSI_IDENTITY_CLIENT_ID: mc.properties.addonProfiles.azureKeyvaultSecretsProvider.identity.clientId
+            CSI_IDENTITY_CLIENT_ID: ''
             TENANT_ID: subscription().tenantId
+            MI_APP_ROUTING_CLIENT_ID: miAppRoutingWorkload.properties.clientId
+            DNS_ZONE_RESOURCE_ID: pdzAksIngress.id
+            AKS_BACKEND_DOMAIN_NAME: aksBackendDomainName
           }
         }
       }
@@ -1506,5 +1531,4 @@ resource agwdiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01
 
 output aksClusterName string = clusterName
 output keyVaultName string = kv.name
-output aksCSISecretsStoreIdentityClientId string = mc.properties.addonProfiles.azureKeyvaultSecretsProvider.identity.clientId
 output containerRegistryLoginServer string = acr.properties.loginServer

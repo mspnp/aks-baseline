@@ -1,6 +1,6 @@
 # Workload prerequisites
 
-The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping up the infrastructure focus of the [AKS baseline reference implementation](../../). Follow the steps in this article to import the TLS certificate that the gateway proxy will serve so that Application Gateway can connect to your web app, and configure the CSI Secrets Store integration.
+The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping up the infrastructure focus of the [AKS baseline reference implementation](../../). Follow the steps in this article to import the TLS certificate that the gateway proxy will serve so that Application Gateway can connect to your web app.
 
 ## Steps
 
@@ -45,24 +45,15 @@ The AKS cluster has been [bootstrapped](./07-bootstrap-validation.md), wrapping 
    az role assignment delete --ids $TEMP_ROLEASSIGNMENT_TO_UPLOAD_CERT
    ```
 
-## Validate the TLS sync and gateway controller readiness
+## Validate the gateway controller readiness
 
-The SecretProviderClass and TLS sync Deployment were deployed via Flux GitOps during cluster bootstrapping. The [Azure Key Vault Provider for Secrets Store CSI Driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure) requires a pod to mount the CSI volume in order to create and maintain the Kubernetes Secret. The pod itself is a dummy and doesn't do any actual work. The TLS sync pod keeps the Secret alive independently of workload pod lifecycle. For more information, see [Secure ingress traffic with the application routing Gateway API implementation](https://learn.microsoft.com/azure/aks/app-routing-gateway-api-tls).
+The Application Routing operator manages TLS certificate synchronization from Azure Key Vault automatically. When you apply the Gateway resource with `tls-cert-keyvault-uri` and `tls-cert-service-account` options, the operator creates a `SecretProviderClass`, triggers the Secrets Store CSI Driver to sync the certificate as a Kubernetes Secret, and patches the Gateway listener's certificate reference. No dedicated TLS sync pod is needed. For more information, see [Secure ingress traffic with the application routing Gateway API implementation](https://learn.microsoft.com/azure/aks/app-routing-gateway-api-tls).
 
 1. Ensure your bootstrapping process has created the following namespace.
 
    ```bash
    # press Ctrl-C once you receive a successful response
    kubectl get ns a0008 -w
-   ```
-
-1. Wait for the TLS sync pod to be running and the Secret to be created.
-
-   > Once the TLS sync pod mounts the CSI volume referencing the SecretProviderClass, the driver syncs the certificate from Azure Key Vault and creates the `bu0001a0008-ingress-tls` Kubernetes Secret. This may take up to two minutes.
-
-   ```bash
-   kubectl wait -n a0008 --for=condition=available deployment/tls-sync --timeout=120s
-   kubectl wait --for=jsonpath='{.type}'=kubernetes.io/tls secret/bu0001a0008-ingress-tls -n a0008 --timeout=120s
    ```
 
 1. Wait for the Istio gateway controller to be ready.
