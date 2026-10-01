@@ -163,6 +163,7 @@ resource dnsPrivateZoneAcr 'Microsoft.Network/privateDnsZones@2024-06-01' = {
 }
 
 // The Container Registry that the AKS cluster will be authorized to use to pull images.
+// Using preview API (@2026-03-01-preview) for softDeletePolicy (image deletion safety net).
 resource acrAks 'Microsoft.ContainerRegistry/registries@2026-03-01-preview' = {
   name: 'acraks${subRgUniqueString}'
   location: location

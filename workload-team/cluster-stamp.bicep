@@ -117,7 +117,8 @@ resource privateDnsZoneContributorRole 'Microsoft.Authorization/roleDefinitions@
 // resources that would exist before & after any individual cluster is deployed or is removed
 // from the solution.
 
-// Azure Container Registry
+// The Container Registry that the AKS cluster will be authorized to use to pull images.
+// Using preview API (@2026-03-01-preview) for softDeletePolicy (image deletion safety net).
 resource acr 'Microsoft.ContainerRegistry/registries@2026-03-01-preview' existing = {
   scope: resourceGroup()
   name: 'acraks${subRgUniqueString}'
