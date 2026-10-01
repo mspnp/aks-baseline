@@ -43,12 +43,12 @@ The customer now has their [prerequisite components](./08-workload-prerequisites
 
    > At this point, the route to the workload is established, TLS termination is configured on the gateway proxy, and network policies are in place to only allow the Envoy proxy to connect to your workload and to only allow traffic from the Application Gateway subnet to reach the gateway proxy.
 
-1. Verify automatic DNS record reconciliation.
+1. Verify that DNS records have been created and reconciled.
 
-   > :book: The Application Routing operator deploys a managed `external-dns` instance that watches Gateway and HTTPRoute resources in the `a0008` namespace and publishes A records to the attached private DNS zone automatically. The [`ExternalDNS`](https://learn.microsoft.com/azure/aks/app-routing-gateway-api-dns-tls) custom resource was deployed via Flux GitOps during cluster bootstrapping as part of the [cluster manifests](../../cluster-manifests/a0008/2-external-dns.yaml). It authenticates to Azure DNS through the Microsoft Entra Workload Identity chain: a namespace-scoped ServiceAccount bound via federated identity credentials to a user-assigned managed identity with the `DNS Zone Contributor` role on the target private DNS zone.
+   > :book: The Application Routing add-on's operator deploys a managed `external-dns` instance that watches Gateway and HTTPRoute resources in the `a0008` namespace and publishes A records to the attached private DNS zone automatically. The [`ExternalDNS`](https://learn.microsoft.com/azure/aks/app-routing-gateway-api-dns-tls) custom resource was deployed via Flux GitOps during cluster bootstrapping as part of the [cluster manifests](../../cluster-manifests/a0008/2-external-dns.yaml). It authenticates to Azure DNS through the Microsoft Entra Workload Identity chain: a namespace-scoped ServiceAccount bound via federated identity credentials to a user-assigned managed identity with the `DNS Zone Contributor` role on the target private DNS zone.
 
    ```bash
-   # Confirm the ExternalDNS CR was applied by Flux
+   # Confirm the ExternalDNS custom resource was applied by Flux
    kubectl get externaldns bu0001a0008-00.aks-ingress.${DOMAIN_NAME_AKS_BASELINE} -n a0008
 
    # Confirm the managed external-dns instance is running
