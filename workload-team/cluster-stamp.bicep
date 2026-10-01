@@ -53,7 +53,7 @@ var aksIngressDomainName = 'aks-ingress.${domainName}'
 var aksBackendDomainName = 'bu0001a0008-00.${aksIngressDomainName}'
 var isUsingAzureRBACasKubernetesRBAC = (subscription().tenantId == k8sControlPlaneAuthorizationTenantId)
 
-var kubernetesVersion = '1.36.0'
+var kubernetesVersion = '1.37.0'
 
 /*** EXISTING SUBSCRIPTION RESOURCES ***/
 
@@ -815,11 +815,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
         orchestratorVersion: kubernetesVersion
         enableNodePublicIP: false
         maxPods: 30
-        availabilityZones: [
-          '1'
-          '2'
-          '3'
-        ]
+        availabilityZones: ['auto']
         upgradeSettings: {
           maxSurge: '33%'
         }
@@ -848,11 +844,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
         orchestratorVersion: kubernetesVersion
         enableNodePublicIP: false
         maxPods: 30
-        availabilityZones: [
-          '1'
-          '2'
-          '3'
-        ]
+        availabilityZones: ['auto']
         upgradeSettings: {
           maxSurge: '33%'
         }
@@ -901,15 +893,15 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
     nodeResourceGroup: nodeResourceGroup.name
     enableRBAC: true
     networkProfile: {
-      networkPlugin: 'azure'
-      networkPluginMode: 'overlay'
-      podCidr: '192.168.0.0/16'
-      networkPolicy: 'azure'
-      outboundType: 'userDefinedRouting'
-      loadBalancerSku: 'standard'
-      loadBalancerProfile: null
-      serviceCidr: '172.16.0.0/16'
-      dnsServiceIP: '172.16.0.10'
+      networkPlugin: 'azure' // Azure CNI for native pod IP address management
+      networkPluginMode: 'overlay' // Overlay mode , pods get IPs from the PodCIDR, not subnet; enables full subnet utilization for node pools
+      podCidr: '192.168.0.0/16' // Must not overlap with VNet subnets or peer network ranges
+      networkPolicy: 'azure' // Azure Network Policies (not Calico or upstream Kubernetes built-in)
+      outboundType: 'userDefinedRouting' // NAT gateway via UDR for egress, not standard load balancer; route table is pre-provisioned on the cluster subnet
+      loadBalancerSku: 'standard' // Standard SKU required for SLB and zone-aware configurations; no Basic SKU support in AKS
+      loadBalancerProfile: null // Null when outboundType=userDefinedRouting; LB profile fields are only relevant for standard LB egress
+      serviceCidr: '172.16.0.0/16' // Must not overlap with podCidr, VNet subnets, or peer networks; size < /12 required
+      dnsServiceIP: '172.16.0.10' // Falls within serviceCidr; last octet .10 avoids conflicts with dynamically assigned service IPs (.1-.9) and gateway addresses (.1)
     }
     aadProfile: {
       managed: true
@@ -923,7 +915,7 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
       'max-empty-bulk-delete': '10'
       'max-graceful-termination-sec': '600'
       'max-node-provision-time': '15m'
-      'max-total-unready-percentage': '45'
+      'max-total-unready-percentage': '45' // 3-node min cluster: ~2 nodes could be unready before scale-out triggers. During rolling upgrades with maxSurge='33%', this compounds the capacity gap. A lower threshold (e.g., 33%) would trigger scale-out sooner to refill lost capacity during rolling upgrades, at the cost of extra node provisioning and spend while nodes sit idle between upgrade batches.
       'new-pod-scale-up-delay': '0s'
       'ok-total-unready-count': '3'
       'scale-down-delay-after-add': '10m'
