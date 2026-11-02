@@ -451,7 +451,7 @@ resource paLocalAuthDisabled 'Microsoft.Authorization/policyAssignments@2026-06-
     policyDefinitionId: pdLocalAuthDisabled.id
     parameters: {
       effect: {
-        value: 'Deny'
+        value: 'Audit'
       }
     }
   }
