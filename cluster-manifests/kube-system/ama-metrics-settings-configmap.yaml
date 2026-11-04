@@ -12,6 +12,7 @@ data:
   # https://learn.microsoft.com/azure/azure-monitor/containers/prometheus-metrics-scrape-configuration?tabs=CRDConfig%2CCRDScrapeConfig%2CConfigFileScrapeConfigBasicAuth%2CConfigFileScrapeConfigTLSAuth#cluster-alias
   prometheus-collector-settings: |-
     cluster_alias = ""
+    secrets_access_namespaces = "flux-system,a0008"
   # Enable/disable default scrape targets - Turn ON/OFF default scraping based on targets. Scrape configuration for these default targets are already pre-defined/built-in
   # https://learn.microsoft.com/azure/azure-monitor/containers/prometheus-metrics-scrape-configuration?tabs=CRDConfig%2CCRDScrapeConfig%2CConfigFileScrapeConfigBasicAuth%2CConfigFileScrapeConfigTLSAuth#metrics-add-on-settings-configmap
   default-scrape-settings-enabled: |-
@@ -80,7 +81,7 @@ data:
     networkobservabilityCilium = "30s"
     prometheuscollectorhealth = "30s"
     podannotations = "30s"
-  # debug-mode - turning this ON helps to debug missing metric/ingestion issues 
+  # debug-mode - turning this ON helps to debug missing metric/ingestion issues
   # https://learn.microsoft.com/azure/azure-monitor/containers/prometheus-metrics-scrape-configuration?tabs=CRDConfig%2CCRDScrapeConfig%2CConfigFileScrapeConfigBasicAuth%2CConfigFileScrapeConfigTLSAuth#debug-mode
   debug-mode: |-
     enabled = false

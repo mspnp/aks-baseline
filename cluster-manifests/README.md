@@ -10,6 +10,7 @@ This is the root of the GitOps configuration directory. These Kubernetes object 
 - Kubernetes RBAC Role Assignments (cluster and namespace) to Microsoft Entra groups. *Optional*
 - Ingress Network Policy
 - Azure Monitor Prometheus Scraping
+- Namespace-scoped Role + RoleBinding for the ama-metrics service account in flux-system and a0008 namespaces
 
 ## Private bootstrapping repository
 
