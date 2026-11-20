@@ -28,7 +28,7 @@ data:
     kappiebasic = true
     networkobservabilityRetina = true
     networkobservabilityHubble = false
-    networkobservabilityCilium = false
+    networkobservabilityCilium = true
     prometheuscollectorhealth = false
     controlplane-apiserver = true
     controlplane-cluster-autoscaler = false
