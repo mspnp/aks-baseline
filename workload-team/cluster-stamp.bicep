@@ -918,11 +918,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
       networkPlugin: 'azure' // Azure CNI for native pod IP address management
       networkPluginMode: 'overlay' // Overlay mode , pods get IPs from the PodCIDR, not subnet; enables full subnet utilization for node pools
       podCidr: '192.168.0.0/16' // Must not overlap with VNet subnets or peer network ranges
-      networkPolicy: 'ciliumClusterwide' // Enforce Kubernetes NetworkPolicy natively via the Cilium data plane; no separate policy engine (Azure NPM/Calico) needed
-      dataPlane: {
-        ciliumVersion: '1.18.9' // Minimum Cilium version for Kubernetes 1.36+; AKS manages upgrades from here
-        enableCiliumClusterwideNetworkPolicy: true // Cluster-wide enforcement of standard NetworkPolicy resources by the Cilium data plane
-      }
+      networkDataplane: 'cilium' // Azure CNI Powered by Cilium (eBPF) data plane for traffic forwarding and policy enforcement
+      networkPolicy: 'cilium' // Enforce Kubernetes NetworkPolicy natively via the Cilium data plane; no separate policy engine (Azure NPM/Calico) needed
       outboundType: 'userDefinedRouting' // NAT gateway via UDR for egress, not standard load balancer; route table is pre-provisioned on the cluster subnet
       loadBalancerSku: 'standard' // Standard SKU required for SLB and zone-aware configurations; no Basic SKU support in AKS
       loadBalancerProfile: null // Null when outboundType=userDefinedRouting; LB profile fields are only relevant for standard LB egress
