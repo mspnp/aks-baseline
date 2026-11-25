@@ -963,8 +963,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
       enabled: false // Using Microsoft Entra Workload IDs for pod identities.
     }
     autoUpgradeProfile: {
-      nodeOSUpgradeChannel: 'NodeImage'
-      upgradeChannel: 'none'
+      nodeOSUpgradeChannel: 'NodeImage' // Delegate node image updates to the platform on every patch release.
+      upgradeChannel: 'patch' // Enable cluster automatic upgrade from the start on the `patch` channel so teams build familiarity with upgrades early rather than discovering in production that the workload is highly upgrade-sensitive. Move to `stable` or `rapid` only if your preproduction testing and IaC reconciliation can keep up.
     }
     azureMonitorProfile: {
       metrics: {
