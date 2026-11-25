@@ -76,10 +76,8 @@ The customer now has their [prerequisite components](./08-workload-prerequisites
    exit
    ```
 
-   > From this container shell, you could also try to directly access the workload via its Service name:
-   > - `curl -I http://aspnetapp-service --connect-timeout 5`
-   >
-   > **Data plane note:** with the Cilium data plane, this request now succeeds (HTTP 200) instead of timing out. Traffic to a ClusterIP Service arrives at the pod through the node, so Cilium sees it as coming from the node rather than from the calling pod. The policy must allow that node traffic for the Application Gateway path to work, and that also lets any pod in the cluster reach the workload by its Service name. External traffic still cannot bypass the gateway.
+   > From this container shell, you could also try to directly access the workload via:
+   > - `curl -I http://aspnetapp-service --connect-timeout 5`. This request should timeout since a network policy only allows the Envoy gateway proxy to reach your application.
 
 1. Because you've finished managing your cluster, close the Azure Bastion tunnel:
 
