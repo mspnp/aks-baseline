@@ -16,8 +16,12 @@
 ---
 # Allow ingress to the workload pods from the Envoy gateway proxy and from
 # node-routed traffic (the ClusterIP Service path by which Envoy reaches the
-# backend). `cluster` covers direct pod-to-pod; `remote-node` covers the
-# Service/LB-routed hop that arrives via the node's host network namespace.
+# backend). `remote-node` covers the Service/LB-routed hop that arrives via the
+# node's host network namespace; the `fromEndpoints` rule restricts direct
+# pod-to-pod to only the gateway-labeled proxy pods.
+#
+# NOTE: FromEntities and FromEndpoints are mutually exclusive within a single
+# ingress rule (per Cilium source), so they must appear in separate rules.
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
@@ -28,12 +32,11 @@ spec:
     matchLabels:
       app.kubernetes.io/name: aspnetapp
   ingress:
-  # `cluster` covers pod-to-pod (Envoy -> workload); `remote-node` covers the
-  # node-routed Service/LB path. NOTE: do NOT add `fromEndpoints` here — this Cilium
-  # version rejects combining FromEntities and FromEndpoints in one policy object.
   - fromEntities:
-    - cluster
     - remote-node
+  - fromEndpoints:
+    - matchLabels:
+        gateway.networking.k8s.io/gateway-name: bu0001a0008-gateway
 
 ---
 # Restricts ingress to the Envoy gateway proxy. The Application Gateway, the Azure
