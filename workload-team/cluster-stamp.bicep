@@ -1097,6 +1097,26 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
       }
     }
   }
+
+  // Kubernetes control plane auto-upgrades (the `patch` channel) are governed by this
+  // separate schedule, not the node OS one above. Without it, automatic patch upgrades
+  // would run on the platform's default window instead of our planned Tuesday maintenance.
+  #disable-next-line BCP081
+  resource cluster_maintenanceConfigurations 'maintenanceConfigurations' = {
+    name: 'aksManagedAutoUpgradeSchedule'
+    properties: {
+      maintenanceWindow: {
+        durationHours: 12
+        schedule: {
+          weekly: {
+            dayOfWeek: 'Tuesday'
+            intervalWeeks: 1
+          }
+        }
+        startTime: '21:00'
+      }
+    }
+  }
 }
 
 resource acrKubeletAcrPullRole_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
