@@ -32,7 +32,7 @@ GitOps allows a team to author Kubernetes manifest files, persist them in their 
 
    > The AKS nodes are configured to receive weekly updates automatically which include security patches, kernel updates, and node images updates.
    >
-   > The AKS cluster is on the `patch` automatic upgrade channel, so Kubernetes control plane patch releases within the current minor version are applied automatically during the planned maintenance window. Minor version upgrades (a new N-1 or N release) are not applied automatically by the `patch` channel and remain a planned, manual step that should be validated in lower environments first.
+   > The AKS cluster is on the `patch` automatic upgrade channel, so Kubernetes control plane patch releases within the current minor version are applied automatically during the planned maintenance window. Minor version upgrades are not applied automatically by the `patch` channel and remain a planned, manual step that should be validated in lower environments first.
 
    > Node image updates are shipped on a weekly cadence by default. This AKS cluster is configured to have its maintenance window for node image updates every Tuesday at 9PM. If a node image is released outside of this maintenance window, the nodes will be updated on the next scheduled occurrence. For AKS nodes that require more frequent updates, consider changing the auto-upgrade channel to `SecurityPatch` and configuring a daily maintenance window.
 
