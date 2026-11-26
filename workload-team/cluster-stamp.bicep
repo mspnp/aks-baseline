@@ -1113,6 +1113,9 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
             intervalWeeks: 1
           }
         }
+        // startTime is interpreted in the window's utcOffset time zone. We don't set
+        // utcOffset, so it defaults to +00:00 and this window runs Tuesday 21:00 UTC
+        // (not cluster-local time). Set utcOffset explicitly if you need a different zone.
         startTime: '21:00'
       }
     }
