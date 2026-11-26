@@ -40,7 +40,7 @@ spec:
 
 ---
 # Restricts ingress to the Envoy gateway proxy. The Application Gateway, the Azure
-# internal load balancer, and the LB health probes all reach the Envoy pod via the
+# internal load balancer, and the load balancer's health probes all reach the Envoy pod via the
 # node's host network namespace, so the `remote-node` entity is required. This is the
 # L3/L4 enforcement that meshless mode (approuting-istio) relies on in place of an
 # Istio AuthorizationPolicy.
