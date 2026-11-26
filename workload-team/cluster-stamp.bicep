@@ -963,8 +963,8 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
       enabled: false // Using Microsoft Entra Workload IDs for pod identities.
     }
     autoUpgradeProfile: {
-      nodeOSUpgradeChannel: 'NodeImage'
-      upgradeChannel: 'none'
+      nodeOSUpgradeChannel: 'NodeImage' // Delegate node image updates to the platform on every patch release.
+      upgradeChannel: 'patch' // Enable cluster automatic upgrade from the start on the `patch` channel so teams build familiarity with upgrades early rather than discovering in production that the workload is highly upgrade-sensitive. Move to `stable` or `rapid` only if your preproduction testing and IaC reconciliation can keep up.
     }
     azureMonitorProfile: {
       metrics: {
@@ -1093,6 +1093,29 @@ resource mc 'Microsoft.ContainerService/managedClusters@2026-06-01' = {
             intervalWeeks: 1
           }
         }
+        startTime: '21:00'
+      }
+    }
+  }
+
+  // Kubernetes control plane auto-upgrades (the `patch` channel) are governed by this
+  // separate schedule, not the node OS one above. Without it, automatic patch upgrades
+  // would run on the platform's default window instead of our planned Tuesday maintenance.
+  #disable-next-line BCP081
+  resource cluster_maintenanceConfigurations 'maintenanceConfigurations' = {
+    name: 'aksManagedAutoUpgradeSchedule'
+    properties: {
+      maintenanceWindow: {
+        durationHours: 12
+        schedule: {
+          weekly: {
+            dayOfWeek: 'Tuesday'
+            intervalWeeks: 1
+          }
+        }
+        // startTime is interpreted in the window's utcOffset time zone. We don't set
+        // utcOffset, so it defaults to +00:00 and this window runs Tuesday 21:00 UTC
+        // (not cluster-local time). Set utcOffset explicitly if you need a different zone.
         startTime: '21:00'
       }
     }
