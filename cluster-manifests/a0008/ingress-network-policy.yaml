@@ -1,47 +1,61 @@
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
+# Ingress network policies for the a0008 workload namespace.
+#
+# Enforced by the Cilium data plane (Azure CNI Powered by Cilium). Because Cilium
+# enforces policy on ALL traffic — including traffic routed internally via a node
+# (ClusterIP/LoadBalancer/NodePort with externalTrafficPolicy=Cluster, which is the
+# default) — these policies use CiliumNetworkPolicy with `fromEntities` rather than
+# standard NetworkPolicy ipBlocks. Under Cilium, an ipBlock that overlaps node or pod
+# address space is NOT honored for the node-routed path; the source identity of that
+# traffic is the node's host network namespace (the `remote-node` entity), which only
+# `fromEntities` can match.
+#
+# Traffic paths these policies must allow:
+#   App GW (10.240.5.x) -> ILB -> Envoy pod -> backend Service ClusterIP -> workload pod
+#                          [policy 2]                    [arrives node-routed, policy 1]
+
+---
+# Allow ingress to the workload pods from the Envoy gateway proxy and from
+# node-routed traffic (the ClusterIP Service path by which Envoy reaches the
+# backend). `remote-node` covers the Service/LB-routed hop that arrives via the
+# node's host network namespace; the `fromEndpoints` rule restricts direct
+# pod-to-pod to only the gateway-labeled proxy pods.
+#
+# NOTE: FromEntities and FromEndpoints are mutually exclusive within a single
+# ingress rule (per Cilium source), so they must appear in separate rules.
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
 metadata:
   name: allow-only-ingress-to-workload
   namespace: a0008
 spec:
-  podSelector:
+  endpointSelector:
     matchLabels:
       app.kubernetes.io/name: aspnetapp
   ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          gateway.networking.k8s.io/gateway-name: bu0001a0008-gateway
+  - fromEntities:
+    - remote-node
+  - fromEndpoints:
+    - matchLabels:
+        gateway.networking.k8s.io/gateway-name: bu0001a0008-gateway
+
 ---
-# Restricts ingress to the Envoy gateway proxy to only the Application Gateway
-# subnet and the cluster nodes subnet. This is the NetworkPolicy equivalent of
-# the L7 source IP filtering that Istio AuthorizationPolicy provides when using
-# the full service mesh. In meshless mode (approuting-istio), Istio CRDs are not
-# available, so L3/L4 NetworkPolicy with ipBlock is the enforcement mechanism.
+# Restricts ingress to the Envoy gateway proxy. The Application Gateway, the Azure
+# internal load balancer, and the load balancer's health probes all reach the Envoy pod via the
+# node's host network namespace, so the `remote-node` entity is required. This is the
+# L3/L4 enforcement that meshless mode (approuting-istio) relies on in place of an
+# Istio AuthorizationPolicy.
 #
 # Azure NSG on snet-clusteringressservices provides defense-in-depth at the
 # virtual network layer.
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
 metadata:
   name: allow-only-appgw-to-gateway-proxy
   namespace: a0008
 spec:
-  podSelector:
+  endpointSelector:
     matchLabels:
       gateway.networking.k8s.io/gateway-name: bu0001a0008-gateway
   ingress:
-  - from:
-    - ipBlock:
-        cidr: 10.240.5.0/24 # snet-applicationgateway
-    - ipBlock:
-        cidr: 10.240.0.0/22 # snet-clusternodes (kube-proxy may masquerade source IP)
-    - ipBlock:
-        cidr: 168.63.129.16/32 # Azure Load Balancer health probes
-    ports:
-    - protocol: TCP
-      port: 443
-    - protocol: TCP
-      port: 80
-    - protocol: TCP
-      port: 15021 # Envoy health check port
+  - fromEntities:
+    - remote-node
